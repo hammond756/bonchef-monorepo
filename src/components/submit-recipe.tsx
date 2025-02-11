@@ -1,31 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { RecipeForm } from "./recipe-form";
 import type { GeneratedRecipe } from "@/lib/types";
-
+import { Loader2 } from "lucide-react";
+import { checkTaskStatus, submitRecipeText } from "@/lib/services/recipe-service";
+import { RecipeForm } from "./recipe-form";
 export function SubmitRecipe() {
   const [recipeText, setRecipeText] = useState("");
+  const [taskId, setTaskId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const [generatedRecipe, setGeneratedRecipe] = useState<GeneratedRecipe | null>(
     null
   );
 
+  useEffect(() => {
+    if (!taskId) return;
+
+    const intervalId = setInterval(async () => {
+      try {
+        const status = await checkTaskStatus(taskId);
+        setProgress(status.progress);
+
+        if (status.status === "SUCCESS" && status.result) {
+          setGeneratedRecipe(status.result);
+          setIsLoading(false);
+          clearInterval(intervalId);
+        } else if (status.status === "FAILURE") {
+          setError("Failed to generate recipe. Please try again.");
+          setIsLoading(false);
+          clearInterval(intervalId);
+        }
+      } catch (err) {
+        setError("An error occurred while checking recipe status");
+        setIsLoading(false);
+        clearInterval(intervalId);
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [taskId]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
+    setIsLoading(true);
     
     try {
-      const response = await fetch("/api/parse-recipe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: recipeText }),
-      });
-      
-      const data = await response.json();
-      setGeneratedRecipe(data);
-    } catch (error) {
-      console.error("Failed to parse recipe:", error);
+      const newTaskId = await submitRecipeText(recipeText);
+      setTaskId(newTaskId);
+    } catch (err) {
+      setError("Failed to submit recipe. Please try again.");
+      setIsLoading(false);
     }
   }
 
@@ -40,8 +69,24 @@ export function SubmitRecipe() {
         onChange={(e) => setRecipeText(e.target.value)}
         placeholder="Paste your recipe here..."
         className="min-h-[200px]"
+        disabled={isLoading}
       />
-      <Button type="submit">Format Recipe</Button>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {isLoading && (
+        <div className="text-sm text-muted-foreground">
+          Processing... {progress}%
+        </div>
+      )}
+      <Button type="submit" disabled={isLoading}>
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing
+          </>
+        ) : (
+          "Format Recipe"
+        )}
+      </Button>
     </form>
   );
 } 
