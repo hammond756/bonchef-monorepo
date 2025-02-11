@@ -20,7 +20,20 @@ interface RecipeFormProps {
 
 export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   const [recipe, setRecipe] = useState(initialRecipe);
+  const [recipeImage, setRecipeImage] = useState<string | null>(null);
   const units = unitEnum.options;
+
+  async function handleGenerateImage() {
+    try {
+      const response = await fetch("/api/generate-image", {
+        method: "POST",
+      });
+      const data = await response.json();
+      setRecipeImage(data.image);
+    } catch (error) {
+      console.error("Failed to generate image:", error);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,7 +42,10 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
       const response = await fetch("/api/save-recipe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(recipe),
+        body: JSON.stringify({
+          ...recipe,
+          image: recipeImage,
+        }),
       });
       
       const { url } = await response.json();
@@ -42,11 +58,39 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <Input
-          type="file"
-          accept="image/*"
-          className="mb-4"
-        />
+        <div className="flex gap-4 items-start">
+          <Button
+            type="button"
+            onClick={handleGenerateImage}
+            className="w-40"
+          >
+            Generate Image
+          </Button>
+          <div className="flex-1">
+            <Input
+              type="file"
+              accept="image/*"
+              className="mb-4"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setRecipeImage(reader.result as string);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+            {recipeImage && (
+              <img
+                src={recipeImage}
+                alt="Recipe preview"
+                className="w-40 h-40 object-cover rounded-md"
+              />
+            )}
+          </div>
+        </div>
         
         <Input
           value={recipe.title}
