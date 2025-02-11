@@ -43,9 +43,9 @@ export const GeneratedRecipeSchema = z.object({
   total_cook_time_minutes: z.number(),
   ingredients: z.array(
     z.object({
-      name: z.literal("no_group"),
+      name: z.string(),
       ingredients: z.array(IngredientSchema),
-    })
+    }),
   ),
   instructions: z.array(z.string()),
   description: z.string(),
