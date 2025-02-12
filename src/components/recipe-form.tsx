@@ -95,24 +95,8 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <div className="flex gap-4 items-start">
-          <Button
-            type="button"
-            onClick={handleGenerateImage}
-            disabled={isGenerating}
-            variant="secondary"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating Image...
-              </>
-            ) : (
-              "Generate Image"
-            )}
-          </Button>
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          <div className="flex-1">
+        <div className="flex flex-col gap-4 items-start w-full">
+          <div className="w-full">
             <Input
               type="file"
               accept="image/*"
@@ -128,12 +112,31 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
                 }
               }}
             />
+            <Button
+              type="button"
+              onClick={handleGenerateImage}
+              disabled={isGenerating}
+              variant="secondary"
+              className="mb-4"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating Image...
+                </>
+              ) : (
+                "Generate Image"
+              )}
+            </Button>
+            {error && <p className="text-sm text-red-500">{error}</p>}
             {recipeImage && (
-              <img
-                src={recipeImage}
-                alt="Recipe preview"
-                className="w-40 h-40 object-cover rounded-md"
-              />
+              <div className="w-full sm:-mx-6 md:-mx-8 lg:-mx-12">
+                <img
+                  src={recipeImage}
+                  alt="Recipe preview"
+                  className="w-full h-[300px] md:h-[400px] object-contain"
+                />
+              </div>
             )}
           </div>
         </div>

@@ -11,7 +11,7 @@ export async function POST(request: Request) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({prompt: `A photorealistic image for ${recipeData.name} with the ingredients ${recipeData.ingredients.join(", ")}`}),
+        body: JSON.stringify({recipe: recipeData}),
       }
     );
 
