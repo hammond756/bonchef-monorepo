@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { Loader2 } from "lucide-react";
 import type { GeneratedRecipe, Unit } from "@/lib/types";
 import { unitEnum } from "@/lib/types";
 
@@ -26,6 +27,8 @@ function autoResizeTextarea(element: HTMLTextAreaElement) {
 export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   const [recipe, setRecipe] = useState(initialRecipe);
   const [recipeImage, setRecipeImage] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const units = unitEnum.options;
 
   useEffect(() => {
@@ -36,14 +39,28 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   }, [recipe]);
 
   async function handleGenerateImage() {
+    setIsGenerating(true);
+    setError(null);
+
     try {
       const response = await fetch("/api/generate-image", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(recipe),
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate image");
+      }
+
       const data = await response.json();
       setRecipeImage(data.image);
     } catch (error) {
       console.error("Failed to generate image:", error);
+    } finally {
+      setIsGenerating(false);
     }
   }
 
@@ -82,10 +99,19 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
           <Button
             type="button"
             onClick={handleGenerateImage}
-            className="w-40"
+            disabled={isGenerating}
+            variant="secondary"
           >
-            Generate Image
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating Image...
+              </>
+            ) : (
+              "Generate Image"
+            )}
           </Button>
+          {error && <p className="text-sm text-red-500">{error}</p>}
           <div className="flex-1">
             <Input
               type="file"

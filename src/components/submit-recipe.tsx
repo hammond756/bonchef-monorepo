@@ -7,6 +7,7 @@ import type { GeneratedRecipe } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 import { checkTaskStatus, submitRecipeText } from "@/lib/services/recipe-service";
 import { RecipeForm } from "./recipe-form";
+
 export function SubmitRecipe() {
   const [recipeText, setRecipeText] = useState("");
   const [taskId, setTaskId] = useState<string | null>(null);
