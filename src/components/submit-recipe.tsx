@@ -39,7 +39,7 @@ export function SubmitRecipe() {
         setIsLoading(false);
         clearInterval(intervalId);
       }
-    }, 5000);
+    }, process.env.NEXT_PUBLIC_REFRESH_INTERVAL ? parseInt(process.env.NEXT_PUBLIC_REFRESH_INTERVAL) : 5000);
 
     return () => clearInterval(intervalId);
   }, [taskId]);
