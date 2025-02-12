@@ -49,7 +49,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
       });
       
       const { url } = await response.json();
-      window.open(url, "_blank");
+      window.open(`${process.env.NEXT_PUBLIC_BONCHEF_FRONTEND_HOST}${url}`, "_blank");
     } catch (error) {
       console.error("Failed to save recipe:", error);
     }
