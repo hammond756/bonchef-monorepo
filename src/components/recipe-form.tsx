@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
@@ -18,10 +18,22 @@ interface RecipeFormProps {
   recipe: GeneratedRecipe;
 }
 
+function autoResizeTextarea(element: HTMLTextAreaElement) {
+  element.style.height = "auto";
+  element.style.height = `${element.scrollHeight}px`;
+}
+
 export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   const [recipe, setRecipe] = useState(initialRecipe);
   const [recipeImage, setRecipeImage] = useState<string | null>(null);
   const units = unitEnum.options;
+
+  useEffect(() => {
+    // Resize all textareas on mount and when recipe changes
+    document.querySelectorAll("textarea").forEach((textarea) => {
+      autoResizeTextarea(textarea);
+    });
+  }, [recipe]);
 
   async function handleGenerateImage() {
     try {
@@ -53,6 +65,14 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
     } catch (error) {
       console.error("Failed to save recipe:", error);
     }
+  }
+
+  function handleTextareaChange(
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+    updateFn: (value: string) => void
+  ) {
+    autoResizeTextarea(e.target);
+    updateFn(e.target.value);
   }
 
   return (
@@ -103,9 +123,12 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
         <Textarea
           value={recipe.description}
           onChange={(e) =>
-            setRecipe((prev) => ({ ...prev, description: e.target.value }))
+            handleTextareaChange(e, (value) =>
+              setRecipe((prev) => ({ ...prev, description: value }))
+            )
           }
           placeholder="Description"
+          className="min-h-[100px] overflow-hidden"
         />
       </div>
 
@@ -220,13 +243,16 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
             <Textarea
               value={instruction}
               onChange={(e) =>
-                setRecipe((prev) => ({
-                  ...prev,
-                  instructions: prev.instructions.map((inst, i) =>
-                    i === idx ? e.target.value : inst
-                  ),
-                }))
+                handleTextareaChange(e, (value) =>
+                  setRecipe((prev) => ({
+                    ...prev,
+                    instructions: prev.instructions.map((inst, i) =>
+                      i === idx ? value : inst
+                    ),
+                  }))
+                )
               }
+              className="min-h-[60px] overflow-hidden"
             />
           </div>
         ))}
