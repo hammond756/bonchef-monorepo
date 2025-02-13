@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import type { GeneratedRecipe, Unit } from "@/lib/types";
 import { unitEnum } from "@/lib/types";
 
@@ -76,6 +76,12 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
           image: recipeImage,
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.error);
+        return;
+      }
       
       const { url } = await response.json();
       window.open(`${process.env.NEXT_PUBLIC_BONCHEF_FRONTEND_HOST}${url}`, "_blank");
@@ -90,6 +96,51 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   ) {
     autoResizeTextarea(e.target);
     updateFn(e.target.value);
+  }
+
+  function handleAddIngredient(groupIdx: number) {
+    setRecipe((prev) => ({
+      ...prev,
+      ingredients: prev.ingredients.map((g, idx) =>
+        idx === groupIdx
+          ? {
+              ...g,
+              ingredients: [
+                ...g.ingredients,
+                { quantity: { type: "range", low: 0, high: 0 }, unit: "g", description: "" },
+              ],
+            }
+          : g
+      ),
+    }));
+  }
+
+  function handleRemoveIngredient(groupIdx: number, ingredientIdx: number) {
+    setRecipe((prev) => ({
+      ...prev,
+      ingredients: prev.ingredients.map((g, idx) =>
+        idx === groupIdx
+          ? {
+              ...g,
+              ingredients: g.ingredients.filter((_, i) => i !== ingredientIdx),
+            }
+          : g
+      ),
+    }));
+  }
+
+  function handleAddInstruction() {
+    setRecipe((prev) => ({
+      ...prev,
+      instructions: [...prev.instructions, ""],
+    }));
+  }
+
+  function handleRemoveInstruction(idx: number) {
+    setRecipe((prev) => ({
+      ...prev,
+      instructions: prev.instructions.filter((_, i) => i !== idx),
+    }));
   }
 
   return (
@@ -253,8 +304,27 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
                   }
                   className="flex-1"
                 />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleRemoveIngredient(groupIdx, idx)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handleAddIngredient(groupIdx)}
+              className="mt-2"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Ingredient
+            </Button>
             {groupIdx < recipe.ingredients.length - 1 && (
               <hr className="border-t border-gray-200 dark:border-gray-700" />
             )}
@@ -283,8 +353,27 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
               }
               className="min-h-[60px] overflow-hidden"
             />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => handleRemoveInstruction(idx)}
+              className="text-red-500 hover:text-red-700"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         ))}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleAddInstruction}
+          className="mt-2"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Instruction
+        </Button>
       </div>
 
       <Button type="submit">Save Recipe</Button>

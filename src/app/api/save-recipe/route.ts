@@ -24,6 +24,10 @@ export async function POST(request: Request) {
     );
 
     if (!response.ok) {
+      if (response.status === 400) {
+        const errorData = await response.json();
+        return NextResponse.json({ error: errorData.error }, { status: 400 });
+      }
       throw new Error(`Failed to save recipe: ${response.statusText}`);
     }
 
