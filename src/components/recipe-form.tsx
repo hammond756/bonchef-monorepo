@@ -13,7 +13,7 @@ import {
 } from "./ui/select";
 import { Loader2, Plus, Trash2, AlertCircle } from "lucide-react";
 import type { GeneratedRecipe, Unit } from "@/lib/types";
-import { unitEnum } from "@/lib/types";
+import { unitEnum, unitAbbreviations } from "@/lib/types";
 import { Alert, AlertDescription } from "./ui/alert";
 
 interface RecipeFormProps {
@@ -208,10 +208,10 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
                 {isGenerating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Image...
+                    Afbeelding genereren...
                   </>
                 ) : (
-                  "Generate Image"
+                  "Afbeelding genereren"
                 )}
               </Button>
 
@@ -240,7 +240,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
           onChange={(e) =>
             setRecipe((prev) => ({ ...prev, title: e.target.value }))
           }
-          placeholder="Recipe Title"
+          placeholder="Recept naam"
         />
 
         <Textarea
@@ -250,14 +250,14 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
               setRecipe((prev) => ({ ...prev, description: value }))
             )
           }
-          placeholder="Description"
+          placeholder="Beschrijving"
           className="min-h-[100px] overflow-hidden"
         />
       </div>
 
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <h2 className="text-xl font-semibold">Portion Size</h2>
+          <h2 className="text-xl font-semibold">Portie grootte</h2>
           <div className="flex items-center gap-2">
             <Input
               type="text"
@@ -269,13 +269,13 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
                 }))
               }
               className="w-24"
-              placeholder="Portions"
+              placeholder="Porties"
             />
-            <span className="text-sm text-gray-500 dark:text-gray-400">portions</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">porties</span>
           </div>
         </div>
 
-        <h2 className="text-xl font-semibold">Ingredients</h2>
+        <h2 className="text-xl font-semibold">Ingredienten</h2>
         {recipe.ingredients.map((group, groupIdx) => (
           <div key={groupIdx} className="space-y-4">
             {group.name !== "no_group" && (
@@ -298,7 +298,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
                       },
                     }))
                   }
-                  className="w-24"
+                  className="w-16"
                 />
                 
                 <Select
@@ -310,19 +310,19 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
                     }))
                   }
                 >
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Unit" />
+                  <SelectTrigger className="w-16">
+                    <SelectValue placeholder="Eenheid" />
                   </SelectTrigger>
                   <SelectContent>
                     {units.map((unit) => (
                       <SelectItem key={unit} value={unit}>
-                        {unit}
+                        {unitAbbreviations[unit]}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
-                <Input
+                <Textarea
                   value={ingredient.description}
                   onChange={(e) =>
                     handleIngredientChange(groupIdx, idx, (ing) => ({
@@ -351,7 +351,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
               className="mt-2"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Ingredient
+              Ingredient toevoegen
             </Button>
             {groupIdx < recipe.ingredients.length - 1 && (
               <hr className="border-t border-gray-200 dark:border-gray-700" />
@@ -361,7 +361,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Instructions</h2>
+        <h2 className="text-xl font-semibold">Bereiding</h2>
         {recipe.instructions.map((instruction, idx) => (
           <div key={idx} className="flex gap-2 items-start">
             <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-2 w-6">
@@ -400,7 +400,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
           className="mt-2"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Add Instruction
+          Voeg stap toe
         </Button>
       </div>
 
@@ -411,7 +411,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
             <AlertDescription>{submitError}</AlertDescription>
           </Alert>
         )}
-        <Button type="submit">Save Recipe</Button>
+        <Button type="submit">Opslaan</Button>
       </div>
     </form>
   );

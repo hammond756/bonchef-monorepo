@@ -68,24 +68,24 @@ export function SubmitRecipe() {
       <Textarea
         value={recipeText}
         onChange={(e) => setRecipeText(e.target.value)}
-        placeholder="Paste your recipe here..."
+        placeholder="Beschrijf hier je recept..."
         className="min-h-[200px]"
         disabled={isLoading}
       />
       {error && <p className="text-red-500 text-sm">{error}</p>}
       {isLoading && (
         <div className="text-sm text-muted-foreground">
-          Processing... {progress * 100}%
+          Laden... {progress * 100}%
         </div>
       )}
       <Button type="submit" disabled={isLoading}>
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing
+            Laden
           </>
         ) : (
-          "Format Recipe"
+          "Maak recept"
         )}
       </Button>
     </form>
