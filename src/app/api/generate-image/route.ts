@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const recipeData = await request.json();
+
+    delete recipeData.thumbnail;
     
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BONCHEF_BACKEND_HOST}/generate_image/`,

@@ -75,7 +75,7 @@ export function SubmitRecipe() {
       {error && <p className="text-red-500 text-sm">{error}</p>}
       {isLoading && (
         <div className="text-sm text-muted-foreground">
-          Processing... {progress}%
+          Processing... {progress * 100}%
         </div>
       )}
       <Button type="submit" disabled={isLoading}>
