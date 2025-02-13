@@ -25,6 +25,37 @@ function autoResizeTextarea(element: HTMLTextAreaElement) {
   element.style.height = `${element.scrollHeight}px`;
 }
 
+function createDefaultIngredient(): GeneratedRecipe["ingredients"][number]["ingredients"][number] {
+  return {
+    quantity: { type: "range", low: 0, high: 0 },
+    unit: "g" as Unit,
+    description: "",
+  };
+}
+
+function updateIngredientInGroup(
+  ingredients: GeneratedRecipe["ingredients"],
+  groupIdx: number,
+  updateFn: (group: typeof ingredients[number]) => typeof ingredients[number]
+) {
+  return ingredients.map((group, idx) =>
+    idx === groupIdx ? updateFn(group) : group
+  );
+}
+
+function updateIngredientAtIndex(
+  group: GeneratedRecipe["ingredients"][number],
+  ingredientIdx: number,
+  updateFn: (ingredient: typeof group["ingredients"][number]) => typeof group["ingredients"][number]
+) {
+  return {
+    ...group,
+    ingredients: group.ingredients.map((ing, idx) =>
+      idx === ingredientIdx ? updateFn(ing) : ing
+    ),
+  };
+}
+
 export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   const [recipe, setRecipe] = useState(initialRecipe);
   const [recipeImage, setRecipeImage] = useState<string | null>(null);
@@ -106,30 +137,33 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   function handleAddIngredient(groupIdx: number) {
     setRecipe((prev) => ({
       ...prev,
-      ingredients: prev.ingredients.map((g, idx) =>
-        idx === groupIdx
-          ? {
-              ...g,
-              ingredients: [
-                ...g.ingredients,
-                { quantity: { type: "range", low: 0, high: 0 }, unit: "g", description: "" },
-              ],
-            }
-          : g
-      ),
+      ingredients: updateIngredientInGroup(prev.ingredients, groupIdx, (group) => ({
+        ...group,
+        ingredients: [...group.ingredients, createDefaultIngredient()],
+      })),
     }));
   }
 
   function handleRemoveIngredient(groupIdx: number, ingredientIdx: number) {
     setRecipe((prev) => ({
       ...prev,
-      ingredients: prev.ingredients.map((g, idx) =>
-        idx === groupIdx
-          ? {
-              ...g,
-              ingredients: g.ingredients.filter((_, i) => i !== ingredientIdx),
-            }
-          : g
+      ingredients: updateIngredientInGroup(prev.ingredients, groupIdx, (group) => ({
+        ...group,
+        ingredients: group.ingredients.filter((_, idx) => idx !== ingredientIdx),
+      })),
+    }));
+  }
+
+  function handleIngredientChange(
+    groupIdx: number,
+    ingredientIdx: number,
+    updateFn: (ingredient: GeneratedRecipe["ingredients"][number]["ingredients"][number]) => 
+      GeneratedRecipe["ingredients"][number]["ingredients"][number]
+  ) {
+    setRecipe((prev) => ({
+      ...prev,
+      ingredients: updateIngredientInGroup(prev.ingredients, groupIdx, (group) =>
+        updateIngredientAtIndex(group, ingredientIdx, updateFn)
       ),
     }));
   }
@@ -237,30 +271,16 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
             {group.ingredients.map((ingredient, idx) => (
               <div key={`${groupIdx}-${idx}`} className="flex gap-2">
                 <Input
-                  type="number"
+                  type="text"
                   value={ingredient.quantity?.low ?? ""}
                   onChange={(e) =>
-                    setRecipe((prev) => ({
-                      ...prev,
-                      ingredients: prev.ingredients.map((g, gIdx) =>
-                        gIdx === groupIdx
-                          ? {
-                              ...g,
-                              ingredients: g.ingredients.map((ing, i) =>
-                                i === idx
-                                  ? {
-                                      ...ing,
-                                      quantity: {
-                                        type: "range",
-                                        low: Number(e.target.value),
-                                        high: Number(e.target.value),
-                                      },
-                                    }
-                                  : ing
-                              ),
-                            }
-                          : g
-                      ),
+                    handleIngredientChange(groupIdx, idx, (ing) => ({
+                      ...ing,
+                      quantity: {
+                        type: "range",
+                        low: Number(e.target.value),
+                        high: Number(e.target.value),
+                      },
                     }))
                   }
                   className="w-24"
@@ -269,18 +289,9 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
                 <Select
                   value={ingredient.unit}
                   onValueChange={(value: Unit) =>
-                    setRecipe((prev) => ({
-                      ...prev,
-                      ingredients: prev.ingredients.map((g, gIdx) =>
-                        gIdx === groupIdx
-                          ? {
-                              ...g,
-                              ingredients: g.ingredients.map((ing, i) =>
-                                i === idx ? { ...ing, unit: value } : ing
-                              ),
-                            }
-                          : g
-                      ),
+                    handleIngredientChange(groupIdx, idx, (ing) => ({
+                      ...ing,
+                      unit: value,
                     }))
                   }
                 >
@@ -299,20 +310,9 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
                 <Input
                   value={ingredient.description}
                   onChange={(e) =>
-                    setRecipe((prev) => ({
-                      ...prev,
-                      ingredients: prev.ingredients.map((g, gIdx) =>
-                        gIdx === groupIdx
-                          ? {
-                              ...g,
-                              ingredients: g.ingredients.map((ing, i) =>
-                                i === idx
-                                  ? { ...ing, description: e.target.value }
-                                  : ing
-                              ),
-                            }
-                          : g
-                      ),
+                    handleIngredientChange(groupIdx, idx, (ing) => ({
+                      ...ing,
+                      description: e.target.value,
                     }))
                   }
                   className="flex-1"
@@ -389,7 +389,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
         </Button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 pb-8">
         {submitError && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
