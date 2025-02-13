@@ -11,10 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Loader2, Plus, Trash2, AlertCircle } from "lucide-react";
+import { Loader2, Plus, Trash2, AlertCircle, ExternalLink } from "lucide-react";
 import type { GeneratedRecipe, Unit } from "@/lib/types";
 import { unitEnum, unitAbbreviations } from "@/lib/types";
-import { Alert, AlertDescription } from "./ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 interface RecipeFormProps {
   recipe: GeneratedRecipe;
@@ -61,6 +61,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [savedRecipeUrl, setSavedRecipeUrl] = useState<string | null>(null);
   const units = unitEnum.options;
 
   useEffect(() => {
@@ -100,6 +101,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError(null);
+    setSavedRecipeUrl(null);
     
     try {
       const response = await fetch("/api/save-recipe", {
@@ -115,7 +117,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
       }
       
       const { url } = await response.json();
-      window.open(`${process.env.NEXT_PUBLIC_BONCHEF_FRONTEND_HOST}${url}`, "_blank");
+      setSavedRecipeUrl(`${process.env.NEXT_PUBLIC_BONCHEF_FRONTEND_HOST}${url}`);
     } catch (error) {
       console.error("Failed to save recipe:", error);
       setSubmitError("Failed to save recipe. Please try again.");
@@ -409,6 +411,23 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{submitError}</AlertDescription>
+          </Alert>
+        )}
+        {savedRecipeUrl && (
+          <Alert className="bg-green-50 dark:bg-green-900/10">
+            <AlertTitle className="flex items-center gap-2">
+              Recept opgeslagen!
+            </AlertTitle>
+            <AlertDescription className="mt-2">
+              <a
+                href={savedRecipeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-green-700 dark:text-green-400 hover:underline"
+              >
+                Bekijk je recept <ExternalLink className="h-4 w-4" />
+              </a>
+            </AlertDescription>
           </Alert>
         )}
         <Button type="submit">Opslaan</Button>
