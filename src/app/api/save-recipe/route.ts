@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { GeneratedRecipeSchema } from "@/lib/types";
+import { ZodError } from "zod";
 
 export async function POST(request: Request) {
   try {
@@ -33,6 +34,19 @@ export async function POST(request: Request) {
     const savedRecipe = await response.json();
     return NextResponse.json({ url: `/recipe/${savedRecipe.slug}` });
   } catch (error) {
+    if (error instanceof ZodError) {
+      // Format validation errors into a readable message
+      const errorMessages = error.issues.map(issue => {
+        const path = issue.path.join(".");
+        return `${path}: ${issue.message}`;
+      }).join(", ");
+
+      return NextResponse.json(
+        { error: `Invalid recipe data: ${errorMessages}` },
+        { status: 400 }
+      );
+    }
+
     console.error("Error saving recipe:", error);
     return NextResponse.json(
       { error: "Failed to save recipe" },

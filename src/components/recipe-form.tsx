@@ -256,6 +256,25 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
       </div>
 
       <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-semibold">Portion Size</h2>
+          <div className="flex items-center gap-2">
+            <Input
+              type="text"
+              value={recipe.n_portions || ""}
+              onChange={(e) =>
+                setRecipe((prev) => ({
+                  ...prev,
+                  n_portions: parseInt(e.target.value),
+                }))
+              }
+              className="w-24"
+              placeholder="Portions"
+            />
+            <span className="text-sm text-gray-500 dark:text-gray-400">portions</span>
+          </div>
+        </div>
+
         <h2 className="text-xl font-semibold">Ingredients</h2>
         {recipe.ingredients.map((group, groupIdx) => (
           <div key={groupIdx} className="space-y-4">
@@ -268,14 +287,14 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
               <div key={`${groupIdx}-${idx}`} className="flex gap-2">
                 <Input
                   type="text"
-                  value={ingredient.quantity?.low ?? ""}
+                  value={ingredient.quantity?.low || ""}
                   onChange={(e) =>
                     handleIngredientChange(groupIdx, idx, (ing) => ({
                       ...ing,
                       quantity: {
                         type: "range",
-                        low: Number(e.target.value),
-                        high: Number(e.target.value),
+                        low: e.target.value === "" ? 0 : parseFloat(e.target.value),
+                        high: e.target.value === "" ? 0 : parseFloat(e.target.value),
                       },
                     }))
                   }
