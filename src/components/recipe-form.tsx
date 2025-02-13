@@ -11,9 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, AlertCircle } from "lucide-react";
 import type { GeneratedRecipe, Unit } from "@/lib/types";
 import { unitEnum } from "@/lib/types";
+import { Alert, AlertDescription } from "./ui/alert";
 
 interface RecipeFormProps {
   recipe: GeneratedRecipe;
@@ -28,7 +29,8 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   const [recipe, setRecipe] = useState(initialRecipe);
   const [recipeImage, setRecipeImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const units = unitEnum.options;
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
 
   async function handleGenerateImage() {
     setIsGenerating(true);
-    setError(null);
+    setImageError(null);
 
     try {
       const response = await fetch("/api/generate-image", {
@@ -59,6 +61,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
       setRecipeImage(data.image);
     } catch (error) {
       console.error("Failed to generate image:", error);
+      setImageError("Failed to generate image. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -66,6 +69,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSubmitError(null);
     
     try {
       const response = await fetch("/api/save-recipe", {
@@ -79,7 +83,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.error);
+        setSubmitError(errorData.error);
         return;
       }
       
@@ -87,6 +91,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
       window.open(`${process.env.NEXT_PUBLIC_BONCHEF_FRONTEND_HOST}${url}`, "_blank");
     } catch (error) {
       console.error("Failed to save recipe:", error);
+      setSubmitError("Failed to save recipe. Please try again.");
     }
   }
 
@@ -163,25 +168,33 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
                 }
               }}
             />
-            <Button
-              type="button"
-              onClick={handleGenerateImage}
-              disabled={isGenerating}
-              variant="secondary"
-              className="mb-4"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating Image...
-                </>
-              ) : (
-                "Generate Image"
+            <div className="space-y-4">
+              <Button
+                type="button"
+                onClick={handleGenerateImage}
+                disabled={isGenerating}
+                variant="secondary"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating Image...
+                  </>
+                ) : (
+                  "Generate Image"
+                )}
+              </Button>
+
+              {imageError && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{imageError}</AlertDescription>
+                </Alert>
               )}
-            </Button>
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            </div>
+
             {recipeImage && (
-              <div className="w-full sm:-mx-6 md:-mx-8 lg:-mx-12">
+              <div className="w-full sm:-mx-6 md:-mx-8 lg:-mx-12 mt-4">
                 <img
                   src={recipeImage}
                   alt="Recipe preview"
@@ -376,7 +389,15 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
         </Button>
       </div>
 
-      <Button type="submit">Save Recipe</Button>
+      <div className="space-y-4">
+        {submitError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{submitError}</AlertDescription>
+          </Alert>
+        )}
+        <Button type="submit">Save Recipe</Button>
+      </div>
     </form>
   );
 } 
