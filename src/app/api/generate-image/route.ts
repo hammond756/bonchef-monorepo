@@ -13,7 +13,7 @@ export async function POST(request: Request) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({recipe: recipeData}),
+        body: JSON.stringify({recipe: recipeData, generate_image: false}),
       }
     );
 
