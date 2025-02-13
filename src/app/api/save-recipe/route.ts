@@ -4,7 +4,7 @@ import { GeneratedRecipeSchema } from "@/lib/types";
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { image, ...recipe } = data;
+    const { ...recipe } = data;
     const validatedRecipe = GeneratedRecipeSchema.parse(recipe);
 
     const response = await fetch(
@@ -15,9 +15,8 @@ export async function POST(request: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          thumbnail: image,
-          source_url: "https://www.bonchef.io",
-          source_name: "BonChef",
+          // source_url: "https://www.bonchef.io",
+          // source_name: "BonChef",
           ...validatedRecipe,
         }),
       }

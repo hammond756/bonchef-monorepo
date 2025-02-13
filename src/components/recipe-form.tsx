@@ -58,7 +58,6 @@ function updateIngredientAtIndex(
 
 export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   const [recipe, setRecipe] = useState(initialRecipe);
-  const [recipeImage, setRecipeImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -89,7 +88,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
       }
 
       const data = await response.json();
-      setRecipeImage(data.image);
+      setRecipe(prev => ({ ...prev, thumbnail: data.image }));
     } catch (error) {
       console.error("Failed to generate image:", error);
       setImageError("Failed to generate image. Please try again.");
@@ -106,10 +105,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
       const response = await fetch("/api/save-recipe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...recipe,
-          image: recipeImage,
-        }),
+        body: JSON.stringify(recipe),
       });
 
       if (!response.ok) {
@@ -196,7 +192,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
                 if (file) {
                   const reader = new FileReader();
                   reader.onloadend = () => {
-                    setRecipeImage(reader.result as string);
+                    setRecipe(prev => ({ ...prev, thumbnail: reader.result as string }));
                   };
                   reader.readAsDataURL(file);
                 }
@@ -227,10 +223,10 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
               )}
             </div>
 
-            {recipeImage && (
+            {recipe.thumbnail && (
               <div className="w-full sm:-mx-6 md:-mx-8 lg:-mx-12 mt-4">
                 <img
-                  src={recipeImage}
+                  src={recipe.thumbnail}
                   alt="Recipe preview"
                   className="w-full h-[300px] md:h-[400px] object-contain"
                 />

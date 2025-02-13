@@ -54,7 +54,10 @@ const DEV_RECIPE: GeneratedRecipe = {
     "Reduce heat to low and let the sauce simmer gently for 30 minutes, stirring every 5-7 minutes to prevent sticking. The sauce should thicken and develop a rich, deep flavor",
     "When the sauce is nearly ready, add the spaghetti to the boiling water and cook according to package instructions until al dente, typically 8-10 minutes",
     "Drain the pasta and divide among serving plates. Ladle the hot Bolognese sauce generously over each portion and finish with a liberal sprinkle of freshly grated Parmesan cheese"
-  ]
+  ],
+  thumbnail: "data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mO89x8AAsEB3+IGkhwAAAAASUVORK5CYII=",
+  source_url: "https://www.bonchef.io",
+  source_name: "BonChef"
 };
 
 interface TaskResponse {
@@ -77,7 +80,7 @@ export async function submitRecipeText(text: string): Promise<string> {
   const response = await fetch(`${RECIPE_API_URL}/generate/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ description: text }),
+    body: JSON.stringify({ description: text, generate_image: false }),
   });
 
   if (!response.ok) {

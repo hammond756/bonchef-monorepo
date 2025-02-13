@@ -50,6 +50,9 @@ export const GeneratedRecipeSchema = z.object({
   instructions: z.array(z.string()),
   description: z.string(),
   n_portions: z.number(),
+  thumbnail: z.string(), 
+  source_url: z.string(),
+  source_name: z.string(),
 });
 
 export type GeneratedRecipe = z.infer<typeof GeneratedRecipeSchema>;
