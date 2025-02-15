@@ -71,16 +71,23 @@ interface TaskStatus {
   error?: string;
 }
 
-export async function submitRecipeText(text: string): Promise<string> {
+export type WriteStyle = "professioneel" | "thuiskok";
+
+export async function submitRecipeText(text: string, writeStyle: WriteStyle): Promise<string> {
   if (process.env.NEXT_PUBLIC_DEV_MODE === "true") {
     // Return a fake task ID in dev mode
     return "dev-task-id";
+  }
+
+  const writeStyleToCreativePrompts: Record<WriteStyle, string[]> = {
+    "professioneel": ["ProfessionalRecipeWriter"],
+    "thuiskok": ["ClassicRecipe"]
   }
   
   const response = await fetch(`${RECIPE_API_URL}/generate/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ description: text, generate_image: false }),
+    body: JSON.stringify({ description: text, generate_image: false, creative_prompts: writeStyleToCreativePrompts[writeStyle] }),
   });
 
   if (!response.ok) {

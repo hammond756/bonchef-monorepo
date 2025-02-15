@@ -3,13 +3,21 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import type { GeneratedRecipe } from "@/lib/types";
 import { Loader2 } from "lucide-react";
-import { checkTaskStatus, submitRecipeText } from "@/lib/services/recipe-service";
+import { checkTaskStatus, submitRecipeText, WriteStyle } from "@/lib/services/recipe-service";
 import { RecipeForm } from "./recipe-form";
 
 export function SubmitRecipe() {
   const [recipeText, setRecipeText] = useState("");
+  const [writeStyle, setWriteStyle] = useState<WriteStyle>("professioneel");
   const [taskId, setTaskId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -51,7 +59,7 @@ export function SubmitRecipe() {
     setIsLoading(true);
     
     try {
-      const newTaskId = await submitRecipeText(recipeText);
+      const newTaskId = await submitRecipeText(recipeText, writeStyle);
       setTaskId(newTaskId);
     } catch (err) {
       setError("Failed to submit recipe. Please try again.");
@@ -72,12 +80,33 @@ export function SubmitRecipe() {
         className="min-h-[200px]"
         disabled={isLoading}
       />
+
+      <div className="space-y-2">
+        <label htmlFor="writeStyle" className="text-sm font-medium">
+          Schrijfstijl
+        </label>
+        <Select
+          value={writeStyle}
+          onValueChange={(value) => setWriteStyle(value as WriteStyle)}
+          disabled={isLoading}
+        >
+          <SelectTrigger id="writeStyle">
+            <SelectValue placeholder="Selecteer schrijfstijl" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="professioneel">Professioneel</SelectItem>
+            <SelectItem value="thuiskok">Thuiskok</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {error && <p className="text-red-500 text-sm">{error}</p>}
       {isLoading && (
         <div className="text-sm text-muted-foreground">
           Laden... {progress * 100}%
         </div>
       )}
+
       <Button type="submit" disabled={isLoading}>
         {isLoading ? (
           <>
