@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { createClient } from "@/utils/supabase/server"
+import { cookies } from "next/headers"
+import { Navbar } from "@/components/layout/navbar"
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,17 +21,24 @@ export const metadata: Metadata = {
   description: "Bonchef Prototype",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
+  const cookieStore = cookies()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        {/* Only show navbar if user is logged in */}
+        {user && <Navbar user={user} />}
+        <main>{children}</main>
+        <Toaster />
       </body>
     </html>
   );

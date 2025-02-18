@@ -115,4 +115,4 @@ export async function checkTaskStatus(taskId: string): Promise<TaskStatus> {
   }
 
   return response.json();
-} 
+}
