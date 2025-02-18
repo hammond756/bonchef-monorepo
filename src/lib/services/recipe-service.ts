@@ -108,7 +108,7 @@ export async function checkTaskStatus(taskId: string): Promise<TaskStatus> {
     };
   }
   
-  const response = await fetch(`${RECIPE_API_URL}/task_status/${taskId}`);
+  const response = await fetch(`${RECIPE_API_URL}/task_status/${taskId}/`);
   
   if (!response.ok) {
     throw new Error("Failed to check task status");

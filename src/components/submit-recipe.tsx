@@ -27,6 +27,7 @@ export function SubmitRecipe() {
   );
 
   useEffect(() => {
+    console.log("taskId", taskId);
     if (!taskId) return;
 
     const intervalId = setInterval(async () => {
