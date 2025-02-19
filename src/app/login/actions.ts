@@ -4,10 +4,18 @@ import { createClient } from "@/utils/supabase/server"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
-export async function logout() {
+export async function login(email: string, password: string) {
   const cookieStore = cookies()
   const supabase = await createClient()
 
-  await supabase.auth.signOut()
-  redirect("/login")
-} 
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  if (!error) {
+    redirect("/")
+  }
+
+  return { error }
+}

@@ -6,9 +6,10 @@ export default function LoginPage() {
     <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md p-8">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold">Welcome back</h1>
+          <h1 className="text-2xl font-semibold">Welkom!</h1>
           <p className="text-sm text-muted-foreground">
-            Please sign in to continue
+            Dit is een prototype voor Bonchef. Als je nog geen account hebt, vraag dan
+            aan David om er een voor je aan te maken.
           </p>
         </div>
         <LoginForm />

@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { supabase } from "@/utils/supabase/client"
-
+import { login } from "@/app/login/actions"
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -21,10 +20,7 @@ export function LoginForm() {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const { error } = await login(email, password)
 
     if (error) {
       toast({
