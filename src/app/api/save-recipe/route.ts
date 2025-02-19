@@ -1,9 +1,23 @@
 import { NextResponse } from "next/server";
 import { GeneratedRecipeSchema } from "@/lib/types";
 import { ZodError } from "zod";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(request: Request) {
   try {
+    // Create Supabase server client
+    const supabase = await createClient();
+    
+    // Get the user's session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
     const data = await request.json();
     const { ...recipe } = data;
     const validatedRecipe = GeneratedRecipeSchema.parse(recipe);
@@ -14,6 +28,7 @@ export async function POST(request: Request) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           // source_url: "https://www.bonchef.io",
