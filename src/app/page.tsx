@@ -2,7 +2,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { getRecipes } from "./actions"
-
+import { redirect } from "next/navigation"
+import { createClient } from "@/utils/supabase/server"
 interface Recipe {
   id: string
   title: string
@@ -13,8 +14,11 @@ export default async function HomePage() {
   const recipes = await getRecipes()
   console.log(recipes)
 
-  if (recipes === null || recipes === undefined) {
-    return
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
   }
 
   return (
@@ -22,7 +26,7 @@ export default async function HomePage() {
       <div className="mb-8">
         <p className="text-lg text-gray-700 mb-6">
           Welkom bij jouw recepten verzameling! Hier vind je al jouw favoriete 
-          recepten op één plek. {recipes.length === 0 ? "Begin met het toevoegen van je eerste recept." : ""}
+          recepten op één plek. {recipes?.length === 0 ? "Begin met het toevoegen van je eerste recept." : ""}
         </p>
         
         <Link href="/create">
@@ -33,7 +37,7 @@ export default async function HomePage() {
       </div>
 
       <div className="grid grid-cols-2 gap-6">
-        {recipes.map((recipe) => (
+        {recipes?.map((recipe) => (
           <Link
             key={recipe.id}
             href={`/recipes/${recipe.id}`}
