@@ -1,13 +1,112 @@
 "use server"
 
-import { checkTaskStatus, submitRecipeText, WriteStyle } from "@/lib/services/recipe-service"
+import { createClient } from "@/utils/supabase/server";
+
+const RECIPE_API_URL = process.env.NEXT_PUBLIC_BONCHEF_BACKEND_HOST;
+
+interface GeneratedRecipe {
+  title: string;
+  description: string;
+  total_cook_time_minutes: number;
+  n_portions: number;
+  ingredients: {
+    name: string;
+    ingredients: {
+      description: string;
+      quantity: { type: "range"; low: number; high: number };
+      unit: string;
+    }[];
+  }[];
+  instructions: string[];
+  thumbnail: string;
+  source_url: string;
+  source_name: string;
+}
+
+const DEV_RECIPE: GeneratedRecipe = {
+  title: "Classic Spaghetti Bolognese",
+  description: "A rich and hearty Italian pasta dish with a meaty tomato sauce.",
+  total_cook_time_minutes: 60,
+  n_portions: 4,
+  ingredients: [
+    {
+      name: "Pasta",
+      ingredients: [
+        { description: "Spaghetti", quantity: { type: "range", low: 400, high: 400 }, unit: "gram" }
+      ]
+    },
+    // ... existing code for other ingredient groups ...
+  ],
+  instructions: [
+    "Fill a large pot with water, add 1-2 tablespoons of salt, and bring to a rolling boil for cooking the pasta",
+    // ... existing code for other instructions ...
+  ],
+  thumbnail: "data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mO89x8AAsEB3+IGkhwAAAAASUVORK5CYII=",
+  source_url: "https://www.bonchef.io",
+  source_name: "BonChef"
+};
+
+interface TaskResponse {
+  task_id: string;
+}
+
+interface TaskStatus {
+  status: "PENDING" | "SUCCESS" | "FAILURE";
+  progress: number;
+  result?: GeneratedRecipe;
+  error?: string;
+}
+
+export type WriteStyle = "professioneel" | "thuiskok";
 
 export async function generateRecipe(recipeText: string, writeStyle: WriteStyle) {
-  const recipe = await submitRecipeText(recipeText, writeStyle)
-  return recipe
+  if (process.env.NEXT_PUBLIC_DEV_MODE === "true") {
+    return "dev-task-id";
+  }
+
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+
+  const writeStyleToCreativePrompts: Record<WriteStyle, string[]> = {
+    "professioneel": ["ProfessionalRecipeWriter"],
+    "thuiskok": ["ClassicRecipe"]
+  };
+  
+  const response = await fetch(`${RECIPE_API_URL}/generate/`, {
+    method: "POST",
+    headers: { 
+      "Content-Type": "application/json", 
+      "Authorization": `Bearer ${session?.access_token}` 
+    },
+    body: JSON.stringify({ 
+      description: recipeText, 
+      generate_image: false, 
+      creative_prompts: writeStyleToCreativePrompts[writeStyle] 
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to submit recipe");
+  }
+
+  const data: TaskResponse = await response.json();
+  return data.task_id;
 }
 
 export async function getTaskStatus(taskId: string) {
-  const status = await checkTaskStatus(taskId)
-  return status
+  if (process.env.NEXT_PUBLIC_DEV_MODE === "true") {
+    return {
+      status: "SUCCESS",
+      progress: 100,
+      result: DEV_RECIPE
+    };
+  }
+  
+  const response = await fetch(`${RECIPE_API_URL}/task_status/${taskId}/`);
+  
+  if (!response.ok) {
+    throw new Error("Failed to check task status");
+  }
+
+  return response.json() as Promise<TaskStatus>;
 }

@@ -12,9 +12,8 @@ import {
 } from "./ui/select";
 import type { GeneratedRecipe } from "@/lib/types";
 import { Loader2 } from "lucide-react";
-import { checkTaskStatus, submitRecipeText, WriteStyle } from "@/lib/services/recipe-service";
 import { RecipeForm } from "./recipe-form";
-import { generateRecipe, getTaskStatus } from "@/app/create/actions";
+import { generateRecipe, getTaskStatus, WriteStyle } from "@/app/create/actions";
 
 export function SubmitRecipe() {
   const [recipeText, setRecipeText] = useState("");
