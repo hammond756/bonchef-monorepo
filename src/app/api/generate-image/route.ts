@@ -1,9 +1,22 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(request: Request) {
   try {
-    const recipeData = await request.json();
+    // Initialize Supabase client
+    const supabase = await createClient();
 
+    // Get user session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError || !session) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const recipeData = await request.json();
     delete recipeData.thumbnail;
     
     const response = await fetch(
@@ -12,6 +25,7 @@ export async function POST(request: Request) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({recipe: recipeData, generate_image: false}),
       }

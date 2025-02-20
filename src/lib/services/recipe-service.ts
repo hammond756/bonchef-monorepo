@@ -1,3 +1,4 @@
+import { createClient } from "@/utils/supabase/server";
 import { GeneratedRecipe } from "../types";
 
 const RECIPE_API_URL = process.env.NEXT_PUBLIC_BONCHEF_BACKEND_HOST;
@@ -79,6 +80,9 @@ export async function submitRecipeText(text: string, writeStyle: WriteStyle): Pr
     return "dev-task-id";
   }
 
+  const supabase = await createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+
   const writeStyleToCreativePrompts: Record<WriteStyle, string[]> = {
     "professioneel": ["ProfessionalRecipeWriter"],
     "thuiskok": ["ClassicRecipe"]
@@ -86,7 +90,7 @@ export async function submitRecipeText(text: string, writeStyle: WriteStyle): Pr
   
   const response = await fetch(`${RECIPE_API_URL}/generate/`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session?.access_token}` },
     body: JSON.stringify({ description: text, generate_image: false, creative_prompts: writeStyleToCreativePrompts[writeStyle] }),
   });
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { GeneratedRecipeSchema } from "@/lib/types";
 import { ZodError } from "zod";
 import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
 export async function POST(request: Request) {
   try {
@@ -9,9 +10,9 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     
     // Get the user's session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    if (sessionError || !session) {
+    if (authError || !user) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -22,35 +23,38 @@ export async function POST(request: Request) {
     const { ...recipe } = data;
     const validatedRecipe = GeneratedRecipeSchema.parse(recipe);
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BONCHEF_BACKEND_HOST}/recipes/create_from_test_kitchen/`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          // source_url: "https://www.bonchef.io",
-          // source_name: "BonChef",
+    // Now try the insert with the correct table name
+    const { data: savedRecipeData, error: supabaseError } = await supabase
+      .from("recipe_creation_prototype")
+      .insert([
+        {
+          user_id: user.id,
           ...validatedRecipe,
-        }),
-      }
-    );
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
 
-    if (!response.ok) {
-      if (response.status === 400) {
-        const errorData = await response.json();
-        return NextResponse.json({ error: errorData.error }, { status: 400 });
-      }
-      throw new Error(`Failed to save recipe: ${response.statusText}`);
+    if (supabaseError) {
+      console.error("Supabase Error Details:", {
+        code: supabaseError.code,
+        message: supabaseError.message,
+        details: supabaseError.details,
+        hint: supabaseError.hint,
+      });
+      return NextResponse.json(
+        { error: "Failed to save recipe to database", details: supabaseError.message },
+        { status: 500 }
+      );
     }
-
-    const savedRecipe = await response.json();
-    return NextResponse.json({ url: `/recipe/${savedRecipe.slug}` });
+    
+    return NextResponse.json(
+      { message: "Recipe saved successfully", recipe: savedRecipeData },
+      { status: 200 }
+    );
   } catch (error) {
     if (error instanceof ZodError) {
-      // Format validation errors into a readable message
       const errorMessages = error.issues.map(issue => {
         const path = issue.path.join(".");
         return `${path}: ${issue.message}`;

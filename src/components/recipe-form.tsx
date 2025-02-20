@@ -15,6 +15,7 @@ import { Loader2, Plus, Trash2, AlertCircle, ExternalLink } from "lucide-react";
 import type { GeneratedRecipe, Unit } from "@/lib/types";
 import { unitEnum, unitAbbreviations } from "@/lib/types";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { useRouter } from "next/navigation";
 
 interface RecipeFormProps {
   recipe: GeneratedRecipe;
@@ -63,7 +64,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [savedRecipeUrl, setSavedRecipeUrl] = useState<string | null>(null);
   const units = unitEnum.options;
-
+  const router = useRouter();
   useEffect(() => {
     // Resize all textareas on mount and when recipe changes
     document.querySelectorAll("textarea").forEach((textarea) => {
@@ -115,9 +116,8 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
         setSubmitError(errorData.error);
         return;
       }
-      
-      const { url } = await response.json();
-      setSavedRecipeUrl(`${process.env.NEXT_PUBLIC_BONCHEF_FRONTEND_HOST}${url}`);
+
+      router.push(`/`)
     } catch (error) {
       console.error("Failed to save recipe:", error);
       setSubmitError("Failed to save recipe. Please try again.");

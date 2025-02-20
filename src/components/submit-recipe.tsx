@@ -14,6 +14,7 @@ import type { GeneratedRecipe } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 import { checkTaskStatus, submitRecipeText, WriteStyle } from "@/lib/services/recipe-service";
 import { RecipeForm } from "./recipe-form";
+import { generateRecipe, getTaskStatus } from "@/app/create/actions";
 
 export function SubmitRecipe() {
   const [recipeText, setRecipeText] = useState("");
@@ -32,7 +33,7 @@ export function SubmitRecipe() {
 
     const intervalId = setInterval(async () => {
       try {
-        const status = await checkTaskStatus(taskId);
+        const status = await getTaskStatus(taskId);
         setProgress(status.progress);
 
         if (status.status === "SUCCESS" && status.result) {
@@ -60,7 +61,7 @@ export function SubmitRecipe() {
     setIsLoading(true);
     
     try {
-      const newTaskId = await submitRecipeText(recipeText, writeStyle);
+      const newTaskId = await generateRecipe(recipeText, writeStyle);
       setTaskId(newTaskId);
     } catch (err) {
       setError("Failed to submit recipe. Please try again.");
