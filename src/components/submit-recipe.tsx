@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import type { GeneratedRecipe } from "@/lib/types";
+import { GeneratedRecipeSchema, type GeneratedRecipe } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 import { RecipeForm } from "./recipe-form";
 import { generateRecipe, getTaskStatus, WriteStyle } from "@/app/create/actions";
@@ -36,7 +36,7 @@ export function SubmitRecipe() {
         setProgress(status.progress);
 
         if (status.status === "SUCCESS" && status.result) {
-          setGeneratedRecipe(status.result);
+          setGeneratedRecipe(GeneratedRecipeSchema.parse(status.result));
           setIsLoading(false);
           clearInterval(intervalId);
         } else if (status.status === "FAILURE") {

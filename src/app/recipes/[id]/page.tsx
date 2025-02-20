@@ -4,8 +4,8 @@ import { Card } from "@/components/ui/card"
 import Image from "next/image"
 import { Clock, Users } from "lucide-react"
 
-export default async function RecipePage({ params }: { params: { id: string } }) {
-  const { id } = params
+export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const recipe = await getRecipe(id)
 
   return (
