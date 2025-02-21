@@ -14,12 +14,13 @@ export default async function Home() {
 
   return (
     <main className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Bonchef Prototype</h1>
+      <h2 className="text-2xl font-bold mb-6">Optie 1</h2>
       <p className="text-sm text-muted-foreground mb-6">Maak een recept op basis van een beschrijving. Dit kan heel basic
         zijn, of een bijna volledig recept. We vullen zelf de nodige details in.
       </p>
       <SubmitRecipe />
-      <Separator className="my-16" text="Of" />
+      <Separator className="my-16"/>
+      <h2 className="text-2xl font-bold mb-6">Optie 2</h2>
       <p className="text-sm text-muted-foreground mb-6">Haal een recept op van een website.</p>
       <ScrapeRecipe />
     </main>

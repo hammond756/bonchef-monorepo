@@ -1,20 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Loader2 } from "lucide-react";
-import { RecipeForm } from "./recipe-form";
-import { scrapeRecipe, getTaskStatus } from "@/app/create/actions";
-import { GeneratedRecipeSchema, type GeneratedRecipe } from "@/lib/types";
+import { scrapeRecipe } from "@/app/create/actions";
+import { GeneratedRecipeSchema } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 export function ScrapeRecipe() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [generatedRecipe, setGeneratedRecipe] = useState<GeneratedRecipe | null>(
-    null
-  );
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,16 +20,24 @@ export function ScrapeRecipe() {
     setIsLoading(true);
     try {
       const recipe = await scrapeRecipe(url);
-      console.log(recipe);
-      setGeneratedRecipe(GeneratedRecipeSchema.parse(recipe));
+      const validatedRecipe = GeneratedRecipeSchema.parse(recipe);
+      
+      const response = await fetch("/api/save-recipe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(validatedRecipe),
+      });
+      
+      const data = await response.json();
+      if (data.recipe?.id) {
+        router.push(`/edit/${data.recipe.id}`);
+      } else {
+        throw new Error("Failed to save recipe");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to scrape recipe. Please try again.");
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  }
-
-  if (generatedRecipe) {
-    return <RecipeForm recipe={generatedRecipe} />;
   }
 
   return (
@@ -66,4 +72,3 @@ export function ScrapeRecipe() {
     </form>
   );
 }
-    

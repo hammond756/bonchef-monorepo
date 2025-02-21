@@ -14,6 +14,7 @@ import { GeneratedRecipeSchema, type GeneratedRecipe } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 import { RecipeForm } from "./recipe-form";
 import { generateRecipe, getTaskStatus, WriteStyle } from "@/app/create/actions";
+import { useRouter } from "next/navigation";
 
 export function SubmitRecipe() {
   const [recipeText, setRecipeText] = useState("");
@@ -25,6 +26,7 @@ export function SubmitRecipe() {
   const [generatedRecipe, setGeneratedRecipe] = useState<GeneratedRecipe | null>(
     null
   );
+  const router = useRouter();
 
   useEffect(() => {
     console.log("taskId", taskId);
@@ -36,7 +38,26 @@ export function SubmitRecipe() {
         setProgress(status.progress);
 
         if (status.status === "SUCCESS" && status.result) {
-          setGeneratedRecipe(GeneratedRecipeSchema.parse(status.result));
+          const recipe = GeneratedRecipeSchema.parse(status.result);
+          
+          // Save the recipe and redirect to edit page
+          fetch("/api/save-recipe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(recipe),
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.recipe?.id) {
+                router.push(`/edit/${data.recipe.id}`);
+              }
+            })
+            .catch(err => {
+              setError("Failed to save recipe: " + err);
+              console.error(err);
+            });
+
+          setGeneratedRecipe(recipe);
           setIsLoading(false);
           clearInterval(intervalId);
         } else if (status.status === "FAILURE") {
@@ -52,7 +73,7 @@ export function SubmitRecipe() {
     }, process.env.NEXT_PUBLIC_REFRESH_INTERVAL ? parseInt(process.env.NEXT_PUBLIC_REFRESH_INTERVAL) : 5000);
 
     return () => clearInterval(intervalId);
-  }, [taskId]);
+  }, [taskId, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -66,10 +87,6 @@ export function SubmitRecipe() {
       setError("Failed to submit recipe. Please try again.");
       setIsLoading(false);
     }
-  }
-
-  if (generatedRecipe) {
-    return <RecipeForm recipe={generatedRecipe} />;
   }
 
   return (

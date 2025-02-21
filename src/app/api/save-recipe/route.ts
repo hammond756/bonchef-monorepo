@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { GeneratedRecipeSchema } from "@/lib/types";
 import { ZodError } from "zod";
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
 
 // Helper function to check if string is a valid URL
 function isValidUrl(urlString: string) {
@@ -31,10 +30,7 @@ async function imageUrlToBase64(url: string): Promise<string> {
 
 export async function POST(request: Request) {
   try {
-    // Create Supabase server client
     const supabase = await createClient();
-    
-    // Get the user's session
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
@@ -45,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    const { ...recipe } = data;
+    const { id, ...recipe } = data;
     const validatedRecipe = GeneratedRecipeSchema.parse(recipe);
 
     // Process thumbnail if it's a URL
@@ -63,36 +59,62 @@ export async function POST(request: Request) {
       }
     }
 
-    // Now try the insert with the correct table name
-    const { data: savedRecipeData, error: supabaseError } = await supabase
-      .from("recipe_creation_prototype")
-      .insert([
-        {
-          user_id: user.id,
-          ...validatedRecipe,
-          created_at: new Date().toISOString(),
-        },
-      ])
-      .select()
-      .single();
+    if (id) {
+      // Update existing recipe
+      const { data: existingRecipe } = await supabase
+        .from("recipe_creation_prototype")
+        .select("user_id")
+        .eq("id", id)
+        .single();
 
-    if (supabaseError) {
-      console.error("Supabase Error Details:", {
-        code: supabaseError.code,
-        message: supabaseError.message,
-        details: supabaseError.details,
-        hint: supabaseError.hint,
-      });
+      if (!existingRecipe || existingRecipe.user_id !== user.id) {
+        return NextResponse.json(
+          { error: "Unauthorized to edit this recipe" },
+          { status: 403 }
+        );
+      }
+
+      const { data: updatedRecipe, error: updateError } = await supabase
+        .from("recipe_creation_prototype")
+        .update(validatedRecipe)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+      return NextResponse.json({ recipe: updatedRecipe });
+    } else {
+      // Create new recipe
+      const { data: savedRecipeData, error: supabaseError } = await supabase
+        .from("recipe_creation_prototype")
+        .insert([
+          {
+            user_id: user.id,
+            ...validatedRecipe,
+            created_at: new Date().toISOString(),
+          },
+        ])
+        .select()
+        .single();
+
+      if (supabaseError) {
+        console.error("Supabase Error Details:", {
+          code: supabaseError.code,
+          message: supabaseError.message,
+          details: supabaseError.details,
+          hint: supabaseError.hint,
+        });
+        return NextResponse.json(
+          { error: "Failed to save recipe to database", details: supabaseError.message },
+          { status: 500 }
+        );
+      }
+      
       return NextResponse.json(
-        { error: "Failed to save recipe to database", details: supabaseError.message },
-        { status: 500 }
+        { message: "Recipe saved successfully", recipe: savedRecipeData },
+        { status: 200 }
       );
     }
-    
-    return NextResponse.json(
-      { message: "Recipe saved successfully", recipe: savedRecipeData },
-      { status: 200 }
-    );
   } catch (error) {
     if (error instanceof ZodError) {
       const errorMessages = error.issues.map(issue => {

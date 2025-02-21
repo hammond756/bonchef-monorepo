@@ -16,9 +16,13 @@ import type { GeneratedRecipe, Unit } from "@/lib/types";
 import { unitEnum, unitAbbreviations } from "@/lib/types";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { useRouter } from "next/navigation";
+import { deleteRecipe } from "@/app/edit/[id]/actions";
+import { Label } from "./ui/label";
+import { Separator } from "./ui/separator";
 
 interface RecipeFormProps {
   recipe: GeneratedRecipe;
+  recipeId: string;  // Optional ID for edit mode
 }
 
 function autoResizeTextarea(element: HTMLTextAreaElement) {
@@ -57,7 +61,7 @@ function updateIngredientAtIndex(
   };
 }
 
-export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
+export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps) {
   const [recipe, setRecipe] = useState(initialRecipe);
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -108,7 +112,10 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
       const response = await fetch("/api/save-recipe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(recipe),
+        body: JSON.stringify({
+          ...recipe,
+          id: recipeId  // Include ID if editing
+        }),
       });
 
       if (!response.ok) {
@@ -117,7 +124,8 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
         return;
       }
 
-      router.push(`/`)
+      const data = await response.json();
+      router.push(`/recipes/${recipeId || data.recipe.id}`);
     } catch (error) {
       console.error("Failed to save recipe:", error);
       setSubmitError("Failed to save recipe. Please try again.");
@@ -180,12 +188,25 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
     }));
   }
 
+  async function handleDeleteRecipe(recipeId: string) {
+    try {
+      await deleteRecipe(recipeId);
+      router.push(`/`);
+    } catch (error) {
+      setSubmitError("Failed to delete recipe.");
+      console.error("Failed to delete recipe:", error);
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         <div className="flex flex-col gap-4 items-start w-full">
           <div className="w-full">
+            <Label htmlFor="picture">Afbeelding uploaden</Label>
             <Input
+              id="picture"
+              placeholder="Afbeelding uploaden"
               type="file"
               accept="image/*"
               className="mb-4"
@@ -200,6 +221,7 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
                 }
               }}
             />
+            <Separator className="my-8" text="of"/>
             <div className="space-y-4">
               <Button
                 type="button"
@@ -406,31 +428,31 @@ export function RecipeForm({ recipe: initialRecipe }: RecipeFormProps) {
         </Button>
       </div>
 
-      <div className="space-y-4 pb-8">
+      <div className="space-x-4 pb-8">
         {submitError && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{submitError}</AlertDescription>
           </Alert>
         )}
-        {savedRecipeUrl && (
-          <Alert className="bg-green-50 dark:bg-green-900/10">
-            <AlertTitle className="flex items-center gap-2">
-              Recept opgeslagen!
-            </AlertTitle>
-            <AlertDescription className="mt-2">
-              <a
-                href={savedRecipeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-green-700 dark:text-green-400 hover:underline"
-              >
-                Bekijk je recept <ExternalLink className="h-4 w-4" />
-              </a>
-            </AlertDescription>
-          </Alert>
-        )}
-        <Button type="submit">Opslaan</Button>
+        <div className="flex gap-4">
+          <Button type="submit">Opslaan</Button>
+          <Button 
+            type="button" 
+            variant="outline"
+            onClick={() => router.push(`/recipes/${recipeId}`)}
+          >
+            Annuleren
+          </Button>
+          <Button 
+            type="button"
+            variant="outline"
+            className="text-red-500 hover:text-red-700 border-red-500 hover:border-red-700"
+            onClick={() => handleDeleteRecipe(recipeId)}
+          >
+            Verwijder recept
+          </Button>
+        </div>
       </div>
     </form>
   );

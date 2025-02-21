@@ -3,10 +3,16 @@ import { Separator } from "@/components/ui/separator"
 import { Card } from "@/components/ui/card"
 import Image from "next/image"
 import { Clock, Users } from "lucide-react"
+import Link from "next/link"
+import { createClient } from "@/utils/supabase/server"
+import { PencilIcon } from "lucide-react"
 
-export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function RecipePage({ params }: { params: { id: string } }) {
   const { id } = await params
   const recipe = await getRecipe(id)
+  
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   return (
     <div className="container mx-auto max-w-4xl">
@@ -32,7 +38,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
       </div>
 
       {/* Recipe Info */}
-      <div className="flex justify-center gap-8 mb-12">
+      <div className="flex justify-center gap-8 mb-4">
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-muted-foreground" />
           <span>{recipe.total_cook_time_minutes} minuten</span>
@@ -42,6 +48,20 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           <span>{recipe.n_portions} porties</span>
         </div>
       </div>
+
+      {/* Edit Link - only show if user owns the recipe */}
+      {user && recipe.user_id === user.id && (
+        <div className="flex justify-center mb-4">
+          <Link
+            href={`/edit/${id}`}
+            className="inline-flex items-center gap-2 text-blue-500 hover:text-blue-700"
+        >
+          <PencilIcon className="h-4 w-4" />
+            <span>Bewerk recept</span>
+          </Link>
+        </div>
+      )}
+
 
       <div className="grid md:grid-cols-2 gap-8">
         {/* Ingredients */}
