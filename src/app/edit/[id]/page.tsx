@@ -3,7 +3,7 @@ import { RecipeForm } from "@/components/recipe-form";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
-export default async function EditRecipePage({ params }: { params: { id: string } }) {
+export default async function EditRecipePage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -17,7 +17,7 @@ export default async function EditRecipePage({ params }: { params: { id: string 
 
   // Check if user owns this recipe
   if (recipe.user_id !== user.id) {
-    redirect("/recipes/" + params.id);
+    redirect("/recipes/" + id);
   }
 
   return (

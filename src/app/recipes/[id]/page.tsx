@@ -7,7 +7,7 @@ import Link from "next/link"
 import { createClient } from "@/utils/supabase/server"
 import { PencilIcon } from "lucide-react"
 
-export default async function RecipePage({ params }: { params: { id: string } }) {
+export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const recipe = await getRecipe(id)
   
