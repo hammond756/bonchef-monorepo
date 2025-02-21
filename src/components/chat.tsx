@@ -4,7 +4,7 @@ import { useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { ChatMessage } from "./chat-message"
 import { ChatInput } from "./chat-input"
-import { sendChatMessage } from "@/app/actions/chat"
+import { sendChatMessage } from "@/app/chat/actions"
 
 interface Message {
   id: string
