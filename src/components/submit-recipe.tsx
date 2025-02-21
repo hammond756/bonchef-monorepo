@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import {
@@ -10,69 +10,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { GeneratedRecipeSchema, type GeneratedRecipe } from "@/lib/types";
-import { Loader2 } from "lucide-react";
-import { RecipeForm } from "./recipe-form";
-import { generateRecipe, getTaskStatus, WriteStyle } from "@/app/create/actions";
+import { generateRecipe, WriteStyle } from "@/app/create/actions";
 import { useRouter } from "next/navigation";
+import { useRecipeGeneration } from "@/hooks/use-recipe-generation";
 
 export function SubmitRecipe() {
   const [recipeText, setRecipeText] = useState("");
   const [writeStyle, setWriteStyle] = useState<WriteStyle>("professioneel");
-  const [taskId, setTaskId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [generatedRecipe, setGeneratedRecipe] = useState<GeneratedRecipe | null>(
-    null
-  );
   const router = useRouter();
 
-  useEffect(() => {
-    if (!taskId) return;
-
-    const intervalId = setInterval(async () => {
+  const { isLoading, setIsLoading, progress, setTaskId } = useRecipeGeneration({
+    onSuccess: async (recipe) => {
       try {
-        const status = await getTaskStatus(taskId);
-        setProgress(status.progress);
-
-        if (status.status === "SUCCESS" && status.result) {
-          const recipe = GeneratedRecipeSchema.parse(status.result);
-          
-          // Save the recipe and redirect to edit page
-          fetch("/api/save-recipe", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(recipe),
-          })
-            .then(response => response.json())
-            .then(data => {
-              if (data.recipe?.id) {
-                router.push(`/edit/${data.recipe.id}`);
-              }
-            })
-            .catch(err => {
-              setError("Failed to save recipe: " + err);
-              console.error(err);
-            });
-
-          setGeneratedRecipe(recipe);
-          setIsLoading(false);
-          clearInterval(intervalId);
-        } else if (status.status === "FAILURE") {
-          setError("Failed to generate recipe. Please try again.");
-          setIsLoading(false);
-          clearInterval(intervalId);
+        const response = await fetch("/api/save-recipe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(recipe),
+        });
+        
+        const data = await response.json();
+        if (data.recipe?.id) {
+          router.push(`/edit/${data.recipe.id}`);
         }
       } catch (err) {
-        setError("An error occurred while checking recipe status");
-        setIsLoading(false);
-        clearInterval(intervalId);
+        setError("Failed to save recipe: " + err);
+        console.error(err);
       }
-    }, process.env.NEXT_PUBLIC_REFRESH_INTERVAL ? parseInt(process.env.NEXT_PUBLIC_REFRESH_INTERVAL) : 5000);
-
-    return () => clearInterval(intervalId);
-  }, [taskId, router]);
+    },
+    onError: (error) => {
+      setError(error);
+    }
+  });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -125,14 +94,7 @@ export function SubmitRecipe() {
       )}
 
       <Button type="submit" disabled={isLoading}>
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Laden
-          </>
-        ) : (
-          "Maak recept"
-        )}
+        {isLoading ? "Laden..." : "Maak recept"}
       </Button>
     </form>
   );

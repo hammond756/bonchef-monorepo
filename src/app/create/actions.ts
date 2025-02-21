@@ -1,27 +1,10 @@
 "use server"
 
 import { createClient } from "@/utils/supabase/server";
+import type { GeneratedRecipe } from "@/lib/types";
 
 const RECIPE_API_URL = process.env.NEXT_PUBLIC_BONCHEF_BACKEND_HOST;
 
-interface GeneratedRecipe {
-  title: string;
-  description: string;
-  total_cook_time_minutes: number;
-  n_portions: number;
-  ingredients: {
-    name: string;
-    ingredients: {
-      description: string;
-      quantity: { type: "range"; low: number; high: number };
-      unit: string;
-    }[];
-  }[];
-  instructions: string[];
-  thumbnail: string;
-  source_url: string;
-  source_name: string;
-}
 
 const DEV_RECIPE: GeneratedRecipe = {
   title: "Classic Spaghetti Bolognese",
