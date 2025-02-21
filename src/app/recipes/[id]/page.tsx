@@ -50,11 +50,11 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           <Separator className="mb-4" />
           {recipe.ingredients.map((group: any, index: number) => (
             <div key={index} className="mb-6">
-              <h3 className="font-medium mb-2">{group.name}</h3>
+              {group.name !== "no_group" && <h3 className="font-medium mb-2">{group.name}</h3>}
               <ul className="space-y-2">
                 {group.ingredients.map((ingredient: any, idx: number) => (
                   <li key={idx} className="text-muted-foreground">
-                    {ingredient.amount} {ingredient.unit} {ingredient.name}
+                    {ingredient.quantity.low || ""} {ingredient.unit == "none" ? "" : ingredient.unit} {ingredient.description}
                   </li>
                 ))}
               </ul>

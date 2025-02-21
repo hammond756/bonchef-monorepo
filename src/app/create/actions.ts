@@ -110,3 +110,16 @@ export async function getTaskStatus(taskId: string) {
 
   return response.json() as Promise<TaskStatus>;
 }
+
+export async function scrapeRecipe(url: string) {
+  const response = await fetch(`${RECIPE_API_URL}/scrape/?url=${url}`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to scrape recipe: ${response.statusText}`);
+  }
+
+  const data = await response.json()
+  data.thumbnail = data.source_image
+
+  return data as Promise<GeneratedRecipe>;
+}
