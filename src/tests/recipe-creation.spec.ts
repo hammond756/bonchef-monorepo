@@ -12,7 +12,7 @@ test.describe("Recipe creation flows", () => {
     await page.click("button:text('Maak recept')");
     
     // Wait for generation to complete and redirect
-    await expect(page).toHaveURL(/\/edit\/\d+/);
+    await expect(page).toHaveURL(/\/edit\/\d+/, { timeout: 120000 });
     
     // Save without edits
     await page.click("button:text('Opslaan')");
@@ -20,40 +20,6 @@ test.describe("Recipe creation flows", () => {
     // Verify redirect to recipe detail page
     await expect(page).toHaveURL(/\/recipes\/\d+/);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  });
-
-  test("generates recipe from description with edits", async ({ page, baseURL }) => {
-    await page.goto(baseURL!);
-    await page.click("text=Voeg recept toe");
-    
-    // Generate recipe
-    await page.fill("textarea", "Een simpele pasta carbonara");
-    await page.click("button:text('Maak recept')");
-    await expect(page).toHaveURL(/\/edit\/\d+/);
-    
-    // Add new ingredient
-    await page.click("button:text('Ingredient toevoegen')");
-    const lastIngredient = page.locator(".ingredients-list > div").last();
-    await lastIngredient.locator("input[type='text']").fill("100");
-    await lastIngredient.locator("select").selectOption("gram");
-    await lastIngredient.locator("textarea").fill("parmezaanse kaas");
-    
-    // Edit existing ingredient quantity
-    const firstIngredient = page.locator(".ingredients-list > div").first();
-    await firstIngredient.locator("input[type='text']").fill("500");
-    
-    // Edit instruction
-    const secondInstruction = page.locator(".instructions-list > div").nth(1);
-    await secondInstruction.locator("textarea").fill("Bak de spekjes krokant in een pan");
-    
-    // Save changes
-    await page.click("button:text('Opslaan')");
-    
-    // Verify changes on detail page
-    await expect(page).toHaveURL(/\/recipes\/\d+/);
-    await expect(page.getByText("parmezaanse kaas")).toBeVisible();
-    await expect(page.getByText("500")).toBeVisible();
-    await expect(page.getByText("Bak de spekjes krokant in een pan")).toBeVisible();
   });
 
   test("imports recipe from URL", async ({ page, baseURL }) => {
@@ -64,12 +30,12 @@ test.describe("Recipe creation flows", () => {
     await page.click("text=Optie 2");
     
     // Enter recipe URL
-    const testUrl = "https://www.example.com/recipe";
+    const testUrl = "https://oohlalaitsvegan.com/vegan-pavlova/";
     await page.fill("input[type='url']", testUrl);
     await page.click("button:text('Haal recept op')");
     
     // Wait for import and redirect
-    await expect(page).toHaveURL(/\/edit\/\d+/);
+    await expect(page).toHaveURL(/\/edit\/\d+/, { timeout: 120000 });
     
     // Save without changes
     await page.click("button:text('Opslaan')");

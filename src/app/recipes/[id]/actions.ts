@@ -19,6 +19,10 @@ export async function getRecipe(id: string) {
     .single()
 
   if (recipeError) {
+    console.error(recipeError)
+    if (recipeError.code === "PGRST116") {
+      return null
+    }
     throw new Error(recipeError.message)
   }
 

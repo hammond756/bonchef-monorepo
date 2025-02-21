@@ -228,6 +228,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
                 onClick={handleGenerateImage}
                 disabled={isGenerating}
                 variant="secondary"
+                data-testid="generate-image"
               >
                 {isGenerating ? (
                   <>
@@ -252,6 +253,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
                 <img
                   src={recipe.thumbnail}
                   alt="Recipe preview"
+                  data-testid="recipe-image-preview"
                   className="w-full h-[300px] md:h-[400px] object-contain"
                 />
               </div>
@@ -294,6 +296,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
               }
               className="w-24"
               placeholder="Porties"
+              data-testid="portions-input"
             />
             <span className="text-sm text-gray-500 dark:text-gray-400">porties</span>
           </div>
@@ -307,79 +310,88 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
                 {group.name}
               </h3>
             )}
-            {group.ingredients.map((ingredient, idx) => (
-              <div key={`${groupIdx}-${idx}`} className="flex gap-2">
-                <Input
-                  type="text"
-                  value={ingredient.quantity?.low || ""}
-                  onChange={(e) =>
-                    handleIngredientChange(groupIdx, idx, (ing) => ({
-                      ...ing,
-                      quantity: {
-                        type: "range",
-                        low: e.target.value === "" ? 0 : parseFloat(e.target.value),
-                        high: e.target.value === "" ? 0 : parseFloat(e.target.value),
-                      },
-                    }))
-                  }
-                  className="w-16"
-                />
-                
-                <Select
-                  value={ingredient.unit}
-                  onValueChange={(value: Unit) =>
-                    handleIngredientChange(groupIdx, idx, (ing) => ({
-                      ...ing,
-                      unit: value,
-                    }))
-                  }
+            <div className="ingredients-list">
+              {group.ingredients.map((ingredient, idx) => (
+                <div 
+                  key={`${groupIdx}-${idx}`} 
+                  className="flex gap-2"
+                  data-testid="ingredient-item"
                 >
-                  <SelectTrigger className="w-16">
-                    <SelectValue placeholder="Eenheid" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {units.map((unit) => (
-                      <SelectItem key={unit} value={unit}>
-                        {unitAbbreviations[unit]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Input
+                    type="text"
+                    value={ingredient.quantity?.low || ""}
+                    onChange={(e) =>
+                      handleIngredientChange(groupIdx, idx, (ing) => ({
+                        ...ing,
+                        quantity: {
+                          type: "range",
+                          low: e.target.value === "" ? 0 : parseFloat(e.target.value),
+                          high: e.target.value === "" ? 0 : parseFloat(e.target.value),
+                        },
+                      }))
+                    }
+                    className="w-16"
+                    data-testid="ingredient-quantity"
+                  />
+                  
+                  <Select
+                    value={ingredient.unit}
+                    onValueChange={(value: Unit) =>
+                      handleIngredientChange(groupIdx, idx, (ing) => ({
+                        ...ing,
+                        unit: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger
+                      className="w-16"
+                      data-testid="ingredient-unit">
+                      <SelectValue placeholder="Eenheid" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {units.map((unit) => (
+                        <SelectItem key={unit} value={unit} data-testid={`ingredient-unit-${unit}`}>
+                          {unitAbbreviations[unit]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                <Textarea
-                  value={ingredient.description}
-                  onChange={(e) =>
-                    handleIngredientChange(groupIdx, idx, (ing) => ({
-                      ...ing,
-                      description: e.target.value,
-                    }))
-                  }
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleRemoveIngredient(groupIdx, idx)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
+                  <Textarea
+                    value={ingredient.description}
+                    onChange={(e) =>
+                      handleIngredientChange(groupIdx, idx, (ing) => ({
+                        ...ing,
+                        description: e.target.value,
+                      }))
+                    }
+                    className="flex-1"
+                    data-testid="ingredient-description"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleRemoveIngredient(groupIdx, idx)}
+                    className="text-red-500 hover:text-red-700"
+                    data-testid="remove-ingredient"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => handleAddIngredient(groupIdx)}
               className="mt-2"
+              data-testid="add-ingredient"
             >
               <Plus className="h-4 w-4 mr-2" />
               Ingredient toevoegen
             </Button>
-            {groupIdx < recipe.ingredients.length - 1 && (
-              <hr className="border-t border-gray-200 dark:border-gray-700" />
-            )}
           </div>
         ))}
       </div>
@@ -387,7 +399,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Bereiding</h2>
         {recipe.instructions.map((instruction, idx) => (
-          <div key={idx} className="flex gap-2 items-start">
+          <div key={idx} className="flex gap-2 items-start" data-testid={`instruction`}>
             <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-2 w-6">
               {idx + 1}.
             </span>
@@ -411,6 +423,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
               size="icon"
               onClick={() => handleRemoveInstruction(idx)}
               className="text-red-500 hover:text-red-700"
+              data-testid="remove-instruction"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -422,6 +435,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
           size="sm"
           onClick={handleAddInstruction}
           className="mt-2"
+          data-testid="add-instruction"
         >
           <Plus className="h-4 w-4 mr-2" />
           Voeg stap toe
@@ -436,11 +450,12 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
           </Alert>
         )}
         <div className="flex gap-4">
-          <Button type="submit">Opslaan</Button>
+          <Button type="submit" data-testid="save-recipe">Opslaan</Button>
           <Button 
             type="button" 
             variant="outline"
             onClick={() => router.push(`/recipes/${recipeId}`)}
+            data-testid="cancel-recipe"
           >
             Annuleren
           </Button>
@@ -449,6 +464,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
             variant="outline"
             className="text-red-500 hover:text-red-700 border-red-500 hover:border-red-700"
             onClick={() => handleDeleteRecipe(recipeId)}
+            data-testid="delete-recipe"
           >
             Verwijder recept
           </Button>

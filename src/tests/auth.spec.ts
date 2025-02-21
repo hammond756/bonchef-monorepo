@@ -23,7 +23,6 @@ test.describe("Authentication flows", () => {
 test.describe("Signed in user flows", () => {
   test("Opens homepage when logged in", async ({ page, baseURL }) => {
     await page.goto(baseURL!);
-    console.log("cookies", await page.context().cookies());
     await expect(page).toHaveURL("/");
     await expect(page.getByText("Voeg recept toe")).toBeVisible();
   });

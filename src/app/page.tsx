@@ -12,8 +12,6 @@ interface Recipe {
 
 export default async function HomePage() {
   const recipes = await getRecipes()
-  console.log(recipes)
-
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
