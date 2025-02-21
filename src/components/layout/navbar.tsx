@@ -23,9 +23,6 @@ export function Navbar({ user }: NavbarProps) {
     <nav className="border-b bg-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-6">
-          <span className="text-lg font-semibold">
-            <Link href="/">Bonchef</Link>
-          </span>
           <Link 
             href="/" 
             className="text-sm text-muted-foreground hover:text-foreground"
