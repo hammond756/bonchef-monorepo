@@ -23,7 +23,7 @@ export async function sendChatMessage(userInput: UserInput, conversationId: stri
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userMessage: message, conversationId }),
+        body: JSON.stringify({ userMessage: message, conversationId, modelName: "o1" }),
       }
     )
 
