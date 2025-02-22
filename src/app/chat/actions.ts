@@ -1,6 +1,6 @@
 "use server"
 
-export async function sendChatMessage(text: string, conversationId: string) {
+export async function sendChatMessage(text: string, conversationId: string, webContent: string[]) {
   try {
     const response = await fetch(
       process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL!,

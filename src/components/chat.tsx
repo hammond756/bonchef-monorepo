@@ -19,7 +19,7 @@ export function Chat() {
   const [isLoading, setIsLoading] = useState(false)
   const conversationId = useState(() => uuidv4())[0]
 
-  async function handleSendMessage(text: string) {
+  async function handleSendMessage(text: string, webContent: string[]) {
     setIsLoading(true)
     
     const userMessage: Message = { id: uuidv4(), text, isUser: true }
@@ -33,7 +33,7 @@ export function Chat() {
     setMessages(prev => [...prev, userMessage, loadingMessage])
 
     try {
-      const result = await sendChatMessage(text, conversationId)
+      const result = await sendChatMessage(text, conversationId, webContent)
       
       if (result.success) {
         setMessages(prev => {
