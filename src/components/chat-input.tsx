@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "./ui/button"
-import { Input } from "./ui/input"
 import { UrlStatusList } from "./url-status-list"
+import { SendIcon } from "lucide-react"
+import AutoGrowingTextarea from "./ui/auto-growing-textarea"
 
 
 interface ChatInputProps {
@@ -35,6 +36,11 @@ async function fetchUrlContent(url: string): Promise<string> {
   
   const data = await response.json()
   return data.content
+}
+
+function autoResizeTextarea(element: HTMLTextAreaElement) {
+  element.style.height = "auto"
+  element.style.height = `${element.scrollHeight}px`
 }
 
 export function ChatInput({ onSend, isLoading }: ChatInputProps) {
@@ -74,6 +80,14 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
     })
   }, [message])
 
+  useEffect(() => {
+    // Resize textarea when message changes
+    const textarea = document.querySelector("[data-testid='chat-input']") as HTMLTextAreaElement
+    if (textarea) {
+      autoResizeTextarea(textarea)
+    }
+  }, [message])
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!message.trim()) return
@@ -87,6 +101,11 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
     setUrlStatuses([])
   }
 
+  function handleTextareaChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    autoResizeTextarea(e.target)
+    setMessage(e.target.value)
+  }
+
   return (
     <form 
       onSubmit={handleSubmit}
@@ -94,19 +113,27 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
     >
       <UrlStatusList urls={urlStatuses} />
       <div className="flex gap-2">
-        <Input
+        <AutoGrowingTextarea
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type your message..."
+          onChange={handleTextareaChange}
+          placeholder="Typ hier je bericht..."
           disabled={isLoading}
           data-testid="chat-input"
+          className="h-[36px] resize-none py-1.5 px-3 leading-tight overflow-hidden"
+          onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault()
+              handleSubmit(e)
+            }
+          }}
         />
         <Button 
           type="submit" 
           disabled={isLoading || urlStatuses.some(s => s.status === "loading")}
           data-testid="send-button"
+          className="h-[40px] px-3 self-end"
         >
-          Send
+          <SendIcon className="h-4 w-4" />
         </Button>
       </div>
     </form>

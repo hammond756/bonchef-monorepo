@@ -12,6 +12,7 @@ interface Message {
   isUser: boolean
   isLoading?: boolean
   isError?: boolean
+  originalUserMessage?: string
 }
 
 export function Chat() {
@@ -19,15 +20,57 @@ export function Chat() {
   const [isLoading, setIsLoading] = useState(false)
   const conversationId = useState(() => uuidv4())[0]
 
+  async function handleRetry(messageId: string) {
+    const messageToRetry = messages.find(m => m.id === messageId)
+    if (!messageToRetry?.originalUserMessage) return
+    
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId ? { ...msg, isLoading: true, isError: false } : msg
+    ))
+
+    try {
+      const result = await sendChatMessage(
+        messageToRetry.originalUserMessage, 
+        conversationId,
+        []
+      )
+      
+      if (result.success) {
+        setMessages(prev => prev.map(msg =>
+          msg.id === messageId ? {
+            id: messageId,
+            text: result.output,
+            isUser: false,
+            isLoading: false,
+            isError: false
+          } : msg
+        ))
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error("Failed to retry message:", error)
+      setMessages(prev => prev.map(msg =>
+        msg.id === messageId ? {
+          ...msg,
+          text: "Sorry, I encountered an error. Please try again.",
+          isLoading: false,
+          isError: true
+        } : msg
+      ))
+    }
+  }
+
   async function handleSendMessage(text: string, webContent: string[]) {
     setIsLoading(true)
     
-    const userMessage: Message = { id: uuidv4(), text, isUser: true }
+    const userMessage: Message = { id: uuidv4(), text, isUser: true, originalUserMessage: text }
     const loadingMessage: Message = { 
       id: uuidv4(), 
       text: "", 
       isUser: false, 
-      isLoading: true 
+      isLoading: true,
+      originalUserMessage: text
     }
     
     setMessages(prev => [...prev, userMessage, loadingMessage])
@@ -63,10 +106,11 @@ export function Chat() {
           ...prev.slice(0, -1),
           {
             id: lastMessage.id,
-            text: "Sorry, I encountered an error. Please try again.",
+            text: "Sorry, er is iets mis gegaan. Probeer het opnieuw.",
             isUser: false,
             isLoading: false,
-            isError: true
+            isError: true,
+            originalUserMessage: lastMessage.originalUserMessage
           }
         ]
       })
@@ -89,6 +133,7 @@ export function Chat() {
             onRecipeSaved={handleRecipeSaved}
             isLoading={message.isLoading || false}
             isLastMessage={index === messages.length - 1}
+            onRetry={handleRetry}
           />
         ))}
       </div>

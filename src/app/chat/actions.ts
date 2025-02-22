@@ -11,6 +11,11 @@ export async function sendChatMessage(text: string, conversationId: string, webC
       }
     )
 
+    if (!response.headers.get("Content-Type")?.includes("application/json")) {
+      console.log(await response.text())
+      return { success: false, error: "Invalid response format" }
+    }
+
     const data = await response.json()
     return { success: true, output: data.output }
   } catch (error) {
