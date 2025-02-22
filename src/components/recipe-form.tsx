@@ -67,6 +67,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
   const [imageError, setImageError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [savedRecipeUrl, setSavedRecipeUrl] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const units = unitEnum.options;
   const router = useRouter();
   useEffect(() => {
@@ -107,6 +108,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
     e.preventDefault();
     setSubmitError(null);
     setSavedRecipeUrl(null);
+    setIsSaving(true);
     
     try {
       const response = await fetch("/api/save-recipe", {
@@ -114,7 +116,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...recipe,
-          id: recipeId  // Include ID if editing
+          id: recipeId
         }),
       });
 
@@ -129,6 +131,8 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
     } catch (error) {
       console.error("Failed to save recipe:", error);
       setSubmitError("Failed to save recipe. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -450,7 +454,20 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
           </Alert>
         )}
         <div className="flex gap-4">
-          <Button type="submit" data-testid="save-recipe">Opslaan</Button>
+          <Button 
+            type="submit" 
+            data-testid="save-recipe"
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Opslaan...
+              </>
+            ) : (
+              "Opslaan"
+            )}
+          </Button>
           <Button 
             type="button" 
             variant="outline"
