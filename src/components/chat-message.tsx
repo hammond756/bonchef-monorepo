@@ -1,15 +1,10 @@
 import { Loader2, RotateCcw } from "lucide-react"
 import { SaveRecipeButton } from "./save-recipe-button"
 import { Button } from "@/components/ui/button"
+import { ChatMessageData as ChatMessageType } from "@/lib/types"
 
 interface ChatMessageProps {
-  message: {
-    id: string
-    text: string
-    isUser: boolean
-    isLoading?: boolean
-    isError?: boolean
-  }
+  message: ChatMessageType
   onRecipeSaved: (url: string) => void
   isLoading: boolean
   isLastMessage: boolean
@@ -23,6 +18,11 @@ export function ChatMessage({
   isLastMessage,
   onRetry 
 }: ChatMessageProps) {
+  // Get the display text based on message type
+  const displayText = message.isUser 
+    ? message.userInput?.message 
+    : message.botResponse?.content || message.botResponse?.error
+
   return (
     <div className={`flex flex-col ${message.isUser ? "items-end" : "items-start"}`}>
       <div
@@ -39,7 +39,7 @@ export function ChatMessage({
           </div>
         ) : message.isError ? (
           <div className="flex flex-col gap-2">
-            <p className="text-red-500">{message.text}</p>
+            <p className="text-red-500">{displayText}</p>
             <Button
               variant="secondary"
               size="sm"
@@ -52,19 +52,29 @@ export function ChatMessage({
           </div>
         ) : (
           <p className="whitespace-pre-wrap break-words">
-            {message.text.split(/(https?:\/\/[^\s]+)/).map((part, i) => {
+            {(displayText || "").split(/(https?:\/\/[^\s]+)/).map((part, i) => {
               if (part.match(/^https?:\/\//)) {
-                return <a key={i} href={part} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">{part}</a>
+                return (
+                  <a 
+                    key={i} 
+                    href={part} 
+                    className="text-blue-500 hover:underline" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    {part}
+                  </a>
+                )
               }
               return part
             })}
           </p>
         )}
       </div>
-      {!message.isUser && !isLoading && (
+      {!message.isUser && !isLoading && message.botResponse && (
         <div className="mt-2 ml-2">
           <SaveRecipeButton
-            message={message.text} 
+            message={message.botResponse.content} 
             onSaved={onRecipeSaved}
           />
         </div>

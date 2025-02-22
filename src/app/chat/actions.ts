@@ -1,13 +1,29 @@
 "use server"
 
-export async function sendChatMessage(text: string, conversationId: string, webContent: string[]) {
+import { UserInput } from "@/lib/types"
+
+export async function sendChatMessage(userInput: UserInput, conversationId: string) {
+
+  let message = ""
+
+  if (userInput.webContent.length > 0) {
+    message += "Deze websites worden door de gebruiker genoemd in hun bericht. Gebruik deze inhoud om de reactie te verbeteren.\n"
+    for (const content of userInput.webContent) {
+      message += `${content.url}\n${content.content}\n\n`
+    }
+    message += "_".repeat(80) + "\n"
+    message += "_".repeat(80) + "\n\n"
+  }
+
+  message += userInput.message
+
   try {
     const response = await fetch(
       process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL!,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userMessage: text, conversationId }),
+        body: JSON.stringify({ userMessage: userInput.message, conversationId }),
       }
     )
 

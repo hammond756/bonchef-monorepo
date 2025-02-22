@@ -5,10 +5,11 @@ import { Button } from "./ui/button"
 import { UrlStatusList } from "./url-status-list"
 import { SendIcon } from "lucide-react"
 import AutoGrowingTextarea from "./ui/auto-growing-textarea"
-
+import { UserInput } from "@/lib/types"
+import { v4 as uuidv4 } from "uuid"
 
 interface ChatInputProps {
-  onSend: (message: string, webContent: string[]) => void
+  onSend: (userInput: UserInput) => void
   isLoading: boolean
 }
 
@@ -94,9 +95,13 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
     
     const webContent = urlStatuses
       .filter(status => status.status === "success")
-      .map(status => status.content!)
+      .map(status => ({ url: status.url, content: status.content! }))
     
-    onSend(message, webContent)
+    onSend({
+      id: uuidv4(),
+      message,
+      webContent
+    })
     setMessage("")
     setUrlStatuses([])
   }

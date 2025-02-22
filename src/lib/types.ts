@@ -83,3 +83,32 @@ export const GeneratedRecipeSchema = z.object({
 
 export type GeneratedRecipe = z.infer<typeof GeneratedRecipeSchema>;
 export type Unit = z.infer<typeof unitEnum>; 
+
+
+export interface UserInput {
+  id: string;
+  message: string;
+  webContent: {url: string, content: string}[];
+}
+
+export interface BotResponse {
+  id: string;
+  content: string;
+  error?: string;
+}
+
+export interface UserMessageType {
+  id: string;
+  isUser: true;
+  userInput: UserInput;
+}
+
+export interface BotMessageType {
+  id: string;
+  isUser: false;
+  isLoading: boolean;
+  isError: boolean;
+  botResponse: BotResponse;
+}
+
+export type ChatMessageData = UserMessageType | BotMessageType;
