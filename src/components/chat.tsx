@@ -5,35 +5,33 @@ import { v4 as uuidv4 } from "uuid"
 import { ChatMessage } from "./chat-message"
 import { ChatInput } from "./chat-input"
 import { sendChatMessage } from "@/app/chat/actions"
-import { UserInput, BotResponse, ChatMessageData as ChatMessageType, BotMessageType, UserMessageType } from "@/lib/types"
+import { UserInput, BotResponse, ChatMessageData as ChatMessageType, BotMessageType, UserMessageType, BotErrorMessageType, BotLoadingMessageType } from "@/lib/types"
 
 export function Chat() {
   const [messages, setMessages] = useState<ChatMessageType[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const conversationId = useState(() => uuidv4())[0]
 
-  async function handleRetry(messageId: string) {
-    const messageToRetry = messages.find(m => m.id === messageId)
-    if (!messageToRetry || !messageToRetry.isUser) return
+  async function handleRetry(message: BotErrorMessageType) {
+
+    // Replace the error message with a loading message
     setMessages(prev => prev.map(msg => 
-      msg.id === messageId ? { ...msg, isLoading: true, isError: false } : msg
+      msg.id === message.id ? { ...msg, type: "bot_loading", isLoading: true } : msg
     ))
 
     try {
       const result = await sendChatMessage(
-        messageToRetry.userInput, 
+        message.userInputToRetry, 
         conversationId,
       )
       
       if (result.success) {
+        // Replace the loading message with the actual response
         setMessages(prev => prev.map(msg =>
-          msg.id === messageId ? {
-            id: messageId,
-            isUser: false,
-            isLoading: false,
-            isError: false,
+          msg.id === message.id ? {
+            id: message.id,
+            type: "bot",
             botResponse: {
-              id: messageId,
               content: result.output
             }
           } : msg
@@ -44,11 +42,13 @@ export function Chat() {
     } catch (error) {
       console.error("Failed to retry message:", error)
       setMessages(prev => prev.map(msg =>
-        msg.id === messageId ? {
+        msg.id === message.id ? {
           ...msg,
-          text: "Sorry, I encountered an error. Please try again.",
-          isLoading: false,
-          isError: true
+          type: "bot_error",
+          botResponse: {
+            content: "Sorry, er is iets mis gegaan. Probeer het opnieuw."
+          },
+          userInputToRetry: message.userInputToRetry
         } : msg
       ))
     }
@@ -59,19 +59,14 @@ export function Chat() {
         
     const userMessage: UserMessageType = {
       id: uuidv4(),
-      isUser: true,
+      type: "user",
       userInput
     }
     
-    const loadingMessage: BotMessageType = {
+    const loadingMessage: BotLoadingMessageType = {
       id: uuidv4(),
-      isUser: false,
+      type: "bot_loading",
       isLoading: true,
-      isError: false,
-      botResponse: {
-        id: uuidv4(),
-        content: ""
-      }
     }
     
     setMessages(prev => [...prev, userMessage, loadingMessage])
@@ -85,10 +80,9 @@ export function Chat() {
           // Before sending the message, we first dropped a loading message.
           // This logic services to replace the loading message with the actual response.
           const lastMessage = prev[prev.length - 1]
-          if (lastMessage.isUser || !lastMessage.isLoading) return prev
+          if (lastMessage.type !== "bot_loading") return prev
           
           const botResponse: BotResponse = {
-            id: lastMessage.id,
             content: result.output
           }
           
@@ -96,9 +90,7 @@ export function Chat() {
             ...prev.slice(0, -1),
             {
               id: uuidv4(),
-              isUser: false,
-              isLoading: false,
-              isError: false,
+              type: "bot",
               botResponse
             }
           ]
@@ -112,19 +104,18 @@ export function Chat() {
         // Before sending the message, we first dropped a loading message.
         // This logic services to replace the loading message with the actual response.
         const lastMessage = prev[prev.length - 1]
-        if (lastMessage.isUser || !lastMessage.isLoading) return prev
+        if (lastMessage.type !== "bot_loading") return prev
         
         return [
           ...prev.slice(0, -1),
           {
             id: lastMessage.id,
-            isUser: false,
-            isLoading: false,
-            isError: true,
+            type: "bot_error",
             botResponse: {
               id: lastMessage.id,
               content: "Sorry, er is iets mis gegaan. Probeer het opnieuw."
-            }
+            },
+            userInputToRetry: userInput
           }
         ]
       })
@@ -145,7 +136,6 @@ export function Chat() {
             key={message.id}
             message={message}
             onRecipeSaved={handleRecipeSaved}
-            isLoading={!message.isUser && message.isLoading || false}
             isLastMessage={index === messages.length - 1}
             onRetry={handleRetry}
           />

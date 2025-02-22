@@ -98,7 +98,6 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
       .map(status => ({ url: status.url, content: status.content! }))
     
     onSend({
-      id: uuidv4(),
       message,
       webContent
     })

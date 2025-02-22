@@ -86,29 +86,39 @@ export type Unit = z.infer<typeof unitEnum>;
 
 
 export interface UserInput {
-  id: string;
   message: string;
   webContent: {url: string, content: string}[];
 }
 
 export interface BotResponse {
-  id: string;
   content: string;
   error?: string;
 }
 
-export interface UserMessageType {
+export interface MessageType {
+  type: "user" | "bot" | "bot_error" | "bot_loading";
   id: string;
-  isUser: true;
+}
+
+export interface UserMessageType extends MessageType {
+  type: "user";
   userInput: UserInput;
 }
 
-export interface BotMessageType {
-  id: string;
-  isUser: false;
-  isLoading: boolean;
-  isError: boolean;
+export interface BotMessageType extends MessageType {
+  type: "bot";
   botResponse: BotResponse;
 }
 
-export type ChatMessageData = UserMessageType | BotMessageType;
+export interface BotErrorMessageType extends MessageType {
+  type: "bot_error";
+  botResponse: BotResponse;
+  userInputToRetry: UserInput;
+}
+
+export interface BotLoadingMessageType extends MessageType {
+  type: "bot_loading";
+  isLoading: true;
+}
+
+export type ChatMessageData = UserMessageType | BotMessageType | BotErrorMessageType | BotLoadingMessageType;
