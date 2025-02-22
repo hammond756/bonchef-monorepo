@@ -16,8 +16,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const recipeData = await request.json();
-    delete recipeData.thumbnail;
+    const {recipe, prompt_variables} = await request.json();
+    delete recipe.thumbnail;
     
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BONCHEF_BACKEND_HOST}/generate_image/`,
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({recipe: recipeData, generate_image: false}),
+        body: JSON.stringify({recipe: recipe, prompt_variables: prompt_variables}),
       }
     );
 

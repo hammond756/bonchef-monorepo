@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { deleteRecipe } from "@/app/edit/[id]/actions";
 import { Label } from "./ui/label";
 import { Separator } from "./ui/separator";
+import { ImageGenerationModal } from "./image-generation-modal";
 
 interface RecipeFormProps {
   recipe: GeneratedRecipe;
@@ -68,6 +69,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [savedRecipeUrl, setSavedRecipeUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const units = unitEnum.options;
   const router = useRouter();
   useEffect(() => {
@@ -77,7 +79,10 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
     });
   }, [recipe]);
 
-  async function handleGenerateImage() {
+  async function handleGenerateImage(settings?: { 
+    camera_angle?: string; 
+    keukenstijl?: string 
+  }) {
     setIsGenerating(true);
     setImageError(null);
 
@@ -87,7 +92,13 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(recipe),
+        body: JSON.stringify({
+          recipe: recipe,
+          prompt_variables: {
+            camera_angle: settings?.camera_angle,
+            keukenstijl: settings?.keukenstijl,
+          },
+        }),
       });
 
       if (!response.ok) {
@@ -229,7 +240,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
             <div className="space-y-4">
               <Button
                 type="button"
-                onClick={handleGenerateImage}
+                onClick={() => setIsImageModalOpen(true)}
                 disabled={isGenerating}
                 variant="secondary"
                 data-testid="generate-image"
@@ -487,6 +498,12 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
           </Button>
         </div>
       </div>
+
+      <ImageGenerationModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        onSubmit={handleGenerateImage}
+      />
     </form>
   );
 } 
