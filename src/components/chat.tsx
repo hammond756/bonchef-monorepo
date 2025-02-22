@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { ChatMessage } from "./chat-message"
 import { ChatInput } from "./chat-input"
@@ -11,6 +11,13 @@ export function Chat() {
   const [messages, setMessages] = useState<ChatMessageType[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const conversationId = useState(() => uuidv4())[0]
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight
+    }
+  }, [messages])
 
   async function handleRetry(message: BotErrorMessageType) {
 
@@ -130,7 +137,7 @@ export function Chat() {
 
   return (
     <div className="flex flex-col h-[100dvh]">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-100">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-100" ref={containerRef}>
         {messages.map((message, index) => (
           <ChatMessage 
             key={message.id}
