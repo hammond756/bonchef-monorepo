@@ -31,9 +31,8 @@ export async function sendChatMessage(userInput: UserInput, conversationId: stri
       console.log(await response.text())
       return { success: false, error: "Invalid response format" }
     }
-
     const data = await response.json()
-    return { success: true, output: data.output }
+    return { success: true, output: data.output.messages }
   } catch (error) {
     console.error("Failed to send message:", error)
     return { success: false, error: "Failed to send message" }

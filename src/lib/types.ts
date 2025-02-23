@@ -92,6 +92,7 @@ export interface UserInput {
 
 export interface BotResponse {
   content: string;
+  type: "text" | "recipe";
   error?: string;
 }
 

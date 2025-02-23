@@ -33,16 +33,20 @@ export function Chat() {
       )
       
       if (result.success) {
+        // First remove the loading message
+        setMessages(prev => prev.filter(msg => msg.id !== message.id))
+
+        const botResponses: BotMessageType[] = result.output.map((message: BotResponse) => ({
+          id: uuidv4(),
+          type: "bot",
+          botResponse: message
+        }))
+
         // Replace the loading message with the actual response
-        setMessages(prev => prev.map(msg =>
-          msg.id === message.id ? {
-            id: message.id,
-            type: "bot",
-            botResponse: {
-              content: result.output
-            }
-          } : msg
-        ))
+        setMessages(prev => [
+          ...prev,
+          ...botResponses
+        ])
       } else {
         throw new Error(result.error)
       }
@@ -53,7 +57,8 @@ export function Chat() {
           ...msg,
           type: "bot_error",
           botResponse: {
-            content: "Sorry, er is iets mis gegaan. Probeer het opnieuw."
+            content: "Sorry, er is iets mis gegaan. Probeer het opnieuw.",
+            type: "text"
           },
           userInputToRetry: message.userInputToRetry
         } : msg
@@ -89,17 +94,15 @@ export function Chat() {
           const lastMessage = prev[prev.length - 1]
           if (lastMessage.type !== "bot_loading") return prev
           
-          const botResponse: BotResponse = {
-            content: result.output
-          }
+          const botResponses: BotMessageType[] = result.output.map((message: BotResponse) => ({
+            id: uuidv4(),
+            type: "bot",
+            botResponse: message
+          }))
           
           return [
             ...prev.slice(0, -1),
-            {
-              id: uuidv4(),
-              type: "bot",
-              botResponse
-            }
+            ...botResponses
           ]
         })
       } else {
@@ -120,7 +123,8 @@ export function Chat() {
             type: "bot_error",
             botResponse: {
               id: lastMessage.id,
-              content: "Sorry, er is iets mis gegaan. Probeer het opnieuw."
+              content: "Sorry, er is iets mis gegaan. Probeer het opnieuw.",
+              type: "text"
             },
             userInputToRetry: userInput
           }

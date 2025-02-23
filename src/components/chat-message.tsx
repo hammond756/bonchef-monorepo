@@ -90,7 +90,7 @@ export function ChatMessage({
         {renderMessageContent()}
       </div>
       
-      {message.type === "bot" && (
+      {message.type === "bot" && message.botResponse.type === "recipe" && (
         <div className="mt-2 ml-2">
           <SaveRecipeButton
             message={message.botResponse.content} 
