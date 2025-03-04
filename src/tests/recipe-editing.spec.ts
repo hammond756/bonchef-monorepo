@@ -206,6 +206,8 @@ test.describe("Recipe editing flows", () => {
     await page.getByTestId("save-recipe").click();
     await page.getByText("Openbaar").click();
     await page.getByRole("button", { name: "Opslaan" }).click();
+
+    await page.waitForURL(new RegExp(`/recipes/${recipeId}`));
     
     // Verify public badge is visible
     await expect(page.getByText("Openbaar")).toBeVisible();

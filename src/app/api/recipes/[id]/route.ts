@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
 export async function DELETE(
-  request: NextRequest,
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -15,8 +16,7 @@ export async function DELETE(
       );
     }
 
-    const searchParams = request.nextUrl.searchParams;
-    const id = searchParams.get('id');
+    const { id } = await params;
 
     // Database RLS policies handle permissions, no need to check ownership
     const { error: recipeError } = await supabase
