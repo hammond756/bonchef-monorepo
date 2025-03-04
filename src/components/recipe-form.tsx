@@ -20,10 +20,12 @@ import { deleteRecipe } from "@/app/edit/[id]/actions";
 import { Label } from "./ui/label";
 import { Separator } from "./ui/separator";
 import { ImageGenerationModal } from "./image-generation-modal";
+import { RecipeVisibilityModal } from "./recipe-visibility-modal";
 
 interface RecipeFormProps {
   recipe: GeneratedRecipe;
   recipeId: string;  // Optional ID for edit mode
+  isPublic?: boolean;
 }
 
 function autoResizeTextarea(element: HTMLTextAreaElement) {
@@ -62,7 +64,7 @@ function updateIngredientAtIndex(
   };
 }
 
-export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps) {
+export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }: RecipeFormProps) {
   const [recipe, setRecipe] = useState(initialRecipe);
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -70,6 +72,8 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
   const [savedRecipeUrl, setSavedRecipeUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false);
+  const [recipeVisibility, setRecipeVisibility] = useState<boolean>(isPublic);
   const units = unitEnum.options;
   const router = useRouter();
   useEffect(() => {
@@ -119,6 +123,12 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
     e.preventDefault();
     setSubmitError(null);
     setSavedRecipeUrl(null);
+    
+    // Open the visibility modal instead of saving directly
+    setIsVisibilityModalOpen(true);
+  }
+
+  async function saveRecipe(isPublic: boolean) {
     setIsSaving(true);
     
     try {
@@ -127,7 +137,8 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...recipe,
-          id: recipeId
+          id: recipeId,
+          is_public: isPublic
         }),
       });
 
@@ -503,6 +514,13 @@ export function RecipeForm({ recipe: initialRecipe, recipeId }: RecipeFormProps)
         isOpen={isImageModalOpen}
         onClose={() => setIsImageModalOpen(false)}
         onSubmit={handleGenerateImage}
+      />
+
+      <RecipeVisibilityModal
+        isOpen={isVisibilityModalOpen}
+        onClose={() => setIsVisibilityModalOpen(false)}
+        onConfirm={(isPublic: boolean) => saveRecipe(isPublic)}
+        defaultVisibility={recipeVisibility}
       />
     </form>
   );

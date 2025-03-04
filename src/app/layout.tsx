@@ -5,6 +5,8 @@ import { createClient } from "@/utils/supabase/server"
 import { cookies } from "next/headers"
 import { Navbar } from "@/components/layout/navbar"
 import { Toaster } from "@/components/ui/toaster";
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,10 +37,11 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Only show navbar if user is logged in */}
-        {user && <Navbar user={user} />}
-        <main>{children}</main>
-        <Toaster />
+        <NuqsAdapter>
+          <Navbar user={user} />
+          <main>{children}</main>
+          <Toaster />
+        </NuqsAdapter>
       </body>
     </html>
   );

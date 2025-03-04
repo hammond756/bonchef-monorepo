@@ -41,8 +41,8 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    const { id, ...recipe } = data;
-    const validatedRecipe = GeneratedRecipeSchema.parse(recipe);
+    const { id, is_public, ...recipeData } = data;
+    const validatedRecipe = GeneratedRecipeSchema.parse(recipeData);
 
     // Process thumbnail if it's a URL
     if (validatedRecipe.thumbnail && 
@@ -76,7 +76,10 @@ export async function POST(request: Request) {
 
       const { data: updatedRecipe, error: updateError } = await supabase
         .from("recipe_creation_prototype")
-        .update(validatedRecipe)
+        .update({
+          ...validatedRecipe,
+          is_public: is_public !== undefined ? is_public : false
+        })
         .eq("id", id)
         .select()
         .single();
@@ -91,6 +94,7 @@ export async function POST(request: Request) {
           {
             user_id: user.id,
             ...validatedRecipe,
+            is_public: is_public !== undefined ? is_public : false,
             created_at: new Date().toISOString(),
           },
         ])

@@ -2,10 +2,11 @@ import { getRecipe } from "./actions"
 import { Separator } from "@/components/ui/separator"
 import { Card } from "@/components/ui/card"
 import Image from "next/image"
-import { Clock, Users } from "lucide-react"
+import { Clock, Users, Globe, Lock } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/utils/supabase/server"
 import { PencilIcon } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -59,6 +60,19 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-muted-foreground" />
           <span>{recipe.n_portions} porties</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {recipe.is_public ? (
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Globe className="h-3 w-3" />
+              <span>Openbaar</span>
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Lock className="h-3 w-3" />
+              <span>Privé</span>
+            </Badge>
+          )}
         </div>
       </div>
 

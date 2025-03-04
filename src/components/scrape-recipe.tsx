@@ -25,7 +25,10 @@ export function ScrapeRecipe() {
       const response = await fetch("/api/save-recipe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(validatedRecipe),
+        body: JSON.stringify({
+          ...validatedRecipe,
+          is_public: false // Set recipes as private by default
+        }),
       });
       
       const data = await response.json();

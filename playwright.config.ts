@@ -24,6 +24,8 @@ export default defineConfig({
   projects: [
     // Setup project
     { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    
+    // Main test projects with first user authentication
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"], storageState: path.join(__dirname, "playwright/.auth/user.json") },

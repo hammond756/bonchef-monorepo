@@ -26,7 +26,10 @@ export function SubmitRecipe() {
         const response = await fetch("/api/save-recipe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(recipe),
+          body: JSON.stringify({
+            ...recipe,
+            is_public: false // Set recipes as private by default
+          }),
         });
         
         const data = await response.json();

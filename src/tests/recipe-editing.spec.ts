@@ -53,6 +53,10 @@ test.describe("Recipe editing flows", () => {
     
     await page.click("button:text('Opslaan')");
     
+    // Handle visibility modal
+    await page.getByText("Privé").click();
+    await page.getByRole("button", { name: "Opslaan" }).click();
+    
     // Verify changes on detail page
     await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`));
     await expect(page.getByText("Verbeterde Pasta Carbonara")).toBeVisible();
@@ -63,6 +67,10 @@ test.describe("Recipe editing flows", () => {
     // Change portion size
     await page.fill("input[placeholder='Porties']", "4");
     await page.click("button:text('Opslaan')");
+    
+    // Handle visibility modal
+    await page.getByText("Privé").click();
+    await page.getByRole("button", { name: "Opslaan" }).click();
     
     // Verify on detail page
     await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`));
@@ -86,6 +94,10 @@ test.describe("Recipe editing flows", () => {
     
     await page.getByTestId("save-recipe").click();
     
+    // Handle visibility modal
+    await page.getByText("Privé").click();
+    await page.getByRole("button", { name: "Opslaan" }).click();
+    
     // Verify changes
     await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`));
     await expect(page.getByText("50 milliliter witte wijn")).toBeVisible();
@@ -103,6 +115,10 @@ test.describe("Recipe editing flows", () => {
     
     await page.getByTestId("save-recipe").click();
     
+    // Handle visibility modal
+    await page.getByText("Privé").click();
+    await page.getByRole("button", { name: "Opslaan" }).click();
+    
     // Verify changes
     await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`));
     await expect(page.getByText("Kook de pasta volgens de verpakking al dente")).toBeVisible();
@@ -115,6 +131,10 @@ test.describe("Recipe editing flows", () => {
     
     await page.getByTestId("save-recipe").click();
     
+    // Handle visibility modal
+    await page.getByText("Privé").click();
+    await page.getByRole("button", { name: "Opslaan" }).click();
+    
     // Verify image is displayed
     await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`));
     await expect(page.getByTestId("recipe-image")).toBeVisible();   
@@ -123,6 +143,16 @@ test.describe("Recipe editing flows", () => {
   test("generates new recipe image", async ({ page }) => {
     // Click generate image button
     await page.getByTestId("generate-image").click();
+
+    // Wait for modal to appear
+    await expect(page.getByText("Afbeelding instellingen")).toBeVisible();
+    
+    // Select camera angle and kitchen style
+    await page.getByText("Top-down perspectief").click();
+    await page.getByText("Minimalistisch wit").click();
+    
+    // Click generate button
+    await page.getByRole("button", { name: "Genereer" }).click();
     
     // Wait for generation to complete with 2 minute timeout
     await expect(
@@ -134,6 +164,10 @@ test.describe("Recipe editing flows", () => {
     ).toBeVisible({ timeout: 120000 });
     
     await page.getByTestId("save-recipe").click();
+    
+    // Handle visibility modal
+    await page.getByText("Privé").click();
+    await page.getByRole("button", { name: "Opslaan" }).click();
     
     // Verify image persists after save
     await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`));
@@ -151,5 +185,29 @@ test.describe("Recipe editing flows", () => {
     await page.goto(`${baseURL}/recipes/${recipeId}`);
     await expect(page.getByText("Recept niet gevonden")).toBeVisible();
     await expect(page.getByText("Terug naar homepage")).toBeVisible();
+  });
+
+  test("toggles recipe visibility", async ({ page }) => {
+    // Create a new recipe for this test
+    await page.goto(`/edit/${recipeId}`);
+    
+    // Save with private visibility first
+    await page.getByTestId("save-recipe").click();
+    await page.getByText("Privé").click();
+    await page.getByRole("button", { name: "Opslaan" }).click();
+    
+    // Verify private badge is visible
+    await expect(page.getByText("Privé")).toBeVisible();
+    
+    // Edit the recipe again
+    await page.click("text=Bewerk recept");
+    
+    // Save with public visibility
+    await page.getByTestId("save-recipe").click();
+    await page.getByText("Openbaar").click();
+    await page.getByRole("button", { name: "Opslaan" }).click();
+    
+    // Verify public badge is visible
+    await expect(page.getByText("Openbaar")).toBeVisible();
   });
 }); 

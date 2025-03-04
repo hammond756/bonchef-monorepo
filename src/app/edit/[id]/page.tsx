@@ -23,7 +23,7 @@ export default async function EditRecipePage({ params }: { params: Promise<{ id:
   return (
     <main className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Recept bewerken</h1>
-      <RecipeForm recipe={recipe} recipeId={id} />
+      <RecipeForm recipe={recipe} recipeId={id} isPublic={recipe.is_public} />
     </main>
   );
 }

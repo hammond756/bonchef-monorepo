@@ -17,9 +17,16 @@ test.describe("Recipe creation flows", () => {
     // Save without edits
     await page.click("button:text('Opslaan')");
     
+    // Handle visibility modal
+    await page.getByText("Privé").click();
+    await page.getByRole("button", { name: "Opslaan" }).click();
+    
     // Verify redirect to recipe detail page
     await expect(page).toHaveURL(/\/recipes\/\d+/);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    
+    // Verify private badge is visible
+    await expect(page.getByText("Privé")).toBeVisible();
   });
 
   test("imports recipe from URL", async ({ page, baseURL }) => {
@@ -40,7 +47,40 @@ test.describe("Recipe creation flows", () => {
     // Save without changes
     await page.click("button:text('Opslaan')");
     
+    // Handle visibility modal
+    await page.getByText("Privé").click();
+    await page.getByRole("button", { name: "Opslaan" }).click();
+    
     // Verify on detail page
     await expect(page).toHaveURL(/\/recipes\/\d+/);
+    
+    // Verify private badge is visible
+    await expect(page.getByText("Privé")).toBeVisible();
+  });
+  
+  test("creates recipe with public visibility", async ({ page, baseURL }) => {
+    await page.goto(baseURL!);
+    await page.click("text=Voeg recept toe");
+    
+    // Fill in recipe description
+    const description = "Een openbaar recept voor iedereen om te zien";
+    await page.fill("textarea", description);
+    await page.click("button:text('Maak recept')");
+    
+    // Wait for generation to complete and redirect
+    await expect(page).toHaveURL(/\/edit\/\d+/, { timeout: 120000 });
+    
+    // Save without edits
+    await page.click("button:text('Opslaan')");
+    
+    // Handle visibility modal - select public
+    await page.getByText("Openbaar").click();
+    await page.getByRole("button", { name: "Opslaan" }).click();
+    
+    // Verify redirect to recipe detail page
+    await expect(page).toHaveURL(/\/recipes\/\d+/);
+    
+    // Verify public badge is visible
+    await expect(page.getByText("Openbaar")).toBeVisible();
   });
 }); 
