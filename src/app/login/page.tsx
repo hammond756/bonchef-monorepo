@@ -8,8 +8,8 @@ export default function LoginPage() {
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold">Welkom!</h1>
           <p className="text-sm text-muted-foreground">
-            Dit is een prototype voor Bonchef. Als je nog geen account hebt, vraag dan
-            aan David om er een voor je aan te maken.
+            Dit is een prototype voor Bonchef. Als je nog geen account hebt, klik
+            dan op de link onder het formulier om er een te maken.
           </p>
         </div>
         <LoginForm />
