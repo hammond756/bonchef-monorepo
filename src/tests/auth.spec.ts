@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, Page } from "@playwright/test";
 
 test.describe("Authentication flows", () => {
     test.use({ storageState: { cookies: [], origins: [] } });
@@ -26,43 +26,113 @@ test.describe("Signed in user flows", () => {
     await expect(page).toHaveURL("/");
     await expect(page.getByText("Voeg recept toe")).toBeVisible();
   });
+
+  test("Logs out successfully", async ({ page, baseURL }) => {
+    await page.goto(baseURL!);
+    await expect(page).toHaveURL("/");
+    await expect(page.getByText(process.env.TEST_USER_EMAIL!)).toBeVisible();
+    await page.getByTestId("logout-button").click();
+    await expect(page).toHaveURL("/login");
+  });
 });
 
 test.describe("Signup flows", () => {
   let testUserEmail: string | null = null;
   const testUserPassword = "test1234";
+  const displayName = "Test User";
 
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test.beforeEach(async ({}) => {
+  test.beforeEach(async () => {
     testUserEmail = `test${Math.random().toString(36).substring(2)}@test.com`;
   });
 
-    test("can navigate to signup page from login page", async ({ page, baseURL }) => {
-        await page.goto(baseURL! + "/login");
-        await page.getByText("Meld je dan hier aan").click();
-        await expect(page).toHaveURL("/signup");
-    });
+  /**
+   * Interface for signup form data
+   */
+  interface SignupFormData {
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+    name?: string;
+  }
 
-    test("can sign up successfully", async ({ page, baseURL }) => {
-        await page.goto(baseURL! + "/signup");
-        await page.fill("input[type='email']", testUserEmail!);
-        await page.fill("input[type='password']", testUserPassword);
-        await page.fill("input[name='confirmPassword']", testUserPassword);
-        await page.fill("input[name='displayName']", "Test User");
-        await page.click("button[type='submit']");
-        await expect(page).toHaveURL("/");
-        await expect(page.getByText("Voeg recept toe")).toBeVisible();
-    });
+  /**
+   * Interface for signup test scenario options
+   */
+  interface SignupScenarioOptions {
+    formData?: SignupFormData;
+    expectedUrl?: string;
+    expectedMessage?: string;
+  }
 
-    test("homepage shows user email after signup", async ({ page, baseURL }) => {
-        await page.goto(baseURL! + "/signup");
-        await page.fill("input[type='email']", testUserEmail!);
-        await page.fill("input[type='password']", testUserPassword);
-        await page.fill("input[name='confirmPassword']", testUserPassword);
-        await page.fill("input[name='displayName']", "Test User");
-        await page.click("button[type='submit']");
-        await expect(page).toHaveURL("/");
-        await expect(page.getByText(testUserEmail!)).toBeVisible();
+  /**
+   * Helper function to fill the signup form
+   */
+  async function fillSignupForm(
+    page: Page, 
+    baseURL: string, 
+    {
+      email = testUserEmail!,
+      password = testUserPassword,
+      confirmPassword = testUserPassword,
+      name = displayName
+    }: SignupFormData = {}
+  ): Promise<void> {
+    await page.goto(`${baseURL}/signup`);
+    await page.fill("input[type='email']", email);
+    await page.fill("input[type='password']", password);
+    await page.fill("input[name='confirmPassword']", confirmPassword);
+    await page.fill("input[name='displayName']", name);
+    await page.click("button[type='submit']");
+  }
+
+  /**
+   * Helper function to test signup with different scenarios
+   */
+  async function testSignupScenario(
+    page: Page, 
+    baseURL: string, 
+    {
+      formData = {},
+      expectedUrl = "/",
+      expectedMessage = "Voeg recept toe"
+    }: SignupScenarioOptions = {}
+  ): Promise<void> {
+    await fillSignupForm(page, baseURL, formData);
+    await expect(page).toHaveURL(expectedUrl);
+    await expect(page.getByText(expectedMessage)).toBeVisible();
+  }
+
+  test("can navigate to signup page from login page", async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/login`);
+    await page.getByText("Meld je dan hier aan").click();
+    await expect(page).toHaveURL("/signup");
+  });
+
+  test("can sign up successfully", async ({ page, baseURL }) => {
+    await testSignupScenario(page, baseURL!);
+  });
+
+  test("homepage shows user email after signup", async ({ page, baseURL }) => {
+    await testSignupScenario(page, baseURL!, {
+      expectedMessage: testUserEmail!
     });
+  });
+
+  // test("signup fails with invalid email", async ({ page, baseURL }) => {
+  //   await testSignupScenario(page, baseURL!, {
+  //     formData: { email: "invalid-email" },
+  //     expectedUrl: "/signup",
+  //     expectedMessage: "Ongeldig e-mailadres"
+  //   });
+  // });
+
+  test("signup fails with mismatched passwords", async ({ page, baseURL }) => {
+    await testSignupScenario(page, baseURL!, {
+      formData: { confirmPassword: "wrong-password" },
+      expectedUrl: "/signup",
+      expectedMessage: "Wachtwoorden komen niet overeen"
+    });
+  });
 });

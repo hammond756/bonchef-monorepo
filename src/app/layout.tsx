@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/utils/supabase/server"
-import { cookies } from "next/headers"
 import { Navbar } from "@/components/layout/navbar"
 import { Toaster } from "@/components/ui/toaster";
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
@@ -28,7 +27,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const cookieStore = cookies()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -39,7 +37,7 @@ export default async function RootLayout({
       >
         <NuqsAdapter>
           <Navbar user={user} />
-          <main>{children}</main>
+            <main>{children}</main>
           <Toaster />
         </NuqsAdapter>
       </body>

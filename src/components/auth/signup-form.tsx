@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
+import { signup } from "@/app/signup/actions"
 
 export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -33,36 +34,25 @@ export function SignUpForm() {
       return
     }
 
-    try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password, displayName }),
-      })
+      const { success, error } = await signup(email, password, displayName)
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Er is iets misgegaan")
+      if (success) {
+        toast({
+          title: "Success",
+          description: success,
+        })
+        router.push("/")
       }
 
-      toast({
-        title: "Account aangemaakt",
-        description: data.message,
-      })
-      
-      router.push("/")
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Er is iets misgegaan",
-      })
-    } finally {
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error,
+        })
+      }
+
       setIsLoading(false)
-    }
   }
 
   return (

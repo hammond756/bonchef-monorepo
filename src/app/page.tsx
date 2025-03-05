@@ -4,11 +4,6 @@ import { Button } from "@/components/ui/button"
 import { getRecipes } from "./actions"
 import { redirect } from "next/navigation"
 import { createClient } from "@/utils/supabase/server"
-interface Recipe {
-  id: string
-  title: string
-  imageUrl: string
-}
 
 export default async function HomePage() {
   const recipes = await getRecipes()
