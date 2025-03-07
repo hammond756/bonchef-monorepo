@@ -15,7 +15,6 @@ test.describe("Authentication flows", () => {
         await page.click("button[type='submit']");
         
         await expect(page).toHaveURL("/");
-        await expect(page.getByText("Voeg recept toe")).toBeVisible();
     });
     
 });
@@ -24,7 +23,6 @@ test.describe("Signed in user flows", () => {
   test("Opens homepage when logged in", async ({ page, baseURL }) => {
     await page.goto(baseURL!);
     await expect(page).toHaveURL("/");
-    await expect(page.getByText("Voeg recept toe")).toBeVisible();
   });
 
   test("Logs out successfully", async ({ page, baseURL }) => {
@@ -96,12 +94,14 @@ test.describe("Signup flows", () => {
     {
       formData = {},
       expectedUrl = "/",
-      expectedMessage = "Voeg recept toe"
+      expectedMessage
     }: SignupScenarioOptions = {}
   ): Promise<void> {
     await fillSignupForm(page, baseURL, formData);
     await expect(page).toHaveURL(expectedUrl);
-    await expect(page.getByText(expectedMessage)).toBeVisible();
+    if (expectedMessage) {
+      await expect(page.getByText(expectedMessage)).toBeVisible();
+    }
   }
 
   test("can navigate to signup page from login page", async ({ page, baseURL }) => {

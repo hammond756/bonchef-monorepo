@@ -2,9 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.describe("Recipe creation flows", () => {
   test("generates recipe from description without edits", async ({ page, baseURL }) => {
-    // Start from homepage
-    await page.goto(baseURL!);
-    await page.click("text=Voeg recept toe");
+    await page.goto(baseURL! + "/create");
     
     // Fill in recipe description
     const description = "Een simpele pasta carbonara met spek en ei";
@@ -30,8 +28,7 @@ test.describe("Recipe creation flows", () => {
   });
 
   test("imports recipe from URL", async ({ page, baseURL }) => {
-    await page.goto(baseURL!);
-    await page.click("text=Voeg recept toe");
+    await page.goto(baseURL! + "/create");
     
     // Switch to URL import tab
     await page.click("text=Optie 2");
@@ -59,8 +56,7 @@ test.describe("Recipe creation flows", () => {
   });
   
   test("creates recipe with public visibility", async ({ page, baseURL }) => {
-    await page.goto(baseURL!);
-    await page.click("text=Voeg recept toe");
+    await page.goto(baseURL! + "/create");
     
     // Fill in recipe description
     const description = "Een openbaar recept voor iedereen om te zien";

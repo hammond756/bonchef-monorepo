@@ -15,7 +15,7 @@ export function Navbar({ user }: NavbarProps) {
         <div className="flex items-center gap-6">
           {user && (
             <Link 
-              href="/" 
+              href="/collection" 
               className="text-sm text-muted-foreground hover:text-foreground"
             >
               Collectie
@@ -29,7 +29,7 @@ export function Navbar({ user }: NavbarProps) {
           </Link>
           {user && (
             <Link 
-              href="/chat" 
+              href="/" 
               className="text-sm text-muted-foreground hover:text-foreground"
             >
               Chat

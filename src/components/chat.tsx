@@ -2,22 +2,86 @@
 
 import { useState, useRef, useEffect } from "react"
 import { v4 as uuidv4 } from "uuid"
+import { Camera, Link, User, FileText, Globe, MessageSquare } from "lucide-react"
 import { ChatMessage } from "./chat-message"
-import { ChatInput } from "./chat-input"
+import { ChatInput, ChatInputHandle } from "./chat-input"
+import { QuickActions } from "./quick-actions"
 import { sendChatMessage } from "@/app/chat/actions"
 import { UserInput, BotResponse, ChatMessageData as ChatMessageType, BotMessageType, UserMessageType, BotErrorMessageType, BotLoadingMessageType } from "@/lib/types"
 
 export function Chat() {
   const [messages, setMessages] = useState<ChatMessageType[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isInputExpanded, setIsInputExpanded] = useState(false)
+  const [inputPlaceholder, setInputPlaceholder] = useState("Typ hier je bericht...")
   const conversationId = useState(() => uuidv4())[0]
   const containerRef = useRef<HTMLDivElement>(null)
+  const chatInputRef = useRef<ChatInputHandle>(null)
 
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight
     }
   }, [messages])
+
+  function handleNotImplemented() {
+    alert("Nog niet geimplementeerd")
+  }
+
+  function handleSurpriseAction() {
+    handleSendMessage({ message: `Verras me maar!`, webContent: [{url: "https://random.com", content: `Geef drie random recepten opties. ${conversationId}`}] })
+  }
+
+  const quickActions = [
+    // { 
+    //   icon: Camera, 
+    //   label: "Fotografeer je koelkast",
+    //   onClick: handleNotImplemented
+    // },
+    { 
+      icon: Link, 
+      label: "Importeer een recept",
+      onClick: () => {
+        const chatInput = document.querySelector("[data-testid='chat-input']") as HTMLTextAreaElement
+        if (chatInput) {
+          chatInput.focus()
+          setIsInputExpanded(true)
+          setInputPlaceholder("Plak hier de URL van een recept in. Je mag er ook nog vragen of aanpassingen bij schrijven.")
+        }
+      }
+    },
+    // { 
+    //   icon: User, 
+    //   label: "Pas jouw profiel aan",
+    //   onClick: handleNotImplemented
+    // },
+    { 
+      icon: FileText, 
+      label: "Beschrijf een recept",
+      onClick: () => {
+        const chatInput = document.querySelector("[data-testid='chat-input']") as HTMLTextAreaElement
+        if (chatInput) {
+          chatInput.focus()
+          setIsInputExpanded(true)
+          setInputPlaceholder("Schrijf hier wat je zou willen eten. Dit mag heel specifiek zijn, om gewoon verkennend.")
+        }
+      }
+    },
+    // { 
+    //   icon: Globe, 
+    //   label: "Zoek een recept online",
+    //   onClick: handleNotImplemented
+    // },
+    // { 
+    //   icon: MessageSquare, 
+    //   label: "Spreek een bericht in",
+    //   onClick: handleNotImplemented
+    // }
+  ]
+
+  function handleQuickPrompt(prompt: string) {
+    handleSendMessage({ message: prompt, webContent: [] })
+  }
 
   async function handleRetry(message: BotErrorMessageType) {
 
@@ -68,6 +132,8 @@ export function Chat() {
 
   async function handleSendMessage(userInput: UserInput) {
     setIsLoading(true)
+    setIsInputExpanded(false)
+    setInputPlaceholder("Typ hier je bericht...")
         
     const userMessage: UserMessageType = {
       id: uuidv4(),
@@ -130,9 +196,8 @@ export function Chat() {
           }
         ]
       })
-    } finally {
-      setIsLoading(false)
     }
+    setIsLoading(false)
   }
 
   async function handleRecipeSaved(url: string) {
@@ -141,19 +206,35 @@ export function Chat() {
 
   return (
     <div className="flex flex-col h-[100dvh]">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-100" ref={containerRef}>
-        {messages.map((message, index) => (
-          <ChatMessage 
-            key={message.id}
-            message={message}
-            onRecipeSaved={handleRecipeSaved}
-            isLastMessage={index === messages.length - 1}
-            onRetry={handleRetry}
+      <div className="flex-1 overflow-y-auto bg-gray-100" ref={containerRef}>
+        {messages.length === 0 ? (
+          <QuickActions 
+            actions={quickActions}
+            surpriseAction={handleSurpriseAction}
+            onPromptClick={handleQuickPrompt}
           />
-        ))}
+        ) : (
+          <div className="p-4 space-y-4">
+            {messages.map((message, index) => (
+              <ChatMessage 
+                key={message.id}
+                message={message}
+                onRecipeSaved={handleRecipeSaved}
+                isLastMessage={index === messages.length - 1}
+                onRetry={handleRetry}
+              />
+            ))}
+          </div>
+        )}
       </div>
       <div className="sticky bottom-0 w-full bg-white border-t border-gray-200">
-        <ChatInput onSend={handleSendMessage} isLoading={isLoading} />
+        <ChatInput 
+          ref={chatInputRef} 
+          onSend={handleSendMessage} 
+          isLoading={isLoading}
+          isExpanded={isInputExpanded}
+          placeholder={inputPlaceholder}
+        />
       </div>
     </div>
   )

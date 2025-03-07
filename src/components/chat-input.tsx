@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, forwardRef, useImperativeHandle, useRef } from "react"
 import { Button } from "./ui/button"
 import { UrlStatusList } from "./url-status-list"
 import { SendIcon } from "lucide-react"
@@ -11,6 +11,8 @@ import { v4 as uuidv4 } from "uuid"
 interface ChatInputProps {
   onSend: (userInput: UserInput) => void
   isLoading: boolean
+  isExpanded?: boolean
+  placeholder?: string
 }
 
 interface UrlStatus {
@@ -44,9 +46,25 @@ function autoResizeTextarea(element: HTMLTextAreaElement) {
   element.style.height = `${element.scrollHeight}px`
 }
 
-export function ChatInput({ onSend, isLoading }: ChatInputProps) {
+export interface ChatInputHandle {
+  focus: () => void
+}
+
+export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({ 
+  onSend, 
+  isLoading, 
+  isExpanded = false,
+  placeholder = "Typ hier je bericht..."
+}, ref) => {
   const [message, setMessage] = useState("")
   const [urlStatuses, setUrlStatuses] = useState<UrlStatus[]>([])
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      textareaRef.current?.focus()
+    }
+  }))
 
   useEffect(() => {
     console.log("message", message)
@@ -83,9 +101,8 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
 
   useEffect(() => {
     // Resize textarea when message changes
-    const textarea = document.querySelector("[data-testid='chat-input']") as HTMLTextAreaElement
-    if (textarea) {
-      autoResizeTextarea(textarea)
+    if (textareaRef.current) {
+      autoResizeTextarea(textareaRef.current)
     }
   }, [message])
 
@@ -118,12 +135,15 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
       <UrlStatusList urls={urlStatuses} />
       <div className="flex gap-2">
         <AutoGrowingTextarea
+          ref={textareaRef}
           value={message}
           onChange={handleTextareaChange}
-          placeholder="Typ hier je bericht..."
+          placeholder={placeholder}
           disabled={isLoading}
           data-testid="chat-input"
-          className="h-[36px] resize-none py-1.5 px-3 leading-tight overflow-hidden"
+          className={`resize-none py-1.5 px-3 leading-tight overflow-hidden transition-all duration-200 ${
+            isExpanded ? "min-h-[144px] max-h-[144px]" : "min-h-[36px] max-h-[36px]"
+          }`}
           onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault()
@@ -142,4 +162,4 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
       </div>
     </form>
   )
-} 
+}) 

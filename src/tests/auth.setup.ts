@@ -13,7 +13,6 @@ setup("authenticate first user", async ({ page, baseURL }) => {
   await page.click("button[type='submit']");
   
   await expect(page).toHaveURL("/");
-  await expect(page.getByText("Voeg recept toe")).toBeVisible();
 
   // Save signed-in state
   await page.context().storageState({ path: authFile });
@@ -28,7 +27,6 @@ setup("authenticate second user", async ({ page, baseURL }) => {
   await page.click("button[type='submit']");
   
   await expect(page).toHaveURL("/");
-  await expect(page.getByText("Voeg recept toe")).toBeVisible();
 
   // Save signed-in state
   await page.context().storageState({ path: authFile2 });
