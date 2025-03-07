@@ -63,7 +63,7 @@ export function Chat() {
         if (chatInput) {
           chatInput.focus()
           setIsInputExpanded(true)
-          setInputPlaceholder("Schrijf hier wat je zou willen eten. Dit mag heel specifiek zijn, om gewoon verkennend.")
+          setInputPlaceholder("Schrijf hier wat je zou willen eten. Dit mag heel specifiek zijn, of breed en verkennend.")
         }
       }
     },
