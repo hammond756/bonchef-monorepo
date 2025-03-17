@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { GeneratedRecipeSchema } from "@/lib/types";
 import { ZodError } from "zod";
 import { createClient } from "@/utils/supabase/server";
-
+import { revalidatePath } from "next/cache";
 // Helper function to check if string is a valid URL
 function isValidUrl(urlString: string) {
   try {
@@ -85,6 +85,11 @@ export async function POST(request: Request) {
         .single();
 
       if (updateError) throw updateError;
+
+      if (updatedRecipe.is_public) {
+        revalidatePath("/ontdek")
+      }
+
       return NextResponse.json({ recipe: updatedRecipe });
     } else {
       // Create new recipe
@@ -113,7 +118,11 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
-      
+
+      if (savedRecipeData.is_public) {
+        revalidatePath("/ontdek")
+      }
+
       return NextResponse.json(
         { message: "Recipe saved successfully", recipe: savedRecipeData },
         { status: 200 }

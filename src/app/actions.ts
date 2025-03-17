@@ -12,13 +12,12 @@ export async function logout() {
   redirect("/login")
 } 
 
-export async function getRecipes() {
+export async function getRecipes(userId: string) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
   const { data, error } = await supabase
     .from("recipe_creation_prototype")
     .select("*")
-    .eq("user_id", user?.id)
+    .eq("user_id", userId)
   return data
 }
 
