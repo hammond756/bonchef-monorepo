@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function DELETE(
   request: Request,
@@ -18,10 +19,10 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Database RLS policies handle permissions, no need to check ownership
-    const { error: recipeError } = await supabase
+    // Check if the recipe is public before deleting
+    const { data: recipe, error: recipeError } = await supabase
       .from("recipe_creation_prototype")
-      .select("id")
+      .select("id, is_public")
       .eq("id", id)
       .single();
 
@@ -43,6 +44,15 @@ export async function DELETE(
 
     if (deleteError) throw deleteError;
 
+    // Revalidate cache if needed
+    if (recipe.is_public) {
+      // Revalidate the discover page
+      revalidatePath("/ontdek");
+    }
+    
+    // Revalidate the specific recipe page
+    revalidatePath(`/recipes/${id}`);
+    
     return NextResponse.json(
       { message: "Recipe deleted successfully" },
       { status: 200 }

@@ -4,9 +4,29 @@ import { Card } from "@/components/ui/card"
 import Image from "next/image"
 import { Clock, Users, Globe, Lock } from "lucide-react"
 import Link from "next/link"
-import { createClient } from "@/utils/supabase/server"
+import { createAdminClient, createClient } from "@/utils/supabase/server"
 import { PencilIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+
+// Set the page to use static rendering
+export const dynamic = "force-static"
+export const revalidate = 3600 // Revalidate every hour
+
+// Function to generate static paths
+export async function generateStaticParams() {
+  const supabase = await createAdminClient()
+  
+  // Only fetch public recipes for static generation
+  const { data } = await supabase
+    .from("recipe_creation_prototype")
+    .select("id")
+    .eq("is_public", true)
+  
+  // Return array of params for all public recipes
+  return data?.map((recipe) => ({
+    id: recipe.id,
+  })) || []
+}
 
 export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -24,6 +44,8 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
     )
   }
   
+  // Note: For authenticated content in static pages, we use React's suspense boundary
+  // to dynamically load the user data on the client
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

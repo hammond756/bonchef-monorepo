@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       // Get the existing recipe to check if we need to replace the image
       const { data: existingRecipe } = await supabase
         .from("recipe_creation_prototype")
-        .select("user_id, thumbnail")
+        .select("user_id, thumbnail, is_public")
         .eq("id", id)
         .single();
 
@@ -92,8 +92,14 @@ export async function POST(request: Request) {
         .single();
 
       if (updateError) throw updateError;
+      
+      // Revalidate the recipe page
+      revalidatePath(`/recipes/${id}`)
 
+      // Revalidate paths when recipe is updated
       if (updatedRecipe.is_public) {
+        
+        // Revalidate the discover page
         revalidatePath("/ontdek")
       }
 
@@ -125,8 +131,13 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
+      // Revalidate the recipe page
+      revalidatePath(`/recipes/${savedRecipeData.id}`)
 
+      // Revalidate paths when new recipe is created
       if (savedRecipeData.is_public) {
+        
+        // Revalidate the discover page
         revalidatePath("/ontdek")
       }
 
