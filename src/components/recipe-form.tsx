@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
@@ -11,7 +11,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Loader2, Plus, Trash2, AlertCircle, ExternalLink } from "lucide-react";
+import { 
+  LoaderIcon, 
+  ImageIcon, 
+  RefreshCwIcon, 
+  Trash2 as TrashIcon, 
+  Plus as PlusIcon, 
+  AlertCircle,
+  ExternalLink 
+} from "lucide-react";
 import type { GeneratedRecipe, Unit } from "@/lib/types";
 import { unitEnum, unitAbbreviations } from "@/lib/types";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
@@ -21,6 +29,8 @@ import { Label } from "./ui/label";
 import { Separator } from "./ui/separator";
 import { ImageGenerationModal } from "./image-generation-modal";
 import { RecipeVisibilityModal } from "./recipe-visibility-modal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import Image from "next/image";
 
 interface RecipeFormProps {
   recipe: GeneratedRecipe;
@@ -67,13 +77,16 @@ function updateIngredientAtIndex(
 export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }: RecipeFormProps) {
   const [recipe, setRecipe] = useState(initialRecipe);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [savedRecipeUrl, setSavedRecipeUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false);
   const [recipeVisibility, setRecipeVisibility] = useState<boolean>(isPublic);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const units = unitEnum.options;
   const router = useRouter();
   useEffect(() => {
@@ -110,6 +123,9 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
       }
 
       const data = await response.json();
+      
+      // Simply set the image data in the recipe state
+      // The server will handle the upload to Supabase Storage when saving
       setRecipe(prev => ({ ...prev, thumbnail: data.image }));
     } catch (error) {
       console.error("Failed to generate image:", error);
@@ -117,6 +133,47 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
     } finally {
       setIsGenerating(false);
     }
+  }
+
+  // New function to handle direct image upload from device
+  async function handleImageFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsUploading(true);
+    setImageError(null);
+    
+    try {
+      // Convert file to base64
+      const base64 = await fileToBase64(file);
+      
+      // Just set the base64 directly in the recipe state
+      // The server will handle the upload to Supabase Storage when saving
+      setRecipe(prev => ({ ...prev, thumbnail: base64 }));
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      
+      // Close upload modal
+      setIsUploadModalOpen(false);
+    } catch (error) {
+      console.error("Failed to process image:", error);
+      setImageError("Failed to process image. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  }
+  
+  // Helper function to convert File to base64
+  function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -192,12 +249,22 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
     updateFn: (ingredient: GeneratedRecipe["ingredients"][number]["ingredients"][number]) => 
       GeneratedRecipe["ingredients"][number]["ingredients"][number]
   ) {
-    setRecipe((prev) => ({
-      ...prev,
-      ingredients: updateIngredientInGroup(prev.ingredients, groupIdx, (group) =>
-        updateIngredientAtIndex(group, ingredientIdx, updateFn)
-      ),
-    }));
+    setRecipe((prev) => {
+      const updatedIngredients = [...prev.ingredients];
+      const group = updatedIngredients[groupIdx];
+      if (group) {
+        const newIngredients = [...group.ingredients];
+        newIngredients[ingredientIdx] = updateFn(newIngredients[ingredientIdx]);
+        updatedIngredients[groupIdx] = {
+          ...group,
+          ingredients: newIngredients
+        };
+      }
+      return {
+        ...prev,
+        ingredients: updatedIngredients
+      };
+    });
   }
 
   function handleAddInstruction() {
@@ -224,6 +291,53 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
     }
   }
 
+  const renderImageUploadModal = (
+    <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="mb-4">Upload Afbeelding</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <Label htmlFor="recipe-image" className="block text-sm font-medium">
+            Select een bestand
+          </Label>
+          <Input
+            ref={fileInputRef}
+            id="recipe-image"
+            type="file"
+            accept="image/*"
+            onChange={handleImageFileUpload}
+            disabled={isUploading}
+            className="w-full"
+          />
+          {imageError && <p className="text-red-500 text-sm">{imageError}</p>}
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsUploadModalOpen(false)}
+              disabled={isUploading}
+            >
+              Annuleren
+            </Button>
+            <Button
+              disabled={isUploading}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {isUploading ? (
+                <>
+                  <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+                  Uploaden...
+                </>
+              ) : (
+                "Upload"
+              )}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
@@ -248,42 +362,73 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
               }}
             />
             <Separator className="my-8" text="of"/>
-            <div className="space-y-4">
-              <Button
-                type="button"
-                onClick={() => setIsImageModalOpen(true)}
-                disabled={isGenerating}
-                variant="secondary"
-                data-testid="generate-image"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Afbeelding genereren...
-                  </>
-                ) : (
-                  "Afbeelding genereren"
-                )}
-              </Button>
+            <div className="flex flex-col space-y-3">
+              <h2 className="text-xl font-semibold">Afbeelding</h2>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  disabled={isGenerating}
+                  onClick={() => setIsImageModalOpen(true)}
+                >
+                  {isGenerating ? (
+                    <>
+                      <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+                      Genereren...
+                    </>
+                  ) : (
+                    "Afbeelding genereren"
+                  )}
+                </Button>
+                
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsUploadModalOpen(true)}
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <>
+                      <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="mr-2 h-4 w-4" />
+                      Upload afbeelding
+                    </>
+                  )}
+                </Button>
 
-              {imageError && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{imageError}</AlertDescription>
-                </Alert>
+                {imageError && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{imageError}</AlertDescription>
+                  </Alert>
+                )}
+              </div>
+
+              {recipe.thumbnail && (
+                <div className="w-full sm:-mx-6 md:-mx-8 lg:-mx-12 mt-4 relative group">
+                  <img
+                    src={recipe.thumbnail}
+                    alt="Recipe preview"
+                    data-testid="recipe-image-preview"
+                    className="w-full h-[300px] md:h-[400px] object-contain"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="bg-white hover:bg-gray-100 text-gray-800"
+                      onClick={() => setIsUploadModalOpen(true)}
+                    >
+                      <RefreshCwIcon className="mr-2 h-4 w-4" />
+                      Verander afbeelding
+                    </Button>
+                  </div>
+                </div>
               )}
             </div>
-
-            {recipe.thumbnail && (
-              <div className="w-full sm:-mx-6 md:-mx-8 lg:-mx-12 mt-4">
-                <img
-                  src={recipe.thumbnail}
-                  alt="Recipe preview"
-                  data-testid="recipe-image-preview"
-                  className="w-full h-[300px] md:h-[400px] object-contain"
-                />
-              </div>
-            )}
           </div>
         </div>
         
@@ -377,7 +522,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                     <SelectContent>
                       {units.map((unit) => (
                         <SelectItem key={unit} value={unit} data-testid={`ingredient-unit-${unit}`}>
-                          {unitAbbreviations[unit]}
+                          {renderUnitDisplay(ingredient.unit)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -402,7 +547,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                     className="text-red-500 hover:text-red-700"
                     data-testid="remove-ingredient"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <TrashIcon className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
@@ -415,7 +560,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
               className="mt-2"
               data-testid="add-ingredient"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <PlusIcon className="h-4 w-4 mr-2" />
               Ingredient toevoegen
             </Button>
           </div>
@@ -451,7 +596,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
               className="text-red-500 hover:text-red-700"
               data-testid="remove-instruction"
             >
-              <Trash2 className="h-4 w-4" />
+              <TrashIcon className="h-4 w-4" />
             </Button>
           </div>
         ))}
@@ -463,7 +608,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
           className="mt-2"
           data-testid="add-instruction"
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <PlusIcon className="h-4 w-4 mr-2" />
           Voeg stap toe
         </Button>
       </div>
@@ -483,7 +628,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
           >
             {isSaving ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
                 Opslaan...
               </>
             ) : (
@@ -522,6 +667,13 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
         onConfirm={(isPublic: boolean) => saveRecipe(isPublic)}
         defaultVisibility={recipeVisibility}
       />
+
+      {renderImageUploadModal}
     </form>
   );
+}
+
+function renderUnitDisplay(unit: Unit | undefined) {
+  if (!unit) return "";
+  return unitAbbreviations[unit] || unit;
 } 

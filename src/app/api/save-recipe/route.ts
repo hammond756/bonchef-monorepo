@@ -3,6 +3,8 @@ import { GeneratedRecipeSchema } from "@/lib/types";
 import { ZodError } from "zod";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { uploadImageFromBase64Server, imageUrlToBase64Server } from "@/utils/supabase/storage-server";
+
 // Helper function to check if string is a valid URL
 function isValidUrl(urlString: string) {
   try {
@@ -13,19 +15,26 @@ function isValidUrl(urlString: string) {
   }
 }
 
-// Helper function to convert image URL to base64
-async function imageUrlToBase64(url: string): Promise<string> {
-  try {
-    const response = await fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const base64String = buffer.toString("base64");
-    const contentType = response.headers.get("content-type") || "image/jpeg";
-    return `data:${contentType};base64,${base64String}`;
-  } catch (error) {
-    console.error("Error converting image to base64:", error);
-    throw error;
+// Helper function to process the thumbnail
+async function processThumbnail(thumbnail: string): Promise<string> {
+  // If it's already a Supabase Storage URL, return it as is
+  if (thumbnail.includes(process.env.NEXT_PUBLIC_SUPABASE_URL as string) && 
+      thumbnail.includes('/storage/v1/object/public/')) {
+    return thumbnail;
   }
+  
+  // If it's a URL but not a base64 string, fetch it and convert to base64 first
+  if (isValidUrl(thumbnail) && !thumbnail.startsWith("data:")) {
+    thumbnail = await imageUrlToBase64Server(thumbnail);
+  }
+  
+  // If it's a base64 string, upload to Supabase Storage
+  if (thumbnail.startsWith("data:")) {
+    return await uploadImageFromBase64Server(thumbnail);
+  }
+  
+  // If it doesn't match any known format, return as is
+  return thumbnail;
 }
 
 export async function POST(request: Request) {
@@ -44,12 +53,10 @@ export async function POST(request: Request) {
     const { id, is_public, ...recipeData } = data;
     const validatedRecipe = GeneratedRecipeSchema.parse(recipeData);
 
-    // Process thumbnail if it's a URL
-    if (validatedRecipe.thumbnail && 
-        isValidUrl(validatedRecipe.thumbnail) && 
-        !validatedRecipe.thumbnail.startsWith("data:")) {
+    // Process thumbnail to store in Supabase Storage instead of as base64
+    if (validatedRecipe.thumbnail) {
       try {
-        validatedRecipe.thumbnail = await imageUrlToBase64(validatedRecipe.thumbnail);
+        validatedRecipe.thumbnail = await processThumbnail(validatedRecipe.thumbnail);
       } catch (error) {
         console.error("Error processing thumbnail:", error);
         return NextResponse.json(
@@ -60,10 +67,10 @@ export async function POST(request: Request) {
     }
 
     if (id) {
-      // Update existing recipe
+      // Get the existing recipe to check if we need to replace the image
       const { data: existingRecipe } = await supabase
         .from("recipe_creation_prototype")
-        .select("user_id")
+        .select("user_id, thumbnail")
         .eq("id", id)
         .single();
 
