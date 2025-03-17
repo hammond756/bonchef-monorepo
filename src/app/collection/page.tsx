@@ -67,16 +67,6 @@ async function WelcomeSection() {
   )
 }
 
-function WelcomeMessageSkeleton() {
-  return (
-    <div className="mb-8">
-      <Skeleton className="h-6 w-full mb-6" />
-      <Skeleton className="h-6 w-3/4 mb-6" />
-      <Skeleton className="h-10 w-40 mb-8" />
-    </div>
-  )
-}
-
 export default async function CollectionPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

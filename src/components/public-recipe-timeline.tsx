@@ -14,15 +14,13 @@ export function PublicRecipeTimeline() {
   const { recipes, fetchRecipes, loadMore } = useRecipeTimeline()
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
-  const [totalCount, setTotalCount] = useState(0)
 
   useEffect(() => {
     async function load() {
       setLoading(true)
       try {
         const result = await fetchRecipes()
-        setHasMore(result.hasMore)
-        setTotalCount(result.totalCount)
+        setHasMore(result.hasMore)  
       } finally {
         setLoading(false)
       }
@@ -36,7 +34,6 @@ export function PublicRecipeTimeline() {
       await loadMore()
       const result = await fetchRecipes()
       setHasMore(result.hasMore)
-      setTotalCount(result.totalCount)
     } finally {
       setLoading(false)
     }
@@ -104,7 +101,7 @@ export function PublicRecipeTimeline() {
 
       {!loading && !hasMore && recipes.length > 0 && (
         <p className="py-4 text-center text-gray-500">
-          Je hebt alle {totalCount} recepten bekeken!
+          Je hebt alle recepten bekeken!
         </p>
       )}
 
