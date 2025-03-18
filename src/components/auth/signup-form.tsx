@@ -8,11 +8,12 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { signup } from "@/app/signup/actions"
-
+import { createClient } from "@/utils/supabase/client"
 export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
+  const supabase = createClient()
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -41,7 +42,11 @@ export function SignUpForm() {
           title: "Success",
           description: success,
         })
-        router.push("/")
+        const { data: { session } } = await supabase.auth.getSession()
+        console.log("Session:", session)
+        if (session) {
+          router.push("/auth-callback")
+        }
       }
 
       if (error) {
