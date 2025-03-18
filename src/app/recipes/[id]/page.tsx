@@ -8,8 +8,8 @@ import { createAdminClient, createClient } from "@/utils/supabase/server"
 import { PencilIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
-// Set the page to use static rendering
-export const dynamic = "force-static"
+// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
+export const dynamic = "auto"
 export const revalidate = 3600 // Revalidate every hour
 
 // Function to generate static paths
