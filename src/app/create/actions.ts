@@ -43,7 +43,7 @@ interface TaskStatus {
 export type WriteStyle = "professioneel" | "thuiskok";
 
 export async function generateRecipe(recipeText: string, writeStyle: WriteStyle) {
-  if (process.env.NEXT_PUBLIC_DEV_MODE === "true") {
+  if (process.env.NODE_ENV != "production" && process.env.NEXT_PUBLIC_USE_FAKE_MODELS === "true") {
     return "dev-task-id";
   }
 
@@ -77,7 +77,7 @@ export async function generateRecipe(recipeText: string, writeStyle: WriteStyle)
 }
 
 export async function getTaskStatus(taskId: string) {
-  if (process.env.NEXT_PUBLIC_DEV_MODE === "true") {
+  if (process.env.NODE_ENV != "production" && process.env.NEXT_PUBLIC_USE_FAKE_MODELS === "true") {
     return {
       status: "SUCCESS",
       progress: 100,

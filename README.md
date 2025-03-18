@@ -66,3 +66,10 @@ The application is configured for deployment on Heroku.
 [x] Create the homescreen with all the users own recipes
 [x] When a recipe is created, go back to the homescreen
 [x] When a recipe is opened from the homescreen, it should open as a static page
+
+# TODO
+
+[] Limiteer context die gebruikt wordt door agent tot N laatste messages
+[x] Maak "Clear history" button nederlands en iets minder groot
+[x] Update prompt(s) om teasers terug te geven ipv hele recepten
+[] Test het op een of andere manier automatisch..

@@ -6,7 +6,6 @@ import { UrlStatusList } from "./url-status-list"
 import { SendIcon } from "lucide-react"
 import AutoGrowingTextarea from "./ui/auto-growing-textarea"
 import { UserInput } from "@/lib/types"
-import { v4 as uuidv4 } from "uuid"
 
 interface ChatInputProps {
   onSend: (userInput: UserInput) => void
@@ -44,6 +43,14 @@ async function fetchUrlContent(url: string): Promise<string> {
 function autoResizeTextarea(element: HTMLTextAreaElement) {
   element.style.height = "auto"
   element.style.height = `${element.scrollHeight}px`
+}
+
+// Convert plain URLs to markdown links
+function convertUrlsToMarkdown(text: string): string {
+  return text.replace(
+    /(https?:\/\/[^\s]+)/g, 
+    (url) => `[${url}](${url})`
+  )
 }
 
 export interface ChatInputHandle {
@@ -114,8 +121,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
       .filter(status => status.status === "success")
       .map(status => ({ url: status.url, content: status.content! }))
     
+    // Convert URLs to markdown links before sending
+    const messageWithMarkdownLinks = convertUrlsToMarkdown(message)
+    
     onSend({
-      message,
+      message: messageWithMarkdownLinks,
       webContent
     })
     setMessage("")

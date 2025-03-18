@@ -84,16 +84,39 @@ export const GeneratedRecipeSchema = z.object({
 export type GeneratedRecipe = z.infer<typeof GeneratedRecipeSchema>;
 export type Unit = z.infer<typeof unitEnum>; 
 
-
 export interface UserInput {
   message: string;
-  webContent: {url: string, content: string}[];
+  webContent: Array<{ url: string; content: string }>;
 }
 
-export interface BotResponse {
+export const MessageType = z.enum([
+  "text",
+  "recipe",
+]);
+
+export const ResponseMessage = z.object({
+  type: MessageType,
+  content: z.string()
+});
+
+export const LLMResponseSchema = z.object({
+  messages: z.array(ResponseMessage)
+});
+
+export const IntentResponseSchema = z.object({
+  intent: z.enum(["recipe", "modify", "question", "other", "teaser"]),
+})
+
+export type LLMResponse = z.infer<typeof LLMResponseSchema>;
+export type IntentResponse = z.infer<typeof IntentResponseSchema>;
+
+export type Message = z.infer<typeof ResponseMessage>;
+export type AgentResponse = Message[];
+
+export interface HistoryMessage {
+  role: "user" | "assistant";
   content: string;
-  type: "text" | "recipe";
-  error?: string;
+  timestamp: Date;
 }
 
 export interface MessageType {
@@ -108,12 +131,12 @@ export interface UserMessageType extends MessageType {
 
 export interface BotMessageType extends MessageType {
   type: "bot";
-  botResponse: BotResponse;
+  botResponse: Message;
 }
 
 export interface BotErrorMessageType extends MessageType {
   type: "bot_error";
-  botResponse: BotResponse;
+  botResponse: Message;
   userInputToRetry: UserInput;
 }
 

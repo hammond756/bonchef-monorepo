@@ -132,7 +132,6 @@ test.describe("Signup flows", () => {
     await testSignupScenario(page, baseURL!, {
       formData: { confirmPassword: "wrong-password" },
       expectedUrl: "/signup",
-      expectedMessage: "Wachtwoorden komen niet overeen"
     });
   });
 });

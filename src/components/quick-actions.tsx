@@ -51,6 +51,7 @@ export function QuickActions({ actions, surpriseAction, onPromptClick }: QuickAc
 
         <button
           onClick={surpriseAction}
+          data-testid="surprise-me"
           className={cn(
             "flex items-center gap-2 p-4 rounded-lg text-left",
             "bg-purple-50 hover:bg-purple-100 transition-colors",

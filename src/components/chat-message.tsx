@@ -2,6 +2,8 @@ import { Loader2, RotateCcw } from "lucide-react"
 import { SaveRecipeButton } from "./save-recipe-button"
 import { Button } from "@/components/ui/button"
 import { BotErrorMessageType, ChatMessageData as ChatMessageType } from "@/lib/types"
+import ReactMarkdown from "react-markdown"
+import rehypeSanitize from "rehype-sanitize"
 
 interface ChatMessageProps {
   message: ChatMessageType
@@ -57,46 +59,62 @@ export function ChatMessage({
       )
     }
 
-    // Show regular message content with clickable links
+    // Show regular message content with markdown rendering
     return (
-      <p className="whitespace-pre-wrap break-words">
-        {(displayText || "").split(/(https?:\/\/[^\s]+)/).map((part, i) => {
-          if (part.match(/^https?:\/\//)) {
-            return (
+      <div className="break-words markdown-content [&_p]:my-1 [&_h1]:mt-6 [&_h1]:mb-4 [&_h1]:text-2xl [&_h2]:mt-4 [&_h2]:mb-2 [&_h2]:text-xl [&_h3]:mt-3 [&_h3]:mb-1 [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1">
+        <ReactMarkdown 
+          rehypePlugins={[rehypeSanitize]}
+          components={{
+            a: ({ node, ...props }) => (
               <a 
-                key={i} 
-                href={part} 
+                {...props} 
                 className="text-blue-500 hover:underline" 
                 target="_blank" 
                 rel="noopener noreferrer"
-              >
-                {part}
-              </a>
-            )
-          }
-          return part
-        })}
-      </p>
+              />
+            ),
+            ol: ({ node, ...props }) => (
+              <ol {...props} className="list-decimal pl-4" />
+            ),
+            ul: ({ node, ...props }) => (
+              <ul {...props} className="list-disc pl-4" />
+            ),
+            p: ({ node, ...props }) => (
+              <p {...props} className="py-1 whitespace-pre-wrap" />
+            ),
+          }}
+        >
+          {displayText || ""}
+        </ReactMarkdown>
+      </div>
     )
   }
 
   return (
-    <div className={`flex flex-col ${message.type === "user" ? "items-end" : "items-start"}`}>
+    <div 
+      className={`flex flex-col w-full ${message.type === "user" ? "items-end" : "items-start"}`}
+      data-testid="chat-message"
+    >
       <div
-        className={`max-w-[80%] rounded-lg p-4 ${
-          message.type === "user" ? "bg-white text-black" : "bg-gray-900 text-white"
+        className={`w-full ${
+          message.type === "user" 
+            ? "max-w-[80%] rounded-lg p-4 bg-white text-black" 
+            : "text-black"
         }`}
       >
         {renderMessageContent()}
+        
+        {message.type === "bot" && message.botResponse.type === "recipe" && (
+          <div className="mt-4">
+            <SaveRecipeButton
+              message={message.botResponse.content} 
+              onSaved={onRecipeSaved}
+            />
+          </div>
+        )}
       </div>
-      
-      {message.type === "bot" && message.botResponse.type === "recipe" && (
-        <div className="mt-2 ml-2">
-          <SaveRecipeButton
-            message={message.botResponse.content} 
-            onSaved={onRecipeSaved}
-          />
-        </div>
+      {message.type === "bot" && !isLastMessage && (
+        <hr className="w-full my-6 border-gray-200" />
       )}
     </div>
   )

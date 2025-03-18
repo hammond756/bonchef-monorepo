@@ -1,23 +1,39 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { Camera, Link, User, FileText, Globe, MessageSquare } from "lucide-react"
 import { ChatMessage } from "./chat-message"
 import { ChatInput, ChatInputHandle } from "./chat-input"
 import { QuickActions } from "./quick-actions"
-import { sendChatMessage } from "@/app/chat/actions"
-import { UserInput, BotResponse, ChatMessageData as ChatMessageType, BotMessageType, UserMessageType, BotErrorMessageType, BotLoadingMessageType } from "@/lib/types"
+import { UserInput, ChatMessageData, BotMessageType, BotErrorMessageType } from "@/lib/types"
+import { Button } from "@/components/ui/button"
+import { useChatStore } from "@/lib/store/chat-store"
+import { useChatApi } from "@/hooks/use-chat-api"
+import { RotateCcw } from "lucide-react"
 
 export function Chat() {
-  const [messages, setMessages] = useState<ChatMessageType[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const { 
+    messages, 
+    setMessages, 
+    clearConversation,
+  } = useChatStore()
+  
+  const { 
+    isLoading, 
+    sendMessage, 
+    retryMessage 
+  } = useChatApi({
+    onError: handleApiError
+  })
+  
   const [isInputExpanded, setIsInputExpanded] = useState(false)
   const [inputPlaceholder, setInputPlaceholder] = useState("Typ hier je bericht...")
   const conversationId = useState(() => uuidv4())[0]
   const containerRef = useRef<HTMLDivElement>(null)
   const chatInputRef = useRef<ChatInputHandle>(null)
 
+  // Scroll to bottom when messages change
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight
@@ -83,130 +99,62 @@ export function Chat() {
     handleSendMessage({ message: prompt, webContent: [] })
   }
 
-  async function handleRetry(message: BotErrorMessageType) {
+  function handleApiError(errorMessage: string, userInput: UserInput) {
+    setMessages((prev: ChatMessageData[]) => {
+      const lastMessage = prev[prev.length - 1]
+      if (lastMessage.type !== "bot_loading") return prev
+      
+      return [
+        ...prev.slice(0, -1),
+        {
+          id: lastMessage.id,
+          type: "bot_error",
+          botResponse: {
+            content: errorMessage || "Sorry, er is iets mis gegaan. Probeer het opnieuw.",
+            type: "text"
+          },
+          userInputToRetry: userInput
+        }
+      ]
+    })
+  }
 
-    // Replace the error message with a loading message
-    setMessages(prev => prev.map(msg => 
+  // UI interaction handlers
+  async function handleSendMessage(userInput: UserInput) {
+    await sendMessage(userInput)
+
+    setIsInputExpanded(false)
+    setInputPlaceholder("Typ hier je bericht...")
+  }
+
+  async function handleRetry(message: BotErrorMessageType) {
+    setMessages((prev: ChatMessageData[]) => prev.map((msg: ChatMessageData) => 
       msg.id === message.id ? { ...msg, type: "bot_loading", isLoading: true } : msg
     ))
 
-    try {
-      const result = await sendChatMessage(
-        message.userInputToRetry, 
-        conversationId,
-      )
-      
-      if (result.success) {
-        // First remove the loading message
-        setMessages(prev => prev.filter(msg => msg.id !== message.id))
-
-        const botResponses: BotMessageType[] = result.output.map((message: BotResponse) => ({
-          id: uuidv4(),
-          type: "bot",
-          botResponse: message
-        }))
-
-        // Replace the loading message with the actual response
-        setMessages(prev => [
-          ...prev,
-          ...botResponses
-        ])
-      } else {
-        throw new Error(result.error)
-      }
-    } catch (error) {
-      console.error("Failed to retry message:", error)
-      setMessages(prev => prev.map(msg =>
-        msg.id === message.id ? {
-          ...msg,
-          type: "bot_error",
-          botResponse: {
-            content: "Sorry, er is iets mis gegaan. Probeer het opnieuw.",
-            type: "text"
-          },
-          userInputToRetry: message.userInputToRetry
-        } : msg
-      ))
-    }
-  }
-
-  async function handleSendMessage(userInput: UserInput) {
-    setIsLoading(true)
-    setIsInputExpanded(false)
-    setInputPlaceholder("Typ hier je bericht...")
-        
-    const userMessage: UserMessageType = {
-      id: uuidv4(),
-      type: "user",
-      userInput
-    }
-    
-    const loadingMessage: BotLoadingMessageType = {
-      id: uuidv4(),
-      type: "bot_loading",
-      isLoading: true,
-    }
-    
-    setMessages(prev => [...prev, userMessage, loadingMessage])
-
-    try {
-      const result = await sendChatMessage(userMessage.userInput, conversationId)
-      
-      if (result.success) {
-        setMessages(prev => {
-
-          // Before sending the message, we first dropped a loading message.
-          // This logic services to replace the loading message with the actual response.
-          const lastMessage = prev[prev.length - 1]
-          if (lastMessage.type !== "bot_loading") return prev
-          
-          const botResponses: BotMessageType[] = result.output.map((message: BotResponse) => ({
-            id: uuidv4(),
-            type: "bot",
-            botResponse: message
-          }))
-          
-          return [
-            ...prev.slice(0, -1),
-            ...botResponses
-          ]
-        })
-      } else {
-        throw new Error(result.error)
-      }
-    } catch (error) {
-      console.error("Failed to send message:", error)
-      setMessages(prev => {
-        // Before sending the message, we first dropped a loading message.
-        // This logic services to replace the loading message with the actual response.
-        const lastMessage = prev[prev.length - 1]
-        if (lastMessage.type !== "bot_loading") return prev
-        
-        return [
-          ...prev.slice(0, -1),
-          {
-            id: lastMessage.id,
-            type: "bot_error",
-            botResponse: {
-              id: lastMessage.id,
-              content: "Sorry, er is iets mis gegaan. Probeer het opnieuw.",
-              type: "text"
-            },
-            userInputToRetry: userInput
-          }
-        ]
-      })
-    }
-    setIsLoading(false)
+    await retryMessage(message.userInputToRetry, message.id)
   }
 
   async function handleRecipeSaved(url: string) {
     console.log("Recipe saved:", url)
+    // Implement recipe saving functionality
   }
 
   return (
     <div className="flex flex-col h-[100dvh]">
-      <div className="flex-1 overflow-y-auto bg-gray-100" ref={containerRef}>
+      <div className="flex-1 overflow-y-auto bg-gray-100 relative" ref={containerRef}>
+        {messages.length > 0 && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={clearConversation}
+            data-testid="reset-chat"
+            className="text-xs text-gray-500 hover:text-gray-700 absolute left-2 z-10 bg-gray-100/80 backdrop-blur-sm"
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Begin opnieuw
+          </Button>
+        )}
         {messages.length === 0 ? (
           <QuickActions 
             actions={quickActions}
@@ -224,6 +172,18 @@ export function Chat() {
                 onRetry={handleRetry}
               />
             ))}
+        {isLoading && (
+          <ChatMessage 
+            message={{
+              id: uuidv4(),
+              type: "bot_loading",
+              isLoading: true
+            }}
+            onRecipeSaved={handleRecipeSaved}
+            isLastMessage={true}
+            onRetry={handleRetry}
+          />
+        )}
           </div>
         )}
       </div>
