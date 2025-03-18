@@ -171,7 +171,7 @@ export function Chat() {
             size="sm" 
             onClick={clearConversation}
             data-testid="reset-chat"
-            className="text-xs text-gray-500 hover:text-gray-700 absolute left-2 z-10 bg-gray-100/80 backdrop-blur-sm"
+            className="sticky top-2 text-xs text-white hover:text-gray-700 left-2 z-10 bg-blue-500 backdrop-blur-sm"
           >
             <RotateCcw className="h-4 w-4 mr-2" />
             Begin opnieuw
