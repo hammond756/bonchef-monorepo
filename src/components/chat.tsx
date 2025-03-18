@@ -29,9 +29,14 @@ export function Chat() {
   
   const [isInputExpanded, setIsInputExpanded] = useState(false)
   const [inputPlaceholder, setInputPlaceholder] = useState("Typ hier je bericht...")
+  const [hasSelectedFilters, setHasSelectedFilters] = useState(false)
+  const [selectedFiltersCount, setSelectedFiltersCount] = useState(0)
   const conversationId = useState(() => uuidv4())[0]
   const containerRef = useRef<HTMLDivElement>(null)
   const chatInputRef = useRef<ChatInputHandle>(null)
+
+  // Directly handle filter result submission
+  const [generateRecipePrompt, setGenerateRecipePrompt] = useState<string | null>(null)
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -46,6 +51,19 @@ export function Chat() {
 
   function handleSurpriseAction() {
     handleSendMessage({ message: `Verras me maar!`, webContent: [{url: "https://random.com", content: `Geef drie random recepten opties. ${conversationId}`}] })
+  }
+
+  function handleFilterSelectionChange(hasFilters: boolean, count: number, prompt: string) {
+    setHasSelectedFilters(hasFilters)
+    setSelectedFiltersCount(count)
+    setGenerateRecipePrompt(prompt)
+  }
+
+  function handleGenerateRecipe() {
+    if (generateRecipePrompt) {
+      handleSendMessage({ message: generateRecipePrompt, webContent: [] })
+      setGenerateRecipePrompt(null)
+    }
   }
 
   const quickActions = [
@@ -125,6 +143,10 @@ export function Chat() {
 
     setIsInputExpanded(false)
     setInputPlaceholder("Typ hier je bericht...")
+    
+    // Reset filter state after sending a message
+    setHasSelectedFilters(false)
+    setSelectedFiltersCount(0)
   }
 
   async function handleRetry(message: BotErrorMessageType) {
@@ -160,6 +182,7 @@ export function Chat() {
             actions={quickActions}
             surpriseAction={handleSurpriseAction}
             onPromptClick={handleQuickPrompt}
+            onFilterSelectionChange={handleFilterSelectionChange}
           />
         ) : (
           <div className="p-4 space-y-4">
@@ -188,13 +211,25 @@ export function Chat() {
         )}
       </div>
       <div className="sticky bottom-0 w-full bg-white border-t border-gray-200">
-        <ChatInput 
-          ref={chatInputRef} 
-          onSend={handleSendMessage} 
-          isLoading={isLoading}
-          isExpanded={isInputExpanded}
-          placeholder={inputPlaceholder}
-        />
+        {messages.length === 0 && hasSelectedFilters ? (
+          <div className="p-4">
+            <Button 
+              onClick={handleGenerateRecipe}
+              className="w-full py-6 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+              disabled={isLoading}
+            >
+              Recept genereren met {selectedFiltersCount} {selectedFiltersCount === 1 ? 'filter' : 'filters'}
+            </Button>
+          </div>
+        ) : (
+          <ChatInput 
+            ref={chatInputRef} 
+            onSend={handleSendMessage} 
+            isLoading={isLoading}
+            isExpanded={isInputExpanded}
+            placeholder={inputPlaceholder}
+          />
+        )}
       </div>
     </div>
   )

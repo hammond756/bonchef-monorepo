@@ -11,8 +11,6 @@ interface ChatStore {
   getConversationHistory: () => HistoryMessage[]
 }
 
-type ChatState = Pick<ChatStore, "messages" | "conversationId">
-
 export const useChatStore = create<ChatStore>()(
   persist<ChatStore>(
     (set, get) => ({
