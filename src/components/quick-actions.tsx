@@ -219,7 +219,7 @@ export function QuickActions({
         key={`${option.category}-${option.id}`}
         onClick={() => handleFilterToggle(option)}
         className={cn(
-          "px-4 py-2 border text-sm transition-colors",
+          "px-3 py-1.5 border text-sm transition-colors rounded-md",
           isFilterSelected(option.id)
             ? "bg-green-100 border-green-500 text-green-800 font-medium"
             : "bg-white border-gray-200 hover:bg-gray-50"
@@ -247,13 +247,13 @@ export function QuickActions({
               key={action.label}
               onClick={action.onClick}
               className={cn(
-                "flex items-center gap-2 p-4 rounded-lg text-left",
+                "flex items-center gap-2 p-3 rounded-lg text-left",
                 "bg-green-50 hover:bg-green-100 transition-colors",
                 "border border-green-200"
               )}
             >
-              <action.icon className="h-5 w-5 text-green-700" />
-              <span>{action.label}</span>
+              <action.icon className="h-4 w-4 text-green-700" />
+              <span className="text-sm">{action.label}</span>
             </button>
           ))}
 
@@ -261,15 +261,13 @@ export function QuickActions({
             onClick={surpriseAction}
             data-testid="surprise-me"
             className={cn(
-              "flex items-center gap-2 p-4 rounded-lg text-left",
+              "flex items-center gap-2 p-3 rounded-lg text-left",
               "bg-purple-50 hover:bg-purple-100 transition-colors",
               "border border-purple-200"
             )}
           >
-            <div className="flex items-center justify-center gap-2">
-              <Sparkles className="h-5 w-5 text-purple-700" />
-              <span>Verras me</span>
-            </div>
+            <Sparkles className="h-4 w-4 text-purple-700" />
+            <span className="text-sm">Verras me</span>
           </button>
         </div>
       </div>
@@ -282,7 +280,7 @@ export function QuickActions({
               key={prompt}
               onClick={() => onPromptClick(prompt)}
               className={cn(
-                "px-4 py-2 rounded-full",
+                "px-3 py-1.5 rounded-full text-sm",
                 "bg-white hover:bg-gray-50 transition-colors",
                 "border border-gray-200"
               )}

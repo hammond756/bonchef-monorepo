@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRecipeGeneration } from "@/hooks/use-recipe-generation"
 import { generateRecipe } from "@/app/create/actions"
+import { Loader2 } from "lucide-react"
 
 interface SaveRecipeButtonProps {
   message: string
@@ -53,15 +54,22 @@ export function SaveRecipeButton({ message, onSaved }: SaveRecipeButtonProps) {
   }
 
   return (
-    <div className="mt-1 text-xs">
+    <div className="mt-2">
       {!recipeUrl && (
         <button
           onClick={handleSave}
           disabled={isLoading}
-          className="text-blue-500 hover:text-blue-700 disabled:text-blue-300"
+          className="px-3 py-1.5 rounded-full border-2 border-green-500 text-green-600 hover:bg-green-50 transition-colors text-sm font-medium"
           data-testid="save-recipe-button"
         >
-          {isLoading ? `Opslaan... ${progress * 100}%` : "Opslaan in collectie"}
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Opslaan... {Math.round(progress * 100)}%</span>
+            </div>
+          ) : (
+            "Opslaan in collectie"
+          )}
         </button>
       )}
       {recipeUrl && (
@@ -69,7 +77,7 @@ export function SaveRecipeButton({ message, onSaved }: SaveRecipeButtonProps) {
           href={recipeUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-500 hover:text-blue-700"
+          className="px-3 py-1.5 rounded-full border-2 border-green-500 text-green-600 hover:bg-green-50 inline-block text-sm font-medium"
           data-testid="save-view-button"
         >
           Bekijk recept
