@@ -152,7 +152,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
           disabled={isLoading}
           data-testid="chat-input"
           className={`resize-none py-1.5 px-3 leading-tight overflow-hidden transition-all duration-200 ${
-            isExpanded ? "min-h-[144px] max-h-[144px]" : "min-h-[36px] max-h-[36px]"
+            isExpanded ? "min-h-[144px] max-h-[144px]" : "min-h-[36px] max-h-[144px]"
           }`}
           onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
             if (e.key === "Enter" && !e.shiftKey) {
