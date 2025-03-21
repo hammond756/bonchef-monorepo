@@ -92,6 +92,7 @@ export interface UserInput {
 export const MessageType = z.enum([
   "text",
   "recipe",
+  "teaser",
 ]);
 
 export const ResponseMessage = z.object({

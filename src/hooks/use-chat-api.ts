@@ -94,36 +94,45 @@ export function useChatApi({
                   // Get the raw chunk data
                   const chunk = data.data.chunk
                   
+                  let content = ""
+
                   // If the chunk has content in kwargs, process it
-                  if (chunk.kwargs && chunk.kwargs.content) {
-                    const content = chunk.kwargs.content
+                  // I'm not sure which configuration causes the content to be in kwargs.content
+                  // or in tool_call_chunks[0].args, but it's inconsistent.
+                  if (chunk.kwargs && chunk.kwargs.tool_call_chunks && chunk.kwargs.tool_call_chunks.length > 0) {
+                    // Looks like output from gpt-4o with json_schema model
+                    console.log("Tool call chunks:", chunk.kwargs.tool_call_chunks)
+                    content = chunk.kwargs.tool_call_chunks[0].args
+                  } else if (chunk.kwargs && chunk.kwargs.content) {
+                    // Looks like output from gpt-4o with function_calling mode
+                    content = chunk.kwargs.content
+                  }
+
+                  // Accumulate the content
+                  accumulatedJson += content
+
+                  try {
+                    // Try to parse the accumulated JSON as a complete LLMResponse
+                    const parsedResponse = parse(accumulatedJson, Allow.ALL) as LLMResponse
                     
-                    // Accumulate the content
-                    accumulatedJson += content
-                    
-                    try {
-                      // Try to parse the accumulated JSON as a complete LLMResponse
-                      const parsedResponse = parse(accumulatedJson, Allow.ALL) as LLMResponse
+                    // If we have a valid messages array
+                    if (parsedResponse && parsedResponse.messages && Array.isArray(parsedResponse.messages)) {
+                      const messages = parsedResponse.messages
                       
-                      // If we have a valid messages array
-                      if (parsedResponse && parsedResponse.messages && Array.isArray(parsedResponse.messages)) {
-                        const messages = parsedResponse.messages
-                        
-                        // Create bot responses from messages
-                        const botResponses: BotMessageType[] = messages.map((msg: Message) => ({
-                          id: uuidv4(),
-                          type: "bot",
-                          botResponse: msg
-                        }))
-                        
-                        // Update messages using the original pattern
-                        setMessages((prev: ChatMessageData[]) => [...prev.slice(0, lastMessageIdx), ...botResponses])
-                      }
-                    } catch (jsonError) {
-                      // If we can't parse the accumulated JSON yet, it's incomplete
-                      // Just continue accumulating
-                      console.log("Accumulating JSON chunks...")
+                      // Create bot responses from messages
+                      const botResponses: BotMessageType[] = messages.map((msg: Message) => ({
+                        id: uuidv4(),
+                        type: "bot",
+                        botResponse: msg
+                      }))
+                      
+                      // Update messages using the original pattern
+                      setMessages((prev: ChatMessageData[]) => [...prev.slice(0, lastMessageIdx), ...botResponses])
                     }
+                  } catch (jsonError) {
+                    // If we can't parse the accumulated JSON yet, it's incomplete
+                    // Just continue accumulating
+                    console.log("Accumulating JSON chunks...")
                   }
                 } catch (error) {
                   console.error("Error processing chunk:", error)

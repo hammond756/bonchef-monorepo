@@ -68,7 +68,37 @@ export class CulinaryAgent {
         Frans - eenvoudig - gezond
         _Courgette halveren – Grillen tot goudbruin – Yoghurtsaus verdelen over bord – Saffraanboter erover schenken – Afwerken met pijnboompitten en kruiden._
 
-        Houd het beknopt en overzichtelijk (geen lang recept) en houd rekening met de context in deze conversatie.`),
+        Houd het beknopt en overzichtelijk (geen lang recept) en houd rekening met de context in deze conversatie.
+        
+        Uiteindelijk moet de response er zo uit zien:
+
+        
+        {
+          "messages": [
+            {
+              "type": "text",
+              "content": "Introductie"
+            },
+            {
+              "type": "teaser",
+              "content": "Recept 1"
+            },
+            {
+              "type": "teaser",
+              "content": "Recept 2"
+            },
+            {
+              "type": "teaser",
+              "content": "Recept 3"
+            },
+            {
+              "type": "text",
+              "content": "Doorvraag"
+            }
+          ]
+        }
+        
+        `),
 
       recipe: new SystemMessage(`# Rol
         

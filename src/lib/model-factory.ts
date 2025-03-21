@@ -55,7 +55,8 @@ function createProductionModels(): ChatModelSet {
     maxTokens: 4096
   }).withStructuredOutput(LLMResponseSchema, {
     name: "response",
-    strict: true
+    strict: true,
+    method: "jsonSchema"
   })
 
   const fast = new ChatOpenAI({
@@ -65,7 +66,8 @@ function createProductionModels(): ChatModelSet {
     maxTokens: 4096
   }).withStructuredOutput(LLMResponseSchema, {
     name: "response",
-    strict: true
+    strict: true,
+    method: "jsonSchema"
   })
 
   const intentModel = new ChatOpenAI({
@@ -74,7 +76,8 @@ function createProductionModels(): ChatModelSet {
     openAIApiKey: process.env.OPENAI_API_KEY,
   }).withStructuredOutput(IntentResponseSchema, {
     name: "response",
-    strict: true
+    strict: true,
+    method: "jsonSchema"
   })
 
   return {
