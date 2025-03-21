@@ -15,8 +15,7 @@ import { RotateCcw } from "lucide-react"
 export function Chat() {
   const { 
     messages, 
-    setMessages, 
-    clearConversation,
+    setMessages,
   } = useChatStore()
   
   const { 
@@ -165,18 +164,6 @@ export function Chat() {
   return (
     <div className="flex flex-col h-[100dvh]">
       <div className="flex-1 overflow-y-auto bg-gray-100 relative" ref={containerRef}>
-        {messages.length > 0 && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={clearConversation}
-            data-testid="reset-chat"
-            className="sticky top-2 text-xs text-white hover:text-gray-700 left-2 z-10 bg-blue-500 backdrop-blur-sm"
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Begin opnieuw
-          </Button>
-        )}
         {messages.length === 0 ? (
           <QuickActions 
             actions={quickActions}

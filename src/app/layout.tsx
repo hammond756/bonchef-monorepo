@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layout/navbar"
+import { Sidebar } from "@/components/layout/sidebar"
 import { Toaster } from "@/components/ui/toaster";
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
@@ -31,8 +31,8 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NuqsAdapter>
-          <Navbar />
-          <main>{children}</main>
+          <Sidebar />
+          <main className="pt-16">{children}</main>
           <Toaster />
         </NuqsAdapter>
       </body>
