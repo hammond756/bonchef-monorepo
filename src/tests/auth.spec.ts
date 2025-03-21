@@ -28,6 +28,7 @@ test.describe("Signed in user flows", () => {
   test("Logs out successfully", async ({ page, baseURL }) => {
     await page.goto(baseURL!);
     await expect(page).toHaveURL("/");
+    await page.getByTestId("side-bar-hamburger-menu").click();
     await expect(page.getByText(process.env.TEST_USER_EMAIL!)).toBeVisible();
     await page.getByTestId("logout-button").click();
     await expect(page).toHaveURL("/login");
@@ -61,7 +62,7 @@ test.describe("Signup flows", () => {
   interface SignupScenarioOptions {
     formData?: SignupFormData;
     expectedUrl?: string;
-    expectedMessage?: string;
+    afterHomepageAssertions?: (page: Page) => Promise<void>;
   }
 
   /**
@@ -94,14 +95,12 @@ test.describe("Signup flows", () => {
     {
       formData = {},
       expectedUrl = "/",
-      expectedMessage
+      afterHomepageAssertions = (page) => Promise.resolve()
     }: SignupScenarioOptions = {}
   ): Promise<void> {
     await fillSignupForm(page, baseURL, formData);
     await expect(page).toHaveURL(expectedUrl);
-    if (expectedMessage) {
-      await expect(page.getByText(expectedMessage)).toBeVisible();
-    }
+    await afterHomepageAssertions(page);
   }
 
   test("can navigate to signup page from login page", async ({ page, baseURL }) => {
@@ -116,7 +115,10 @@ test.describe("Signup flows", () => {
 
   test("homepage shows user email after signup", async ({ page, baseURL }) => {
     await testSignupScenario(page, baseURL!, {
-      expectedMessage: testUserEmail!
+      afterHomepageAssertions: async (page) => {
+        await page.getByTestId("side-bar-hamburger-menu").click();
+        await expect(page.getByText(testUserEmail!)).toBeVisible();
+      }
     });
   });
 

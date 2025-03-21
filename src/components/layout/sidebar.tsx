@@ -73,7 +73,7 @@ export function Sidebar() {
           aria-label="Toggle menu"
           className="text-gray-700"
         >
-          <Menu className="h-5 w-5" />
+          <Menu data-testid="side-bar-hamburger-menu" className="h-5 w-5" />
         </Button>
         
         <div className="font-medium text-center flex-1">
@@ -87,6 +87,7 @@ export function Sidebar() {
           aria-label="New chat"
           className="text-gray-700"
           onClick={handleNewChat}
+          data-testid="reset-chat"
         >
           <MessageSquarePlus className="h-5 w-5" />
         </Button>
