@@ -9,9 +9,8 @@ import { QuickActions } from "./quick-actions"
 import { UserInput, ChatMessageData, BotMessageType, BotErrorMessageType } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { useChatStore } from "@/lib/store/chat-store"
-import { useChatApi } from "@/hooks/use-chat-api"
 import { useConversationHistory } from "@/hooks/use-conversation-history"
-
+import { useChat } from "@/hooks/use-chat"
 export function Chat() {
   const { 
     isLoading, 
@@ -19,7 +18,7 @@ export function Chat() {
     retryMessage,
     messages,
     setMessages
-  } = useChatApi({
+  } = useChat({
     onError: handleApiError
   })
 
