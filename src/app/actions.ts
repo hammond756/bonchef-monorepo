@@ -1,5 +1,7 @@
 "use server"
 
+import { HistoryService } from "@/lib/services/history-service"
+import { ChatMessageData } from "@/lib/types"
 import { createClient } from "@/utils/supabase/server"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
@@ -42,4 +44,30 @@ export async function getPublicRecipes(page = 1, pageSize = 10) {
   }
   
   return { data, count }
+}
+
+export async function fetchConversationHistory(conversationId: string): Promise<ChatMessageData[]> {
+  const historyService = new HistoryService()
+  const history = await historyService.getHistory(conversationId)
+  return history.map((message) => {
+    if (message.type === "user") {
+      return {
+        id: message.message_id,
+        type: message.type,
+        userInput: {
+          message: message.content,
+          webContent: message.payload.webContent
+        },
+      }
+    } else {
+      return {
+        id: message.message_id,
+        type: message.type,
+        botResponse: {
+          content: message.content,
+          type: message.payload.type
+        }
+      }
+    }
+  })
 }

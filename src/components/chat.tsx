@@ -10,27 +10,26 @@ import { UserInput, ChatMessageData, BotMessageType, BotErrorMessageType } from 
 import { Button } from "@/components/ui/button"
 import { useChatStore } from "@/lib/store/chat-store"
 import { useChatApi } from "@/hooks/use-chat-api"
-import { RotateCcw } from "lucide-react"
+import { useConversationHistory } from "@/hooks/use-conversation-history"
 
 export function Chat() {
   const { 
-    messages, 
-    setMessages,
-  } = useChatStore()
-  
-  const { 
     isLoading, 
     sendMessage, 
-    retryMessage 
+    retryMessage,
+    messages,
+    setMessages
   } = useChatApi({
     onError: handleApiError
   })
+
+  const { conversationId } = useChatStore()
+  const { history, isLoading: isHistoryLoading, mutate: mutateHistory } = useConversationHistory(conversationId)
   
   const [isInputExpanded, setIsInputExpanded] = useState(false)
   const [inputPlaceholder, setInputPlaceholder] = useState("Typ hier je bericht...")
   const [hasSelectedFilters, setHasSelectedFilters] = useState(false)
   const [selectedFiltersCount, setSelectedFiltersCount] = useState(0)
-  const conversationId = useState(() => uuidv4())[0]
   const containerRef = useRef<HTMLDivElement>(null)
   const chatInputRef = useRef<ChatInputHandle>(null)
 
@@ -44,12 +43,19 @@ export function Chat() {
     }
   }, [messages])
 
+  // Set initial messages from history
+  useEffect(() => {
+    if (history) {
+      setMessages(history)
+    }
+  }, [history, setMessages])
+
   function handleNotImplemented() {
     alert("Nog niet geimplementeerd")
   }
 
   function handleSurpriseAction() {
-    handleSendMessage({ message: `Verras me maar!`, webContent: [{url: "https://random.com", content: `Geef drie random recepten opties. ${conversationId}`}] })
+    handleSendMessage({ message: `Verras me maar!`, webContent: [{url: "https://random.com", content: `Geef drie random recepten opties. ${uuidv4()}`}] })
   }
 
   function handleFilterSelectionChange(hasFilters: boolean, count: number, prompt: string) {
@@ -164,7 +170,7 @@ export function Chat() {
   return (
     <div className="flex flex-col h-[100dvh]">
       <div className="flex-1 overflow-y-auto bg-gray-100 relative" ref={containerRef}>
-        {messages.length === 0 ? (
+        {messages.length === 0 && !isHistoryLoading ? (
           <QuickActions 
             actions={quickActions}
             surpriseAction={handleSurpriseAction}

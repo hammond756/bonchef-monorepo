@@ -14,14 +14,15 @@ import { useChatStore } from "@/lib/store/chat-store"
 import { Allow, parse } from "partial-json"
 
 interface UseChatApiProps {
-  onError: (errorMessage: string, userInput: UserInput) => void
+  onError: (errorMessage: string, userInput: UserInput) => void,
 }
 
 export function useChatApi({
-  onError
+  onError,
 }: UseChatApiProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const { conversationId, getConversationHistory, setMessages } = useChatStore()
+  const [messages, setMessages] = useState<ChatMessageData[]>([])
+  const { conversationId } = useChatStore()
 
   const sendMessage = async (userInput: UserInput) => {
     setIsLoading(true)
@@ -55,7 +56,6 @@ export function useChatApi({
     const requestBody = JSON.stringify({
       userInput: userInput,
       conversationId: conversationId,
-      conversationHistory: getConversationHistory()
     })
 
     const userMessage: ChatMessageData = {
@@ -66,7 +66,7 @@ export function useChatApi({
       
     setMessages((prev: ChatMessageData[]) => [...prev, userMessage])
 
-    const lastMessageIdx = getConversationHistory().length
+    const lastMessageIdx = messages.length + 1
     
     // For accumulating partial JSON chunks
     let accumulatedJson = ""
@@ -167,6 +167,8 @@ export function useChatApi({
   return {
     isLoading,
     sendMessage,
-    retryMessage
+    retryMessage,
+    messages,
+    setMessages
   }
 } 

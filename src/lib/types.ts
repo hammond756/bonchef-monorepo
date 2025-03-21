@@ -95,8 +95,8 @@ export const MessageType = z.enum([
 ]);
 
 export const ResponseMessage = z.object({
+  content: z.string(),
   type: MessageType,
-  content: z.string()
 });
 
 export const LLMResponseSchema = z.object({

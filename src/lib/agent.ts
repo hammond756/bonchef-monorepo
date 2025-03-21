@@ -9,6 +9,8 @@ import {
 } from "@langchain/core/messages"
 import { createChatModels, ChatModelSet } from "./model-factory"
 import { CallbackHandler } from "langfuse-langchain"
+import { HistoryService } from "./services/history-service"
+import { HistoryCallbackHandler } from "./callbacks/history-callback"
 
 
 export class CulinaryAgent {
@@ -17,6 +19,7 @@ export class CulinaryAgent {
   private intentModel: Runnable<BaseLanguageModelInput, IntentResponse, RunnableConfig<Record<string, any>>>
   private prompts!: Record<string, SystemMessage>
   private langfuseHandler: CallbackHandler
+  private historyService: HistoryService
 
   constructor(config?: Partial<ChatModelSet>) {
     const defaultModels = createChatModels()
@@ -25,6 +28,7 @@ export class CulinaryAgent {
     this.fast = config?.fast ?? defaultModels.fast
     this.intentModel = config?.intentModel ?? defaultModels.intentModel
     this.langfuseHandler = new CallbackHandler()
+    this.historyService = new HistoryService()
 
     this.initializePrompts()
   }
@@ -158,7 +162,7 @@ export class CulinaryAgent {
     }
   }
 
-  private async detectIntent(message: string, history: (HumanMessage | AIMessage)[]): Promise<string> {
+  private async detectIntent(history: (HumanMessage | AIMessage)[]): Promise<string> {
     const messages = [
       new SystemMessage(`Classificeer dit bericht in een van deze intents. Kijk daarbij ook naar de geschiedenis van het gesprek.
         
@@ -169,8 +173,7 @@ export class CulinaryAgent {
         - other: elk bericht dat niet over koken gaat, bijvoorbeeld een vraag over een ander onderwerp zoals politiek, auto's, etc.
         
         Reageer enkel met het label van de intent.`),
-      ...history,
-      new HumanMessage(message)
+      ...history
     ]
     
     const aiResponse = await this.intentModel.invoke(messages, {
@@ -183,22 +186,20 @@ export class CulinaryAgent {
 
   async processMessage(
     userInput: UserInput,
-    history: HistoryMessage[],
+    conversationId: string,
   ) {
-    const historyMessages = history.map((m) => 
-      m.role === "user" 
-        ? new HumanMessage(m.content)
-        : new AIMessage(m.content)
+    // Add user message to history
+    await this.historyService.addUserMessage(
+      conversationId,
+      userInput.message,
+      { webContent: userInput.webContent }
     )
-    const webContentMessages = userInput.webContent.map(content => 
-      new HumanMessage(`Relevante content van het web:
-        
-        URL: ${content.url}
-        Inhoud: ${content.content}`)
-    )
-    const currentMessage = new HumanMessage(userInput.message)
+
+    // Get conversation history
+    const historyMessages = await this.historyService.getHistory(conversationId)
+    const agentHistory = this.historyService.toAgentHistory(historyMessages)
     
-    const intent = await this.detectIntent(userInput.message, historyMessages)
+    const intent = await this.detectIntent(agentHistory)
     
     // Use GPT-4 for complex tasks
     const model = ["recipe", "teaser"].includes(intent) ? this.smart : this.fast
@@ -211,17 +212,17 @@ export class CulinaryAgent {
 
     const messages = [
       systemMessage,
-      ...historyMessages,
-      ...webContentMessages,
-      currentMessage
+      ...agentHistory
     ]
+
+    const historyCallback = new HistoryCallbackHandler(conversationId, this.historyService)
 
     return model.streamEvents(
       messages,
       {
         version: "v2",
         encoding: "text/event-stream",
-        callbacks: [this.langfuseHandler]
+        callbacks: [this.langfuseHandler, historyCallback]
       }
     )
   }
