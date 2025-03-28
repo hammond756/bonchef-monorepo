@@ -142,7 +142,7 @@ test.describe("Recipe editing flows", () => {
 
   test("generates new recipe image", async ({ page }) => {
     // Click generate image button
-    await page.getByTestId("generate-image").click();
+    await page.getByTestId("generate-image-button").click();
 
     // Wait for modal to appear
     await expect(page.getByText("Afbeelding instellingen")).toBeVisible();

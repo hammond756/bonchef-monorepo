@@ -28,6 +28,8 @@ test.describe("Ontdek page - Anonymous User", () => {
     
     // Verify page title is visible
     await expect(page.getByText("Ontdek recepten")).toBeVisible();
+
+    await page.getByTestId("side-bar-hamburger-menu").click()
     
     // Email should not be visible since we're not authenticated
     await expect(page.getByText(/@/)).not.toBeVisible();

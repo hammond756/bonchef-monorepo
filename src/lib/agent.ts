@@ -13,6 +13,16 @@ import { HistoryService } from "./services/history-service"
 import { HistoryCallbackHandler } from "./callbacks/history-callback"
 import { TextPromptClient, Langfuse } from "langfuse"
 
+const langfuse = new Langfuse()
+const PROMPTS = {
+  other: await langfuse.getPrompt("OtherIntent", undefined, {type: "text"}),
+  teaser: await langfuse.getPrompt("TeaserIntent", undefined, {type: "text"}),
+  recipe: await langfuse.getPrompt("RecipeIntent", undefined, {type: "text"}),
+  modify: await langfuse.getPrompt("ModifyIntent", undefined, {type: "text"}),
+  question: await langfuse.getPrompt("QuestionIntent", undefined, {type: "text"}),
+  introduction: await langfuse.getPrompt("IntroductionIntent", undefined, {type: "text"}),
+}
+
 export class CulinaryAgent {
   private smart: Runnable<BaseLanguageModelInput, LLMResponse, RunnableConfig<Record<string, any>>>
   private fast: Runnable<BaseLanguageModelInput, LLMResponse, RunnableConfig<Record<string, any>>>
@@ -31,19 +41,7 @@ export class CulinaryAgent {
     this.langfuseHandler = new CallbackHandler()
     this.historyService = new HistoryService()
     this.langfuse = new Langfuse()
-
-    this.initializePrompts()
-  }
-
-  private async initializePrompts() {
-    this.prompts = {
-      other: await this.langfuse.getPrompt("OtherIntent", undefined, {type: "text"}),
-      teaser: await this.langfuse.getPrompt("TeaserIntent", undefined, {type: "text"}),
-      recipe: await this.langfuse.getPrompt("RecipeIntent", undefined, {type: "text"}),
-      modify: await this.langfuse.getPrompt("ModifyIntent", undefined, {type: "text"}),
-      question: await this.langfuse.getPrompt("QuestionIntent", undefined, {type: "text"}),
-      introduction: await this.langfuse.getPrompt("IntroductionIntent", undefined, {type: "text"}),
-    }
+    this.prompts = PROMPTS
   }
 
   private async detectIntent(history: (HumanMessage | AIMessage)[]): Promise<string> {

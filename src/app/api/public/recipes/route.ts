@@ -31,4 +31,4 @@ export async function GET(request: Request) {
     console.error("Error in recipes API route:", error)
     return NextResponse.json({ data: [], count: 0 }, { status: 500 })
   }
-} 
+}

@@ -12,7 +12,7 @@ export function useRecipeTimeline() {
 
   const fetchRecipes = useCallback(async () => {
     try {
-      const response = await fetch(`/api/recipes?offset=${page}&page_size=${PAGE_SIZE}`)
+      const response = await fetch(`/api/public/recipes?offset=${page}&page_size=${PAGE_SIZE}`)
       const { data, count } = await response.json()
       
       if (page === 1) {

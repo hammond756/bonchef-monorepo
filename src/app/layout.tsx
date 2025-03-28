@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bonchef Prototype",
-  description: "Bonchef Prototype",
+  title: "Bonchef",
+  description: "Wat eten we vandaag?",
 };
 
 export default async function RootLayout({

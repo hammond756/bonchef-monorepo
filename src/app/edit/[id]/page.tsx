@@ -15,6 +15,10 @@ export default async function EditRecipePage({ params }: { params: Promise<{ id:
 
   const recipe = await getRecipe(id);
 
+  if (!recipe) {
+    return <div>Er is iets misgegaan bij het laden van het recept. <a href={`/recipes/${id}`}>Ga terug naar het recept</a></div>
+  }
+
   // Check if user owns this recipe
   if (recipe.user_id !== user.id) {
     redirect("/recipes/" + id);

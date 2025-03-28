@@ -369,6 +369,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                   type="button"
                   disabled={isGenerating}
                   onClick={() => setIsImageModalOpen(true)}
+                  data-testid="generate-image-button"
                 >
                   {isGenerating ? (
                     <>
@@ -385,6 +386,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                   variant="outline" 
                   onClick={() => setIsUploadModalOpen(true)}
                   disabled={isUploading}
+                  data-testid="upload-image-button"
                 >
                   {isUploading ? (
                     <>
