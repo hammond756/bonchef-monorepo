@@ -82,6 +82,18 @@ export function ChatMessage({
             p: ({ node, ...props }) => (
               <p {...props} className="py-1 whitespace-pre-wrap" />
             ),
+            h1: ({ node, ...props }) => (
+              <h1 {...props} className="text-2xl font-bold" />
+            ),
+            h2: ({ node, ...props }) => (
+              <h2 {...props} className="text-xl font-bold" />
+            ),
+            h3: ({ node, ...props }) => (
+              <h3 {...props} className="text-lg font-bold" />
+            ),
+            h4: ({ node, ...props }) => (
+              <h4 {...props} className="text-base font-bold" />
+            ),
           }}
         >
           {displayText || ""}
