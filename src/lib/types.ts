@@ -105,7 +105,7 @@ export const LLMResponseSchema = z.object({
 });
 
 export const IntentResponseSchema = z.object({
-  intent: z.enum(["recipe", "modify", "question", "other", "teaser"]),
+  intent: z.enum(["recipe", "modify", "question", "other", "teaser", "introduction"]),
 })
 
 export type LLMResponse = z.infer<typeof LLMResponseSchema>;
