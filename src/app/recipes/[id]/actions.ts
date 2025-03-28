@@ -4,7 +4,7 @@ import { cookies } from "next/headers"
 
 
 export async function getRecipe(id: string) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/recipes/${id}`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/public/recipes/${id}`, {
     headers: {
       "Cookie": (await cookies()).toString()
     }
