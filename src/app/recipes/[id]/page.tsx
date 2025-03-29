@@ -13,6 +13,28 @@ import { cookies } from "next/headers"
 export const dynamic = "auto"
 export const revalidate = 3600 // Revalidate every hour
 
+// Helper function to convert URLs in text to clickable links
+function parseDescription(text: string) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  const parts = text.split(urlRegex)
+  
+  return parts.map((part, index) => {
+    if (part.match(urlRegex)) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:text-blue-700 underline"
+        >
+          {part}
+        </a>
+      )
+    }
+    return part
+  })
+}
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> },
@@ -129,7 +151,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           {recipe.title}
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          {recipe.description}
+          {parseDescription(recipe.description)}
         </p>
       </div>
 
