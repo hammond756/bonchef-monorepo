@@ -21,11 +21,19 @@ export function Chat() {
     messages,
     setMessages
   } = useChat({
-    onError: handleApiError
+    onError: handleApiError,
+    onComplete: handleConversationComplete
   })
 
   const { conversationId } = useChatStore()
   const { history, isLoading: isHistoryLoading, mutate: mutateHistory } = useConversationHistory(conversationId)
+
+  // Set initial messages from history
+  useEffect(() => {
+    if (history) {
+      setMessages(history)
+    }
+  }, [history, setMessages])
   
   const [isInputExpanded, setIsInputExpanded] = useState(false)
   const [inputPlaceholder, setInputPlaceholder] = useState("Typ hier je bericht...")
@@ -120,7 +128,9 @@ export function Chat() {
           type: "bot_error",
           botResponse: {
             content: errorMessage || "Sorry, er is iets mis gegaan. Probeer het opnieuw.",
-            type: "text"
+            payload: {
+              type: "text"
+            }
           },
           userInputToRetry: userInput
         }
@@ -140,7 +150,12 @@ export function Chat() {
     setSelectedFiltersCount(0)
   }
 
+  // TODO: should we even still do retries??
   async function handleRetry(message: BotErrorMessageType) {
+    if (!message.id) {
+      return;
+    }
+
     setMessages((prev: ChatMessageData[]) => prev.map((msg: ChatMessageData) => 
       msg.id === message.id ? { ...msg, type: "bot_loading", isLoading: true } : msg
     ))
@@ -151,6 +166,12 @@ export function Chat() {
   async function handleRecipeSaved(url: string) {
     console.log("Recipe saved:", url)
     // Implement recipe saving functionality
+  }
+
+  function handleConversationComplete(conversationId: string, finalMessages: ChatMessageData[]) {
+    setTimeout(() => {
+      mutateHistory()
+    }, 1000)
   }
 
   return (
@@ -167,7 +188,7 @@ export function Chat() {
           <div className="p-4 space-y-4">
             {messages.map((message, index) => (
               <ChatMessage 
-                key={message.id}
+                key={index}
                 message={message}
                 onRecipeSaved={handleRecipeSaved}
                 isLastMessage={index === messages.length - 1}
@@ -177,7 +198,7 @@ export function Chat() {
             {isLoading && (
               <ChatMessage 
                 message={{
-                  id: uuidv4(),
+                  id: null,
                   type: "bot_loading",
                   isLoading: true
                 }}

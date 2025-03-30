@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useRef } from "react"
 import { getTaskStatus } from "@/app/create/actions"
-import type { GeneratedRecipe } from "@/lib/types"
+import type { Recipe } from "@/lib/types"
 
 interface UseRecipeGenerationProps {
-  onSuccess: (recipe: GeneratedRecipe) => void
+  onSuccess: (recipe: Recipe) => void
   onError: (error: string) => void
 }
 
-export function useRecipeGeneration({ onSuccess, onError }: UseRecipeGenerationProps = {onSuccess: (recipe: GeneratedRecipe) => {}, onError: (error: string) => {}}) {
+export function useRecipeGeneration({ onSuccess, onError }: UseRecipeGenerationProps = {onSuccess: (recipe: Recipe) => {}, onError: (error: string) => {}}) {
   const [isLoading, setIsLoading] = useState(false)
   const [taskId, setTaskId] = useState<string | null>(null)
   const [progress, setProgress] = useState(0)

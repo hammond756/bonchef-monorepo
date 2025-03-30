@@ -53,8 +53,6 @@ export const unitAbbreviations = {
 };
 
 export const IngredientSchema = z.object({
-  unit: z.optional(unitEnum),
-  description: z.string(),
   quantity: z.optional(
     z.object({
       type: z.literal("range"),
@@ -62,10 +60,30 @@ export const IngredientSchema = z.object({
       high: z.number(),
     })
   ),
+  unit: z.optional(unitEnum),
+  description: z.string(),
+});
+
+export const RecipeSchema = z.object({
+  title: z.string(),
+  n_portions: z.number(),
+  total_cook_time_minutes: z.number(),
+  description: z.string(),
+  ingredients: z.array(
+    z.object({
+      name: z.string(),
+      ingredients: z.array(IngredientSchema),
+    }),
+  ),
+  instructions: z.array(z.string()),
+  thumbnail: z.string(), 
+  source_url: z.string(),
+  source_name: z.string(),
 });
 
 export const GeneratedRecipeSchema = z.object({
   title: z.string(),
+  n_portions: z.number(),
   total_cook_time_minutes: z.number(),
   ingredients: z.array(
     z.object({
@@ -74,14 +92,11 @@ export const GeneratedRecipeSchema = z.object({
     }),
   ),
   instructions: z.array(z.string()),
-  description: z.string(),
-  n_portions: z.number(),
-  thumbnail: z.string(), 
-  source_url: z.string(),
-  source_name: z.string(),
 });
 
+export type Recipe = z.infer<typeof RecipeSchema>;
 export type GeneratedRecipe = z.infer<typeof GeneratedRecipeSchema>;
+
 export type Unit = z.infer<typeof unitEnum>; 
 
 export interface UserInput {
@@ -89,15 +104,17 @@ export interface UserInput {
   webContent: Array<{ url: string; content: string }>;
 }
 
-export const MessageType = z.enum([
+export const MessageTypeSchema = z.enum([
   "text",
   "recipe",
   "teaser",
 ]);
 
+export type MessageType = z.infer<typeof MessageTypeSchema>;
+
 export const ResponseMessage = z.object({
   content: z.string(),
-  type: MessageType,
+  type: MessageTypeSchema,
 });
 
 export const LLMResponseSchema = z.object({
@@ -114,34 +131,39 @@ export type IntentResponse = z.infer<typeof IntentResponseSchema>;
 export type Message = z.infer<typeof ResponseMessage>;
 export type AgentResponse = Message[];
 
-export interface HistoryMessage {
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
-
-export interface MessageType {
+export interface BaseMessage {
   type: "user" | "bot" | "bot_error" | "bot_loading";
-  id: string;
+  id: string | null;
 }
 
-export interface UserMessageType extends MessageType {
+export interface UserMessageType extends BaseMessage {
   type: "user";
   userInput: UserInput;
 }
 
-export interface BotMessageType extends MessageType {
+export interface BotMessageType extends BaseMessage {
   type: "bot";
-  botResponse: Message;
+  botResponse: {
+    content: string;
+    payload: {
+      type: MessageType;
+      recipe?: GeneratedRecipe;
+    }
+  }
 }
 
-export interface BotErrorMessageType extends MessageType {
+export interface BotErrorMessageType extends BaseMessage {
   type: "bot_error";
-  botResponse: Message;
+  botResponse: {
+    content: string;
+    payload: {
+      type: MessageType;
+    }
+  };
   userInputToRetry: UserInput;
 }
 
-export interface BotLoadingMessageType extends MessageType {
+export interface BotLoadingMessageType extends BaseMessage {
   type: "bot_loading";
   isLoading: true;
 }

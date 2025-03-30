@@ -10,9 +10,11 @@ export function extractContentFromChunk(chunk: any): string {
 
   // Handle different chunk formats
   if (chunk.kwargs && chunk.kwargs.tool_call_chunks && chunk.kwargs.tool_call_chunks.length > 0) {
+    console.log("tool_call_chunks", chunk.kwargs.tool_call_chunks)
     // Looks like output from gpt-4o with json_schema model
     content = chunk.kwargs.tool_call_chunks[0].args
   } else if (chunk.kwargs && chunk.kwargs.content) {
+    console.log("content", chunk.kwargs.content)
     // Looks like output from gpt-4o with function_calling mode
     content = chunk.kwargs.content
   }
@@ -24,15 +26,12 @@ export function extractContentFromChunk(chunk: any): string {
  * Handles JSON content accumulation and parsing for LLM responses.
  * Returns the parsed response once it's complete enough to parse.
  */
-export function processAccumulatedContent(accumulatedJson: string): LLMResponse | null {
+export function processAccumulatedContent<T>(accumulatedJson: string): T | null {
   try {
     // Try to parse the accumulated JSON as a complete LLMResponse
-    const parsedResponse = parse(accumulatedJson, Allow.ALL) as LLMResponse
+    const parsedResponse = parse(accumulatedJson, Allow.ALL) as T
     
-    // If we have a valid messages array, return the parsed response
-    if (parsedResponse && parsedResponse.messages && Array.isArray(parsedResponse.messages)) {
-      return parsedResponse
-    }
+    return parsedResponse
   } catch (jsonError) {
     // If we can't parse the accumulated JSON yet, it's incomplete
     console.log("Accumulating JSON chunks...")
@@ -88,6 +87,7 @@ export async function createStreamingRequest<T>(
               // Extract the chunk content
               if (data.data.chunk) {
                 try {
+                  console.log("on_chat_model_stream", data.data.chunk)
                   // Get the raw chunk data
                   const chunk = data.data.chunk
                   const content = extractContentFromChunk(chunk)
@@ -96,7 +96,7 @@ export async function createStreamingRequest<T>(
                   accumulatedJson += content
                   
                   // Try to parse the accumulated content
-                  const parsedResponse = processAccumulatedContent(accumulatedJson) as T
+                  const parsedResponse = processAccumulatedContent<T>(accumulatedJson)
                   
                   // Call the chunk callback with the parsed response
                   if (callbacks.onChunkReceived) {
@@ -131,11 +131,7 @@ export async function createStreamingRequest<T>(
       },
       onerror: (err) => {
         console.error("Error in event source:", err)
-        if (callbacks.onError) {
-          callbacks.onError(new Error("Failed to process streaming request"))
-        } else {
-          throw new Error("Failed to process streaming request")
-        }
+        throw new Error("Failed to process streaming request")
       },
     })
   } catch (error) {

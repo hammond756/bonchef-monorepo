@@ -168,3 +168,32 @@ test.describe("Chat interface", () => {
     await expect(page.getByTestId("send-button")).toBeEnabled();
   });
 });
+
+
+test.describe("Teaser interaction", () => {
+  test("when a teaser is generated, it is displayed as a clickable component", async ({ authenticatedPage: page }) => {
+    await page.click("[data-testid='surprise-me']");
+    const teaserCard = page.getByTestId("teaser-card");
+    
+    // Allow the teaser to be clickable
+    await page.waitForTimeout(3000);
+    
+    await expect(teaserCard).toBeVisible();
+
+    // Click the teaser card
+    await teaserCard.click();
+
+    // Wait for the recipe modal to be visible
+    await expect(page.getByTestId("recipe-modal-save-recipe-button")).toBeVisible({ timeout: 10000 });
+
+    // Click the save button
+    await page.click("[data-testid='recipe-modal-save-recipe-button']");
+    
+    // Wait for the "Bekijk recept" button to be visible
+    await expect(page.getByText("Bekijk recept")).toBeVisible({ timeout: 10000 });
+
+    // Click the "Bekijk recept" button
+    await page.click("[data-testid='recipe-modal-view-recipe-button']");
+    
+  });
+});

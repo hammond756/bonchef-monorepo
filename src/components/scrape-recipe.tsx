@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Loader2 } from "lucide-react";
 import { scrapeRecipe } from "@/app/create/actions";
-import { GeneratedRecipeSchema } from "@/lib/types";
+import { RecipeSchema } from "@/lib/types";
 import { useRouter } from "next/navigation";
 
 export function ScrapeRecipe() {
@@ -20,7 +20,7 @@ export function ScrapeRecipe() {
     setIsLoading(true);
     try {
       const recipe = await scrapeRecipe(url);
-      const validatedRecipe = GeneratedRecipeSchema.parse(recipe);
+      const validatedRecipe = RecipeSchema.parse(recipe);
       
       const response = await fetch("/api/save-recipe", {
         method: "POST",

@@ -1,4 +1,4 @@
-import { HistoryMessage, UserInput, LLMResponse, IntentResponse } from "./types"
+import { UserInput, LLMResponse, IntentResponse } from "./types"
 import { Runnable } from "@langchain/core/runnables"
 import { RunnableConfig } from "@langchain/core/runnables"
 import { BaseLanguageModelInput } from "@langchain/core/language_models/base"
@@ -64,15 +64,20 @@ export class CulinaryAgent {
     userInput: UserInput,
     conversationId: string,
   ) {
+    // Get conversation history, do this first to get the last message order
+    const historyMessages = await this.historyService.getHistory(conversationId)
+    const lastMessageOrder = historyMessages[historyMessages.length - 1]?.order ?? 0
+
     // Add user message to history
-    await this.historyService.addUserMessage(
+    const userMessage = await this.historyService.addUserMessage(
       conversationId,
       userInput.message,
-      { webContent: userInput.webContent }
+      { webContent: userInput.webContent },
+      lastMessageOrder
     )
 
-    // Get conversation history
-    const historyMessages = await this.historyService.getHistory(conversationId)
+    historyMessages.push(userMessage)
+
     const agentHistory = this.historyService.toAgentHistory(historyMessages)
     
     const intent = await this.detectIntent(agentHistory)
@@ -91,7 +96,7 @@ export class CulinaryAgent {
       ...agentHistory
     ]
 
-    const historyCallback = new HistoryCallbackHandler(conversationId, this.historyService)
+    const historyCallback = new HistoryCallbackHandler(conversationId, lastMessageOrder, this.historyService)
 
     return model.streamEvents(
       messages,

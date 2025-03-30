@@ -7,17 +7,20 @@ import {
   ChatMessageData, 
   BotMessageType, 
   Message,
-  LLMResponse
+  LLMResponse,
+  GeneratedRecipe
 } from "@/lib/types"
 import { useChatStore } from "@/lib/store/chat-store"
 import { createStreamingRequest } from "@/lib/stream-parsers"
 
 interface UseChatApiProps {
   onError: (errorMessage: string, userInput: UserInput) => void,
+  onComplete: (conversationId: string, finalMessages: ChatMessageData[]) => void,
 }
 
 export function useChat({
   onError,
+  onComplete,
 }: UseChatApiProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [messages, setMessages] = useState<ChatMessageData[]>([])
@@ -58,7 +61,7 @@ export function useChat({
     }
 
     const userMessage: ChatMessageData = {
-      id: uuidv4(),
+      id: null,
       type: "user",
       userInput
     }
@@ -76,9 +79,14 @@ export function useChat({
         onChunkReceived: (parsedResponse, _) => {
           if (parsedResponse && parsedResponse.messages) {
             const botResponses: BotMessageType[] = parsedResponse.messages.map((msg: Message) => ({
-              id: uuidv4(),
+              id: null,
               type: "bot",
-              botResponse: msg
+              botResponse: {
+                content: msg.content,
+                payload: {
+                  type: msg.type,
+                }
+              }
             }))
             
             setMessages((prev: ChatMessageData[]) => [
@@ -90,15 +98,21 @@ export function useChat({
         
         onStreamComplete: (finalResponse) => {
           const botResponses: BotMessageType[] = finalResponse.messages.map((msg: Message) => ({
-            id: uuidv4(),
+            id: null,
             type: "bot",
-            botResponse: msg
+            botResponse: {
+              content: msg.content,
+              payload: {
+                type: msg.type,
+              }
+            }
           }))
           
-          setMessages((prev: ChatMessageData[]) => [
-            ...prev.slice(0, lastMessageIdx),
-            ...botResponses
-          ])
+          setMessages((prev: ChatMessageData[]) => {
+            const updatedMessages = [...prev.slice(0, lastMessageIdx), ...botResponses]
+            onComplete(conversationId, updatedMessages)
+            return updatedMessages
+          })
         },
         
         onError: (error) => {

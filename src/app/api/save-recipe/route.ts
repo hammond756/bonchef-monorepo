@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { GeneratedRecipeSchema } from "@/lib/types";
+import { RecipeSchema } from "@/lib/types";
 import { ZodError } from "zod";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
 
     const data = await request.json();
     const { id, is_public, ...recipeData } = data;
-    const validatedRecipe = GeneratedRecipeSchema.parse(recipeData);
+    const validatedRecipe = RecipeSchema.parse(recipeData);
 
     // Process thumbnail to store in Supabase Storage instead of as base64
     if (validatedRecipe.thumbnail) {

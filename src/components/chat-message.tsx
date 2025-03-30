@@ -1,9 +1,12 @@
 import { Loader2, RotateCcw } from "lucide-react"
 import { SaveRecipeButton } from "./save-recipe-button"
 import { Button } from "@/components/ui/button"
-import { BotErrorMessageType, ChatMessageData as ChatMessageType } from "@/lib/types"
+import { BotErrorMessageType, ChatMessageData as ChatMessageType, GeneratedRecipe } from "@/lib/types"
 import ReactMarkdown from "react-markdown"
 import rehypeSanitize from "rehype-sanitize"
+import { useState, useEffect } from "react"
+import { RecipeTeaserCard } from "./recipe-teaser-card"
+import { RecipeModal } from "./recipe-modal"
 
 interface ChatMessageProps {
   message: ChatMessageType
@@ -16,8 +19,11 @@ export function ChatMessage({
   message, 
   onRecipeSaved, 
   isLastMessage,
-  onRetry 
+  onRetry,
 }: ChatMessageProps) {
+  const [selectedRecipe, setSelectedRecipe] = useState<GeneratedRecipe | null>(null)
+  const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false)
+
   let displayText = ""
   
   if (message.type === "user") {
@@ -28,6 +34,11 @@ export function ChatMessage({
     displayText = message.botResponse.content
   } else if (message.type === "bot_loading") {
     displayText = "Laden..."
+  }
+
+  const handleRecipeSelected = (recipe: GeneratedRecipe) => {
+    setSelectedRecipe(recipe)
+    setIsRecipeModalOpen(true)
   }
 
   function renderMessageContent() {
@@ -55,6 +66,20 @@ export function ChatMessage({
             <RotateCcw className="mr-2 h-4 w-4" />
             Retry
           </Button>
+        </div>
+      )
+    }
+
+    // Handle teaser messages
+    if (message.type === "bot" && message.botResponse.payload.type === "teaser") {
+      return (
+        <div className="w-full">
+          <RecipeTeaserCard 
+            messageId={message.id}
+            initialRecipe={message.botResponse.payload.recipe}
+            content={message.botResponse.content}
+            onRecipeSelected={handleRecipeSelected}
+          />
         </div>
       )
     }
@@ -116,7 +141,7 @@ export function ChatMessage({
       >
         {renderMessageContent()}
         
-        {message.type === "bot" && message.botResponse.type === "recipe" && (
+        {message.type === "bot" && message.botResponse.payload.type === "recipe" && (
           <div className="mt-4">
             <SaveRecipeButton
               message={message.botResponse.content} 
@@ -125,9 +150,14 @@ export function ChatMessage({
           </div>
         )}
       </div>
-      {message.type === "bot" && !isLastMessage && (
-        <hr className="w-full my-6 border-gray-200" />
-      )}
+
+      {/* Recipe Modal */}
+      <RecipeModal 
+        recipe={selectedRecipe}
+        isOpen={isRecipeModalOpen}
+        onClose={() => setIsRecipeModalOpen(false)}
+        onRecipeSaved={onRecipeSaved}
+      />
     </div>
   )
 } 
