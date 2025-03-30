@@ -147,7 +147,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
       {/* Title and Description */}
       <div className="text-center mb-8">
-        <h1 className="scroll-m-20 text-4xl font-bold tracking-tight mb-4">
+        <h1 className="scroll-m-20 text-4xl font-bold tracking-tight mb-4" data-testid="recipe-title">
           {recipe.title}
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

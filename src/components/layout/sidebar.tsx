@@ -179,7 +179,7 @@ export function Sidebar() {
         
         {/* User Profile */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-          {user && (
+          {user ? (
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                 {user.user_metadata?.avatar_url ? (
@@ -195,10 +195,6 @@ export function Sidebar() {
               </div>
               
               <div className="ml-3">
-                {/* TODO: Add name from profile */}
-                {/* <div className="text-sm font-medium">
-                  {user.user_metadata?.name || user.email?.split('@')[0] || "Web Designer"}
-                </div> */}
                 <div className="text-sm text-gray-700">
                   {user.email || "user@example.com"}
                 </div>
@@ -214,6 +210,15 @@ export function Sidebar() {
                 </button>
               </form>
             </div>
+          ) : (
+            <Link 
+              href="/login" 
+              className="flex items-center justify-center gap-2 py-2 px-4 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <UserIcon className="h-5 w-5" />
+              <span>Inloggen</span>
+            </Link>
           )}
         </div>
       </div>

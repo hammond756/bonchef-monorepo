@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test";
-import path from "path";
+import { test, expect } from "./fixtures";
 
 // Test suite for recipe visibility features
 test.describe("Recipe visibility features", () => {
@@ -7,9 +6,9 @@ test.describe("Recipe visibility features", () => {
   let privateRecipeId: string;
   
   // Create test recipes before all tests with first user
-  test.beforeAll(async ({ request, baseURL }) => {
+  test.beforeAll(async ({ authenticatedPage: page, baseURL }) => {
     // Create a public test recipe
-    const publicResponse = await request.post(`${baseURL}/api/save-recipe`, {
+    const publicResponse = await page.request.post(`${baseURL}/api/save-recipe`, {
       data: {
         title: "Public Test Recipe",
         description: "A public recipe for testing visibility",
@@ -39,7 +38,7 @@ test.describe("Recipe visibility features", () => {
     publicRecipeId = publicData.recipe.id;
 
     // Create a private test recipe
-    const privateResponse = await request.post(`${baseURL}/api/save-recipe`, {
+    const privateResponse = await page.request.post(`${baseURL}/api/save-recipe`, {
       data: {
         title: "Private Test Recipe",
         description: "A private recipe for testing visibility",
@@ -69,16 +68,9 @@ test.describe("Recipe visibility features", () => {
     privateRecipeId = privateData.recipe.id;
   });
 
-  // Clean up test recipes after all tests
-  test.afterAll(async ({ request, baseURL }) => {
-    // Delete test recipes
-    await request.delete(`${baseURL}/api/recipes/${publicRecipeId}`);
-    await request.delete(`${baseURL}/api/recipes/${privateRecipeId}`);
-  });
-
   // Test recipe visibility for first user (owner)
   test.describe("First user (owner) recipe visibility", () => {
-    test("can view own public recipe", async ({ page, baseURL }) => {
+    test("can view own public recipe", async ({ authenticatedPage: page, baseURL }) => {
       // Access public recipe
       await page.goto(`${baseURL}/recipes/${publicRecipeId}`);
       
@@ -90,7 +82,7 @@ test.describe("Recipe visibility features", () => {
       await expect(page.getByText("Openbaar")).toBeVisible();
     });
     
-    test("can view own private recipe", async ({ page, baseURL }) => {
+    test("can view own private recipe", async ({ authenticatedPage: page, baseURL }) => {
       // Access private recipe
       await page.goto(`${baseURL}/recipes/${privateRecipeId}`);
       
@@ -105,71 +97,44 @@ test.describe("Recipe visibility features", () => {
 
   // Test recipe visibility for second user (non-owner)
   test.describe("Second user (non-owner) recipe visibility", () => {
-    // Use a separate test for second user with its own browser context
-    const secondUserAuthFile = path.join(__dirname, "../../playwright/.auth/user2.json");
-    
-    test("can view first user's public recipe", async ({ browser, baseURL }) => {
-      // Create a new context with second user authentication
-      const context = await browser.newContext({
-        storageState: secondUserAuthFile
-      });
-      const page = await context.newPage();
+    test("can view first user's public recipe", async ({ secondUserPage: page, baseURL }) => {
+      // Access first user's public recipe
+      await page.goto(`${baseURL}/recipes/${publicRecipeId}`);
       
-      try {
-        // Access first user's public recipe
-        await page.goto(`${baseURL}/recipes/${publicRecipeId}`);
-        
-        // Verify recipe is visible
-        await expect(page.getByText("Public Test Recipe")).toBeVisible();
-        await expect(page.getByText("A public recipe for testing visibility")).toBeVisible();
-        
-        // Verify public badge is visible
-        await expect(page.getByText("Openbaar")).toBeVisible();
-      } finally {
-        await context.close();
-      }
+      // Verify recipe is visible
+      await expect(page.getByText("Public Test Recipe")).toBeVisible();
+      await expect(page.getByText("A public recipe for testing visibility")).toBeVisible();
+      
+      // Verify public badge is visible
+      await expect(page.getByText("Openbaar")).toBeVisible();
     });
     
-    test("cannot view first user's private recipe", async ({ browser, baseURL }) => {
-      // Create a new context with second user authentication
-      const context = await browser.newContext({
-        storageState: secondUserAuthFile
-      });
-      const page = await context.newPage();
+    test("cannot view first user's private recipe", async ({ secondUserPage: page, baseURL }) => {
+      // Try to access first user's private recipe
+      await page.goto(`${baseURL}/recipes/${privateRecipeId}`);
       
-      try {
-        // Try to access first user's private recipe
-        await page.goto(`${baseURL}/recipes/${privateRecipeId}`);
-        
-        // Verify recipe not found message
-        await expect(page.getByText("Recept niet gevonden")).toBeVisible();
-      } finally {
-        await context.close();
-      }
+      // Verify recipe not found message
+      await expect(page.getByText("Recept niet gevonden")).toBeVisible();
     });
   });
 
   // Test recipe visibility for anonymous users
   test.describe("Anonymous user recipe visibility", () => {
-    test.beforeEach(async ({ context }) => {
-        // Use no authentication
-        await context.clearCookies();
-      });
-      test("can view public recipe", async ({ page, baseURL }) => {
-        // Try to access public recipe
-        await page.goto(`${baseURL}/recipes/${publicRecipeId}`);
-        
-        // Verify recipe is visible
-        await expect(page.getByText("Public Test Recipe")).toBeVisible();
-        await expect(page.getByText("A public recipe for testing visibility")).toBeVisible();
+    test("can view public recipe", async ({ unauthenticatedPage: page, baseURL }) => {
+      // Try to access public recipe
+      await page.goto(`${baseURL}/recipes/${publicRecipeId}`);
+      
+      // Verify recipe is visible
+      await expect(page.getByText("Public Test Recipe")).toBeVisible();
+      await expect(page.getByText("A public recipe for testing visibility")).toBeVisible();
     });
     
-    test("cannot view private recipe and is redirected to login", async ({ page, baseURL }) => {
-        // Try to access private recipe
-        await page.goto(`${baseURL}/recipes/${privateRecipeId}`);
+    test("cannot view private recipe and is redirected to login", async ({ unauthenticatedPage: page, baseURL }) => {
+      // Try to access private recipe
+      await page.goto(`${baseURL}/recipes/${privateRecipeId}`);
 
-        // Verify recipe not found message
-        await expect(page.getByText("Recept niet gevonden")).toBeVisible();
+      // Verify recipe not found message
+      await expect(page.getByText("Recept niet gevonden")).toBeVisible();
     });
   });
 }); 

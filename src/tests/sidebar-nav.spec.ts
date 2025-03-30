@@ -1,16 +1,16 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test.describe("Sidebar Navigation", () => {
-  test.beforeEach(async ({ page, baseURL }) => {
+  test.beforeEach(async ({ authenticatedPage: page, baseURL }) => {
     await page.goto("/")
   });
 
-  test("sidebar is closed by default", async ({ page }) => {
+  test("sidebar is closed by default", async ({ authenticatedPage: page }) => {
     // Check that sidebar is not visible initially
     await expect(page.locator("[data-sidebar]")).toHaveClass(/\-translate-x-full/);
   });
 
-  test("opens and closes with hamburger menu", async ({ page }) => {
+  test("opens and closes with hamburger menu", async ({ authenticatedPage: page }) => {
     // Open sidebar
     await page.getByTestId("side-bar-hamburger-menu").click();
     await expect(page.locator("[data-sidebar]")).toHaveClass(/translate-x-0/);
@@ -20,7 +20,7 @@ test.describe("Sidebar Navigation", () => {
     await expect(page.locator("[data-sidebar]")).toHaveClass(/\-translate-x-full/);
   });
 
-  test("closes when clicking outside", async ({ page }) => {
+  test("closes when clicking outside", async ({ authenticatedPage: page }) => {
     // Open sidebar
     await page.getByTestId("side-bar-hamburger-menu").click();
     await expect(page.locator("[data-sidebar]")).toHaveClass(/translate-x-0/);
@@ -30,7 +30,7 @@ test.describe("Sidebar Navigation", () => {
     await expect(page.locator("[data-sidebar]")).toHaveClass(/\-translate-x-full/);
   });
 
-  test("navigation to all pages works correctly", async ({ page }) => {
+  test("navigation to all pages works correctly", async ({ authenticatedPage: page }) => {
     // Open sidebar
     await page.getByTestId("side-bar-hamburger-menu").click();
 
@@ -56,7 +56,7 @@ test.describe("Sidebar Navigation", () => {
     await expect(page.locator("[data-sidebar]")).toHaveClass(/\-translate-x-full/);
   });
 
-  test("user info and logout is displayed correctly", async ({ page }) => {
+  test("user info and logout is displayed correctly", async ({ authenticatedPage: page }) => {
     // Open sidebar
     await page.getByTestId("side-bar-hamburger-menu").click();
 

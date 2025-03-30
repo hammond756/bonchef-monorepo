@@ -1,13 +1,13 @@
-import { expect, test, Page } from "@playwright/test";
+import { test, expect } from "./fixtures";
+import { Page } from "@playwright/test";
 
 test.describe("Authentication flows", () => {
-    test.use({ storageState: { cookies: [], origins: [] } });
-    test("redirects to login when not authenticated", async ({ page, baseURL }) => {
+    test("redirects to login when not authenticated", async ({ unauthenticatedPage: page, baseURL }) => {
         await page.goto(baseURL!);
         await expect(page).toHaveURL("/login");
     });
     
-    test("logs in successfully and redirects to homepage", async ({ page, baseURL }) => {
+    test("logs in successfully and redirects to homepage", async ({ unauthenticatedPage: page, baseURL }) => {
         await page.goto(baseURL! + "/login");
         
         await page.fill("input[type='email']", process.env.TEST_USER_EMAIL!);
@@ -20,12 +20,12 @@ test.describe("Authentication flows", () => {
 });
 
 test.describe("Signed in user flows", () => {
-  test("Opens homepage when logged in", async ({ page, baseURL }) => {
+  test("Opens homepage when logged in", async ({ authenticatedPage: page, baseURL }) => {
     await page.goto(baseURL!);
     await expect(page).toHaveURL("/");
   });
 
-  test("Logs out successfully", async ({ page, baseURL }) => {
+  test("Logs out successfully", async ({ authenticatedPage: page, baseURL }) => {
     await page.goto(baseURL!);
     await expect(page).toHaveURL("/");
     await page.getByTestId("side-bar-hamburger-menu").click();
@@ -39,8 +39,6 @@ test.describe("Signup flows", () => {
   let testUserEmail: string | null = null;
   const testUserPassword = "test1234";
   const displayName = "Test User";
-
-  test.use({ storageState: { cookies: [], origins: [] } });
 
   test.beforeEach(async () => {
     testUserEmail = `test${Math.random().toString(36).substring(2)}@test.com`;
@@ -103,17 +101,17 @@ test.describe("Signup flows", () => {
     await afterHomepageAssertions(page);
   }
 
-  test("can navigate to signup page from login page", async ({ page, baseURL }) => {
+  test("can navigate to signup page from login page", async ({ unauthenticatedPage: page, baseURL }) => {
     await page.goto(`${baseURL}/login`);
     await page.getByText("Meld je dan hier aan").click();
     await expect(page).toHaveURL("/signup");
   });
 
-  test("can sign up successfully", async ({ page, baseURL }) => {
+  test("can sign up successfully", async ({ unauthenticatedPage: page, baseURL }) => {
     await testSignupScenario(page, baseURL!);
   });
 
-  test("homepage shows user email after signup", async ({ page, baseURL }) => {
+  test("homepage shows user email after signup", async ({ unauthenticatedPage: page, baseURL }) => {
     await testSignupScenario(page, baseURL!, {
       afterHomepageAssertions: async (page) => {
         await page.getByTestId("side-bar-hamburger-menu").click();
@@ -130,7 +128,7 @@ test.describe("Signup flows", () => {
   //   });
   // });
 
-  test("signup fails with mismatched passwords", async ({ page, baseURL }) => {
+  test("signup fails with mismatched passwords", async ({ unauthenticatedPage: page, baseURL }) => {
     await testSignupScenario(page, baseURL!, {
       formData: { confirmPassword: "wrong-password" },
       expectedUrl: "/signup",
