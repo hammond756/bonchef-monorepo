@@ -13,8 +13,8 @@ test.describe("Chat interface", () => {
     await expect(page.getByTestId("chat-message").first()).toContainText(message);
 
     // Wait for response
-    await expect(page.getByTestId("chat-message").last()).toBeVisible({ timeout: 30000 });
-    await expect(page.getByTestId("chat-message").last()).toContainText("Hier is een recept");
+    await expect(page.getByTestId("chat-message").nth(1)).toBeVisible({ timeout: 30000 });
+    await expect(page.getByTestId("chat-message").nth(1)).toContainText("Hier is een recept");
 
     // Click save button
     await page.click("[data-testid='save-recipe-button']");
@@ -29,8 +29,8 @@ test.describe("Chat interface", () => {
     await expect(page.getByText('Laden...')).toBeVisible({ timeout: 2000 });
 
     // Wait for response
-    await expect(page.getByTestId("chat-message").last()).toBeVisible({ timeout: 30000 });
-    await expect(page.getByTestId("chat-message").last()).toContainText("Hier is een recept");
+    await expect(page.getByTestId("chat-message").nth(1)).toBeVisible({ timeout: 30000 });
+    await expect(page.getByTestId("chat-message").nth(1)).toContainText("Hier is een recept");
   });
 
   // TODO: Fix this test, the behaviour it is testing does work,
@@ -63,13 +63,13 @@ test.describe("Chat interface", () => {
     await page.click("[data-testid='send-button']");
     await expect(page.getByText('Laden...')).toBeVisible({ timeout: 2000 });
     // Wait for response
-    await expect(page.getByTestId("chat-message").last()).toBeVisible({ timeout: 30000 });
-    await expect(page.getByTestId("chat-message").last()).toContainText("Hier is een recept");
+    await expect(page.getByTestId("chat-message").nth(1)).toBeVisible({ timeout: 30000 });
+    await expect(page.getByTestId("chat-message").nth(1)).toContainText("Hier is een recept");
     // Click reset button
     await page.click("[data-testid='reset-chat']");
 
     // Verify chat is reset
-    await expect(page.getByTestId("chat-message").last()).not.toBeVisible();
+    await expect(page.getByTestId("chat-message").nth(1)).not.toBeVisible();
     await expect(page.getByText(message)).not.toBeVisible();
     await expect(page.getByTestId("chat-input")).toHaveValue("");
   });
