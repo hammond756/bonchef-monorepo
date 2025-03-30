@@ -1,16 +1,18 @@
 "use client"
 
-import { useRef, useEffect, useState } from "react"
+import { useRef, useState, useEffect } from "react"
 import { v4 as uuidv4 } from "uuid"
-import { Camera, Link, User, FileText, Globe, MessageSquare } from "lucide-react"
+import { Link, FileText, ChevronDown } from "lucide-react"
 import { ChatMessage } from "./chat-message"
 import { ChatInput, ChatInputHandle } from "./chat-input"
 import { QuickActions } from "./quick-actions"
-import { UserInput, ChatMessageData, BotMessageType, BotErrorMessageType } from "@/lib/types"
+import { UserInput, ChatMessageData, BotErrorMessageType } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { useChatStore } from "@/lib/store/chat-store"
 import { useConversationHistory } from "@/hooks/use-conversation-history"
 import { useChat } from "@/hooks/use-chat"
+import { useScrollContainer } from "@/hooks/use-scroll-container"
+
 export function Chat() {
   const { 
     isLoading, 
@@ -29,29 +31,14 @@ export function Chat() {
   const [inputPlaceholder, setInputPlaceholder] = useState("Typ hier je bericht...")
   const [hasSelectedFilters, setHasSelectedFilters] = useState(false)
   const [selectedFiltersCount, setSelectedFiltersCount] = useState(0)
-  const containerRef = useRef<HTMLDivElement>(null)
   const chatInputRef = useRef<ChatInputHandle>(null)
+
+  const { containerRef, showScrollButton, scrollToBottom } = useScrollContainer({
+    dependencies: [messages]
+  })
 
   // Directly handle filter result submission
   const [generateRecipePrompt, setGenerateRecipePrompt] = useState<string | null>(null)
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight
-    }
-  }, [messages])
-
-  // Set initial messages from history
-  useEffect(() => {
-    if (history) {
-      setMessages(history)
-    }
-  }, [history, setMessages])
-
-  function handleNotImplemented() {
-    alert("Nog niet geimplementeerd")
-  }
 
   function handleSurpriseAction() {
     handleSendMessage({ message: `Verras me maar!`, webContent: [{url: "https://random.com", content: `Geef drie random recepten opties. ${uuidv4()}`}] })
@@ -187,18 +174,29 @@ export function Chat() {
                 onRetry={handleRetry}
               />
             ))}
-        {isLoading && (
-          <ChatMessage 
-            message={{
-              id: uuidv4(),
-              type: "bot_loading",
-              isLoading: true
-            }}
-            onRecipeSaved={handleRecipeSaved}
-            isLastMessage={true}
-            onRetry={handleRetry}
-          />
+            {isLoading && (
+              <ChatMessage 
+                message={{
+                  id: uuidv4(),
+                  type: "bot_loading",
+                  isLoading: true
+                }}
+                onRecipeSaved={handleRecipeSaved}
+                isLastMessage={true}
+                onRetry={handleRetry}
+              />
+            )}
+          </div>
         )}
+        {showScrollButton && (
+          <div className="sticky bottom-4 left-0 right-0 flex justify-center">
+            <Button
+              onClick={scrollToBottom}
+              className="rounded-full bg-white shadow-md hover:bg-gray-50 flex items-center gap-2 px-4 py-2 text-center"
+            >
+              <ChevronDown className="h-4 w-4 text-black" />
+              <span className="text-black">Toon meer</span>
+            </Button>
           </div>
         )}
       </div>
