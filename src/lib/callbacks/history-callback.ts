@@ -23,10 +23,15 @@ export class HistoryCallbackHandler extends BaseCallbackHandler {
       return 
     }
 
+    const start = performance.now()
+
     for (const message of outputs.messages) {
       if (message.content && message.type) {
         await this.historyService.addBotMessage(this.conversationId, message.content, { type: message.type })
       }
     }
+
+    const end = performance.now()
+    console.log(`Time taken: ${end - start} milliseconds`)
   }
 } 
