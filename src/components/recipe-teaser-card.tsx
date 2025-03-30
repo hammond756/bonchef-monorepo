@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { createStreamingRequest } from "@/lib/stream-parsers";
-import { Recipe, GeneratedRecipe } from "@/lib/types";
+import { GeneratedRecipe } from "@/lib/types";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
-import { patchMessagePayload } from "@/app/actions";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
 interface RecipeTeaserCardProps {
   content: string;
   onRecipeSelected: (recipe: GeneratedRecipe) => void;
@@ -36,32 +35,26 @@ export function RecipeTeaserCard({ content, onRecipeSelected, messageId, initial
     setError(null);
 
     try {
-      await createStreamingRequest<GeneratedRecipe>(
-        "/api/generate-recipe",
-        { teaserContent: content },
+      await fetchEventSource(
+        "/api/public/generate-recipe",
         {
-          onLoading: (loading) => {
-            setIsLoading(loading);
+          method: "POST",
+          body: JSON.stringify({ text: content }),
+          headers: {
+            "Content-Type": "application/json",
           },
-          onChunkReceived: (parsedResponse) => {
-            console.log("onChunkReceived", parsedResponse)
-            // If we have a complete recipe already, we can pass it to the handler
-            if (parsedResponse) {
-              onRecipeSelected(parsedResponse);
-              setIsLoading(false);
-            }
+          onmessage: (event: any) => {
+            const recipe = JSON.parse(event.data)
+            setRecipe(recipe)
+            onRecipeSelected(recipe)
           },
-          onStreamComplete: (finalResponse) => {
-            onRecipeSelected(finalResponse);
-            setRecipe(finalResponse);
-            setIsLoading(false);
-            patchMessagePayload(messageId, { recipe: finalResponse })
-          },
-          onError: (error) => {
-            setError("Failed to load recipe details. Please try again.");
+          onclose: () => {
             setIsLoading(false);
           },
-        }
+          onerror: (error: any) => {
+            console.error("error", error)
+          }
+        },
       );
     } catch (error) {
       setError("Failed to load recipe details. Please try again.");

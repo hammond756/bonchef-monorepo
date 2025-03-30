@@ -1,6 +1,5 @@
 import { createRecipeModel, createTestRecipeModel } from "@/lib/model-factory"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
-import { NextResponse } from "next/server"
 import { RecipeCacheCallbackHandler } from "@/lib/callbacks/recipe-cache-callback"
 import { recipeCache } from "@/lib/stores/recipe-cache"
 import { computeMD5 } from "@/lib/utils"
@@ -9,12 +8,13 @@ import { RunnableConfig } from "@langchain/core/runnables"
 import { GeneratedRecipe, Recipe } from "@/lib/types"
 import { BaseLanguageModelInput } from "@langchain/core/language_models/base"
 import Langfuse from "langfuse"
+import { SSEWriter } from "@/lib/sse-writer"
 
 const langfuse = new Langfuse()
 
-async function generateRecipe(teaserContent: string) {
+async function generateRecipe(text: string, imageUrl: string) {
   // Compute MD5 hash of the teaser content to use as cache key
-  const cacheKey = computeMD5(teaserContent)
+  const cacheKey = computeMD5(text + imageUrl)
   
   // Check if recipe is in cache
   const cachedRecipe = recipeCache.get(cacheKey)
@@ -33,15 +33,37 @@ async function generateRecipe(teaserContent: string) {
   const promptClient = await langfuse.getPrompt("GenerateRecipe", undefined, {type: "text"})
   const prompt = new SystemMessage(await promptClient.compile())
 
-  const userInput = new HumanMessage(teaserContent)
+  const content: any[] = [
+    {
+      type: "text",
+      text: text,
+    }, 
+  ]
 
-  const stream = await recipeModel.streamEvents([prompt, userInput], {
+  if (imageUrl) {
+    content.push({
+      type: "image_url",
+      image_url: { url: imageUrl },
+    })
+  }
+
+  const messages = [
+    new HumanMessage({
+      content: content
+    }),
+  ]
+
+  const stream = await recipeModel.streamEvents([prompt, ...messages], {
     version: "v2",
-    encoding: "text/event-stream",
     callbacks: [cacheCallback],
   })
-  
-  return new Response(stream, {
+
+  // Create SSE writer and process the stream
+  const writer = new SSEWriter()
+  await writer.writeStream<GeneratedRecipe>(stream)
+
+
+  return new Response(writer.getStream(), {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
@@ -52,9 +74,9 @@ async function generateRecipe(teaserContent: string) {
 
 export async function POST(req: Request) {
   try {
-    const { teaserContent } = await req.json()
+    const { text, image } = await req.json()
     
-    if (!teaserContent) {
+    if (!text) {
       return new Response("No teaser content provided", {
         status: 400,
         headers: {
@@ -63,7 +85,7 @@ export async function POST(req: Request) {
       })
     }
 
-    return generateRecipe(teaserContent)
+    return generateRecipe(text, image || "")
   } catch (error) {
     console.error("Error generating recipe:", error)
     return new Response("Error generating recipe", {

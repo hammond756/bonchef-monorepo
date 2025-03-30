@@ -1,5 +1,4 @@
 import { Allow, parse } from "partial-json"
-import { LLMResponse } from "./types"
 
 /**
  * Processes streaming data from a LangChain event stream.
@@ -9,14 +8,14 @@ export function extractContentFromChunk(chunk: any): string {
   let content = ""
 
   // Handle different chunk formats
-  if (chunk.kwargs && chunk.kwargs.tool_call_chunks && chunk.kwargs.tool_call_chunks.length > 0) {
-    console.log("tool_call_chunks", chunk.kwargs.tool_call_chunks)
+  if (chunk && chunk.tool_call_chunks && chunk.tool_call_chunks.length > 0) {
+    console.log("tool_call_chunks", chunk.tool_call_chunks)
     // Looks like output from gpt-4o with json_schema model
-    content = chunk.kwargs.tool_call_chunks[0].args
-  } else if (chunk.kwargs && chunk.kwargs.content) {
-    console.log("content", chunk.kwargs.content)
+    content = chunk.tool_call_chunks[0].args
+  } else if (chunk && chunk.content) {
+    console.log("content", chunk.content)
     // Looks like output from gpt-4o with function_calling mode
-    content = chunk.kwargs.content
+    content = chunk.content
   }
 
   return content
@@ -89,7 +88,7 @@ export async function createStreamingRequest<T>(
                 try {
                   console.log("on_chat_model_stream", data.data.chunk)
                   // Get the raw chunk data
-                  const chunk = data.data.chunk
+                  const chunk = data.data.chunk.kwargs
                   const content = extractContentFromChunk(chunk)
                   
                   // Accumulate the content
