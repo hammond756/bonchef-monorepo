@@ -7,6 +7,7 @@ import { GeneratedRecipe } from "@/lib/types";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { patchMessagePayload } from "@/app/actions";
 interface RecipeTeaserCardProps {
   content: string;
   onRecipeSelected: (recipe: GeneratedRecipe) => void;
@@ -44,9 +45,17 @@ export function RecipeTeaserCard({ content, onRecipeSelected, messageId, initial
             "Content-Type": "application/json",
           },
           onmessage: (event: any) => {
-            const recipe = JSON.parse(event.data)
-            setRecipe(recipe)
-            onRecipeSelected(recipe)
+            const generatedRecipe = JSON.parse(event.data)
+
+            switch (event.event) {
+              case "streaming":
+                setRecipe(generatedRecipe)
+                onRecipeSelected(generatedRecipe)
+                break;
+              case "complete":
+                patchMessagePayload(messageId, { recipe: generatedRecipe })
+                break;
+            }
           },
           onclose: () => {
             setIsLoading(false);

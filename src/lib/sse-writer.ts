@@ -20,11 +20,11 @@ export class SSEWriter {
     })
   }
 
-  private writeEvent(data: any) {
+  private writeEvent(data: any, eventType: "streaming" | "complete") {
     if (!this.controller) {
       throw new Error("Stream controller not initialized")
     }
-    const event = `data: ${JSON.stringify(data)}\n\n`
+    const event = `event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`
     this.controller.enqueue(this.encoder.encode(event))
   }
 
@@ -61,12 +61,12 @@ export class SSEWriter {
             
             // Emit the parsed response if available
             if (parsedResponse) {
-              this.writeEvent(parsedResponse)
+              this.writeEvent(parsedResponse, "streaming")
               callbacks?.onData?.(parsedResponse)
             }
           } else if (chunk.event === "on_llm_end" || chunk.event === "on_chain_end") {
             console.log("final response", chunk)
-            this.writeEvent(chunk.data.output)
+            this.writeEvent(chunk.data.output, "complete")
             callbacks?.onComplete?.(chunk.data.output)
             this.close()
           }
@@ -76,14 +76,6 @@ export class SSEWriter {
           callbacks?.onError?.(parseError as Error)
           this.close()
         }
-      }
-
-      // Try to parse the final accumulated content
-      const finalResponse = processAccumulatedContent<T>(accumulatedJson)
-      if (finalResponse) {
-        this.writeEvent(finalResponse)
-        this.close()
-        callbacks?.onComplete?.(finalResponse)
       }
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
