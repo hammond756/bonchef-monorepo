@@ -62,8 +62,10 @@ async function transcribeAndTeaser(audioFile, imageFile) {
   const teaser = await generateTeaser(transcription, imageBase64);
   return { transcription, teaser };
 }
+```
 
 ## Recipe Generation Endpoint
+
 - **URL**: `/api/public/generate-recipe`
 - **Method**: POST
 - **Content-Type**: `application/json`
