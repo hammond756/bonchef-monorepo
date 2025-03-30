@@ -167,7 +167,7 @@ export function Chat() {
   }
 
   return (
-    <div className="flex flex-col h-[100dvh]">
+    <div className="flex flex-col h-[calc(100dvh-4rem)]">
       <div className="flex-1 overflow-y-auto bg-gray-100 relative" ref={containerRef}>
         {messages.length === 0 && !isHistoryLoading ? (
           <QuickActions 
