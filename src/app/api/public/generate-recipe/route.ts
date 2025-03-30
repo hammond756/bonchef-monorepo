@@ -60,8 +60,7 @@ async function generateRecipe(text: string, imageUrl: string) {
 
   // Create SSE writer and process the stream
   const writer = new SSEWriter()
-  await writer.writeStream<GeneratedRecipe>(stream)
-
+  writer.writeStream<GeneratedRecipe>(stream)
 
   return new Response(writer.getStream(), {
     headers: {
