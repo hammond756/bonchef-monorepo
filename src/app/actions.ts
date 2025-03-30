@@ -1,7 +1,7 @@
 "use server"
 
 import { HistoryService } from "@/lib/services/history-service"
-import { ChatMessageData } from "@/lib/types"
+import { ChatMessageData, GeneratedRecipe, ResponseMessage } from "@/lib/types"
 import { createClient } from "@/utils/supabase/server"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
@@ -60,14 +60,48 @@ export async function fetchConversationHistory(conversationId: string): Promise<
         },
       }
     } else {
-      return {
-        id: message.message_id,
-        type: message.type,
-        botResponse: {
-          content: message.content,
-          type: message.payload.type
+      try {
+        const payload = {
+          type: message.payload.type,
+          recipe: message.payload.recipe
+        }
+
+        console.log("payload", payload)
+        
+        return {
+          id: message.message_id,
+          type: message.type,
+          botResponse: {
+            content: message.content,
+            payload
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing bot response:", error)
+        return {
+          id: message.message_id,
+          type: message.type,
+          botResponse: {
+            content: "Sorry, er is iets mis gegaan. Probeer het opnieuw.",
+            payload: {
+              type: "text"
+            }
+          }
         }
       }
     }
   })
+}
+
+export async function patchMessagePayload(messageId: string, payload: Record<string, any>) {
+  const supabase = await createClient()
+  const { error } = await supabase.rpc("patch_message_payload", {
+    p_message_id: messageId,
+    p_payload: payload
+  })
+  
+  if (error) {
+    console.error("Error patching message payload:", error)
+    throw error
+  }
 }

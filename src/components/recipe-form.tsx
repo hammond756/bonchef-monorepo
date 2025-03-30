@@ -20,7 +20,7 @@ import {
   AlertCircle,
   ExternalLink 
 } from "lucide-react";
-import type { GeneratedRecipe, Unit } from "@/lib/types";
+import type { Recipe, Unit } from "@/lib/types";
 import { unitEnum, unitAbbreviations } from "@/lib/types";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { useRouter } from "next/navigation";
@@ -33,7 +33,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import Image from "next/image";
 
 interface RecipeFormProps {
-  recipe: GeneratedRecipe;
+  recipe: Recipe;
   recipeId: string;  // Optional ID for edit mode
   isPublic?: boolean;
 }
@@ -43,7 +43,7 @@ function autoResizeTextarea(element: HTMLTextAreaElement) {
   element.style.height = `${element.scrollHeight}px`;
 }
 
-function createDefaultIngredient(): GeneratedRecipe["ingredients"][number]["ingredients"][number] {
+function createDefaultIngredient(): Recipe["ingredients"][number]["ingredients"][number] {
   return {
     quantity: { type: "range", low: 0, high: 0 },
     unit: "g" as Unit,
@@ -52,7 +52,7 @@ function createDefaultIngredient(): GeneratedRecipe["ingredients"][number]["ingr
 }
 
 function updateIngredientInGroup(
-  ingredients: GeneratedRecipe["ingredients"],
+  ingredients: Recipe["ingredients"],
   groupIdx: number,
   updateFn: (group: typeof ingredients[number]) => typeof ingredients[number]
 ) {
@@ -62,7 +62,7 @@ function updateIngredientInGroup(
 }
 
 function updateIngredientAtIndex(
-  group: GeneratedRecipe["ingredients"][number],
+  group: Recipe["ingredients"][number],
   ingredientIdx: number,
   updateFn: (ingredient: typeof group["ingredients"][number]) => typeof group["ingredients"][number]
 ) {
@@ -246,8 +246,8 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
   function handleIngredientChange(
     groupIdx: number,
     ingredientIdx: number,
-    updateFn: (ingredient: GeneratedRecipe["ingredients"][number]["ingredients"][number]) => 
-      GeneratedRecipe["ingredients"][number]["ingredients"][number]
+    updateFn: (ingredient: Recipe["ingredients"][number]["ingredients"][number]) => 
+      Recipe["ingredients"][number]["ingredients"][number]
   ) {
     setRecipe((prev) => {
       const updatedIngredients = [...prev.ingredients];

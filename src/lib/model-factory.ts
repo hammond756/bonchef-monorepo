@@ -1,6 +1,6 @@
 import { ChatOpenAI } from "@langchain/openai"
 import { FakeListChatModel } from "@langchain/core/utils/testing"
-import { LLMResponseSchema, IntentResponseSchema, LLMResponse, IntentResponse } from "./types"
+import { LLMResponseSchema, IntentResponseSchema, LLMResponse, IntentResponse, GeneratedRecipeSchema, Recipe, GeneratedRecipe } from "./types"
 import { Runnable } from "@langchain/core/runnables"
 import { RunnableConfig } from "@langchain/core/runnables"
 import { BaseLanguageModelInput } from "@langchain/core/language_models/base"
@@ -15,10 +15,16 @@ function createTestModels(): ChatModelSet {
   const fakeGPT4 = new FakeListChatModel({
     responses: [
       JSON.stringify({
-        messages: [{
-          content: "Hier is een recept...",
-          type: "recipe"
-        }]
+        messages: [
+          {
+            content: "Hier is een recept...",
+            type: "recipe"
+          },
+          {
+            content: "Hier is een teaser...",
+            type: "teaser"
+          }
+      ]
       })
     ],
     sleep: 1000
@@ -83,7 +89,7 @@ function createProductionModels(): ChatModelSet {
   return {
     smart,
     fast,
-    intentModel
+    intentModel,
   }
 }
 
@@ -101,3 +107,56 @@ export function createChatModels(): ChatModelSet {
       return createProductionModels()
   }
 } 
+
+export function createTestRecipeModel(recipe?: GeneratedRecipe): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, any>>> {
+  const DEV_RECIPE: GeneratedRecipe = {
+    title: "Classic Spaghetti Bolognese",
+    total_cook_time_minutes: 60,
+    n_portions: 4,
+    ingredients: [
+      {
+        name: "Pasta",
+        ingredients: [
+          { description: "Spaghetti", quantity: { type: "range", low: 400, high: 400 }, unit: "gram" }
+        ]
+      },
+      // ... existing code for other ingredient groups ...
+    ],
+    instructions: [
+      "Fill a large pot with water, add 1-2 tablespoons of salt, and bring to a rolling boil for cooking the pasta",
+      // ... existing code for other instructions ...
+    ],
+  };
+
+  return new FakeListChatModel({
+    responses: [JSON.stringify(recipe || DEV_RECIPE)]
+  }).withStructuredOutput(GeneratedRecipeSchema, {
+    name: "response",
+  })
+}
+
+
+function createProductionRecipeModel(): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, any>>> {
+  return new ChatOpenAI({
+    modelName: "gpt-4o",
+    streaming: true,
+    openAIApiKey: process.env.OPENAI_API_KEY,
+  }).withStructuredOutput(GeneratedRecipeSchema, {
+    name: "response",
+    strict: true,
+    method: "jsonSchema"
+  })
+}
+
+export function createRecipeModel(): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, any>>> {
+  switch (process.env.NODE_ENV) {
+    case "test":
+      return createTestRecipeModel()
+    case "development":
+      return process.env.NEXT_PUBLIC_USE_FAKE_MODELS === "true" 
+        ? createTestRecipeModel() 
+        : createProductionRecipeModel()
+    default:
+      return createProductionRecipeModel()
+  }
+}

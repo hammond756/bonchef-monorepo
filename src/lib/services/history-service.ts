@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server"
 import { HumanMessage, AIMessage } from "@langchain/core/messages"
+import { GeneratedRecipe } from "../types"
 
 export interface ConversationMessage {
   message_id: string
@@ -17,7 +18,8 @@ export class HistoryService {
   async addUserMessage(
     conversationId: string,
     content: string,
-    payload: Record<string, any> = {}
+    payload: Record<string, any> = {},
+    order: number
   ): Promise<ConversationMessage> {
     const supabase = await createClient()
 
@@ -33,7 +35,8 @@ export class HistoryService {
         user_id: user?.id,
         type: "user",
         content,
-        payload
+        payload,
+        order
       })
       .select()
       .single()
@@ -48,7 +51,8 @@ export class HistoryService {
   async addBotMessage(
     conversationId: string,
     content: string,
-    payload: Record<string, any> = {}
+    payload: Record<string, any> = {},
+    order: number
   ): Promise<ConversationMessage> {
     const supabase = await createClient()
 
@@ -64,7 +68,8 @@ export class HistoryService {
         user_id: user?.id,
         type: "bot",
         content,
-        payload
+        payload,
+        order
       })
       .select()
       .single()
@@ -106,6 +111,16 @@ export class HistoryService {
       throw new Error(`Failed to archive conversation: ${error.message}`)
     }
   }
+
+  private templateTeaserWithRecipe(content: string, recipe: GeneratedRecipe): string {
+    return `
+      A recipe teaser:
+      ${content}
+      
+      That resulted in this full recipe:
+      ${JSON.stringify(recipe)}
+    `
+  }
   
   toAgentHistory(messages: ConversationMessage[]): (HumanMessage | AIMessage)[] {
     const agentMessages: (HumanMessage | AIMessage)[] = []
@@ -126,7 +141,11 @@ export class HistoryService {
           }
         }
       } else {
-        agentMessages.push(new AIMessage(message.content))
+        if (message.payload.type === "teaser" && message.payload.recipe) {
+          agentMessages.push(new AIMessage(this.templateTeaserWithRecipe(message.content, message.payload.recipe)))
+        } else {
+          agentMessages.push(new AIMessage(message.content))
+        }
       }
     }
     

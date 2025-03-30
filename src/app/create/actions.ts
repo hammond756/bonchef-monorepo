@@ -1,12 +1,12 @@
 "use server"
 
 import { createClient } from "@/utils/supabase/server";
-import type { GeneratedRecipe } from "@/lib/types";
+import type { Recipe } from "@/lib/types";
 
 const RECIPE_API_URL = process.env.NEXT_PUBLIC_BONCHEF_BACKEND_HOST;
 
 
-const DEV_RECIPE: GeneratedRecipe = {
+const DEV_RECIPE: Recipe = {
   title: "Classic Spaghetti Bolognese",
   description: "A rich and hearty Italian pasta dish with a meaty tomato sauce.",
   total_cook_time_minutes: 60,
@@ -36,7 +36,7 @@ interface TaskResponse {
 interface TaskStatus {
   status: "PENDING" | "SUCCESS" | "FAILURE";
   progress: number;
-  result?: GeneratedRecipe;
+  result?: Recipe;
   error?: string;
 }
 
@@ -104,5 +104,5 @@ export async function scrapeRecipe(url: string) {
   const data = await response.json()
   data.thumbnail = data.source_image
 
-  return data as Promise<GeneratedRecipe>;
+  return data as Promise<Recipe>;
 }
