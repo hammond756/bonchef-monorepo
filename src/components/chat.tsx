@@ -12,6 +12,7 @@ import { useChatStore } from "@/lib/store/chat-store"
 import { useConversationHistory } from "@/hooks/use-conversation-history"
 import { useChat } from "@/hooks/use-chat"
 import { useScrollContainer } from "@/hooks/use-scroll-container"
+import { ShowMoreButton } from "./ui/show-more-button"
 
 export function Chat() {
   const { 
@@ -209,17 +210,7 @@ export function Chat() {
             )}
           </div>
         )}
-        {showScrollButton && (
-          <div className="sticky bottom-4 left-0 right-0 flex justify-center">
-            <Button
-              onClick={scrollToBottom}
-              className="rounded-full bg-white shadow-md hover:bg-gray-50 flex items-center gap-2 px-4 py-2 text-center"
-            >
-              <ChevronDown className="h-4 w-4 text-black" />
-              <span className="text-black">Toon meer</span>
-            </Button>
-          </div>
-        )}
+        {showScrollButton && <ShowMoreButton onClick={scrollToBottom} />}
       </div>
       <div className="sticky bottom-0 w-full bg-white border-t border-gray-200">
         {messages.length === 0 && hasSelectedFilters ? (
