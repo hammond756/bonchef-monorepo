@@ -26,6 +26,13 @@ export function Chat() {
 
   const { conversationId } = useChatStore()
   const { history, isLoading: isHistoryLoading, mutate: mutateHistory } = useConversationHistory(conversationId)
+
+  // Set initial messages from history
+  useEffect(() => {
+    if (history) {
+      setMessages(history)
+    }
+  }, [history, setMessages])
   
   const [isInputExpanded, setIsInputExpanded] = useState(false)
   const [inputPlaceholder, setInputPlaceholder] = useState("Typ hier je bericht...")
