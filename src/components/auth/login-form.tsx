@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { login } from "@/app/login/actions"
+import { login, createTemporaryUser } from "@/app/login/actions"
 import Link from "next/link"
+import { Separator } from "@/components/ui/separator"
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
+  const [isCreatingTemporary, setIsCreatingTemporary] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -35,6 +37,21 @@ export function LoginForm() {
     }
 
     router.refresh()
+  }
+
+  async function handleTemporaryUser() {
+    setIsCreatingTemporary(true)
+    const { error } = await createTemporaryUser()
+    
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      })
+      setIsCreatingTemporary(false)
+      return
+    }
   }
 
   return (
@@ -62,10 +79,33 @@ export function LoginForm() {
       <Button className="w-full" type="submit" disabled={isLoading}>
         {isLoading ? "Signing in..." : "Sign in"}
       </Button>
-      <div className="text-center text-sm">
-        <Link href="/signup" className="text-primary hover:underline">
-          Nog geen account? Meld je dan hier aan
-        </Link>
+        <div className="text-center text-sm">
+          <Link href="/signup" className="text-primary underline">
+            Nog geen account? Meld je dan hier aan
+          </Link>
+        </div>
+      
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <Separator className="w-full" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            Of
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Button
+          type="button"
+          variant="secondary"
+          className="w-full"
+          onClick={handleTemporaryUser}
+          disabled={isCreatingTemporary}
+        >
+          {isCreatingTemporary ? "Bezoeker account aanmaken..." : "Krijg voor 24 uur toegang met een test account"}
+        </Button>
       </div>
     </form>
   )
