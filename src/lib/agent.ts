@@ -14,14 +14,6 @@ import { HistoryCallbackHandler } from "./callbacks/history-callback"
 import { TextPromptClient, Langfuse } from "langfuse"
 
 const langfuse = new Langfuse()
-const PROMPTS = {
-  other: await langfuse.getPrompt("OtherIntent", undefined, {type: "text"}),
-  teaser: await langfuse.getPrompt("TeaserIntent", undefined, {type: "text"}),
-  recipe: await langfuse.getPrompt("RecipeIntent", undefined, {type: "text"}),
-  modify: await langfuse.getPrompt("ModifyIntent", undefined, {type: "text"}),
-  question: await langfuse.getPrompt("QuestionIntent", undefined, {type: "text"}),
-  introduction: await langfuse.getPrompt("IntroductionIntent", undefined, {type: "text"}),
-}
 
 export class CulinaryAgent {
   private smart: Runnable<BaseLanguageModelInput, LLMResponse, RunnableConfig<Record<string, any>>>
@@ -41,7 +33,17 @@ export class CulinaryAgent {
     this.langfuseHandler = new CallbackHandler()
     this.historyService = new HistoryService()
     this.langfuse = new Langfuse()
-    this.prompts = PROMPTS
+  }
+
+  private async initializePrompts() {
+    this.prompts = {
+      other: await langfuse.getPrompt("OtherIntent", undefined, {type: "text"}),
+      teaser: await langfuse.getPrompt("TeaserIntent", undefined, {type: "text"}),
+      recipe: await langfuse.getPrompt("RecipeIntent", undefined, {type: "text"}),
+      modify: await langfuse.getPrompt("ModifyIntent", undefined, {type: "text"}),
+      question: await langfuse.getPrompt("QuestionIntent", undefined, {type: "text"}),
+      introduction: await langfuse.getPrompt("IntroductionIntent", undefined, {type: "text"}),
+    }
   }
 
   private async detectIntent(history: (HumanMessage | AIMessage)[]): Promise<string> {
@@ -64,6 +66,10 @@ export class CulinaryAgent {
     userInput: UserInput,
     conversationId: string,
   ) {
+    // Needs to happen as part of the request cycle in order for changes
+    // in langfuse to me immediately in effect
+    await this.initializePrompts()
+
     // Get conversation history, do this first to get the last message order
     const historyMessages = await this.historyService.getHistory(conversationId)
     const lastMessageOrder = historyMessages[historyMessages.length - 1]?.order ?? 0
