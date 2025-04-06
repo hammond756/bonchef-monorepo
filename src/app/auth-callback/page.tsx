@@ -55,27 +55,27 @@ export default function AuthCallbackPage() {
     <div className="flex min-h-screen items-center justify-center">
       {isLoading ? (
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Finishing sign in...</h2>
-          <p className="text-sm text-muted-foreground">Please wait while we securely sign you in</p>
+          <h2 className="text-xl font-semibold mb-2">Afronden...</h2>
+          <p className="text-sm text-muted-foreground">Wacht even terwijl we je inloggen</p>
           <div className="mt-4 flex justify-center">
             <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
           </div>
         </div>
       ) : error ? (
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2 text-red-600">Sign in failed</h2>
+          <h2 className="text-xl font-semibold mb-2 text-red-600">Inloggen mislukt</h2>
           <p className="text-sm text-muted-foreground">{error}</p>
           <button 
             onClick={() => router.push("/login")}
             className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary/80"
           >
-            Return to login
+            Terug naar inloggen
           </button>
         </div>
       ) : isAuthenticated ? (
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2 text-green-600">Authentication successful!</h2>
-          <p className="text-sm text-muted-foreground">Redirecting you to the application...</p>
+          <h2 className="text-xl font-semibold mb-2 text-green-600">Inloggen gelukt!</h2>
+          <p className="text-sm text-muted-foreground">Je wordt doorgestuurd naar de applicatie...</p>
           <div className="mt-4 flex justify-center">
             <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
           </div>
