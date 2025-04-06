@@ -4,6 +4,8 @@ import { useState } from "react"
 import { useRecipeGeneration } from "@/hooks/use-recipe-generation"
 import { generateRecipe } from "@/app/create/actions"
 import { Loader2 } from "lucide-react"
+import { GeneratedRecipe } from "@/lib/types"
+import { generatedRecipeToRecipe } from "@/lib/utils"
 
 interface SaveRecipeButtonProps {
   message: string
@@ -12,43 +14,40 @@ interface SaveRecipeButtonProps {
 
 export function SaveRecipeButton({ message, onSaved }: SaveRecipeButtonProps) {
   const [recipeUrl, setRecipeUrl] = useState<string | null>(null)
-  
-  const { isLoading, setIsLoading, progress, setTaskId } = useRecipeGeneration({
-    onSuccess: async (recipe) => {
-      try {
-        const response = await fetch("/api/save-recipe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...recipe,
-            is_public: false // Set recipes as private by default
-          }),
-        })
+  const [isLoading, setIsLoading] = useState(false)
 
-        if (!response.ok) {
-          throw new Error("Failed to save recipe")
-        }
+  const saveRecipe = async (recipe: GeneratedRecipe) => {
+    try {
+      const response = await fetch("/api/save-recipe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...generatedRecipeToRecipe(recipe),
+          is_public: false // Set recipes as private by default
+        }),
+      })
 
-        const data = await response.json()
-        const savedRecipeUrl = `/recipes/${data.recipe.id}`
-        setRecipeUrl(savedRecipeUrl)
-        onSaved(savedRecipeUrl)
-      } catch (error) {
-        console.error("Failed to save recipe:", error)
+      if (!response.ok) {
+        throw new Error("Failed to save recipe")
       }
-    },
-    onError: (error) => {
-      console.error("Failed to generate recipe:", error)
-    }
-  })
 
+      const data = await response.json()
+      const savedRecipeUrl = `/recipes/${data.recipe.id}`
+      setRecipeUrl(savedRecipeUrl)
+      onSaved(savedRecipeUrl)
+    } catch (error) {
+      console.error("Failed to save recipe:", error)
+    }
+  }
+  
   async function handleSave() {
     setIsLoading(true)
     try {
-      const result = await generateRecipe(message, "thuiskok")
-      setTaskId(result)
+      const result = await generateRecipe(message)
+      await saveRecipe(result)
     } catch (error) {
       console.error("Failed to save recipe:", error)
+    } finally {
       setIsLoading(false)
     }
   }
@@ -65,7 +64,7 @@ export function SaveRecipeButton({ message, onSaved }: SaveRecipeButtonProps) {
           {isLoading ? (
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Opslaan... {Math.round(progress * 100)}%</span>
+              <span>Opslaan...</span>
             </div>
           ) : (
             "Opslaan in collectie"

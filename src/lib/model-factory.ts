@@ -136,10 +136,10 @@ export function createTestRecipeModel(recipe?: GeneratedRecipe): Runnable<BaseLa
 }
 
 
-function createProductionRecipeModel(): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, any>>> {
+function createProductionRecipeModel(modelName: string, streaming: boolean): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, any>>> {
   return new ChatOpenAI({
-    modelName: "gpt-4o",
-    streaming: true,
+    modelName: modelName,
+    streaming: streaming,
     openAIApiKey: process.env.OPENAI_API_KEY,
   }).withStructuredOutput(GeneratedRecipeSchema, {
     name: "response",
@@ -148,15 +148,15 @@ function createProductionRecipeModel(): Runnable<BaseLanguageModelInput, Generat
   })
 }
 
-export function createRecipeModel(): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, any>>> {
+export function createRecipeModel(modelName: string = "gpt-4o", streaming: boolean = true): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, any>>> {
   switch (process.env.NODE_ENV) {
     case "test":
       return createTestRecipeModel()
     case "development":
       return process.env.NEXT_PUBLIC_USE_FAKE_MODELS === "true" 
         ? createTestRecipeModel() 
-        : createProductionRecipeModel()
+        : createProductionRecipeModel(modelName, streaming)
     default:
-      return createProductionRecipeModel()
+      return createProductionRecipeModel(modelName, streaming)
   }
 }

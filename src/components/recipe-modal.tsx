@@ -15,21 +15,12 @@ import { Separator } from "@/components/ui/separator";
 import { GeneratedRecipe, Recipe } from "@/lib/types";
 import { unitAbbreviations } from "@/lib/types";
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants";
+import { generatedRecipeToRecipe } from "@/lib/utils";
 interface RecipeModalProps {
   recipe: GeneratedRecipe | null;
   isOpen: boolean;
   onClose: () => void;
   onRecipeSaved?: (url: string) => void;
-}
-
-function generatedRecipeToRecipe(generatedRecipe: GeneratedRecipe): Recipe {
-  return {
-    ...generatedRecipe,
-    description: "",
-    thumbnail: TINY_PLACEHOLDER_IMAGE,
-    source_url: "https://app.bonchef.io",
-    source_name: "BonChef",
-  }
 }
 
 export function RecipeModal({ recipe, isOpen, onClose, onRecipeSaved }: RecipeModalProps) {
