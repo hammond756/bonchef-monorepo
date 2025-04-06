@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { ResolvingMetadata } from "next/dist/lib/metadata/types/metadata-interface"
 import { Metadata } from "next"
 import { cookies } from "next/headers"
+import { formatIngredientLine } from "@/lib/utils"
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 export const dynamic = "auto"
 export const revalidate = 3600 // Revalidate every hour
@@ -209,7 +210,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
               <ul className="space-y-2">
                 {group.ingredients.map((ingredient: any, idx: number) => (
                   <li key={idx} className="text-muted-foreground">
-                    {ingredient.quantity.low || ""} {ingredient.unit == "none" ? "" : ingredient.unit} {ingredient.description}
+                    {formatIngredientLine(ingredient, 1)}
                   </li>
                 ))}
               </ul>

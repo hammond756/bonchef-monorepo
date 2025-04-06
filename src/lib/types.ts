@@ -64,6 +64,8 @@ export const IngredientSchema = z.object({
   description: z.string(),
 });
 
+export type Ingredient = z.infer<typeof IngredientSchema>;
+
 export const RecipeSchema = z.object({
   title: z.string(),
   n_portions: z.number(),
