@@ -174,3 +174,15 @@ export function formatIngredientLine(
     newAmount < 2 ? unitMap[newUnit].nl.singular : unitMap[newUnit].nl.plural;
   return `${formatQuantity(Math.round(newAmount * 100) / 100, { tolerance: 0.01 })} ${displayUnit} ${ingredient.description}`;
 }
+
+export function parseDescription(text: string): Array<{ type: "text" | "url"; content: string }> {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  
+  return parts.map((part) => {
+    if (part.match(urlRegex)) {
+      return { type: "url", content: part };
+    }
+    return { type: "text", content: part };
+  });
+}

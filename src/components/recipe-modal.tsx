@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { Loader2, X, Save, ExternalLink } from "lucide-react";
 import {
   Dialog,
@@ -10,12 +9,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { GeneratedRecipe, Recipe } from "@/lib/types";
-import { unitAbbreviations } from "@/lib/types";
-import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants";
+import { GeneratedRecipe } from "@/lib/types";
 import { generatedRecipeToRecipe } from "@/lib/utils";
+import { RecipeDetail } from "./recipe-detail";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 interface RecipeModalProps {
   recipe: GeneratedRecipe | null;
   isOpen: boolean;
@@ -68,63 +65,15 @@ export function RecipeModal({ recipe, isOpen, onClose, onRecipeSaved }: RecipeMo
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle className="text-2xl font-bold">{recipe.title}</DialogTitle>
-        </DialogHeader>
+        <VisuallyHidden>
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <DialogTitle className="text-2xl font-bold">{recipe.title}</DialogTitle>
+          </DialogHeader>
+        </VisuallyHidden>
 
         {/* Scrollable content area */}
         <div className="overflow-y-auto flex-1 pr-2">
-          <div className="space-y-6 pb-4"> 
-            {/* Recipe Info */}
-            <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-              <div>Porties: {recipe.n_portions}</div>
-              <div>Bereidingstijd: {recipe.total_cook_time_minutes} minuten</div>
-            </div>
-
-          {/* Description */}
-          {/* <div>
-            <p className="text-gray-700">{recipe.description}</p>
-          </div> */}
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Ingredients */}
-              <Card className="p-4">
-                <h2 className="text-xl font-semibold mb-2">Ingrediënten</h2>
-                <Separator className="mb-4" />
-                {recipe.ingredients && recipe.ingredients.map((group, index) => (
-                  <div key={index} className="mb-4">
-                    {group.name !== "no_group" && (
-                      <h3 className="font-medium mb-2">{group.name}</h3>
-                    )}
-                    <ul className="space-y-2">
-                      {group.ingredients && group.ingredients.map((ingredient, idx) => (
-                        <li key={idx} className="text-gray-600">
-                          {ingredient.quantity?.low || ""}{" "}
-                          {ingredient.unit && ingredient.unit !== "none"
-                            ? unitAbbreviations[ingredient.unit] || ingredient.unit
-                            : ""}{" "}
-                          {ingredient.description}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </Card>
-
-              {/* Instructions */}
-              <Card className="p-4">
-                <h2 className="text-xl font-semibold mb-2">Instructies</h2>
-                <Separator className="mb-4" />
-                <ol className="space-y-3 list-decimal list-inside">
-                  {recipe.instructions && recipe.instructions.map((instruction, index) => (
-                    <li key={index} className="text-gray-600">
-                      {instruction}
-                    </li>
-                  ))}
-                </ol>
-              </Card>
-            </div>
-          </div>
+          <RecipeDetail recipe={generatedRecipeToRecipe(recipe)} showThumbnail={false} />
         </div>
 
         {/* Footer: non-scrollable and always visible */}

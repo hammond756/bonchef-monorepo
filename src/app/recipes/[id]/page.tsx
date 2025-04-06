@@ -10,32 +10,10 @@ import { ResolvingMetadata } from "next/dist/lib/metadata/types/metadata-interfa
 import { Metadata } from "next"
 import { cookies } from "next/headers"
 import { formatIngredientLine } from "@/lib/utils"
+import { RecipeDetail } from "@/components/recipe-detail"
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 export const dynamic = "auto"
 export const revalidate = 3600 // Revalidate every hour
-
-// Helper function to convert URLs in text to clickable links
-function parseDescription(text: string) {
-  const urlRegex = /(https?:\/\/[^\s]+)/g
-  const parts = text.split(urlRegex)
-  
-  return parts.map((part, index) => {
-    if (part.match(urlRegex)) {
-      return (
-        <a
-          key={index}
-          href={part}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-500 hover:text-blue-700 underline"
-        >
-          {part}
-        </a>
-      )
-    }
-    return part
-  })
-}
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> },
@@ -129,108 +107,10 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
   }
 
   const { recipe } = await response.json()
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
   return (
     <div className="container mx-auto max-w-4xl">
-      {/* Thumbnail */}
-      <div className="relative w-full h-[400px] overflow-hidden mb-8">
-        <Image
-          src={recipe.thumbnail}
-          alt={recipe.title}
-          fill
-          className="object-cover"
-          data-testid="recipe-image"
-          priority
-        />
-      </div>
-
-      {/* Title and Description */}
-      <div className="text-center mb-8">
-        <h1 className="scroll-m-20 text-4xl font-bold tracking-tight mb-4" data-testid="recipe-title">
-          {recipe.title}
-        </h1>
-        <p className="text-md text-muted-foreground mb-4">
-          Door: {recipe.profiles?.display_name}
-        </p>
-        
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          {parseDescription(recipe.description)}
-        </p>
-      </div>
-
-      {/* Recipe Info */}
-      <div className="flex justify-center gap-8 mb-4">
-        <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-muted-foreground" />
-          <span>{recipe.total_cook_time_minutes} minuten</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-muted-foreground" />
-          <span>{recipe.n_portions} porties</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {recipe.is_public ? (
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Globe className="h-3 w-3" />
-              <span>Openbaar</span>
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Lock className="h-3 w-3" />
-              <span>Privé</span>
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {/* Edit Link - only show if user owns the recipe */}
-      {user && recipe.user_id === user.id && (
-        <div className="flex justify-center mb-4">
-          <Link
-            href={`/edit/${id}`}
-            className="inline-flex items-center gap-2 text-blue-500 hover:text-blue-700"
-        >
-          <PencilIcon className="h-4 w-4" />
-            <span>Bewerk recept</span>
-          </Link>
-        </div>
-      )}
-
-
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* Ingredients */}
-        <Card className="p-6">
-          <h2 className="text-2xl font-semibold mb-4">Ingrediënten</h2>
-          <Separator className="mb-4" />
-          {recipe.ingredients.map((group: any, index: number) => (
-            <div key={index} className="mb-6">
-              {group.name !== "no_group" && <h3 className="font-medium mb-2">{group.name}</h3>}
-              <ul className="space-y-2">
-                {group.ingredients.map((ingredient: any, idx: number) => (
-                  <li key={idx} className="text-muted-foreground">
-                    {formatIngredientLine(ingredient, 1)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </Card>
-
-        {/* Instructions */}
-        <Card className="p-6">
-          <h2 className="text-2xl font-semibold mb-4">Instructies</h2>
-          <Separator className="mb-4" />
-          <ol className="space-y-4 list-decimal list-inside">
-            {recipe.instructions.map((instruction: string, index: number) => (
-              <li key={index} className="text-muted-foreground">
-                {instruction}
-              </li>
-            ))}
-          </ol>
-        </Card>
-      </div>
+      <RecipeDetail recipe={recipe} profile={recipe.profiles} />
     </div>
   )
 }
