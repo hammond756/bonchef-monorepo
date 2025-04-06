@@ -6,6 +6,7 @@ import { UrlStatusList } from "./url-status-list"
 import { SendIcon } from "lucide-react"
 import AutoGrowingTextarea from "./ui/auto-growing-textarea"
 import { UserInput } from "@/lib/types"
+import { useJiggleAnimation } from "@/hooks/useJiggleAnimation"
 
 interface ChatInputProps {
   onSend: (userInput: UserInput) => void
@@ -65,8 +66,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
 }, ref) => {
   const [message, setMessage] = useState("")
   const [urlStatuses, setUrlStatuses] = useState<UrlStatus[]>([])
-  const [shouldJiggle, setShouldJiggle] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const { shouldJiggle, triggerJiggle } = useJiggleAnimation()
 
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -119,9 +120,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
     
     const isUrlsLoading = urlStatuses.some(s => s.status === "loading")
     if (isUrlsLoading) {
-      setShouldJiggle(true)
-      console.log("shouldJiggle", shouldJiggle)
-      setTimeout(() => setShouldJiggle(false), 420) // Animation duration + small buffer
+      triggerJiggle()
       return
     }
     
@@ -148,11 +147,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
-
-      // Should return after preventDefault to prevent newline in textarea when
-      // pressing enter during loading
-      // if (isDisabled) return
-      
       handleSubmit(e)
     }
   }
@@ -162,7 +156,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
       onSubmit={handleSubmit}
       className="border-t p-4 bg-white"
     >
-      <UrlStatusList urls={urlStatuses} shouldJiggle={shouldJiggle} />
+      <UrlStatusList 
+        urls={urlStatuses} 
+        className={shouldJiggle ? "animate-jiggle" : ""}
+      />
       <div className="flex gap-2">
         <AutoGrowingTextarea
           ref={textareaRef}

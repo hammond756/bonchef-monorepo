@@ -9,6 +9,16 @@ export default {
   ],
   theme: {
   	extend: {
+  		keyframes: {
+  			jiggle: {
+  				'0%, 100%': { transform: 'translateX(0)' },
+  				'25%': { transform: 'translateX(-4px)' },
+  				'75%': { transform: 'translateX(4px)' },
+  			},
+  		},
+  		animation: {
+  			jiggle: 'jiggle 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards',
+  		},
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
