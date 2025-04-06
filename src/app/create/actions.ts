@@ -4,7 +4,7 @@ import { createRecipeModel } from "@/lib/model-factory";
 import Langfuse from "langfuse";
 import { type Recipe } from "@/lib/types";
 
-
+const RECIPE_API_URL = process.env.NEXT_PUBLIC_BONCHEF_BACKEND_HOST;
 const DEV_RECIPE: Recipe = {
   title: "Classic Spaghetti Bolognese",
   description: "A rich and hearty Italian pasta dish with a meaty tomato sauce.",
@@ -44,4 +44,17 @@ export async function generateRecipe(recipeText: string) {
   const recipe = await recipeModel.invoke(prompt)
 
   return recipe
+}
+
+export async function scrapeRecipe(url: string) {
+  const response = await fetch(`${RECIPE_API_URL}/scrape/?url=${url}`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to scrape recipe: ${response.statusText}`);
+  }
+
+  const data = await response.json()
+  data.thumbnail = data.source_image
+
+  return data as Promise<Recipe>;
 }
