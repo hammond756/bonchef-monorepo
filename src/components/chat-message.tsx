@@ -21,9 +21,6 @@ export function ChatMessage({
   isLastMessage,
   onRetry,
 }: ChatMessageProps) {
-  const [selectedRecipe, setSelectedRecipe] = useState<GeneratedRecipe | null>(null)
-  const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false)
-
   let displayText = ""
   
   if (message.type === "user") {
@@ -34,11 +31,6 @@ export function ChatMessage({
     displayText = message.botResponse.content
   } else if (message.type === "bot_loading") {
     displayText = "Laden..."
-  }
-
-  const handleRecipeSelected = (recipe: GeneratedRecipe) => {
-    setSelectedRecipe(recipe)
-    setIsRecipeModalOpen(true)
   }
 
   function renderMessageContent() {
@@ -78,7 +70,6 @@ export function ChatMessage({
             messageId={message.id}
             initialRecipe={message.botResponse.payload.recipe}
             content={message.botResponse.content}
-            onRecipeSelected={handleRecipeSelected}
           />
         </div>
       )
@@ -150,14 +141,6 @@ export function ChatMessage({
           </div>
         )}
       </div>
-
-      {/* Recipe Modal */}
-      <RecipeModal 
-        recipe={selectedRecipe}
-        isOpen={isRecipeModalOpen}
-        onClose={() => setIsRecipeModalOpen(false)}
-        onRecipeSaved={onRecipeSaved}
-      />
     </div>
   )
 } 

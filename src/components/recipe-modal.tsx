@@ -13,14 +13,16 @@ import { GeneratedRecipe } from "@/lib/types";
 import { generatedRecipeToRecipe } from "@/lib/utils";
 import { RecipeDetail } from "./recipe-detail";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+
 interface RecipeModalProps {
   recipe: GeneratedRecipe | null;
   isOpen: boolean;
   onClose: () => void;
   onRecipeSaved?: (url: string) => void;
+  canSave: boolean;
 }
 
-export function RecipeModal({ recipe, isOpen, onClose, onRecipeSaved }: RecipeModalProps) {
+export function RecipeModal({ recipe, isOpen, onClose, onRecipeSaved, canSave }: RecipeModalProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [savedRecipeUrl, setSavedRecipeUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -88,16 +90,16 @@ export function RecipeModal({ recipe, isOpen, onClose, onRecipeSaved }: RecipeMo
                   className="w-full justify-center px-4 py-2 rounded-md bg-white border-2 border-green-500 text-green-600 hover:bg-green-50 transition-colors text-sm font-medium shadow-md flex items-center gap-2"
                   data-testid="recipe-modal-view-recipe-button"
                 >
-                <>
-                <ExternalLink className="w-5 h-5"/> 
+                  <ExternalLink className="w-5 h-5"/> 
                   <span>Bekijk recept</span>
-                </>
                 </a>
               ) : (
                 <button
                   onClick={handleSaveRecipe}
-                  disabled={isSaving}
-                  className="w-full justify-center px-4 py-2 rounded-md bg-white border-2 border-green-500 text-green-600 hover:bg-green-50 transition-colors text-sm font-medium shadow-md flex items-center gap-2"
+                  disabled={isSaving || !canSave}
+                  className={`w-full justify-center px-4 py-2 rounded-md bg-white border-2 border-green-500 text-green-600 hover:bg-green-50 transition-colors text-sm font-medium shadow-md flex items-center gap-2 ${
+                    !canSave ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                   data-testid="recipe-modal-save-recipe-button"
                 >
                   {isSaving ? (
@@ -113,12 +115,10 @@ export function RecipeModal({ recipe, isOpen, onClose, onRecipeSaved }: RecipeMo
                   )}
                 </button>
               )}
-              
             </div>
-                        {error && (
+            {error && (
               <div className="text-red-500 rounded-md text-sm">{error}</div>
             )}
-            
           </div>
         </DialogFooter>
       </DialogContent>
