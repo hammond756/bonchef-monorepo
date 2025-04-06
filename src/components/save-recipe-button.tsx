@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRecipeGeneration } from "@/hooks/use-recipe-generation"
-import { generateRecipe } from "@/app/create/actions"
+import { generateRecipe } from "@/app/actions"
 import { Loader2 } from "lucide-react"
 import { GeneratedRecipe } from "@/lib/types"
 import { generatedRecipeToRecipe } from "@/lib/utils"
