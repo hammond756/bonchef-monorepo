@@ -10,13 +10,29 @@ interface UrlStatus {
 
 interface UrlStatusListProps {
   urls: UrlStatus[]
+  shouldJiggle?: boolean
 }
 
-export function UrlStatusList({ urls }: UrlStatusListProps) {
+export function UrlStatusList({ urls, shouldJiggle = false }: UrlStatusListProps) {
   if (!urls.length) return null
 
   return (
-    <div className="space-y-2 mb-2">
+    <div 
+      className={`space-y-2 mb-2 ${shouldJiggle ? "animate-jiggle" : ""}`}
+      style={{
+        animationDuration: "0.4s",
+      }}
+    >
+      <style jsx global>{`
+        @keyframes jiggle {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-4px); }
+          75% { transform: translateX(4px); }
+        }
+        .animate-jiggle {
+          animation: jiggle 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
+        }
+      `}</style>
       {urls.map((url) => (
         <div 
           key={url.url} 

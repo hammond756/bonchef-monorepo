@@ -65,6 +65,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
 }, ref) => {
   const [message, setMessage] = useState("")
   const [urlStatuses, setUrlStatuses] = useState<UrlStatus[]>([])
+  const [shouldJiggle, setShouldJiggle] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useImperativeHandle(ref, () => ({
@@ -74,7 +75,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
   }))
 
   useEffect(() => {
-    console.log("message", message)
     const newUrls = extractUrls(message)
     
     // Remove URLs that are no longer in the message
@@ -117,6 +117,14 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
     e.preventDefault()
     if (!message.trim()) return
     
+    const isUrlsLoading = urlStatuses.some(s => s.status === "loading")
+    if (isUrlsLoading) {
+      setShouldJiggle(true)
+      console.log("shouldJiggle", shouldJiggle)
+      setTimeout(() => setShouldJiggle(false), 420) // Animation duration + small buffer
+      return
+    }
+    
     const webContent = urlStatuses
       .filter(status => status.status === "success")
       .map(status => ({ url: status.url, content: status.content! }))
@@ -137,12 +145,24 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
     setMessage(e.target.value)
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+
+      // Should return after preventDefault to prevent newline in textarea when
+      // pressing enter during loading
+      // if (isDisabled) return
+      
+      handleSubmit(e)
+    }
+  }
+
   return (
     <form 
       onSubmit={handleSubmit}
       className="border-t p-4 bg-white"
     >
-      <UrlStatusList urls={urlStatuses} />
+      <UrlStatusList urls={urlStatuses} shouldJiggle={shouldJiggle} />
       <div className="flex gap-2">
         <AutoGrowingTextarea
           ref={textareaRef}
@@ -154,12 +174,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
           className={`resize-none py-1.5 px-3 leading-tight overflow-hidden transition-all duration-200 ${
             isExpanded ? "min-h-[144px] max-h-[144px]" : "min-h-[36px] max-h-[144px]"
           }`}
-          onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault()
-              handleSubmit(e)
-            }
-          }}
+          onKeyDown={handleKeyDown}
         />
         <Button 
           type="submit" 
