@@ -110,7 +110,7 @@ export function RecipeTeaserCard({ content, onRecipeSelected, messageId, initial
               ? "Recept laden..." 
               : recipe 
                 ? "Klik om het recept te bekijken" 
-                : "Klik om het recept te genereren"}
+                : "Zal ik het recept voor je uitschrijven?"}
           </p>
           {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
         </div>

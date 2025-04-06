@@ -11,7 +11,7 @@ export async function GET(
 
   const { data: recipe, error: recipeError } = await supabase
     .from("recipe_creation_prototype")
-    .select("*")
+    .select("*, profiles!recipe_creation_prototype_user_id_fkey(display_name)")
     .eq("id", id)
     .single();
 
