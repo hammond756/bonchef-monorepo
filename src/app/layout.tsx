@@ -32,7 +32,7 @@ export default async function RootLayout({
       >
         <NuqsAdapter>
           <Sidebar />
-          <main className="pt-16">{children}</main>
+          <main className="pt-16 h-dvh">{children}</main>
           <Toaster />
         </NuqsAdapter>
       </body>

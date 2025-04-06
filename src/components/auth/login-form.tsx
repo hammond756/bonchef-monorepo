@@ -67,7 +67,7 @@ export function LoginForm() {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">Wachtwoord</Label>
         <Input
           id="password"
           name="password"
@@ -77,7 +77,7 @@ export function LoginForm() {
         />
       </div>
       <Button className="w-full" type="submit" disabled={isLoading}>
-        {isLoading ? "Signing in..." : "Sign in"}
+        {isLoading ? "Inloggen..." : "Inloggen"}
       </Button>
         <div className="text-center text-sm">
           <Link href="/signup" className="text-primary underline">
