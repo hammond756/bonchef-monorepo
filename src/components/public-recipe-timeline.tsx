@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { format } from "date-fns"
@@ -8,36 +7,10 @@ import { nl } from "date-fns/locale"
 import { Loader2 } from "lucide-react"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card"
-import { useRecipeTimeline } from "@/hooks/use-recipe-timeline"
+import { usePublicRecipes } from "@/hooks/use-public-recipes"
 
 export function PublicRecipeTimeline() {
-  const { recipes, fetchRecipes, loadMore } = useRecipeTimeline()
-  const [loading, setLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
-
-  useEffect(() => {
-    async function load() {
-      setLoading(true)
-      try {
-        const result = await fetchRecipes()
-        setHasMore(result.hasMore)  
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [fetchRecipes])
-
-  const handleLoadMore = async () => {
-    setLoading(true)
-    try {
-      await loadMore()
-      const result = await fetchRecipes()
-      setHasMore(result.hasMore)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { recipes, isLoading, hasMore, loadMore } = usePublicRecipes()
 
   return (
     <div className="space-y-8">
@@ -81,16 +54,16 @@ export function PublicRecipeTimeline() {
         ))}
       </div>
 
-      {loading && (
+      {isLoading && (
         <div className="flex justify-center py-4">
           <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
         </div>
       )}
 
-      {!loading && hasMore && recipes.length > 0 && (
+      {!isLoading && hasMore && recipes.length > 0 && (
         <div className="flex justify-center py-4">
           <Button 
-            onClick={handleLoadMore}
+            onClick={loadMore}
             variant="outline"
             className="min-w-[200px]"
           >
@@ -99,13 +72,13 @@ export function PublicRecipeTimeline() {
         </div>
       )}
 
-      {!loading && !hasMore && recipes.length > 0 && (
+      {!isLoading && !hasMore && recipes.length > 0 && (
         <p className="py-4 text-center text-gray-500">
           Je hebt alle recepten bekeken!
         </p>
       )}
 
-      {!loading && recipes.length === 0 && (
+      {!isLoading && recipes.length === 0 && (
         <p className="py-4 text-center text-gray-500">
           Er zijn nog geen openbare recepten beschikbaar.
         </p>
