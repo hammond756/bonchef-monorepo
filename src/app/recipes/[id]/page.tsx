@@ -108,9 +108,19 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
   const { recipe } = await response.json()
 
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <div className="container mx-auto max-w-4xl">
-      <RecipeDetail recipe={recipe} profile={recipe.profiles} />
+      <RecipeDetail 
+        recipe={recipe}
+        profile={recipe.profiles}
+        ownerId={recipe.user_id}
+        user={user || undefined}
+        recipeId={recipe.id}
+        isPublic={recipe.is_public}
+      />
     </div>
   )
 }

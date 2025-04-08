@@ -20,7 +20,7 @@ export async function getRecipes(userId: string) {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("recipe_creation_prototype")
-    .select("*")
+    .select("*, is_liked_by_current_user")
     .eq("user_id", userId)
   return data
 }

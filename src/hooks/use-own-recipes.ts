@@ -1,0 +1,30 @@
+"use client"
+
+import useSWR from "swr";
+
+const fetcher = async () => {
+    const response = await fetch("/api/collection")
+    if (!response.ok) {
+        throw new Error("Failed to fetch own recipes")
+    }
+    return response.json()
+}
+
+export function useOwnRecipes() {
+    const { data, error, isLoading, mutate } = useSWR(
+        "own-recipes",
+        fetcher,
+        {
+            revalidateOnFocus: true,
+            revalidateOnReconnect: true,
+            refreshInterval: 0, // Don't poll, just revalidate on focus/reconnect
+        }
+    )
+
+    return {
+        recipes: data || [],
+        isLoading,
+        isError: error,
+        mutate,
+    }
+}

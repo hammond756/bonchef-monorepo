@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card"
 import { usePublicRecipes } from "@/hooks/use-public-recipes"
+import { LikeButton } from "./like-button"
 
 export function PublicRecipeTimeline() {
   const { recipes, isLoading, hasMore, loadMore } = usePublicRecipes()
@@ -17,39 +18,40 @@ export function PublicRecipeTimeline() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {recipes.map((recipe) => (
           <div key={recipe.id}>
-            <Link
-              href={`/recipes/${recipe.id}`}
-              className="group block"
-            >
               <Card className="h-full overflow-hidden hover:shadow-md transition-shadow duration-300">
                 <CardHeader className="pb-2">
                   <p className="text-sm text-gray-500 font-medium">
                     {recipe.profiles?.display_name || "Anonieme chef"}
                   </p>
                 </CardHeader>
-                <div className="relative aspect-[16/9] w-full overflow-hidden">
-                  <Image
-                    src={recipe.thumbnail || "https://placekitten.com/800/450"}
-                    alt={recipe.title}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                </div>
-                <CardContent className="pt-4">
-                  <h3 className="text-xl font-semibold text-gray-900 group-hover:text-gray-600 line-clamp-2">
-                    {recipe.title}
-                  </h3>
-                </CardContent>
-                <CardFooter className="pt-0">
+                <Link
+                  href={`/recipes/${recipe.id}`}
+                  className="group block"
+                >
+                  <div className="relative aspect-[16/9] w-full overflow-hidden">
+                    <Image
+                      src={recipe.thumbnail || "https://placekitten.com/800/450"}
+                      alt={recipe.title}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  </div>
+                  <CardContent className="pt-4">
+                    <h3 className="text-xl font-semibold text-gray-900 group-hover:text-gray-600 line-clamp-2">
+                      {recipe.title}
+                    </h3>
+                  </CardContent>
+                </Link>
+                <CardFooter className="pt-0 flex justify-between items-center">
                   <p className="text-sm text-gray-500">
                     {recipe.created_at 
                       ? format(new Date(recipe.created_at), "d MMMM yyyy", { locale: nl }) 
                       : ""}
                   </p>
+                  <LikeButton recipeId={recipe.id} initialLiked={recipe.is_liked_by_current_user} />
                 </CardFooter>
               </Card>
-            </Link>
           </div>
         ))}
       </div>

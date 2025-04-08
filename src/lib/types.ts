@@ -81,6 +81,7 @@ export const RecipeSchema = z.object({
   thumbnail: z.string(), 
   source_url: z.string(),
   source_name: z.string(),
+  is_liked_by_current_user: z.boolean().optional(),
 });
 
 export const GeneratedRecipeSchema = z.object({

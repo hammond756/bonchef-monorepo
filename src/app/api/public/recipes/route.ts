@@ -13,10 +13,17 @@ export async function GET(request: Request) {
     const from = (offset - 1) * pageSize
     const to = from + pageSize - 1
     
-    // Fetch public recipes with profiles join
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    // Fetch public recipes with profiles join and like status
     const { data, error, count } = await supabase
       .from("recipe_creation_prototype")
-      .select("*, profiles!recipe_creation_prototype_user_id_fkey(display_name)", { count: "exact" })
+      .select(`
+        *,
+        profiles(display_name),
+        is_liked_by_current_user
+      `, { count: "exact" })
       .eq("is_public", true)
       .order("created_at", { ascending: false })
       .range(from, to)
@@ -25,7 +32,7 @@ export async function GET(request: Request) {
       console.error("Error fetching public recipes:", error)
       return NextResponse.json({ data: [], count: 0 }, { status: 500 })
     }
-    
+  
     return NextResponse.json({ data, count })
   } catch (error) {
     console.error("Error in recipes API route:", error)

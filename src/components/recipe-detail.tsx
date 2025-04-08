@@ -8,6 +8,7 @@ import { PencilIcon } from "lucide-react";
 import Link from "next/link";
 import { formatIngredientLine, parseDescription } from "@/lib/utils";
 import { User } from "@supabase/supabase-js";
+import { LikeButton } from "./like-button";
 
 interface RecipeMetadataProps {
   total_cook_time_minutes: number;
@@ -48,7 +49,7 @@ interface RecipeHeaderProps {
   description: string;
   profile?: { display_name: string };
   thumbnail?: string;
-  showThumbnail?: boolean;
+  showThumbnail?: boolean;  
 }
 
 function RecipeHeader({ title, description, profile, thumbnail, showThumbnail = true }: RecipeHeaderProps) {
@@ -73,9 +74,11 @@ function RecipeHeader({ title, description, profile, thumbnail, showThumbnail = 
           {title}
         </h1>
         {profile && (
-          <p className="text-md text-muted-foreground mb-4">
-            Door: {profile.display_name}
-          </p>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <p className="text-md text-muted-foreground">
+              Door: {profile.display_name || "Anonieme Gebruiker"}
+            </p>
+          </div>
         )}
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           {parsedDescription.map((part, index) => {
@@ -172,8 +175,8 @@ export function RecipeDetail({ recipe, profile, isPublic = false, ownerId, recip
         isPublic={isPublic}
       />
 
-      {user && ownerId === user.id && recipeId && (
-        <div className="flex justify-center mb-4">
+      <div className="flex justify-center mb-4">
+        {user && ownerId === user.id && recipeId && (
           <Link
             href={`/edit/${recipeId}`}
             className="inline-flex items-center gap-2 text-blue-500 hover:text-blue-700"
@@ -181,8 +184,8 @@ export function RecipeDetail({ recipe, profile, isPublic = false, ownerId, recip
             <PencilIcon className="h-4 w-4" />
             <span>Bewerk recept</span>
           </Link>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="grid md:grid-cols-2 gap-8">
         <RecipeIngredients ingredients={recipe.ingredients || []} />
