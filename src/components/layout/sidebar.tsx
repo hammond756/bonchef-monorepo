@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 import { useChatStore } from "@/lib/store/chat-store"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { motion } from "framer-motion"
 
 export function Sidebar() {
   const [user, setUser] = useState<User | null>(null)
@@ -57,8 +58,8 @@ export function Sidebar() {
   }, [isOpen])
 
   function handleNewChat() {
-    clearConversation()
     router.push("/")
+    clearConversation()
   }
 
   return (
@@ -85,15 +86,17 @@ export function Sidebar() {
             />
         </div>
         
-        <button 
+        <motion.button 
           type="button"
           aria-label="New chat"
           className="text-slate-700 bg-transparent px-2 py-1 rounded-md"
           onClick={handleNewChat}
           data-testid="reset-chat"
+          whileTap={{ scale: 0.85 }}
+          transition={{ duration: 0.15 }}
         >
           <MessageSquarePlus className="h-6 w-6" />
-        </button>
+        </motion.button>
       </div>
 
       {/* Sidebar overlay */}
