@@ -58,7 +58,8 @@ export async function fetchConversationHistory(conversationId: string): Promise<
         type: message.type,
         userInput: {
           message: message.content,
-          webContent: message.payload.webContent
+          webContent: message.payload.webContent,
+          image: message.payload.image
         },
       }
     } else {

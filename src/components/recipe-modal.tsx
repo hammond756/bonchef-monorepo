@@ -66,7 +66,7 @@ export function RecipeModal({ recipe, isOpen, onClose, onRecipeSaved, canSave }:
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] min-h-[90vh] overflow-hidden flex flex-col rounded-lg">
         <VisuallyHidden>
           <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle className="text-2xl font-bold">{recipe.title}</DialogTitle>

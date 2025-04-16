@@ -20,27 +20,29 @@ function RecipeGrid({ recipes }: { recipes: (Recipe & { id: string })[] }) {
   return (
     <div className="grid grid-cols-2 gap-6">
       {recipes.map((recipe) => (
-        <div key={recipe.id} className="group relative aspect-[4/3] overflow-hidden rounded-lg">
+        <div key={recipe.id} className="group relative aspect-square overflow-hidden rounded-lg bg-white shadow-lg">
           <Link
             href={`/recipes/${recipe.id}`}
             className="block w-full h-full"
           >
-            <Image
-              src={recipe.thumbnail}
-              alt={recipe.title}
-              fill
-              className="object-cover transition-transform group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw"
-            />
-            <div className="absolute inset-0 bg-black/30 transition-opacity group-hover:bg-black/40">
-              <h2 className="absolute bottom-4 left-4 text-md font-semibold text-white">
+            <div className="relative aspect-square rounded-lg">
+              <Image
+                src={recipe.thumbnail}
+                alt={recipe.title}
+                fill
+                className="object-cover transition-transform group-hover:scale-105 rounded-lg"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw"
+              />
+              <div className="absolute top-4 right-4 bg-red-50 rounded-full p-1.5 backdrop-blur-sm w-8 h-8 flex items-center justify-center">
+                <LikeButton recipeId={recipe.id} initialLiked={recipe.is_liked_by_current_user} />
+              </div>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 p-3 bg-white/70 rounded-b-lg">
+              <h2 className="text-md font-semibold text-gray-800 line-clamp-2">
                 {recipe.title}
               </h2>
             </div>
           </Link>
-          <div className="absolute top-4 right-4">
-            <LikeButton recipeId={recipe.id} initialLiked={recipe.is_liked_by_current_user} />
-          </div>
         </div>
       ))}
     </div>
@@ -104,9 +106,9 @@ function RecipesSection() {
       onValueChange={(value) => setActiveTab(value as "my-recipes" | "favorieten")}
       className="space-y-6"
     >
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="my-recipes">Mijn recepten</TabsTrigger>
-        <TabsTrigger value="favorieten">Mijn favorieten</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-2 bg-white">
+        <TabsTrigger className="data-[state=active]:bg-green-700 data-[state=active]:text-white data-[state=inactive]:bg-transparent data-[state=inactive]:text-black" value="my-recipes">Mijn recepten</TabsTrigger>
+        <TabsTrigger className="data-[state=active]:bg-green-700 data-[state=active]:text-white data-[state=inactive]:bg-transparent data-[state=inactive]:text-black" value="favorieten">Mijn favorieten</TabsTrigger>
       </TabsList>
       
       <TabsContent value="my-recipes">

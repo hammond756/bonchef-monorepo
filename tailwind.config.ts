@@ -15,9 +15,14 @@ export default {
   				'25%': { transform: 'translateX(-4px)' },
   				'75%': { transform: 'translateX(4px)' },
   			},
+        sheen: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
   		},
   		animation: {
   			jiggle: 'jiggle 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards',
+        sheen: 'sheen 2s infinite',
   		},
   		colors: {
   			background: 'hsl(var(--background))',

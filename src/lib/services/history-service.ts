@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server"
-import { HumanMessage, AIMessage } from "@langchain/core/messages"
+import { HumanMessage, AIMessage, MessageContentComplex } from "@langchain/core/messages"
 import { GeneratedRecipe } from "../types"
 
 export interface ConversationMessage {
@@ -121,13 +121,38 @@ export class HistoryService {
       ${JSON.stringify(recipe)}
     `
   }
+
+  private async hostedImageToBase64(url: string): Promise<string> {
+    const response = await fetch(url)
+    const blob = await response.blob()
+    return Buffer.from(await blob.arrayBuffer()).toString("base64")
+  }
   
-  toAgentHistory(messages: ConversationMessage[]): (HumanMessage | AIMessage)[] {
+  async toAgentHistory(messages: ConversationMessage[]): Promise<(HumanMessage | AIMessage)[]> {
     const agentMessages: (HumanMessage | AIMessage)[] = []
     
     for (const message of messages) {
       if (message.type === "user") {
-        agentMessages.push(new HumanMessage(message.content))
+        const messageContent: MessageContentComplex[] = [
+          {
+            type: "text",
+            text: message.content
+          }
+        ]
+
+        if (message.payload?.image) {
+          const base64Image = await this.hostedImageToBase64(message.payload.image.url)
+          console.log("base64Image", `data:image/jpeg;base64,${base64Image.slice(0, 100)}`)
+          messageContent.push({
+            type: "image_url",
+            image_url: {
+              url: `data:image/jpeg;base64,${base64Image}`,
+              detail: "high"
+            }
+          })
+        }
+
+        agentMessages.push(new HumanMessage({content: messageContent}))
         
         // If message has webContent in payload, add it as separate messages
         const webContent = message.payload?.webContent
@@ -151,4 +176,4 @@ export class HistoryService {
     
     return agentMessages
   }
-} 
+}

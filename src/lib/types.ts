@@ -102,9 +102,16 @@ export type GeneratedRecipe = z.infer<typeof GeneratedRecipeSchema>;
 
 export type Unit = z.infer<typeof unitEnum>; 
 
+export interface ImageData {
+  url: string;
+  type: "image/jpeg" | "image/png" | "image/heic";
+  size: number;
+}
+
 export interface UserInput {
   message: string;
   webContent: Array<{ url: string; content: string }>;
+  image?: ImageData;
 }
 
 export const MessageTypeSchema = z.enum([
@@ -116,8 +123,8 @@ export const MessageTypeSchema = z.enum([
 export type MessageType = z.infer<typeof MessageTypeSchema>;
 
 export const ResponseMessage = z.object({
-  content: z.string(),
   type: MessageTypeSchema,
+  content: z.string(),
 });
 
 export const LLMResponseSchema = z.object({

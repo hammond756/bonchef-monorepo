@@ -167,6 +167,40 @@ test.describe("Chat interface", () => {
     // Verify submit button is enabled after loading
     await expect(page.getByTestId("send-button")).toBeEnabled();
   });
+
+  test("uploads image along with test and sends and show image in chat", async ({ authenticatedPage: page }) => {
+    const image = await page.locator("[data-testid='image-upload-input']");
+    await image.setInputFiles("playwright/test-fixtures/recipe-image.png");
+
+    await page.getByTestId("uploaded-image-preview").evaluate(async (img: HTMLImageElement) => {
+      if (img.complete)
+        return;
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+    });
+
+    await page.click("[data-testid='chat-message-remove-image-button']");
+
+    await expect(page.getByTestId("uploaded-image-preview")).not.toBeVisible();
+
+    await image.setInputFiles("playwright/test-fixtures/recipe-image.png");
+
+    await page.click("[data-testid='send-button']");
+
+    await page.waitForTimeout(1000);
+
+    await page.getByTestId("chat-message-attached-image").evaluate(async (img: HTMLImageElement) => {
+      if (img.complete)
+        return;
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+    });
+
+  });
 });
 
 

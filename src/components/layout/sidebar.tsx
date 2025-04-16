@@ -64,39 +64,42 @@ export function Sidebar() {
   return (
     <>
       {/* Top bar with hamburger menu */}
-      <div className="fixed top-0 left-0 right-0 h-16 border-b bg-white flex items-center justify-between px-4 sm:px-6 lg:px-8 z-40">
-        <Button 
-          variant="ghost" 
-          size="icon" 
+      <div className="fixed top-0 left-0 right-0 h-16 border-b border-slate-200 bg-white flex items-center justify-between px-4 sm:px-6 lg:px-8 z-40">
+        <button 
+          type="button"
           onClick={() => setIsOpen(!isOpen)} 
           data-sidebar-toggle
           aria-label="Toggle menu"
-          className="text-gray-700"
+          className="text-slate-700 bg-transparent px-2 py-1 rounded-md"
         >
-          <Menu data-testid="side-bar-hamburger-menu" className="h-5 w-5" />
-        </Button>
+          <Menu data-testid="side-bar-hamburger-menu" className="h-7 w-7" />
+        </button>
         
-        <div className="font-medium text-center flex-1">
-            Bonchef
+        <div className="flex-1 flex justify-center">
+            <Image
+              src="/bonchef.png"
+              alt="Bonchef"
+              width={120}
+              height={40}
+              className="object-contain"
+            />
         </div>
         
-        {/* New chat button placeholder */}
-        <Button 
-          variant="ghost" 
-          size="icon"
+        <button 
+          type="button"
           aria-label="New chat"
-          className="text-gray-700"
+          className="text-slate-700 bg-transparent px-2 py-1 rounded-md"
           onClick={handleNewChat}
           data-testid="reset-chat"
         >
-          <MessageSquarePlus className="h-5 w-5" />
-        </Button>
+          <MessageSquarePlus className="h-6 w-6" />
+        </button>
       </div>
 
       {/* Sidebar overlay */}
       <div 
         className={cn(
-          "fixed inset-0 bg-black/50 transition-opacity duration-200 ease-in-out z-40",
+          "fixed inset-0 bg-slate-900/20 backdrop-blur-sm transition-opacity duration-300 ease-in-out z-40",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={() => setIsOpen(false)}
@@ -106,22 +109,25 @@ export function Sidebar() {
       <div 
         data-sidebar
         className={cn(
-          "fixed top-0 left-0 h-full w-64 bg-white shadow-xl transition-transform duration-300 ease-in-out z-50",
+          "fixed top-0 left-0 h-full w-64 bg-white shadow-xl transition-all duration-300 ease-in-out z-50 rounded-r-2xl",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         {/* Logo and Brand */}
-        <div className="flex items-center p-4 border-b border-gray-200">
-          <div className="font-bold text-xl flex items-center">
-            Bonchef
-          </div>
-          
+        <div className="flex items-center p-4 border-b border-slate-200">
+            <Image
+              src="/bonchef.png"
+              alt="Bonchef"
+              width={120}
+              height={40}
+              className="object-contain"
+            />
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={() => setIsOpen(false)}
             aria-label="Close menu"
-            className="ml-auto text-black hover:bg-gray-200"
+            className="ml-auto text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -145,10 +151,10 @@ export function Sidebar() {
             <li>
               <Link 
                 href="/ontdek" 
-                className="flex items-center gap-3 py-2 px-3 rounded-md hover:bg-gray-200 transition-colors"
+                className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-100 transition-all duration-200 text-slate-900 hover:text-slate-900 group"
                 onClick={() => setIsOpen(false)}
               >
-                <LayoutDashboard className="h-5 w-5" />
+                <LayoutDashboard className="h-5 w-5 group-hover:scale-110 transition-transform" />
                 <span>Ontdek</span>
               </Link>
             </li>
@@ -156,10 +162,10 @@ export function Sidebar() {
             <li>
               <Link 
                 href="/collection" 
-                className="flex items-center gap-3 py-2 px-3 rounded-md hover:bg-gray-200 transition-colors"
+                className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-100 transition-all duration-200 text-slate-900 hover:text-slate-900 group"
                 onClick={() => setIsOpen(false)}
               >
-                <Bookmark className="h-5 w-5" />
+                <Bookmark className="h-5 w-5 group-hover:scale-110 transition-transform" />
                 <span>Collectie</span>
               </Link>
             </li>
@@ -167,10 +173,10 @@ export function Sidebar() {
             <li>
               <Link 
                 href="/" 
-                className="flex items-center gap-3 py-2 px-3 rounded-md hover:bg-gray-200 transition-colors"
+                className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-100 transition-all duration-200 text-slate-900 hover:text-slate-900 group"
                 onClick={() => setIsOpen(false)}
               >
-                <MessageSquare className="h-5 w-5" />
+                <MessageSquare className="h-5 w-5 group-hover:scale-110 transition-transform" />
                 <span>Chat</span>
               </Link>
             </li>
@@ -178,10 +184,10 @@ export function Sidebar() {
         </nav>
         
         {/* User Profile */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200 bg-slate-50">
           {user ? (
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 border-2 border-slate-300 flex items-center justify-center shadow-sm">
                 {user.user_metadata?.avatar_url ? (
                   <Image 
                     src={user.user_metadata.avatar_url} 
@@ -190,12 +196,12 @@ export function Sidebar() {
                     height={40} 
                   />
                 ) : (
-                  <UserIcon className="h-6 w-6 text-gray-700" />
+                  <UserIcon className="h-6 w-6 text-slate-600" />
                 )}
               </div>
               
               <div className="ml-3">
-                <div className="text-sm text-gray-700">
+                <div className="text-sm text-slate-600">
                   {user.email || "user@example.com"}
                 </div>
               </div>
@@ -203,7 +209,7 @@ export function Sidebar() {
               <form action={logout} className="ml-auto">
                 <button 
                   type="submit" 
-                  className="text-gray-700 transition-colors" 
+                  className="text-slate-600 hover:text-slate-900 transition-colors p-2 hover:bg-slate-200 rounded-full" 
                   data-testid="logout-button"
                 >
                   <LogOut className="h-5 w-5" />
@@ -213,7 +219,7 @@ export function Sidebar() {
           ) : (
             <Link 
               href="/login" 
-              className="flex items-center justify-center gap-2 py-2 px-4 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
+              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-colors shadow-sm"
               onClick={() => setIsOpen(false)}
             >
               <UserIcon className="h-5 w-5" />

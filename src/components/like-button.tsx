@@ -47,10 +47,10 @@ export function LikeButton({ recipeId, initialLiked = false }: LikeButtonProps) 
       size="icon"
       onClick={handleLike}
       disabled={isLoading}
-      className="hover:bg-red-50 hover:text-red-500"
+      className="hover:text-red-500 hover:bg-transparent"
       aria-label={isLiked ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"}
       data-testid="like-recipe-button"
-    >
+      >
       <Heart
         className={`h-5 w-5 text-red-500 ${isLiked ? "fill-red-500" : ""}`}
       />

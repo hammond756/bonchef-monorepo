@@ -47,7 +47,6 @@ export class CulinaryAgent {
   }
 
   private async detectIntent(history: (HumanMessage | AIMessage)[]): Promise<string> {
-
     const intentClassifierPrompt = await this.langfuse.getPrompt("IntentClassifier", undefined, {type: "text"})
     const messages = [
       new SystemMessage(intentClassifierPrompt.compile()),
@@ -78,13 +77,13 @@ export class CulinaryAgent {
     const userMessage = await this.historyService.addUserMessage(
       conversationId,
       userInput.message,
-      { webContent: userInput.webContent },
+      { webContent: userInput.webContent, image: userInput.image },
       lastMessageOrder
     )
 
     historyMessages.push(userMessage)
 
-    const agentHistory = this.historyService.toAgentHistory(historyMessages)
+    const agentHistory = await this.historyService.toAgentHistory(historyMessages)
     
     const intent = await this.detectIntent(agentHistory)
     

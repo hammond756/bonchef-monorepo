@@ -32,61 +32,69 @@ export function RecipeTeaserCard({ content, messageId, initialRecipe }: RecipeTe
   });
 
   const handleTeaserClick = async () => {
-    // If we have an initial recipe, we don't have to generate it
     setIsModalOpen(true);
-
     await generateRecipe(content);
   };
 
   return (
     <>
       <Card 
-        className={`cursor-pointer hover:shadow-md transition-all overflow-hidden ${
-          recipe ? "bg-green-100" : ""
-        } ${!messageId ? "opacity-50 cursor-not-allowed" : ""}`}
+        className={`group relative overflow-hidden rounded-lg transition-all duration-300 
+           ${!messageId ? "opacity-50 cursor-not-allowed" : "hover:shadow-lg"}`}
         onClick={messageId ? handleTeaserClick : undefined}
         data-testid="teaser-card"
       >
-        <CardContent className="p-4 flex items-center justify-between">
-          <div className="flex-1 mr-4">
-            <ReactMarkdown 
-              rehypePlugins={[rehypeSanitize]}
-              components={{
-                a: ({ node, ...props }) => (
-                  <a 
-                    {...props} 
-                    className="text-blue-500 hover:underline" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                  />
-                ),
-                ol: ({ node, ...props }) => (
-                  <ol {...props} className="list-decimal pl-4" />
-                ),
-                ul: ({ node, ...props }) => (
-                  <ul {...props} className="list-disc pl-4" />
-                ),
-                p: ({ node, ...props }) => (
-                  <p {...props} className="py-1 whitespace-pre-wrap" />
-                ),
-              }}
-            >
-              {content}
-            </ReactMarkdown>
-            <p className="text-sm text-gray-500 mt-4">
-              {isStreaming 
-                ? "Recept laden..." 
-                : recipe 
-                  ? "Klik om het recept te bekijken" 
-                  : "Zal ik het recept voor je uitschrijven?"}
-            </p>
-            {hasError && <p className="text-sm text-red-500 mt-1">{error}</p>}
-          </div>
-          <div className="flex items-center">
-            {isStreaming ? (
-              <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-            ) : (
-              <ChevronRight className={`h-5 w-5 ${!messageId ? "text-gray-300" : "text-gray-400"}`} />
+        {isStreaming && (
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-200/50 to-transparent animate-[sheen_2s_infinite] pointer-events-none" />
+        )}
+        <CardContent className="p-6">
+          <div className="flex flex-col gap-4">
+            <div className="prose prose-sm max-w-none">
+              <ReactMarkdown 
+                rehypePlugins={[rehypeSanitize]}
+                components={{
+                  a: ({ node, ...props }) => (
+                    <a 
+                      {...props} 
+                      className="text-blue-500 hover:underline" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    />
+                  ),
+                  ol: ({ node, ...props }) => (
+                    <ol {...props} className="list-decimal pl-4" />
+                  ),
+                  ul: ({ node, ...props }) => (
+                    <ul {...props} className="list-disc pl-4" />
+                  ),
+                  p: ({ node, ...props }) => (
+                    <p {...props} className="py-1 whitespace-pre-wrap" />
+                  ),
+                }}
+              >
+                {content}
+              </ReactMarkdown>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-sm text-muted-foreground">
+                {isStreaming 
+                  ? "Recept laden..." 
+                  : recipe 
+                    ? "Klik om het recept te bekijken" 
+                    : "Zal ik het recept voor je uitschrijven?"}
+              </p>
+              <div className="flex items-center">
+                {isStreaming ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                ) : (
+                  <ChevronRight className={`h-5 w-5 transition-transform group-hover:translate-x-1 ${
+                    !messageId ? "text-muted-foreground/30" : "text-muted-foreground"
+                  }`} />
+                )}
+              </div>
+            </div>
+            {hasError && (
+              <p className="text-sm text-red-500 mt-1">{error}</p>
             )}
           </div>
         </CardContent>

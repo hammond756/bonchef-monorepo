@@ -3,10 +3,11 @@
 import { useEffect, useState, forwardRef, useImperativeHandle, useRef } from "react"
 import { Button } from "./ui/button"
 import { UrlStatusList } from "./url-status-list"
-import { SendIcon } from "lucide-react"
+import { SendIcon, ImageIcon, X, Loader2 } from "lucide-react"
 import AutoGrowingTextarea from "./ui/auto-growing-textarea"
-import { UserInput } from "@/lib/types"
+import { UserInput, ImageData } from "@/lib/types"
 import { useJiggleAnimation } from "@/hooks/useJiggleAnimation"
+import Image from "next/image"
 
 interface ChatInputProps {
   onSend: (userInput: UserInput) => void
@@ -66,7 +67,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
 }, ref) => {
   const [message, setMessage] = useState("")
   const [urlStatuses, setUrlStatuses] = useState<UrlStatus[]>([])
+  const [image, setImage] = useState<ImageData | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { shouldJiggle, triggerJiggle } = useJiggleAnimation()
 
   useImperativeHandle(ref, () => ({
@@ -114,9 +118,59 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
     }
   }, [message])
 
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/png", "image/heic"]
+    if (!validTypes.includes(file.type)) {
+      alert("Please upload a JPG, PNG, or HEIC image")
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image size must be less than 5MB")
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("image", file)
+
+      const response = await fetch("/api/upload-image", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) throw new Error("Failed to upload image")
+
+      const data = await response.json()
+      setImage({
+        url: data.url,
+        type: file.type as ImageData["type"],
+        size: file.size,
+      })
+    } catch (error) {
+      console.error("Error uploading image:", error)
+      alert("Failed to upload image. Please try again.")
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  function handleRemoveImage() {
+    setImage(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!message.trim()) return
+    if (!message.trim() && !image) return
     
     const isUrlsLoading = urlStatuses.some(s => s.status === "loading")
     if (isUrlsLoading) {
@@ -133,10 +187,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
     
     onSend({
       message: messageWithMarkdownLinks,
-      webContent
+      webContent,
+      image: image || undefined
     })
     setMessage("")
     setUrlStatuses([])
+    setImage(null)
   }
 
   function handleTextareaChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -160,7 +216,51 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
         urls={urlStatuses} 
         className={shouldJiggle ? "animate-jiggle" : ""}
       />
+      {image && (
+        <div className="relative mb-2 w-full max-w-[200px]">
+          <Image
+            src={image.url}
+            alt="Uploaded image"
+            width={200}
+            height={200}
+            className="rounded-lg object-cover"
+            data-testid="uploaded-image-preview"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-sm"
+            onClick={handleRemoveImage}
+            data-testid="chat-message-remove-image-button"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
       <div className="flex gap-2">
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="image/jpeg,image/png,image/heic"
+          onChange={handleImageUpload}
+          className="hidden"
+          data-testid="image-upload-input"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isLoading || isUploading}
+          className="h-[40px] w-[40px] self-end"
+        >
+          {isUploading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ImageIcon className="h-4 w-4" />
+          )}
+        </Button>
         <AutoGrowingTextarea
           ref={textareaRef}
           value={message}
@@ -175,7 +275,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
         />
         <Button 
           type="submit" 
-          disabled={isLoading || urlStatuses.some(s => s.status === "loading")}
+          disabled={isLoading || urlStatuses.some(s => s.status === "loading") || isUploading}
           data-testid="send-button"
           className="h-[40px] px-3 self-end"
         >

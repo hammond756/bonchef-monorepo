@@ -77,3 +77,5 @@ SELECT cron.schedule(
 -- No need to manually set the edge function key in production anymore
 -- Just update the secret in the vault using:
 -- SELECT vault.update_secret('secret_uuid', 'your_actual_service_role_key'); 
+
+-- TODO: figure out why the edge function is not triggered, while the cron job is working. I think it might be the is_production check.
