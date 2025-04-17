@@ -66,11 +66,11 @@ export const IngredientSchema = z.object({
 
 export type Ingredient = z.infer<typeof IngredientSchema>;
 
-export const RecipeSchema = z.object({
+// Base recipe schema with shared fields
+export const BaseRecipeSchema = z.object({
   title: z.string(),
   n_portions: z.number(),
   total_cook_time_minutes: z.number(),
-  description: z.string(),
   ingredients: z.array(
     z.object({
       name: z.string(),
@@ -78,27 +78,35 @@ export const RecipeSchema = z.object({
     }),
   ),
   instructions: z.array(z.string()),
-  thumbnail: z.string(), 
+});
+
+// Schema for LLM-generated recipes
+export const GeneratedRecipeSchema = BaseRecipeSchema;
+
+// Schema for database write operations
+export const RecipeWriteSchema = BaseRecipeSchema.extend({
+  description: z.string().optional().default(""),
+  thumbnail: z.string(),
   source_url: z.string(),
   source_name: z.string(),
+  is_public: z.boolean().optional().default(false),
+});
+
+// Schema for database read operations (includes computed fields)
+export const RecipeReadSchema = RecipeWriteSchema.extend({
+  created_at: z.string().datetime().optional(),
   is_liked_by_current_user: z.boolean().optional(),
+  like_count: z.number().optional(),
 });
 
-export const GeneratedRecipeSchema = z.object({
-  title: z.string(),
-  n_portions: z.number(),
-  total_cook_time_minutes: z.number(),
-  ingredients: z.array(
-    z.object({
-      name: z.string(),
-      ingredients: z.array(IngredientSchema),
-    }),
-  ),
-  instructions: z.array(z.string()),
-});
-
-export type Recipe = z.infer<typeof RecipeSchema>;
+// Type definitions
+export type BaseRecipe = z.infer<typeof BaseRecipeSchema>;
 export type GeneratedRecipe = z.infer<typeof GeneratedRecipeSchema>;
+export type RecipeWrite = z.infer<typeof RecipeWriteSchema>;
+export type RecipeRead = z.infer<typeof RecipeReadSchema>;
+
+// For backward compatibility, we can keep Recipe as an alias
+export type Recipe = RecipeRead;
 
 export type Unit = z.infer<typeof unitEnum>; 
 

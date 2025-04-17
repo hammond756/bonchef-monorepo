@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { RecipeSchema } from "@/lib/types";
+import { RecipeWriteSchema } from "@/lib/types";
 import { ZodError } from "zod";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -50,8 +50,8 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    const { id, is_public, ...recipeData } = data;
-    const validatedRecipe = RecipeSchema.parse(recipeData);
+    const { id, ...recipeData } = data;
+    const validatedRecipe = RecipeWriteSchema.parse(recipeData);
 
     // Process thumbnail to store in Supabase Storage instead of as base64
     if (validatedRecipe.thumbnail) {
@@ -83,10 +83,7 @@ export async function POST(request: Request) {
 
       const { data: updatedRecipe, error: updateError } = await supabase
         .from("recipe_creation_prototype")
-        .update({
-          ...validatedRecipe,
-          is_public: is_public !== undefined ? is_public : false
-        })
+        .update(validatedRecipe)
         .eq("id", id)
         .select()
         .single();
@@ -112,7 +109,6 @@ export async function POST(request: Request) {
           {
             user_id: user.id,
             ...validatedRecipe,
-            is_public: is_public !== undefined ? is_public : false,
             created_at: new Date().toISOString(),
           },
         ])

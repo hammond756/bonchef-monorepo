@@ -1,4 +1,4 @@
-import { Recipe } from "@/lib/types";
+import { RecipeRead } from "@/lib/types";
 import Image from "next/image";
 import { Clock, Users, Globe, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -9,97 +9,139 @@ import Link from "next/link";
 import { formatIngredientLine, parseDescription } from "@/lib/utils";
 import { User } from "@supabase/supabase-js";
 import { LikeButton } from "./like-button";
+import React from "react";
+
+interface RecipeThumbnailProps {
+  title: string;
+  thumbnail?: string;
+  showThumbnail?: boolean;
+}
+
+function RecipeThumbnail({ title, thumbnail, showThumbnail = true }: RecipeThumbnailProps) {
+  if (!showThumbnail || !thumbnail) return null;
+  
+  return (
+    <div className="relative aspect-[16/9] w-full mb-6 overflow-hidden">
+      <Image
+        src={thumbnail}
+        alt={title}
+        fill
+        className="object-cover"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      />
+    </div>
+  );
+}
 
 interface RecipeMetadataProps {
+  title: string;
+  description: string;
   total_cook_time_minutes: number;
   n_portions: number;
   isPublic: boolean;
+  profile?: { display_name: string };
+  likeCount?: number;
+  isLiked?: boolean;
+  recipeId?: string;
+  user?: User;
 }
 
-function RecipeMetadata({ total_cook_time_minutes, n_portions, isPublic }: RecipeMetadataProps) {
+function RecipeMetadata({ 
+  title,
+  description,
+  total_cook_time_minutes, 
+  n_portions, 
+  isPublic,
+  profile,
+  likeCount = 0,
+  isLiked = false,
+  recipeId,
+  user
+}: RecipeMetadataProps) {
+  const parsedDescription = parseDescription(description);
+
   return (
-    <div className="flex justify-center gap-8 mb-4">
-      <div className="flex items-center gap-2">
-        <Clock className="h-5 w-5 text-muted-foreground" />
-        <span>{total_cook_time_minutes} minuten</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <Users className="h-5 w-5 text-muted-foreground" />
-        <span>{n_portions} porties</span>
-      </div>
-      <div className="flex items-center gap-2">
-        {isPublic ? (
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Globe className="h-3 w-3" />
-            <span>Openbaar</span>
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Lock className="h-3 w-3" />
-            <span>Privé</span>
-          </Badge>
+    <div className="p-4 space-y-4">
+      <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+      
+      <div className="flex justify-between items-center">
+        {profile && (
+          <p className="text-gray-500">Door {profile.display_name}</p>
         )}
+        {user && recipeId && (
+          <LikeButton 
+            recipeId={recipeId} 
+            initialLiked={isLiked} 
+            initialLikeCount={likeCount}
+          />
+        )}
+      </div>
+
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2 text-gray-500">
+          <Clock className="h-5 w-5" />
+          <span>{total_cook_time_minutes} min</span>
+        </div>
+        <div className="flex items-center gap-2 text-gray-500">
+          <Users className="h-5 w-5" />
+          <span>{n_portions} personen</span>
+        </div>
+        <Badge variant={isPublic ? "default" : "secondary"}>
+          {isPublic ? (
+            <>
+              <Globe className="h-4 w-4 mr-1" />
+              Openbaar
+            </>
+          ) : (
+            <>
+              <Lock className="h-4 w-4 mr-1" />
+              Privé
+            </>
+          )}
+        </Badge>
+      </div>
+
+      <div className="prose prose-lg max-w-none">
+        {parsedDescription.map((part, index) => {
+          if (part.type === "url") {
+            return (
+              <a
+                key={index}
+                href={part.content}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-700 underline"
+              >
+                {part.content}
+              </a>
+            );
+          }
+          return <React.Fragment key={index}>{part.content}</React.Fragment>;
+        })}
       </div>
     </div>
   );
 }
 
-interface RecipeHeaderProps {
-  title: string;
-  description: string;
-  profile?: { display_name: string };
-  thumbnail?: string;
-  showThumbnail?: boolean;  
+interface EditRecipeButtonProps {
+  user?: User;
+  ownerId?: string;
+  recipeId?: string;
 }
 
-function RecipeHeader({ title, description, profile, thumbnail, showThumbnail = true }: RecipeHeaderProps) {
-  const parsedDescription = parseDescription(description);
-  
+function EditRecipeButton({ user, ownerId, recipeId }: EditRecipeButtonProps) {
+  if (!user || !ownerId || !recipeId || user.id !== ownerId) return null;
+
   return (
-    <>
-      {showThumbnail && thumbnail && (
-        <div className="relative w-full h-[400px] overflow-hidden mb-8">
-          <Image
-            src={thumbnail}
-            alt={title}
-            fill
-            className="object-cover"
-            data-testid="recipe-image"
-            priority
-          />
-        </div>
-      )}
-      <div className="text-center mb-8">
-        <h1 className="scroll-m-20 text-4xl font-bold tracking-tight mb-4" data-testid="recipe-title">
-          {title}
-        </h1>
-        {profile && (
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <p className="text-md text-muted-foreground">
-              Door: {profile.display_name || "Anonieme Gebruiker"}
-            </p>
-          </div>
-        )}
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          {parsedDescription.map((part, index) => {
-            if (part.type === "url") {
-              return (
-                <a
-                  key={index}
-                  href={part.content}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-700 underline"
-                >
-                  {part.content}
-                </a>
-              );
-            }
-            return part.content;
-          })}
-        </p>
-      </div>
-    </>
+    <div className="flex justify-center mb-4">
+      <Link
+        href={`/edit/${recipeId}`}
+        className="inline-flex items-center gap-2 text-blue-500 hover:text-blue-700"
+      >
+        <PencilIcon className="h-4 w-4" />
+        <span>Bewerk recept</span>
+      </Link>
+    </div>
   );
 }
 
@@ -149,7 +191,7 @@ function RecipeInstructions({ instructions }: RecipeInstructionsProps) {
 }
 
 interface RecipeDetailProps {
-  recipe: Recipe;
+  recipe: RecipeRead;
   recipeId?: string;
   ownerId?: string;
   isPublic?: boolean;
@@ -161,31 +203,30 @@ interface RecipeDetailProps {
 export function RecipeDetail({ recipe, profile, isPublic = false, ownerId, recipeId, showThumbnail = true, user }: RecipeDetailProps) {
   return (
     <div className="container mx-auto max-w-4xl">
-      <RecipeHeader
+      <RecipeThumbnail
         title={recipe.title}
-        description={recipe.description}
-        profile={profile}
         thumbnail={recipe.thumbnail}
         showThumbnail={showThumbnail}
       />
 
       <RecipeMetadata
+        title={recipe.title}
+        description={recipe.description}
         total_cook_time_minutes={recipe.total_cook_time_minutes}
         n_portions={recipe.n_portions}
         isPublic={isPublic}
+        profile={profile}
+        likeCount={recipe.like_count || 0}
+        isLiked={recipe.is_liked_by_current_user}
+        recipeId={recipeId}
+        user={user}
       />
 
-      <div className="flex justify-center mb-4">
-        {user && ownerId === user.id && recipeId && (
-          <Link
-            href={`/edit/${recipeId}`}
-            className="inline-flex items-center gap-2 text-blue-500 hover:text-blue-700"
-          >
-            <PencilIcon className="h-4 w-4" />
-            <span>Bewerk recept</span>
-          </Link>
-        )}
-      </div>
+      <EditRecipeButton
+        user={user}
+        ownerId={ownerId}
+        recipeId={recipeId}
+      />
 
       <div className="grid md:grid-cols-2 gap-8">
         <RecipeIngredients ingredients={recipe.ingredients || []} />

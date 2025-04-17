@@ -11,7 +11,12 @@ export async function GET(
 
   const { data: recipe, error: recipeError } = await supabase
     .from("recipe_creation_prototype")
-    .select("*, profiles!recipe_creation_prototype_user_id_fkey(display_name)")
+    .select(`
+      *,
+      profiles!recipe_creation_prototype_user_id_fkey(display_name),
+      recipe_likes(count),
+      is_liked_by_current_user
+    `)
     .eq("id", id)
     .single();
 
@@ -28,5 +33,11 @@ export async function GET(
     return NextResponse.json({ error: "Failed to fetch recipe" }, { status: 500 });
   }
 
-  return NextResponse.json({recipe});
+  // Add like count to recipe object
+  const recipeWithLikes = {
+    ...recipe,
+    like_count: recipe.recipe_likes?.[0]?.count || 0
+  };
+
+  return NextResponse.json({recipe: recipeWithLikes});
 }

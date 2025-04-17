@@ -34,7 +34,7 @@ function RecipeGrid({ recipes }: { recipes: (Recipe & { id: string })[] }) {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw"
               />
               <div className="absolute top-4 right-4 bg-red-50 rounded-full p-1.5 backdrop-blur-sm w-8 h-8 flex items-center justify-center">
-                <LikeButton recipeId={recipe.id} initialLiked={recipe.is_liked_by_current_user} />
+                <LikeButton recipeId={recipe.id} initialLiked={recipe.is_liked_by_current_user} showCount={false} />
               </div>
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-3 bg-white/70 rounded-b-lg">

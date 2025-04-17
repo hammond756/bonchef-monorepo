@@ -49,7 +49,11 @@ export function PublicRecipeTimeline() {
                       ? format(new Date(recipe.created_at), "d MMMM yyyy", { locale: nl }) 
                       : ""}
                   </p>
-                  <LikeButton recipeId={recipe.id} initialLiked={recipe.is_liked_by_current_user} />
+                  <LikeButton 
+                    recipeId={recipe.id} 
+                    initialLiked={recipe.is_liked_by_current_user} 
+                    initialLikeCount={recipe.like_count || 0}
+                  />
                 </CardFooter>
               </Card>
           </div>

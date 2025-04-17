@@ -2,7 +2,7 @@
 
 import { createRecipeModel } from "@/lib/model-factory"
 import { HistoryService } from "@/lib/services/history-service"
-import { ChatMessageData, GeneratedRecipe, Recipe, ResponseMessage } from "@/lib/types"
+import { BaseRecipe, ChatMessageData, GeneratedRecipe, Recipe, ResponseMessage } from "@/lib/types"
 import { createClient } from "@/utils/supabase/server"
 import { Langfuse } from "langfuse"
 import { cookies } from "next/headers"
@@ -110,9 +110,8 @@ export async function patchMessagePayload(messageId: string, payload: Record<str
 }
 
 const RECIPE_API_URL = process.env.NEXT_PUBLIC_BONCHEF_BACKEND_HOST;
-const DEV_RECIPE: Recipe = {
+const DEV_RECIPE: GeneratedRecipe = {
   title: "Classic Spaghetti Bolognese",
-  description: "A rich and hearty Italian pasta dish with a meaty tomato sauce.",
   total_cook_time_minutes: 60,
   n_portions: 4,
   ingredients: [
@@ -128,9 +127,6 @@ const DEV_RECIPE: Recipe = {
     "Fill a large pot with water, add 1-2 tablespoons of salt, and bring to a rolling boil for cooking the pasta",
     // ... existing code for other instructions ...
   ],
-  thumbnail: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mO89x8AAsEB3+IGkhwAAAAASUVORK5CYII=",
-  source_url: "https://www.bonchef.io",
-  source_name: "BonChef"
 };
 
 export type WriteStyle = "professioneel" | "thuiskok";

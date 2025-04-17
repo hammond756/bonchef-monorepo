@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import crypto from "crypto"
-import { Ingredient, Recipe } from "./types"
+import { Ingredient, Recipe, RecipeRead } from "./types"
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
 import { GeneratedRecipe } from "./types"
 import { formatQuantity } from "format-quantity";
@@ -21,13 +21,15 @@ export function computeMD5(text: string): string {
   return crypto.createHash("md5").update(text).digest("hex")
 }
 
-export function generatedRecipeToRecipe(generatedRecipe: GeneratedRecipe): Recipe {
+export function generatedRecipeToRecipe(generatedRecipe: GeneratedRecipe): RecipeRead {
   return {
     ...generatedRecipe,
     description: "",
     thumbnail: TINY_PLACEHOLDER_IMAGE,
     source_url: "https://app.bonchef.io",
     source_name: "BonChef",
+    // TODO: figure out how to make it optional through the zod schema
+    is_public: false,
   }
 }
 
