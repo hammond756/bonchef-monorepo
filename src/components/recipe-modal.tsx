@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, X, Save, ExternalLink } from "lucide-react";
+import { Loader2, Save, ExternalLink } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -75,7 +75,7 @@ export function RecipeModal({ recipe, isOpen, onClose, onRecipeSaved, canSave }:
 
         {/* Scrollable content area */}
         <div className="overflow-y-auto flex-1 pr-2">
-          <RecipeDetail recipe={generatedRecipeToRecipe(recipe)} showThumbnail={false} />
+          <RecipeDetail variant="generated" recipe={recipe} />
         </div>
 
         {/* Footer: non-scrollable and always visible */}

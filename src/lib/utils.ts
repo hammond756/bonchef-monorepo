@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import crypto from "crypto"
-import { Ingredient, Recipe, RecipeRead } from "./types"
+import { Ingredient, Recipe, RecipeRead, RecipeWrite } from "./types"
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
 import { GeneratedRecipe } from "./types"
 import { formatQuantity } from "format-quantity";
@@ -21,7 +21,7 @@ export function computeMD5(text: string): string {
   return crypto.createHash("md5").update(text).digest("hex")
 }
 
-export function generatedRecipeToRecipe(generatedRecipe: GeneratedRecipe): RecipeRead {
+export function generatedRecipeToRecipe(generatedRecipe: GeneratedRecipe): RecipeWrite {
   return {
     ...generatedRecipe,
     description: "",

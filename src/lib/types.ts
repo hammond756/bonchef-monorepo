@@ -94,9 +94,14 @@ export const RecipeWriteSchema = BaseRecipeSchema.extend({
 
 // Schema for database read operations (includes computed fields)
 export const RecipeReadSchema = RecipeWriteSchema.extend({
-  created_at: z.string().datetime().optional(),
+  id: z.string(),
+  user_id: z.string(),
+  created_at: z.string().datetime({offset: true}).optional(),
   is_liked_by_current_user: z.boolean().optional(),
   like_count: z.number().optional(),
+  profiles: z.object({
+    display_name: z.string().nullable(),
+  }),
 });
 
 // Type definitions

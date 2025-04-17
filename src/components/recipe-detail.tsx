@@ -1,4 +1,4 @@
-import { RecipeRead } from "@/lib/types";
+import { Ingredient, RecipeRead, GeneratedRecipe } from "@/lib/types";
 import Image from "next/image";
 import { Clock, Users, Globe, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -34,45 +34,25 @@ function RecipeThumbnail({ title, thumbnail, showThumbnail = true }: RecipeThumb
 }
 
 interface RecipeMetadataProps {
-  title: string;
-  description: string;
-  total_cook_time_minutes: number;
-  n_portions: number;
-  isPublic: boolean;
-  profile?: { display_name: string };
-  likeCount?: number;
-  isLiked?: boolean;
-  recipeId?: string;
+  recipe: RecipeRead
   user?: User;
 }
 
 function RecipeMetadata({ 
-  title,
-  description,
-  total_cook_time_minutes, 
-  n_portions, 
-  isPublic,
-  profile,
-  likeCount = 0,
-  isLiked = false,
-  recipeId,
+  recipe,
   user
 }: RecipeMetadataProps) {
-  const parsedDescription = parseDescription(description);
-
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-      
       <div className="flex justify-between items-center">
-        {profile && (
-          <p className="text-gray-500">Door {profile.display_name}</p>
+        {recipe.profiles && (
+          <p className="text-gray-500">Door {recipe.profiles.display_name}</p>
         )}
-        {user && recipeId && (
+        {user && recipe.id && (
           <LikeButton 
-            recipeId={recipeId} 
-            initialLiked={isLiked} 
-            initialLikeCount={likeCount}
+            recipeId={recipe.id} 
+            initialLiked={recipe.is_liked_by_current_user} 
+            initialLikeCount={recipe.like_count || 0}
           />
         )}
       </div>
@@ -80,14 +60,14 @@ function RecipeMetadata({
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2 text-gray-500">
           <Clock className="h-5 w-5" />
-          <span>{total_cook_time_minutes} min</span>
+          <span>{recipe.total_cook_time_minutes} min</span>
         </div>
         <div className="flex items-center gap-2 text-gray-500">
           <Users className="h-5 w-5" />
-          <span>{n_portions} personen</span>
+          <span>{recipe.n_portions} personen</span>
         </div>
-        <Badge variant={isPublic ? "default" : "secondary"}>
-          {isPublic ? (
+        <Badge variant={recipe.is_public ? "default" : "secondary"}>
+          {recipe.is_public ? (
             <>
               <Globe className="h-4 w-4 mr-1" />
               Openbaar
@@ -102,7 +82,7 @@ function RecipeMetadata({
       </div>
 
       <div className="prose prose-lg max-w-none">
-        {parsedDescription.map((part, index) => {
+        {parseDescription(recipe.description).map((part, index) => {
           if (part.type === "url") {
             return (
               <a
@@ -146,7 +126,7 @@ function EditRecipeButton({ user, ownerId, recipeId }: EditRecipeButtonProps) {
 }
 
 interface RecipeIngredientsProps {
-  ingredients: any[];
+  ingredients: { ingredients: Ingredient[]; name: string }[];
 }
 
 function RecipeIngredients({ ingredients }: RecipeIngredientsProps) {
@@ -190,43 +170,46 @@ function RecipeInstructions({ instructions }: RecipeInstructionsProps) {
   );
 }
 
-interface RecipeDetailProps {
-  recipe: RecipeRead;
-  recipeId?: string;
-  ownerId?: string;
-  isPublic?: boolean;
-  profile?: { display_name: string };
-  showThumbnail?: boolean;
+
+interface BaseRecipeDetailProps {
+  variant: "generated" | "saved";
   user?: User;
 }
 
-export function RecipeDetail({ recipe, profile, isPublic = false, ownerId, recipeId, showThumbnail = true, user }: RecipeDetailProps) {
+interface GeneratedRecipeDetailProps extends BaseRecipeDetailProps {
+  variant: "generated";
+  recipe: GeneratedRecipe;
+}
+
+interface SavedRecipeDetailProps extends BaseRecipeDetailProps {
+  variant: "saved";
+  recipe: RecipeRead;
+}
+
+type RecipeDetailProps = GeneratedRecipeDetailProps | SavedRecipeDetailProps;
+
+export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
   return (
     <div className="container mx-auto max-w-4xl">
-      <RecipeThumbnail
+      {variant === "saved" && <RecipeThumbnail
         title={recipe.title}
         thumbnail={recipe.thumbnail}
-        showThumbnail={showThumbnail}
-      />
+        showThumbnail={true}
+      />}
 
-      <RecipeMetadata
-        title={recipe.title}
-        description={recipe.description}
-        total_cook_time_minutes={recipe.total_cook_time_minutes}
-        n_portions={recipe.n_portions}
-        isPublic={isPublic}
-        profile={profile}
-        likeCount={recipe.like_count || 0}
-        isLiked={recipe.is_liked_by_current_user}
-        recipeId={recipeId}
-        user={user}
-      />
+      
+      <h1 className="text-3xl font-bold text-gray-900 px-4 pt-4">{recipe.title}</h1>
 
-      <EditRecipeButton
+      {variant === "saved" && <RecipeMetadata
+        recipe={recipe}
         user={user}
-        ownerId={ownerId}
-        recipeId={recipeId}
-      />
+      />}
+
+      {variant === "saved" && <EditRecipeButton
+        user={user}
+        ownerId={recipe.user_id}
+        recipeId={recipe.id}
+      />}
 
       <div className="grid md:grid-cols-2 gap-8">
         <RecipeIngredients ingredients={recipe.ingredients || []} />

@@ -11,6 +11,7 @@ import { Metadata } from "next"
 import { cookies } from "next/headers"
 import { formatIngredientLine } from "@/lib/utils"
 import { RecipeDetail } from "@/components/recipe-detail"
+import { RecipeReadSchema } from "@/lib/types"
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 export const dynamic = "auto"
 export const revalidate = 3600 // Revalidate every hour
@@ -108,18 +109,18 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
   const { recipe } = await response.json()
 
+  console.log("recipe", recipe)
+  const parsedRecipe = RecipeReadSchema.parse(recipe)
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
     <div className="container mx-auto max-w-4xl">
       <RecipeDetail 
-        recipe={recipe}
-        profile={recipe.profiles}
-        ownerId={recipe.user_id}
+        variant="saved"
+        recipe={parsedRecipe}
         user={user || undefined}
-        recipeId={recipe.id}
-        isPublic={recipe.is_public}
       />
     </div>
   )
