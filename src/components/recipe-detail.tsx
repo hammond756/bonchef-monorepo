@@ -43,7 +43,7 @@ function RecipeMetadata({
   user
 }: RecipeMetadataProps) {
   return (
-    <div className="p-4 space-y-4">
+    <div className="px-4 space-y-4">
       <div className="flex justify-between items-center">
         {recipe.profiles && (
           <p className="text-gray-500">Door {recipe.profiles.display_name}</p>
@@ -198,7 +198,7 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
       />}
 
       
-      <h1 className="text-3xl font-bold text-gray-900 px-4 pt-4">{recipe.title}</h1>
+      <h1 className="text-3xl font-bold text-gray-900 px-4 pb-4">{recipe.title}</h1>
 
       {variant === "saved" && <RecipeMetadata
         recipe={recipe}

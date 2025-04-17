@@ -109,7 +109,6 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
   const { recipe } = await response.json()
 
-  console.log("recipe", recipe)
   const parsedRecipe = RecipeReadSchema.parse(recipe)
 
   const supabase = await createClient()
