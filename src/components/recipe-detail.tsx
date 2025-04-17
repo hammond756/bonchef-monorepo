@@ -21,7 +21,7 @@ function RecipeThumbnail({ title, thumbnail, showThumbnail = true }: RecipeThumb
   if (!showThumbnail || !thumbnail) return null;
   
   return (
-    <div className="relative aspect-[16/9] w-full mb-6 overflow-hidden">
+    <div className="relative aspect-[4/3] w-full mb-6 overflow-hidden">
       <Image
         src={thumbnail}
         alt={title}
@@ -49,7 +49,7 @@ function RecipeMetadata({
           <p className="text-gray-500">Door {recipe.profiles.display_name}</p>
         )}
         {user && recipe.id && (
-          <LikeButton 
+          <LikeButton
             recipeId={recipe.id} 
             initialLiked={recipe.is_liked_by_current_user} 
             initialLikeCount={recipe.like_count || 0}
