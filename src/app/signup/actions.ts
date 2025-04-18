@@ -13,6 +13,9 @@ export async function signup(email: string, password: string, displayName: strin
           password,
           options: {
             emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+            data: {
+              display_name: displayName,
+            },
           },
         })
     
@@ -24,17 +27,6 @@ export async function signup(email: string, password: string, displayName: strin
         if (!authData.user) {
             console.log(authData)
           return { error: "Er is iets misgegaan bij het aanmaken van je account" }
-        }
-    
-        // Update the profile with display name
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ display_name: displayName })
-          .eq('id', authData.user.id)
-    
-        if (updateError) {
-          console.error('Error updating profile:', updateError)
-          // We don't return here as the account is created, just log the error
         }
     
         // Sign in the user automatically
