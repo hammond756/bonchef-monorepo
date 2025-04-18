@@ -41,6 +41,8 @@
     "nuqs": "^2.4.0",
     "openai": "^4.85.3",
     "partial-json": "^0.1.7",
+    "posthog-js": "^1.236.2",
+    "posthog-node": "^4.12.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-intersection-observer": "^9.15.1",

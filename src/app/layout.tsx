@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/sidebar"
+import { Sidebar } from "@/components/layout/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
+import { PostHogProvider } from "@/components/PostHogProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,14 +28,14 @@ export default async function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-100`}
-      >
-        <NuqsAdapter>
-          <Sidebar />
-          <main className="pt-16 h-dvh">{children}</main>
-          <Toaster />
-        </NuqsAdapter>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-100`}>
+        <PostHogProvider>
+          <NuqsAdapter>
+            <Sidebar />
+            <main className="pt-16 h-dvh">{children}</main>
+            <Toaster />
+          </NuqsAdapter>
+        </PostHogProvider>
       </body>
     </html>
   );
