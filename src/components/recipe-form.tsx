@@ -18,11 +18,10 @@ import {
   Trash2 as TrashIcon, 
   Plus as PlusIcon, 
   AlertCircle,
-  ExternalLink 
 } from "lucide-react";
 import type { Recipe, Unit } from "@/lib/types";
-import { unitEnum, unitAbbreviations } from "@/lib/types";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { unitEnum } from "@/lib/types";
+import { Alert, AlertDescription } from "./ui/alert";
 import { useRouter } from "next/navigation";
 import { deleteRecipe } from "@/app/edit/[id]/actions";
 import { Label } from "./ui/label";
@@ -30,7 +29,7 @@ import { Separator } from "./ui/separator";
 import { ImageGenerationModal } from "./image-generation-modal";
 import { RecipeVisibilityModal } from "./recipe-visibility-modal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import Image from "next/image";
+import { unitMap } from "@/lib/utils";
 
 interface RecipeFormProps {
   recipe: Recipe;
@@ -524,7 +523,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                     <SelectContent>
                       {units.map((unit) => (
                         <SelectItem key={unit} value={unit} data-testid={`ingredient-unit-${unit}`}>
-                          {renderUnitDisplay(ingredient.unit)}
+                          {renderUnitDisplay(unit)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -677,5 +676,5 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
 
 function renderUnitDisplay(unit: Unit | undefined) {
   if (!unit) return "";
-  return unitAbbreviations[unit] || unit;
-} 
+  return unitMap[unit].nl.singular || "<leeg>"
+}

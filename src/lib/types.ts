@@ -26,32 +26,6 @@ export const unitEnum = z.enum([
   "cup",
 ]);
 
-export const unitAbbreviations = {
-  "gram": "g",
-  "kilogram": "kg",
-  "milligram": "mg",
-  "milliliter": "ml",
-  "liter": "l",
-  "teaspoon": "tsp",
-  "tablespoon": "tbsp",
-  "slice": "slice",
-  "whole": "whole",
-  "clove": "clove",
-  "bunch": "bunch",
-  "centimeter": "cm",
-  "pinch": "pinch",
-  "dash": "dash",
-  "handful": "handful",
-  "can": "can",
-  "jar": "jar",
-  "pack": "pack",
-  "sheet": "sheet",
-  "sprig": "sprig",
-  "scoop": "scoop",
-  "none": "none",
-  "cup": "cup",
-};
-
 export const IngredientSchema = z.object({
   quantity: z.optional(
     z.object({

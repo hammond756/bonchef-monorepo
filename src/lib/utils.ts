@@ -33,7 +33,7 @@ export function generatedRecipeToRecipe(generatedRecipe: GeneratedRecipe): Recip
   }
 }
 
-const unitMap = {
+export const unitMap = {
   gram: {
     nl: { singular: "g", plural: "g" },
     en: { singular: "g", plural: "g" },
