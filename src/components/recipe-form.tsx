@@ -342,25 +342,6 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
       <div className="space-y-4">
         <div className="flex flex-col gap-4 items-start w-full">
           <div className="w-full">
-            <Label htmlFor="picture">Afbeelding uploaden</Label>
-            <Input
-              id="picture"
-              placeholder="Afbeelding uploaden"
-              type="file"
-              accept="image/*"
-              className="mb-4"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    setRecipe(prev => ({ ...prev, thumbnail: reader.result as string }));
-                  };
-                  reader.readAsDataURL(file);
-                }
-              }}
-            />
-            <Separator className="my-8" text="of"/>
             <div className="flex flex-col space-y-3">
               <h2 className="text-xl font-semibold">Afbeelding</h2>
               <div className="flex flex-wrap gap-2">
@@ -434,6 +415,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
         </div>
         
         <Input
+          className="bg-white"
           value={recipe.title}
           onChange={(e) =>
             setRecipe((prev) => ({ ...prev, title: e.target.value }))
@@ -449,7 +431,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
             )
           }
           placeholder="Beschrijving"
-          className="min-h-[100px] overflow-hidden"
+          className="bg-white min-h-[100px] overflow-hidden"
         />
       </div>
 
@@ -458,6 +440,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
           <h2 className="text-xl font-semibold">Portie grootte</h2>
           <div className="flex items-center gap-2">
             <Input
+              className="bg-white w-24"
               type="text"
               value={recipe.n_portions || ""}
               onChange={(e) =>
@@ -466,7 +449,6 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                   n_portions: parseInt(e.target.value),
                 }))
               }
-              className="w-24"
               placeholder="Porties"
               data-testid="portions-input"
             />
@@ -502,7 +484,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                         },
                       }))
                     }
-                    className="w-16"
+                    className="w-16 bg-white"
                     data-testid="ingredient-quantity"
                   />
                   
@@ -516,7 +498,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                     }
                   >
                     <SelectTrigger
-                      className="w-16"
+                      className="w-16 bg-white"
                       data-testid="ingredient-unit">
                       <SelectValue placeholder="Eenheid" />
                     </SelectTrigger>
@@ -537,7 +519,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                         description: e.target.value,
                       }))
                     }
-                    className="flex-1"
+                    className="flex-1 bg-white"
                     data-testid="ingredient-description"
                   />
                   <Button
@@ -587,7 +569,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                   }))
                 )
               }
-              className="min-h-[60px] overflow-hidden"
+              className="min-h-[60px] overflow-hidden bg-white"
             />
             <Button
               type="button"
