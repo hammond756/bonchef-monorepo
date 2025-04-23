@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/client"
 import { useRouter, useSearchParams } from "next/navigation"
 import { claimRecipe } from "@/app/signup/actions"
 import { useToast } from "@/hooks/use-toast"
+import { usePostHog } from "posthog-js/react"
 
 export default function AuthCallbackPage() {
   const [isLoading, setIsLoading] = useState(true)
@@ -14,6 +15,7 @@ export default function AuthCallbackPage() {
   const searchParams = useSearchParams()
   const recipeToClaimId = searchParams.get("claimRecipe")
   const { toast } = useToast()
+  const posthog = usePostHog()
 
   useEffect(() => {
     const processAuth = async () => {
@@ -26,6 +28,15 @@ export default function AuthCallbackPage() {
         
         if (sessionError) {
           throw sessionError
+        }
+
+        // Identify the user with PostHog
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (user) {
+          posthog?.identify(user.id, {
+            email: user.email,
+          });
         }
 
         if (!session) {
