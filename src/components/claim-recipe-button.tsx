@@ -33,7 +33,7 @@ export function ClaimRecipeButton({ recipeId, ownerId, user }: ClaimRecipeButton
         <div className="flex flex-col items-center space-y-4 px-4">
           <div className="text-center space-y-2 max-w-xl">
             <h2 className="text-xl font-semibold text-gray-900">
-              Dit recept delen?
+              Dit is jouw recept!
             </h2>
             <p className="text-gray-600">
               Maak een gratis account aan om dit recept te bewaren in je persoonlijke collectie. 
@@ -42,7 +42,7 @@ export function ClaimRecipeButton({ recipeId, ownerId, user }: ClaimRecipeButton
           </div>
           <Button 
             onClick={handleClaim}
-            className="w-full max-w-sm"
+            className="w-full max-w-sm bg-green-700 hover:bg-green-500 text-white font-bold"
             size="lg"
           >
             Claim dit recept
