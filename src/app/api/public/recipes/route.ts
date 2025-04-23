@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     
     // Fetch public recipes with profiles join and like status
-    const { data, error, count } = await supabase
+    let query = supabase
       .from("recipe_creation_prototype")
       .select(`
         *,
@@ -28,6 +28,15 @@ export async function GET(request: Request) {
       .eq("is_public", true)
       .order("created_at", { ascending: false })
       .range(from, to)
+    
+    if (process.env.MARKETING_USER_ID) {
+      // Exclude recipes created by marketing user. These should be public
+      // for the target audience, but we don't want to show them in the
+      // public recipe timeline.
+      query = query.neq("user_id", process.env.MARKETING_USER_ID)
+    }
+    
+    const { data, error, count } = await query
     
     if (error) {
       console.error("Error fetching public recipes:", error)
