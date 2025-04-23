@@ -2,13 +2,18 @@
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/utils/supabase/client"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import { claimRecipe } from "@/app/signup/actions"
+import { useToast } from "@/hooks/use-toast"
 
 export default function AuthCallbackPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const recipeToClaimId = searchParams.get("claimRecipe")
+  const { toast } = useToast()
 
   useEffect(() => {
     const processAuth = async () => {
@@ -35,8 +40,37 @@ export default function AuthCallbackPage() {
           setIsAuthenticated(true)
         }
 
+
         // Wait a brief moment to ensure auth state is properly propagated
-        setTimeout(() => {
+        setTimeout(async () => {
+          // If there's a recipe to claim, try to claim it
+          if (recipeToClaimId) {
+            try {
+              const { success, error: claimError } = await claimRecipe(recipeToClaimId)
+              
+              if (success) {
+                // Redirect to the claimed recipe
+                router.push(`/collection`)
+                return
+              }
+              
+              if (claimError) {
+                console.error("Error claiming recipe:", claimError)
+                toast({
+                  variant: "destructive",
+                  title: "Error",
+                  description: "Er ging iets mis bij het claimen van het recept.",
+                })
+              }
+            } catch (claimErr) {
+              console.error("Error claiming recipe:", claimErr)
+              toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Er is iets misgegaan bij het claimen van het recept.",
+              })
+            }
+          }
           // Redirect to home page after successful authentication
           router.push("/")
         }, 800)
@@ -49,7 +83,7 @@ export default function AuthCallbackPage() {
     }
 
     processAuth()
-  }, [router])
+  }, [router, recipeToClaimId, toast])
 
   return (
     <div className="flex min-h-screen items-center justify-center">

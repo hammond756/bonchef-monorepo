@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card"
 import { SignUpForm } from "@/components/auth/signup-form"
+import { Suspense } from "react"
 
 export default function SignUpPage() {
   return (
@@ -11,7 +12,9 @@ export default function SignUpPage() {
             Maak een account aan om gebruik te maken van Bonchef.
           </p>
         </div>
-        <SignUpForm />
+        <Suspense>
+          <SignUpForm />
+        </Suspense>
       </Card>
     </div>
   )

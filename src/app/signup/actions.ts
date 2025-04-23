@@ -1,6 +1,7 @@
 "use server"
 
-import { createClient } from "@/utils/supabase/server"
+import { createAdminClient, createClient } from "@/utils/supabase/server"
+import { revalidatePath } from "next/cache"
 
 export async function signup(email: string, password: string, displayName: string) {
     try {
@@ -45,3 +46,57 @@ export async function signup(email: string, password: string, displayName: strin
         return { error: "Er is iets misgegaan bij het aanmaken van je account" }
       }
     }
+
+export async function claimRecipe(recipeId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "User not authenticated" };
+  }
+
+  const marketingUserId = process.env.NEXT_PUBLIC_MARKETING_USER_ID;
+  
+  if (!marketingUserId) {
+    return { error: "Marketing user ID not configured" };
+  }
+
+  // First, verify the recipe belongs to the marketing user
+  const { data: recipe, error: fetchError } = await supabase
+    .from("recipe_creation_prototype")
+    .select("user_id")
+    .eq("id", recipeId)
+    .single();
+
+  if (fetchError || !recipe) {
+    console.error("Error fetching recipe:", fetchError)
+    return { error: "Recipe not found" };
+  }
+
+  if (recipe.user_id !== marketingUserId) {
+    console.error("Recipe does not belong to marketing user")
+    return { error: "Recipe cannot be claimed" };
+  }
+
+  const supabaseAdmin = await createAdminClient();
+
+  // Transfer ownership to the new user
+  const { data: updatedRecipe, error: updateError } = await supabaseAdmin
+    .from("recipe_creation_prototype")
+    .update({ user_id: user.id })
+    .eq("id", recipeId);
+
+  console.log("Updated recipe:", updatedRecipe)
+
+  if (updateError) {
+    console.error("Error transferring recipe ownership:", updateError)
+    return { error: "Failed to transfer recipe ownership" };
+  }
+
+  // Revalidate the recipe page
+  revalidatePath(`/recipes/${recipeId}`);
+
+  console.log("Recipe claimed successfully", recipeId, user.id)
+  
+  return { success: "Recipe claimed successfully" };
+}

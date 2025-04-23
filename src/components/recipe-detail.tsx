@@ -10,6 +10,7 @@ import { formatIngredientLine, parseDescription } from "@/lib/utils";
 import { User } from "@supabase/supabase-js";
 import { LikeButton } from "./like-button";
 import React from "react";
+import { ClaimRecipeButton } from "./claim-recipe-button";
 
 interface RecipeThumbnailProps {
   title: string;
@@ -190,31 +191,38 @@ type RecipeDetailProps = GeneratedRecipeDetailProps | SavedRecipeDetailProps;
 
 export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
   return (
-    <div className="container mx-auto max-w-4xl">
-      {variant === "saved" && <RecipeThumbnail
-        title={recipe.title}
-        thumbnail={recipe.thumbnail}
-        showThumbnail={true}
-      />}
-
-      
-      <h1 className="text-3xl font-bold text-gray-900 px-4 pb-4">{recipe.title}</h1>
-
-      {variant === "saved" && <RecipeMetadata
-        recipe={recipe}
-        user={user}
-      />}
-
-      {variant === "saved" && <EditRecipeButton
+    <>
+      {variant === "saved" && <ClaimRecipeButton
         user={user}
         ownerId={recipe.user_id}
         recipeId={recipe.id}
       />}
+      
+      <div className="container mx-auto max-w-4xl">
+        {variant === "saved" && <RecipeThumbnail
+          title={recipe.title}
+          thumbnail={recipe.thumbnail}
+          showThumbnail={true}
+        />}
 
-      <div className="grid md:grid-cols-2 gap-8">
-        <RecipeIngredients ingredients={recipe.ingredients || []} />
-        <RecipeInstructions instructions={recipe.instructions || []} />
+        <h1 className="text-3xl font-bold text-gray-900 px-4 pb-4">{recipe.title}</h1>
+
+        {variant === "saved" && <RecipeMetadata
+          recipe={recipe}
+          user={user}
+        />}
+
+        {variant === "saved" && <EditRecipeButton
+          user={user}
+          ownerId={recipe.user_id}
+          recipeId={recipe.id}
+        />}
+
+        <div className="grid md:grid-cols-2 gap-8">
+          <RecipeIngredients ingredients={recipe.ingredients || []} />
+          <RecipeInstructions instructions={recipe.instructions || []} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

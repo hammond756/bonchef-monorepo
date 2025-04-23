@@ -29,11 +29,11 @@ export async function GET(request: Request) {
       .order("created_at", { ascending: false })
       .range(from, to)
     
-    if (process.env.MARKETING_USER_ID) {
+    if (process.env.NEXT_PUBLIC_MARKETING_USER_ID) {
       // Exclude recipes created by marketing user. These should be public
       // for the target audience, but we don't want to show them in the
       // public recipe timeline.
-      query = query.neq("user_id", process.env.MARKETING_USER_ID)
+      query = query.neq("user_id", process.env.NEXT_PUBLIC_MARKETING_USER_ID)
     }
     
     const { data, error, count } = await query

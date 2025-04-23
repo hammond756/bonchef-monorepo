@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,11 +9,14 @@ import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { signup } from "@/app/signup/actions"
 import { createClient } from "@/utils/supabase/client"
+
 export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const recipeToClaimId = searchParams.get("claimRecipe")
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -35,17 +38,26 @@ export function SignUpForm() {
       return
     }
 
+    try {
       const { success, error } = await signup(email, password, displayName)
 
       if (success) {
         toast({
-          title: "Success",
+          title: "Account is succesvol aangemaakt",
           description: success,
         })
+        
         const { data: { session } } = await supabase.auth.getSession()
-        console.log("Session:", session)
+        
         if (session) {
-          router.push("/auth-callback")
+          // Pass the recipe ID through to auth-callback if it exists
+          let callbackUrl = "/auth-callback"
+
+          if (recipeToClaimId) {
+            callbackUrl += `?claimRecipe=${recipeToClaimId}`
+          }
+          
+          router.push(callbackUrl)
         }
       }
 
@@ -56,8 +68,16 @@ export function SignUpForm() {
           description: error,
         })
       }
-
+    } catch (error) {
+      console.error("Error signing up:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Er is iets misgegaan. Probeer het opnieuw.",
+      })
+    } finally {
       setIsLoading(false)
+    }
   }
 
   return (
