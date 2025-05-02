@@ -41,6 +41,7 @@ export async function updateSession(request: NextRequest) {
     !user &&
     request.nextUrl.pathname.startsWith('/api')
     && !request.nextUrl.pathname.startsWith('/api/public')
+    && !request.nextUrl.pathname.startsWith('/api/0auth/exchange')
   ) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

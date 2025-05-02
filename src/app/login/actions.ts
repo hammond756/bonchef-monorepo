@@ -51,3 +51,17 @@ export async function createTemporaryUser() {
 
   redirect("/auth-callback")
 }
+
+export async function loginWithGoogle() {
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_BONCHEF_FRONTEND_HOST}/api/0auth/exchange`,
+    },
+  })
+  if (data?.url) {
+    redirect(data.url)
+  }
+  return { error }
+}

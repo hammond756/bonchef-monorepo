@@ -4,7 +4,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
-    domains: ['localhost', '127.0.0.1', 'lwnjybqifrnppmahxera.supabase.co'],
+    domains: ['localhost', '127.0.0.1', 'lwnjybqifrnppmahxera.supabase.co', 'lh3.googleusercontent.com'],
   },
   async headers() {
     return [
