@@ -166,3 +166,11 @@ export interface BotLoadingMessageType extends BaseMessage {
 }
 
 export type ChatMessageData = UserMessageType | BotMessageType | BotErrorMessageType | BotLoadingMessageType;
+
+export interface PublicProfile {
+  id: string;
+  display_name: string | null;
+  bio: string | null;
+  recipe_count?: number;
+  total_likes?: number;
+}

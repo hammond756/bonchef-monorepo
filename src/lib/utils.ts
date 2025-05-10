@@ -188,3 +188,7 @@ export function parseDescription(text: string): Array<{ type: "text" | "url"; co
     return { type: "text", content: part };
   });
 }
+
+export function createProfileSlug(display_name: string | null, id: string) {
+  return display_name?.toLowerCase().replace(/ /g, '-') + '~' + id
+}

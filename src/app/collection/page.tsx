@@ -5,14 +5,15 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Recipe } from "@/lib/types"
+import { RecipeRead } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LikeButton } from "@/components/like-button"
 import { useLikedRecipes } from "@/hooks/use-liked-recipes"
 import { useOwnRecipes } from "@/hooks/use-own-recipes"
 import { useQueryState } from "nuqs"
+import ViewProfileAlert from "@/components/view-profile-alert"
 
-function RecipeGrid({ recipes }: { recipes: (Recipe & { id: string })[] }) {
+function RecipeGrid({ recipes }: { recipes: RecipeRead[] }) {
   if (!recipes || recipes.length === 0) {
     return
   }
@@ -137,7 +138,8 @@ function RecipeGridSkeleton() {
 
 export default function CollectionPage() {
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-4 py-8 space-y-4">
+      <ViewProfileAlert />
       <Suspense fallback={<RecipeGridSkeleton />}>
         <RecipesSection />
       </Suspense>

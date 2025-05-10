@@ -8,34 +8,21 @@ import { useEffect, useState } from "react"
 import { createClient } from "@/utils/supabase/client"
 import { AuthChangeEvent, Session } from "@supabase/supabase-js"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { cn, createProfileSlug } from "@/lib/utils"
 import { useChatStore } from "@/lib/store/chat-store"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { motion } from "framer-motion"
+import { getPublicProfileByUserId } from "@/components/profile/actions"
+import { PublicProfile } from "@/lib/types"
+import { useProfile } from "@/hooks/use-profile"
 
 export function Sidebar() {
-  const [user, setUser] = useState<User | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const supabase = createClient()
   const { clearConversation } = useChatStore()
   const router = useRouter()
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-    }
-
-    getUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
+  const { profile, isLoading } = useProfile()
 
   useEffect(() => {
     // Close sidebar when clicking outside
@@ -61,7 +48,7 @@ export function Sidebar() {
     router.push("/")
     clearConversation()
   }
-
+  
   return (
     <>
       {/* Top bar with hamburger menu */}
@@ -188,12 +175,12 @@ export function Sidebar() {
         
         {/* User Profile */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200 bg-slate-50">
-          {user ? (
+          {profile ? (
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 border-2 border-slate-300 flex items-center justify-center shadow-sm">
-                {user.user_metadata?.avatar_url ? (
+                {profile.display_name ? (
                   <Image 
-                    src={user.user_metadata.avatar_url} 
+                    src={`https://ui-avatars.com/api/?name=${profile.display_name}?format=png`} 
                     alt="Profile" 
                     width={40} 
                     height={40} 
@@ -205,7 +192,11 @@ export function Sidebar() {
               
               <div className="ml-3">
                 <div className="text-sm text-slate-600">
-                  {user.email || "user@example.com"}
+                  {profile && (
+                    <Link href={`/profiles/${createProfileSlug(profile.display_name, profile.id)}`} className="hover:underline" onClick={() => setIsOpen(false)}>
+                      {profile.display_name || "Anoniem"}
+                    </Link>
+                  )}
                 </div>
               </div>
               
