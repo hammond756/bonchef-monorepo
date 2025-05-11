@@ -112,7 +112,7 @@ export async function getPublicRecipesByUserId(userId: string): Promise<RecipeRe
       instructions,
       is_public,
       user_id,
-      profiles!recipe_creation_prototype_user_id_fkey(display_name),
+      profiles!recipe_creation_prototype_user_id_fkey(display_name, id),
       is_liked_by_current_user,
       recipe_likes (
         count

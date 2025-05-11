@@ -75,6 +75,7 @@ export const RecipeReadSchema = RecipeWriteSchema.extend({
   like_count: z.number().optional(),
   profiles: z.object({
     display_name: z.string().nullable(),
+    id: z.string(),
   }),
 });
 

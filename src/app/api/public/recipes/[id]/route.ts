@@ -13,7 +13,7 @@ export async function GET(
     .from("recipe_creation_prototype")
     .select(`
       *,
-      profiles!recipe_creation_prototype_user_id_fkey(display_name),
+      profiles!recipe_creation_prototype_user_id_fkey(display_name, id),
       recipe_likes(count),
       is_liked_by_current_user
     `)

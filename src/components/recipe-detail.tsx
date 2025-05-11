@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { PencilIcon } from "lucide-react";
 import Link from "next/link";
-import { formatIngredientLine, parseDescription } from "@/lib/utils";
+import { createProfileSlug, formatIngredientLine, parseDescription } from "@/lib/utils";
 import { User } from "@supabase/supabase-js";
 import { LikeButton } from "./like-button";
 import React from "react";
@@ -47,7 +47,9 @@ function RecipeMetadata({
     <div className="px-4 space-y-4">
       <div className="flex justify-between items-center">
         {recipe.profiles && (
-          <p className="text-gray-500">Door {recipe.profiles.display_name}</p>
+          <Link href={`/profiles/${createProfileSlug(recipe.profiles.display_name, recipe.profiles.id)}`}>
+            <p className="text-gray-500">Door: <span className="underline">{recipe.profiles.display_name}</span></p>
+          </Link>
         )}
         {user && recipe.id && (
           <LikeButton

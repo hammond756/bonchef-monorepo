@@ -91,7 +91,7 @@ export async function generateMetadata({ params }: {params: Promise<ProfilePageP
     title: `${profile.display_name || "Naamloos"}'s Bonchef Profiel`,
     description: profile.bio || "Alle publieke recepten van " + profile.display_name || "Naamloos",
     openGraph: {
-      image: profile.avatar || `https://ui-avatars.com/api/?name=${profile.display_name || "X"}`,
+      images: profile.avatar ? [profile.avatar] : [`https://ui-avatars.com/api/?name=${profile.display_name || "X"}`],
       siteName: "Bonchef",
     },
   };
