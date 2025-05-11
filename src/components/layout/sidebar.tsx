@@ -13,9 +13,8 @@ import { useChatStore } from "@/lib/store/chat-store"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { getPublicProfileByUserId } from "@/components/profile/actions"
-import { PublicProfile } from "@/lib/types"
 import { useProfile } from "@/hooks/use-profile"
+import { ProfileImage } from "@/components/ui/profile-image"
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -178,16 +177,7 @@ export function Sidebar() {
           {profile ? (
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 border-2 border-slate-300 flex items-center justify-center shadow-sm">
-                {profile.display_name ? (
-                  <Image 
-                    src={`https://ui-avatars.com/api/?name=${profile.display_name}?format=png`} 
-                    alt="Profile" 
-                    width={40} 
-                    height={40} 
-                  />
-                ) : (
-                  <UserIcon className="h-6 w-6 text-slate-600" />
-                )}
+                <ProfileImage src={profile.avatar} name={profile.display_name} size={40} />
               </div>
               
               <div className="ml-3">

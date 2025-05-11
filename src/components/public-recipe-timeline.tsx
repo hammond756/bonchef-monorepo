@@ -4,11 +4,12 @@ import Link from "next/link"
 import Image from "next/image"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Loader2 } from "lucide-react"
+import { Loader2, User as UserIcon } from "lucide-react"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card"
 import { usePublicRecipes } from "@/hooks/use-public-recipes"
 import { LikeButton } from "./like-button"
+import { ProfileImage } from "@/components/ui/profile-image"
 
 export function PublicRecipeTimeline() {
   const { recipes, isLoading, hasMore, loadMore } = usePublicRecipes()
@@ -20,9 +21,12 @@ export function PublicRecipeTimeline() {
           <div key={recipe.id}>
               <Card className="h-full overflow-hidden hover:shadow-md transition-shadow duration-300">
                 <CardHeader className="pb-2">
-                  <p className="text-sm text-gray-500 font-medium">
-                    {recipe.profiles?.display_name || "Anonieme chef"}
-                  </p>
+                  <Link href={`/profiles/~${recipe.profiles?.id}`} className="flex items-center gap-3 group">
+                    <ProfileImage src={recipe.profiles?.avatar} name={recipe.profiles?.display_name} size={40} />
+                    <span className="text-md font-semibold text-gray-800 underline group-hover:text-primary transition-colors">
+                      {recipe.profiles?.display_name || "Anonieme chef"}
+                    </span>
+                  </Link>
                 </CardHeader>
                 <Link
                   href={`/recipes/${recipe.id}`}

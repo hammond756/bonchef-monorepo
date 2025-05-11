@@ -17,6 +17,7 @@ function transformProfileData(data: any): PublicProfile {
     id: data.id,
     display_name: data.display_name,
     bio: data.bio,
+    avatar: data.avatar,
     recipe_count,
     total_likes: total_likes_received,
   };
@@ -29,6 +30,7 @@ function profileQuery(supabase: SupabaseClient) {
       id,
       display_name,
       bio,
+      avatar,
       recipe_likes (count),
       recipe_creation_prototype!recipe_creation_prototype_user_id_fkey (
         recipe_likes (
@@ -63,17 +65,31 @@ export async function getOwnProfile() {
   return transformProfileData(data);
 }
 
-export async function updateUserProfile(userId: string, displayName: string | null, bio: string | null) {
+export async function deleteProfileAvatarImage(previousAvatarUrl: string | null) {
+  if (!previousAvatarUrl || !previousAvatarUrl.includes("profile_avatars")) return;
   const supabase = await createClient();
-  
+  try {
+    const url = new URL(previousAvatarUrl);
+    const pathMatch = url.pathname.match(/profile_avatars\/([^?]+)/);
+    const filePath = pathMatch ? decodeURIComponent(pathMatch[1]) : null;
+    if (filePath) {
+      await supabase.storage.from("profile_avatars").remove([filePath]);
+    }
+  } catch (e) {
+    console.error("Failed to delete old avatar from storage", e);
+  }
+}
+
+export async function updateUserProfile(userId: string, displayName: string | null, bio: string | null, avatar?: string | null) {
+  const supabase = await createClient();
   const { error } = await supabase
     .from("profiles")
     .update({
       display_name: displayName,
       bio: bio,
+      avatar: avatar || null
     })
     .eq("id", userId);
-    
   if (error) {
     throw new Error("Failed to update profile");
   }

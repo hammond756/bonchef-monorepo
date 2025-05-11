@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server"
 import { NextResponse } from "next/server"
 
-export async function POST(request: Request) {
+export async function POST(request: Request, { params }: { params: Promise<{ bucket: string }> }) {
   try {
     const supabase = await createClient()
     // Get the current user
@@ -16,6 +16,7 @@ export async function POST(request: Request) {
 
     const formData = await request.formData()
     const file = formData.get("image") as File
+    const bucket = (await params).bucket
 
     if (!file) {
       return NextResponse.json(
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
-      .from("chat-images")
+      .from(bucket)
       .upload(filePath, file, {
         contentType: file.type,
         upsert: false,
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
 
     // Get the signed URL for the uploaded file
     const { data: signedUrlData } = await supabase.storage
-      .from("chat-images")
+      .from(bucket)
       .createSignedUrl(filePath, 3600) // URL expires in 1 hour
 
     if (!signedUrlData?.signedUrl) {

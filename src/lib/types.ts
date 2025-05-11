@@ -173,4 +173,5 @@ export interface PublicProfile {
   bio: string | null;
   recipe_count?: number;
   total_likes?: number;
+  avatar?: string | null;
 }

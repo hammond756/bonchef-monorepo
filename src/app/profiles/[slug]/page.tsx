@@ -6,6 +6,7 @@ import { PublicProfile, Recipe } from "@/lib/types";
 import { createAdminClient, createClient } from "@/utils/supabase/server";
 import { getPublicProfileByUserId, getPublicRecipesByUserId } from "@/components/profile/actions";
 import { createProfileSlug } from "@/lib/utils";
+import { ProfileImage } from "@/components/ui/profile-image";
 
 interface ProfilePageProps {
   slug: string;
@@ -22,17 +23,20 @@ async function ProfileContent({ profile, recipes }: { profile: PublicProfile; re
     <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-lg p-6 shadow-sm mb-8">
         <div className="flex justify-between items-start mb-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">
-              {profile.display_name || "Naamloos"}
-            </h1>
-            {profile.bio && (
-              <p className="text-muted-foreground mb-4">{profile.bio}</p>
-            )}
-            <div className="flex gap-4 text-sm text-muted-foreground">
-              <span>{recipes.length} recepten</span>
-              <span> | </span>
-              <span>{profile.total_likes} likes</span>
+          <div className="flex items-center gap-4 mb-4">
+            <ProfileImage src={profile.avatar} name={profile.display_name} size={64} />
+            <div>
+              <h1 className="text-3xl font-bold mb-2">
+                {profile.display_name || "Naamloos"}
+              </h1>
+              {profile.bio && (
+                <p className="text-muted-foreground mb-4">{profile.bio}</p>
+              )}
+              <div className="flex gap-4 text-sm text-muted-foreground">
+                <span>{recipes.length} recepten</span>
+                <span> | </span>
+                <span>{profile.total_likes} likes</span>
+              </div>
             </div>
           </div>
           {isOwner && (
@@ -40,6 +44,7 @@ async function ProfileContent({ profile, recipes }: { profile: PublicProfile; re
               userId={profile.id}
               initialDisplayName={profile.display_name}
               initialBio={profile.bio}
+              initialAvatar={profile.avatar}
             />
           )}
         </div>
@@ -86,7 +91,7 @@ export async function generateMetadata({ params }: {params: Promise<ProfilePageP
     title: `${profile.display_name || "Naamloos"}'s Bonchef Profiel`,
     description: profile.bio || "Alle publieke recepten van " + profile.display_name || "Naamloos",
     openGraph: {
-      image: `https://ui-avatars.com/api/?name=${profile.display_name || "X"}`,
+      image: profile.avatar || `https://ui-avatars.com/api/?name=${profile.display_name || "X"}`,
       siteName: "Bonchef",
     },
   };

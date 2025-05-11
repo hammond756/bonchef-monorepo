@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       .from("recipe_creation_prototype")
       .select(`
         *,
-        profiles(display_name),
+        profiles(display_name, id, avatar),
         is_liked_by_current_user,
         recipe_likes(count)
       `, { count: "exact" })

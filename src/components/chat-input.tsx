@@ -140,7 +140,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
       const formData = new FormData()
       formData.append("image", file)
 
-      const response = await fetch("/api/upload-image", {
+      const response = await fetch("/api/upload-image/chat-images", {
         method: "POST",
         body: formData,
       })
