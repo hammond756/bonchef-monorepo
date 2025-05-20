@@ -46,11 +46,8 @@ export class RecipeGenerationService {
         ]
 
         if (imageUrl) {
-            let imageUrlToUse = imageUrl
-            if (imageUrl.includes("127.0.0.1")) {
-                const base64Image = await hostedImageToBase64(imageUrl)
-                imageUrlToUse = `data:image/jpeg;base64,${base64Image}`
-            }
+            const base64Image = await hostedImageToBase64(imageUrl)
+            const imageUrlToUse = `data:image/jpeg;base64,${base64Image}`
 
             content.push({
                 type: "image_url",
