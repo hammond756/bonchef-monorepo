@@ -27,14 +27,12 @@ export const unitEnum = z.enum([
 ]);
 
 export const IngredientSchema = z.object({
-  quantity: z.optional(
-    z.object({
-      type: z.literal("range"),
-      low: z.number(),
-      high: z.number(),
-    })
-  ),
-  unit: z.optional(unitEnum),
+  quantity: z.object({
+    type: z.literal("range"),
+    low: z.number(),
+    high: z.number(),
+  }),
+  unit: unitEnum,
   description: z.string(),
 });
 
@@ -59,11 +57,13 @@ export const GeneratedRecipeSchema = BaseRecipeSchema;
 
 // Schema for database write operations
 export const RecipeWriteSchema = BaseRecipeSchema.extend({
+  id: z.string().optional(),
   description: z.string().optional().default(""),
   thumbnail: z.string(),
   source_url: z.string(),
   source_name: z.string(),
   is_public: z.boolean().optional().default(false),
+  user_id: z.string().optional(),
 });
 
 // Schema for database read operations (includes computed fields)

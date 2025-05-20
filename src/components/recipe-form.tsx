@@ -30,6 +30,7 @@ import { ImageGenerationModal } from "./image-generation-modal";
 import { RecipeVisibilityModal } from "./recipe-visibility-modal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { unitMap } from "@/lib/utils";
+import { fileToBase64 } from "@/lib/utils";
 
 interface RecipeFormProps {
   recipe: Recipe;
@@ -163,16 +164,6 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
     } finally {
       setIsUploading(false);
     }
-  }
-  
-  // Helper function to convert File to base64
-  function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
   }
 
   async function handleSubmit(e: React.FormEvent) {

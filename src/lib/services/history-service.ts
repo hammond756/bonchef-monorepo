@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server"
 import { HumanMessage, AIMessage, MessageContentComplex } from "@langchain/core/messages"
 import { GeneratedRecipe } from "../types"
+import { hostedImageToBase64 } from "../utils"
 
 export interface ConversationMessage {
   message_id: string
@@ -122,12 +123,6 @@ export class HistoryService {
     `
   }
 
-  private async hostedImageToBase64(url: string): Promise<string> {
-    const response = await fetch(url)
-    const blob = await response.blob()
-    return Buffer.from(await blob.arrayBuffer()).toString("base64")
-  }
-  
   async toAgentHistory(messages: ConversationMessage[]): Promise<(HumanMessage | AIMessage)[]> {
     const agentMessages: (HumanMessage | AIMessage)[] = []
     
@@ -141,7 +136,7 @@ export class HistoryService {
         ]
 
         if (message.payload?.image) {
-          const base64Image = await this.hostedImageToBase64(message.payload.image.url)
+          const base64Image = await hostedImageToBase64(message.payload.image.url)
           console.log("base64Image", `data:image/jpeg;base64,${base64Image.slice(0, 100)}`)
           messageContent.push({
             type: "image_url",

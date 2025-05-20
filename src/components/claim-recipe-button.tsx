@@ -23,12 +23,15 @@ export function ClaimRecipeButton({ recipeId, ownerId, user }: ClaimRecipeButton
   }
 
   const handleClaim = () => {
-    // Store the recipe ID in the URL so we can claim it after signup
-    router.push(`/signup?claimRecipe=${recipeId}`);
+    // Store the recipe ID in localStorage so we can claim it after signup
+    if (typeof window !== "undefined") {
+      localStorage.setItem("claimRecipeId", recipeId)
+    }
+    router.push("/signup")
   };
 
   return (
-    <div className="sticky top-0 z-50 bg-white border-b shadow-sm py-4">
+    <div className="sticky top-16 z-20 bg-white border-b shadow-sm py-4">
       <Container>
         <div className="flex flex-col items-center space-y-4 px-4">
           <div className="text-center space-y-2 max-w-xl">
@@ -42,10 +45,10 @@ export function ClaimRecipeButton({ recipeId, ownerId, user }: ClaimRecipeButton
           </div>
           <Button 
             onClick={handleClaim}
-            className="w-full max-w-sm bg-green-700 hover:bg-green-500 text-white font-bold"
+            className="w-full max-w-sm bg-green-700 hover:bg-green-900 text-white font-bold"
             size="lg"
           >
-            Claim dit recept
+            Sla dit recept op
           </Button>
         </div>
       </Container>

@@ -192,3 +192,26 @@ export function parseDescription(text: string): Array<{ type: "text" | "url"; co
 export function createProfileSlug(display_name: string | null, id: string) {
   return display_name?.toLowerCase().replace(/ /g, '-') + '~' + id
 }
+
+export function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+}
+
+export async function hostedImageToBase64(url: string): Promise<string> {
+  return hostedImageToBuffer(url).then(buffer => buffer.data.toString("base64"))
+}
+
+export async function hostedImageToBuffer(url: string): Promise<{data: Buffer, contentType: string, extension: string}> {
+  const response = await fetch(url)
+  const blob = await response.blob()
+  return {
+    data: Buffer.from(await blob.arrayBuffer()),
+    contentType: blob.type,
+    extension: blob.type.split("/")[1]
+  }
+}

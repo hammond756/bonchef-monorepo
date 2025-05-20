@@ -2,9 +2,10 @@
 
 import { createRecipeModel } from "@/lib/model-factory"
 import { HistoryService } from "@/lib/services/history-service"
-import { BaseRecipe, ChatMessageData, GeneratedRecipe, Recipe, ResponseMessage } from "@/lib/types"
+import { ChatMessageData, GeneratedRecipe, Recipe } from "@/lib/types"
 import { createClient } from "@/utils/supabase/server"
 import { Langfuse } from "langfuse"
+import { CallbackHandler } from "langfuse-langchain"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
@@ -131,7 +132,7 @@ const DEV_RECIPE: GeneratedRecipe = {
 
 export type WriteStyle = "professioneel" | "thuiskok";
 
-export async function generateRecipe(recipeText: string) {
+export async function formatRecipe(recipeText: string) {
   if (process.env.NODE_ENV != "production" && process.env.NEXT_PUBLIC_USE_FAKE_MODELS === "true") {
     return DEV_RECIPE
   }
@@ -144,7 +145,7 @@ export async function generateRecipe(recipeText: string) {
   const recipeModel = createRecipeModel("gpt-4o-mini", false)
 
   console.log("Generating recipe...", recipeText)
-  const recipe = await recipeModel.invoke(prompt)
+  const recipe = await recipeModel.invoke(prompt, { callbacks: [new CallbackHandler()]})
 
   return recipe
 }

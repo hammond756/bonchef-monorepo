@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { generateRecipe } from "@/app/actions"
+import { formatRecipe } from "@/app/actions"
 import { Loader2 } from "lucide-react"
 import { GeneratedRecipe } from "@/lib/types"
 import { generatedRecipeToRecipe } from "@/lib/utils"
@@ -42,7 +42,7 @@ export function SaveRecipeButton({ message, onSaved }: SaveRecipeButtonProps) {
   async function handleSave() {
     setIsLoading(true)
     try {
-      const result = await generateRecipe(message)
+      const result = await formatRecipe(message)
       await saveRecipe(result)
     } catch (error) {
       console.error("Failed to save recipe:", error)

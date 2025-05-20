@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/utils/supabase/client"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { claimRecipe } from "@/app/signup/actions"
 import { useToast } from "@/hooks/use-toast"
 import { usePostHog } from "posthog-js/react"
@@ -12,8 +12,6 @@ export default function AuthCallbackPage() {
   const [error, setError] = useState<string | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const recipeToClaimId = searchParams.get("claimRecipe")
   const { toast } = useToast()
   const posthog = usePostHog()
 
@@ -54,17 +52,21 @@ export default function AuthCallbackPage() {
 
         // Wait a brief moment to ensure auth state is properly propagated
         setTimeout(async () => {
-          // If there's a recipe to claim, try to claim it
-          if (recipeToClaimId) {
+          // Check localStorage for claimRecipeId
+          let claimRecipeId: string | null = null
+          if (typeof window !== "undefined") {
+            claimRecipeId = localStorage.getItem("claimRecipeId")
+          }
+          if (claimRecipeId) {
             try {
-              const { success, error: claimError } = await claimRecipe(recipeToClaimId)
-              
+              const { success, error: claimError } = await claimRecipe(claimRecipeId)
+              if (typeof window !== "undefined") {
+                localStorage.removeItem("claimRecipeId")
+              }
               if (success) {
-                // Redirect to the claimed recipe
                 router.push(`/collection`)
                 return
               }
-              
               if (claimError) {
                 console.error("Error claiming recipe:", claimError)
                 toast({
@@ -94,7 +96,7 @@ export default function AuthCallbackPage() {
     }
 
     processAuth()
-  }, [router, recipeToClaimId, toast])
+  }, [router, toast])
 
   return (
     <div className="flex min-h-screen items-center justify-center">
