@@ -8,7 +8,7 @@ import AutoGrowingTextarea from "./ui/auto-growing-textarea"
 import { UserInput, ImageData } from "@/lib/types"
 import { useJiggleAnimation } from "@/hooks/useJiggleAnimation"
 import Image from "next/image"
-
+import { uploadImageToChat } from "@/app/actions"
 interface ChatInputProps {
   onSend: (userInput: UserInput) => void
   isLoading: boolean
@@ -137,19 +137,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
 
     setIsUploading(true)
     try {
-      const formData = new FormData()
-      formData.append("image", file)
-
-      const response = await fetch("/api/upload-image/chat-images", {
-        method: "POST",
-        body: formData,
-      })
-
-      if (!response.ok) throw new Error("Failed to upload image")
-
-      const data = await response.json()
+      const url = await uploadImageToChat(file)
       setImage({
-        url: data.url,
+        url,
         type: file.type as ImageData["type"],
         size: file.size,
       })

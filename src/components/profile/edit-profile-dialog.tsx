@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { updateUserProfile, deleteProfileAvatarImage } from "./actions";
+import { updateUserProfile, deleteProfileAvatarImage, uploadProfileAvatarImage } from "./actions";
 import { ProfileImage } from "@/components/ui/profile-image";
 import { X } from "lucide-react";
 import { useProfile } from "@/hooks/use-profile";
@@ -72,15 +72,7 @@ export function EditProfileDialog({
         await deleteProfileAvatarImage(initialAvatar);
       }
       if (newAvatarFile) {
-        const formData = new FormData();
-        formData.append("image", newAvatarFile);
-        const res = await fetch("/api/upload-image/profile_avatars", {
-          method: "POST",
-          body: formData,
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Upload mislukt");
-        avatarUrl = data.url;
+        avatarUrl = await uploadProfileAvatarImage(userId, newAvatarFile)
       }
       await updateUserProfile(userId, displayName, bio, avatarUrl);
       setIsOpen(false);

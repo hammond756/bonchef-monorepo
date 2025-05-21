@@ -1,5 +1,6 @@
 "use server";
 
+import { StorageService } from "@/lib/services/storage-service";
 import { PublicProfile, RecipeRead, RecipeReadSchema } from "@/lib/types";
 import { createAnonymousClient, createClient } from "@/utils/supabase/server";
 import { SupabaseClient } from "@supabase/supabase-js";
@@ -78,6 +79,15 @@ export async function deleteProfileAvatarImage(previousAvatarUrl: string | null)
   } catch (e) {
     console.error("Failed to delete old avatar from storage", e);
   }
+}
+
+export async function uploadProfileAvatarImage(userId: string, image: File) {
+  const supabase = await createClient();
+  const storageService = new StorageService(supabase)
+  const fileExt = image.name.split(".").pop();
+  const fileName = `${Math.random()}.${fileExt}`;
+  const url = await storageService.uploadImage("profile_avatars", image, true, `${userId}/${fileName}`)
+  return url
 }
 
 export async function updateUserProfile(userId: string, displayName: string | null, bio: string | null, avatar?: string | null) {

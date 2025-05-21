@@ -2,6 +2,7 @@
 
 import { createRecipeModel } from "@/lib/model-factory"
 import { HistoryService } from "@/lib/services/history-service"
+import { StorageService } from "@/lib/services/storage-service"
 import { ChatMessageData, GeneratedRecipe, Recipe } from "@/lib/types"
 import { createClient } from "@/utils/supabase/server"
 import { Langfuse } from "langfuse"
@@ -161,4 +162,22 @@ export async function scrapeRecipe(url: string) {
   data.thumbnail = data.source_image
 
   return data as Promise<Recipe>;
+}
+
+
+export async function uploadImageToChat(file: File) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error("User not found")
+  }
+
+  const storageService = new StorageService(supabase)
+
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${Math.random()}.${fileExt}`;
+  const filePath = `${user.id}/${fileName}`;
+  
+  return storageService.uploadImage("chat-images", file, false, filePath)
 }
