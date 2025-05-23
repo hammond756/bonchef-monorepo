@@ -13,11 +13,11 @@ export async function login(email: string, password: string) {
     password,
   })
 
-  if (!error) {
-    redirect("/auth-callback")
+  if (error) {
+    return { error }
   }
 
-  return { error }
+  redirect("/auth-callback")
 }
 
 export async function createTemporaryUser() {

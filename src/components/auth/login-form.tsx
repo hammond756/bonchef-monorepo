@@ -42,26 +42,17 @@ export function LoginForm({ onGoogleLogin, onLogin }: LoginFormProps) {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
 
-    try {
-      const { error } = await onLogin(email, password)
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error.message,
-        })
-        setIsLoading(false)
-        return
-      }
-      router.refresh()
-    } catch (error) {
+    const { error } = await onLogin(email, password)
+    if (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to login",
+        description: error.message,
       })
       setIsLoading(false)
+      return
     }
+    router.refresh()
   }
 
   return (
