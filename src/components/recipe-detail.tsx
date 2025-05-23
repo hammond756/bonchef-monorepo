@@ -24,6 +24,7 @@ function RecipeThumbnail({ title, thumbnail, showThumbnail = true }: RecipeThumb
   return (
     <div className="relative aspect-[4/3] w-full mb-6 overflow-hidden">
       <Image
+        data-testid="recipe-image"
         src={thumbnail}
         alt={title}
         fill
@@ -207,7 +208,7 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
           showThumbnail={true}
         />}
 
-        <h1 className="text-3xl font-bold text-gray-900 px-4 pb-4">{recipe.title}</h1>
+        <h1 className="text-3xl font-bold text-gray-900 px-4 pb-4" data-testid="recipe-title">{recipe.title}</h1>
 
         {variant === "saved" && <RecipeMetadata
           recipe={recipe}

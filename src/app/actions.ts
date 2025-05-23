@@ -163,21 +163,3 @@ export async function scrapeRecipe(url: string) {
 
   return data as Promise<Recipe>;
 }
-
-
-export async function uploadImageToChat(file: File) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    throw new Error("User not found")
-  }
-
-  const storageService = new StorageService(supabase)
-
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${Math.random()}.${fileExt}`;
-  const filePath = `${user.id}/${fileName}`;
-  
-  return storageService.uploadImage("chat-images", file, false, filePath)
-}

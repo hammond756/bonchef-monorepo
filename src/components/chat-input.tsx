@@ -8,7 +8,8 @@ import AutoGrowingTextarea from "./ui/auto-growing-textarea"
 import { UserInput, ImageData } from "@/lib/types"
 import { useJiggleAnimation } from "@/hooks/useJiggleAnimation"
 import Image from "next/image"
-import { uploadImageToChat } from "@/app/actions"
+import { useFileUpload } from "@/hooks/use-file-upload"
+
 interface ChatInputProps {
   onSend: (userInput: UserInput) => void
   isLoading: boolean
@@ -55,6 +56,30 @@ function convertUrlsToMarkdown(text: string): string {
   )
 }
 
+async function uploadImageToChat(file: File) {
+  const formData = new FormData()
+  formData.append("image", file)
+  formData.append("isPublic", "false")
+
+  const response = await fetch("/api/upload-image/chat-images", {
+    method: "POST",
+    body: formData,
+  })
+
+  if (!response.ok) {
+    console.error("Failed to upload image", response)
+    throw new Error("Failed to upload image")
+  }
+
+  const data = await response.json()
+
+  return {
+    url: data.url,
+    type: file.type as ImageData["type"],
+    size: file.size
+  }
+}
+
 export interface ChatInputHandle {
   focus: () => void
 }
@@ -67,11 +92,21 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
 }, ref) => {
   const [message, setMessage] = useState("")
   const [urlStatuses, setUrlStatuses] = useState<UrlStatus[]>([])
-  const [image, setImage] = useState<ImageData | null>(null)
+  const [imageData, setImageData] = useState<ImageData | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [error, setError] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const { shouldJiggle, triggerJiggle } = useJiggleAnimation()
+
+  // Use useFileUpload for image upload state
+  const {
+    preview,
+    file,
+    fileInputRef,
+    handleChange: handleFileChange,
+    handleRemove: handleRemoveImage,
+    reset: resetFileUpload,
+  } = useFileUpload({ initialFilePath: null })
 
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -119,48 +154,47 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
   }, [message])
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const selectedFile = handleFileChange(e)
 
     // Validate file type
     const validTypes = ["image/jpeg", "image/png", "image/heic"]
-    if (!validTypes.includes(file.type)) {
-      alert("Please upload a JPG, PNG, or HEIC image")
+    if (selectedFile && !validTypes.includes(selectedFile.type)) {
+      console.log("invalid file type", selectedFile.type)
+      setError("Please upload a JPG, PNG, or HEIC image")
+      handleRemoveImage()
       return
     }
 
     // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image size must be less than 5MB")
+    if (selectedFile && selectedFile.size > 5 * 1024 * 1024) {
+      console.log("invalid file size", selectedFile.size)
+      setError("Image size must be less than 5MB")
+      handleRemoveImage()
       return
     }
 
-    setIsUploading(true)
+    console.log("selectedFile", selectedFile)
+
+    if (!selectedFile) {
+      setError("Please upload an image")
+      return
+    }
+
     try {
-      const url = await uploadImageToChat(file)
-      setImage({
-        url,
-        type: file.type as ImageData["type"],
-        size: file.size,
-      })
+      setIsUploading(true)
+      const imageData = await uploadImageToChat(selectedFile)
+      setImageData(imageData)
     } catch (error) {
-      console.error("Error uploading image:", error)
-      alert("Failed to upload image. Please try again.")
+      console.error("Error uploading image", error)
+      setError("Failed to upload image. Please try again. Error: " + error)
     } finally {
       setIsUploading(false)
     }
   }
 
-  function handleRemoveImage() {
-    setImage(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
-  }
-
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!message.trim() && !image) return
+    if (!message.trim() && !file) return
     
     const isUrlsLoading = urlStatuses.some(s => s.status === "loading")
     if (isUrlsLoading) {
@@ -174,15 +208,15 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
     
     // Convert URLs to markdown links before sending
     const messageWithMarkdownLinks = convertUrlsToMarkdown(message)
-    
+  
     onSend({
       message: messageWithMarkdownLinks,
       webContent,
-      image: image || undefined
+      image: imageData || undefined
     })
     setMessage("")
     setUrlStatuses([])
-    setImage(null)
+    resetFileUpload()
   }
 
   function handleTextareaChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -205,17 +239,17 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
       <UrlStatusList 
         urls={urlStatuses} 
         className={shouldJiggle ? "animate-jiggle" : ""}
-      />
-      {image && (
+        />
+      {preview && (
         <div className="relative mb-2 w-full max-w-[200px]">
           <Image
-            src={image.url}
+            src={preview}
             alt="Uploaded image"
             width={200}
             height={200}
             className="rounded-lg object-cover"
             data-testid="uploaded-image-preview"
-          />
+            />
           <Button
             type="button"
             variant="ghost"
@@ -223,11 +257,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
             className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-sm"
             onClick={handleRemoveImage}
             data-testid="chat-message-remove-image-button"
-          >
+            >
             <X className="h-4 w-4" />
           </Button>
         </div>
       )}
+      {error && <div className="text-red-500 mb-2">{error}</div>}
       <div className="flex gap-2">
         <input
           type="file"

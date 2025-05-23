@@ -5,6 +5,8 @@ import { Ingredient, Recipe, RecipeRead, RecipeWrite } from "./types"
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
 import { GeneratedRecipe } from "./types"
 import { formatQuantity } from "format-quantity";
+import { createClient } from "@/utils/supabase/client"
+import { SupabaseClient } from "@supabase/supabase-js"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -214,4 +216,20 @@ export async function hostedImageToBuffer(url: string): Promise<{data: Buffer, c
     contentType: blob.type,
     extension: blob.type.split("/")[1]
   }
+}
+
+export async function resignImageUrl(supabase: SupabaseClient, url: string): Promise<string> {
+  // Parse the file storage path from the url (between /sign/${bucket}/ and ?token=)
+  const [, bucket, fileStoragePath] = url.match(/\/sign\/(.*?)\/(.*?)\?token=/) || []
+
+  if (!bucket || !fileStoragePath) {
+    throw new Error("Invalid image url")
+  }
+
+  // Resign the url with the new file storage path
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(fileStoragePath, 60 * 60 * 24)
+  if (error) {
+    throw new Error("Failed to resign image url")
+  }
+  return data.signedUrl
 }

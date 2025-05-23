@@ -11,13 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateUserProfile, deleteProfileAvatarImage, uploadProfileAvatarImage } from "./actions";
 import { ProfileImage } from "@/components/ui/profile-image";
 import { X } from "lucide-react";
 import { useProfile } from "@/hooks/use-profile";
-
+import { useFileUpload } from "@/hooks/use-file-upload";
 interface EditProfileDialogProps {
   userId: string;
   initialDisplayName: string | null;
@@ -34,29 +34,31 @@ export function EditProfileDialog({
   const [isOpen, setIsOpen] = useState(false);
   const [displayName, setDisplayName] = useState(initialDisplayName || "");
   const [bio, setBio] = useState(initialBio || "");
-  const [avatar, setAvatar] = useState<string | null>(initialAvatar || null);
-  const [newAvatarFile, setNewAvatarFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [avatarRemoved, setAvatarRemoved] = useState(false);
   const { refreshProfile } = useProfile();
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setNewAvatarFile(file);
-    if (file) {
-      setAvatar(URL.createObjectURL(file));
-    }
-  };
+  const { 
+    preview: previewImage,
+    file: newAvatarFile,
+    shouldRemove,
+    handleChange: handleAvatarChange,
+    handleRemove: handleRemoveAvatar,
+    fileInputRef,
+    reset: resetImageUpload,
+  } = useFileUpload({initialFilePath: initialAvatar});
 
-  const handleRemoveAvatar = () => {
-    setAvatar(null);
-    setNewAvatarFile(null);
-    setAvatarRemoved(true);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+  const updateStorage = async (userId: string) => {
+    let remoteUrl = null
+    if (initialAvatar && shouldRemove) {
+      deleteProfileAvatarImage(initialAvatar);
+    }
+    if (newAvatarFile) {
+      remoteUrl = await uploadProfileAvatarImage(userId, newAvatarFile);
+    }
+    return remoteUrl;
+  } 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,14 +68,8 @@ export function EditProfileDialog({
       return;
     }
     setIsLoading(true);
-    let avatarUrl = avatar;
     try {
-      if (avatarRemoved && initialAvatar) {
-        await deleteProfileAvatarImage(initialAvatar);
-      }
-      if (newAvatarFile) {
-        avatarUrl = await uploadProfileAvatarImage(userId, newAvatarFile)
-      }
+      const avatarUrl = await updateStorage(userId);
       await updateUserProfile(userId, displayName, bio, avatarUrl);
       setIsOpen(false);
       router.refresh();
@@ -87,7 +83,7 @@ export function EditProfileDialog({
 
   function renderAvatar() {
     return (
-      <ProfileImage src={avatar} name={displayName} size={64} />
+      <ProfileImage src={previewImage} name={displayName} size={64} />
     );
   }
 
@@ -97,11 +93,8 @@ export function EditProfileDialog({
       if (!open) {
         setDisplayName(initialDisplayName || "");
         setBio(initialBio || "");
-        setAvatar(initialAvatar || null);
-        setNewAvatarFile(null);
-        setAvatarRemoved(false);
+        resetImageUpload();
         setError("");
-        if (fileInputRef.current) fileInputRef.current.value = "";
       }
     }}>
       <DialogTrigger asChild>
@@ -118,7 +111,7 @@ export function EditProfileDialog({
           <div className="flex flex-col items-center gap-2 relative">
             <div className="relative">
               {renderAvatar()}
-              {avatar && (
+              {previewImage && (
                 <button
                   type="button"
                   aria-label="Verwijder profielfoto"
@@ -144,7 +137,7 @@ export function EditProfileDialog({
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
             >
-              {avatar ? "Wijzig profielfoto" : "Voeg profielfoto toe"}
+              {previewImage ? "Wijzig profielfoto" : "Voeg profielfoto toe"}
             </Button>
           </div>
           <div className="space-y-2">

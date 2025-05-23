@@ -1,5 +1,6 @@
 import { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
+import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants";
 
 async function createRecipe(page: Page, baseURL: string) {
   const response = await page.request.post(`${baseURL}/api/save-recipe`, {
@@ -20,7 +21,7 @@ async function createRecipe(page: Page, baseURL: string) {
         }
       ],
       instructions: ["Cook the pasta"],
-      thumbnail: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAA",
+      thumbnail: TINY_PLACEHOLDER_IMAGE,
       total_cook_time_minutes: 10,
       source_url: "http://localhost:3000",
       source_name: "Test Recipe"
