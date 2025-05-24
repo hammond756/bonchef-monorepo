@@ -9,6 +9,7 @@ import { RecipeGenerationService } from "@/lib/services/recipe-generation-servic
 import { hostedImageToBuffer } from "@/lib/utils";
 import { withTempFileFromUrl } from "@/lib/temp-file-utils";
 import { detectText } from "@/lib/services/google-vision-ai-service";
+import { StorageService } from "@/lib/services/storage-service";
 
 export async function scrapeRecipe(url: string): Promise<GeneratedRecipe & { thumbnail: string }> {
   const recipeData = await getRecipeContent(url)
@@ -43,6 +44,14 @@ export async function generateRecipeFromImage(imageUrl: string): Promise<Generat
     ...recipeInfo.recipe,
     thumbnail: imageUrl
   }
+}
+
+
+export async function getSignedUploadUrl(filePath: string): Promise<{ signedUrl: string, path: string, token: string }> {
+  const supabaseAdmin = await createAdminClient()
+  const storageService = new StorageService(supabaseAdmin)
+  const { signedUrl, path, token } = await storageService.getSignedUploadUrl("recipe-images", filePath)
+  return { signedUrl, path, token }
 }
 
 

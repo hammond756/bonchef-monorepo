@@ -11,7 +11,7 @@ import { Recipe as SchemaOrgRecipe } from "schema-dts";
 export async function formatRecipe(text: string): Promise<{ recipe: GeneratedRecipe, thumbnailUrl: string }> {
   const model = new ChatOpenAI({
     apiKey: process.env.OPENAI_API_KEY,
-    modelName: "gpt-4.1-nano",
+    modelName: "gpt-4.1-mini",
     temperature: 0.1,
     maxTokens: 4096,
   }).withStructuredOutput(z.object({

@@ -6,12 +6,15 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { scrapeRecipe, saveMarketingRecipe, uploadImage, generateRecipeFromSnippet, generateRecipeFromImage } from "./actions"
+import { scrapeRecipe, saveMarketingRecipe, uploadImage, generateRecipeFromSnippet, generateRecipeFromImage, getSignedUploadUrl } from "./actions"
 import { ProgressModal } from "./progress-modal"
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
 import { useFileUpload } from "@/hooks/use-file-upload"
 import Image from "next/image"
 import { X } from "lucide-react"
+import { createClient } from "@/utils/supabase/client"
+import { StorageService } from "@/lib/services/storage-service"
+import { v4 as uuidv4 } from 'uuid';
 
 
 function UrlForm({ setOpen }: { setOpen: (v: null) => void }) {
@@ -88,6 +91,14 @@ function ImageForm() {
 
   const { file, handleChange, handleRemove, preview, fileInputRef } = useFileUpload({ initialFilePath: null })
 
+  async function uploadImageToSignedUrl(file: File): Promise<string> {
+    const supabase = await createClient()
+    const filePath = `${uuidv4()}.${file.name.split(".").pop()}`
+    const { signedUrl, path, token } = await getSignedUploadUrl(filePath)
+    const storageService = new StorageService(supabase)
+    return await storageService.uploadToSignedUrl("recipe-images", path, file, token)
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
@@ -98,7 +109,7 @@ function ImageForm() {
       return
     }
     try {
-      const imageUrl = await uploadImage(file)
+      const imageUrl = await uploadImageToSignedUrl(file)
       const recipe = await generateRecipeFromImage(imageUrl)
       const { id } = await saveMarketingRecipe(recipe)
       router.push(`/recipes/${id}`)
