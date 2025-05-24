@@ -47,6 +47,8 @@ export async function getRecipeContent(url: string) {
   if (!recipeSchemaOrgData.length) {
     console.warn(`No recipe schema org data found on site: ${url}, using defuddled content`)
     recipeData = defuddledResult.content
+  } else {
+    recipeData = JSON.stringify(recipeSchemaOrgData)
   }
 
   return getEssentialRecipeInfo(recipeData)
