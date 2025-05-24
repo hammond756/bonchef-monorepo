@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { scrapeRecipe, saveMarketingRecipe, uploadImage, generateRecipeFromImageUpload, generateRecipeFromSnippet } from "./actions"
+import { scrapeRecipe, saveMarketingRecipe, uploadImage, generateRecipeFromSnippet, generateRecipeFromImage } from "./actions"
 import { ProgressModal } from "./progress-modal"
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
 import { useFileUpload } from "@/hooks/use-file-upload"
@@ -99,8 +99,8 @@ function ImageForm() {
     }
     try {
       const imageUrl = await uploadImage(file)
-      const recipe = await generateRecipeFromImageUpload("Schrijf het recept op deze foto zo nauwkeurig mogelijk over", imageUrl)
-      const { id } = await saveMarketingRecipe({...recipe, thumbnail: imageUrl})
+      const recipe = await generateRecipeFromImage(imageUrl)
+      const { id } = await saveMarketingRecipe(recipe)
       router.push(`/recipes/${id}`)
     } catch (e) {
       setError("Er is iets misgegaan. Probeer het opnieuw.")

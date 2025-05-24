@@ -3,25 +3,23 @@
 import { v4 as uuidv4 } from "uuid";
 import { GeneratedRecipe, RecipeRead } from "@/lib/types";
 import { createAdminClient } from "@/utils/supabase/server";
-import { getRecipeContent } from "@/lib/services/web-service";
+import { formatRecipe, getRecipeContent } from "@/lib/services/web-service";
 import { RecipeService } from "@/lib/services/recipe-service";
 import { RecipeGenerationService } from "@/lib/services/recipe-generation-service";
 import { hostedImageToBuffer } from "@/lib/utils";
+import { withTempFileFromUrl } from "@/lib/temp-file-utils";
+import { detectText } from "@/lib/services/google-vision-ai-service";
 
 export async function scrapeRecipe(url: string): Promise<GeneratedRecipe & { thumbnail: string }> {
-  const recipeInfo = await getRecipeContent(url)
+  const recipeData = await getRecipeContent(url)
+  const recipeInfo = await formatRecipe(recipeData)
   const { data, contentType, extension } = await hostedImageToBuffer(recipeInfo.thumbnailUrl)
   const thumbnail = await uploadImage(new File([data], `scraped-thumbnail.${extension}`, { type: contentType }))
+
   return {
     ...recipeInfo.recipe,
     thumbnail: thumbnail
   }
-}
-
-export async function generateRecipeFromImageUpload(text: string, imageUrl: string): Promise<GeneratedRecipe> {
-  const recipeGenerationService = new RecipeGenerationService()
-  const recipe = await recipeGenerationService.generateBlocking(text, imageUrl)
-  return recipe
 }
 
 export async function generateRecipeFromSnippet(text: string): Promise<GeneratedRecipe & { thumbnail: string }> {
@@ -37,6 +35,16 @@ export async function generateRecipeFromSnippet(text: string): Promise<Generated
   }
 
 }
+
+export async function generateRecipeFromImage(imageUrl: string): Promise<GeneratedRecipe & { thumbnail: string }> {
+  const text = await extractTextFromImage(imageUrl)
+  const recipeInfo = await formatRecipe(text)
+  return {
+    ...recipeInfo.recipe,
+    thumbnail: imageUrl
+  }
+}
+
 
 export async function uploadImage(file: File): Promise<string> {
   const supabaseAdmin = await createAdminClient()
@@ -61,6 +69,12 @@ export async function uploadImage(file: File): Promise<string> {
   }
 
   return signedUrlData.signedUrl
+}
+
+export async function extractTextFromImage(imageUrl: string): Promise<string> {
+  return await withTempFileFromUrl(imageUrl, async (tempFilePath) => {
+    return await detectText(tempFilePath);
+  });
 }
 
 export async function saveMarketingRecipe(recipe: GeneratedRecipe & { thumbnail: string }): Promise<RecipeRead> {

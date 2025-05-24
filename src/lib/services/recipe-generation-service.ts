@@ -9,6 +9,7 @@ import { BaseLanguageModelInput } from "@langchain/core/language_models/base"
 import Langfuse from "langfuse"
 import { createAdminClient, createClient } from '@/utils/supabase/server';
 import { ChatOpenAI } from '@langchain/openai';
+import { CallbackHandler } from 'langfuse-langchain';
 
 // Value-probability pair type
 interface ValueProbability {
@@ -47,11 +48,10 @@ export class RecipeGenerationService {
 
         if (imageUrl) {
             const base64Image = await hostedImageToBase64(imageUrl)
-            const imageUrlToUse = `data:image/jpeg;base64,${base64Image}`
 
             content.push({
                 type: "image_url",
-                image_url: { url: imageUrlToUse, detail: "high" },
+                image_url: { url: base64Image, detail: "high" },
             })
         }
 
@@ -68,12 +68,15 @@ export class RecipeGenerationService {
         const { prompt, messages } = await this.getPromptAndMessages(text, imageUrl)
         return this.recipeModel.streamEvents([prompt, ...messages], {
             version: "v2",
+            callbacks: [new CallbackHandler()]
         })
     }
 
     async generateBlocking(text: string, imageUrl: string | null) {
         const { prompt, messages } = await this.getPromptAndMessages(text, imageUrl)
-        const recipe = await this.recipeModel.invoke([prompt, ...messages])
+        const recipe = await this.recipeModel.invoke([prompt, ...messages], {
+            callbacks: [new CallbackHandler()]
+        })
         return recipe
     }
 

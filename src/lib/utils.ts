@@ -205,7 +205,8 @@ export function fileToBase64(file: File): Promise<string> {
 }
 
 export async function hostedImageToBase64(url: string): Promise<string> {
-  return hostedImageToBuffer(url).then(buffer => buffer.data.toString("base64"))
+  const { data, contentType } = await hostedImageToBuffer(url)
+  return `data:${contentType};base64,${data.toString("base64")}`
 }
 
 export async function hostedImageToBuffer(url: string): Promise<{data: Buffer, contentType: string, extension: string}> {

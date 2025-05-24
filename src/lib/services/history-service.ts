@@ -139,11 +139,11 @@ export class HistoryService {
         if (message.payload?.image) {
           const signedUrl = await resignImageUrl(supabase, message.payload.image.url)
           const base64Image = await hostedImageToBase64(signedUrl)
-          console.log("base64Image", `data:${message.payload.image.type};base64,${base64Image.slice(0, 100)}`)
+          console.log("base64Image", base64Image.slice(0, 100))
           messageContent.push({
             type: "image_url",
             image_url: {
-              url: `data:${message.payload.image.type};base64,${base64Image}`,
+              url: base64Image,
               detail: "high"
             }
           })

@@ -5,9 +5,10 @@ import { z } from "zod";
 import { GeneratedRecipe, GeneratedRecipeSchema } from "../types";
 import { JSDOM } from 'jsdom';
 import { Defuddle } from 'defuddle/node';
+import { Recipe as SchemaOrgRecipe } from "schema-dts";
 
 
-const getEssentialRecipeInfo = async (text: string): Promise<{ recipe: GeneratedRecipe, thumbnailUrl: string }> => {
+export async function formatRecipe(text: string): Promise<{ recipe: GeneratedRecipe, thumbnailUrl: string }> {
   const model = new ChatOpenAI({
     apiKey: process.env.OPENAI_API_KEY,
     modelName: "gpt-4.1-nano",
@@ -34,7 +35,6 @@ const getEssentialRecipeInfo = async (text: string): Promise<{ recipe: Generated
 
     throw error;
   }
-
 }
 
 export async function getRecipeContent(url: string) {
@@ -42,7 +42,7 @@ export async function getRecipeContent(url: string) {
 
   const webContent = await JSDOM.fromURL(url)
   const defuddledResult = await Defuddle(webContent)
-  const recipeSchemaOrgData = defuddledResult.schemaOrgData.filter((item: {"@type": string}) => item["@type"] === "Recipe")
+  const recipeSchemaOrgData: SchemaOrgRecipe[] = defuddledResult.schemaOrgData.filter((item: {"@type": string}) => item["@type"] === "Recipe")
 
   if (!recipeSchemaOrgData.length) {
     console.warn(`No recipe schema org data found on site: ${url}, using defuddled content`)
@@ -51,5 +51,5 @@ export async function getRecipeContent(url: string) {
     recipeData = JSON.stringify(recipeSchemaOrgData)
   }
 
-  return getEssentialRecipeInfo(recipeData)
+  return recipeData
 }
