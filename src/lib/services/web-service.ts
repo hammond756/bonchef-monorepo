@@ -3,14 +3,15 @@ import CallbackHandler from "langfuse-langchain";
 import { ChatOpenAI } from "@langchain/openai";
 import { z } from "zod";
 import { GeneratedRecipe, GeneratedRecipeSchema } from "../types";
+import { JSDOM } from 'jsdom';
+import { Defuddle } from 'defuddle/node';
 
 
 const getEssentialRecipeInfo = async (text: string): Promise<{ recipe: GeneratedRecipe, thumbnailUrl: string }> => {
-
   const model = new ChatOpenAI({
     apiKey: process.env.OPENAI_API_KEY,
-    modelName: "gpt-4.1-mini",
-    temperature: 0.7,
+    modelName: "gpt-4.1-nano",
+    temperature: 0.1,
     maxTokens: 4096,
   }).withStructuredOutput(z.object({
     recipe: GeneratedRecipeSchema,
@@ -37,27 +38,16 @@ const getEssentialRecipeInfo = async (text: string): Promise<{ recipe: Generated
 }
 
 export async function getRecipeContent(url: string) {
-  let webContent = ""
+  let recipeData = ""
 
-  try {
-    const response = await fetch(
-      `https://r.jina.ai/${url}`,
-      {
-        headers: {
-          // 'Authorization': `Bearer ${process.env.JINA_API_KEY}`,
-          'X-Engine': 'direct',
-          'X-Remove-Selector': 'header, footer, nav, aside, iframe, .comment, .subscribe',
-          'X-Return-Format': 'markdown',
-          // 'X-Retain-Images': 'none',
-          'X-With-Images-Summary': 'true'
-        }
-      }
-    )
-    webContent = await response.text()
-  } catch (error) {
-    console.error("Failed to fetch URL content", error)
-    throw error
+  const webContent = await JSDOM.fromURL(url)
+  const defuddledResult = await Defuddle(webContent)
+  const recipeSchemaOrgData = defuddledResult.schemaOrgData.filter((item: {"@type": string}) => item["@type"] === "Recipe")
+
+  if (!recipeSchemaOrgData.length) {
+    console.warn(`No recipe schema org data found on site: ${url}, using defuddled content`)
+    recipeData = defuddledResult.content
   }
 
-  return getEssentialRecipeInfo(webContent)
+  return getEssentialRecipeInfo(recipeData)
 }
