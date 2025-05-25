@@ -28,6 +28,7 @@ export function LoginForm({ onGoogleLogin, onLogin }: LoginFormProps) {
       if (redirectUrl) {
         setIsLoading(false)
         router.push(redirectUrl)
+        return
       }
 
       if (error) {
@@ -36,13 +37,8 @@ export function LoginForm({ onGoogleLogin, onLogin }: LoginFormProps) {
           title: "Error",
           description: error,
         })
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to login with Google",
-        })
       }
+
       setIsLoading(false)
     } catch (error) {
       toast({
