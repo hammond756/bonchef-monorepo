@@ -111,7 +111,6 @@ export async function patchMessagePayload(messageId: string, payload: Record<str
   }
 }
 
-const RECIPE_API_URL = process.env.NEXT_PUBLIC_BONCHEF_BACKEND_HOST;
 const DEV_RECIPE: GeneratedRecipe = {
   title: "Classic Spaghetti Bolognese",
   total_cook_time_minutes: 60,
@@ -149,17 +148,4 @@ export async function formatRecipe(recipeText: string) {
   const recipe = await recipeModel.invoke(prompt, { callbacks: [new CallbackHandler()]})
 
   return recipe
-}
-
-export async function scrapeRecipe(url: string) {
-  const response = await fetch(`${RECIPE_API_URL}/scrape/?url=${url}`);
-
-  if (!response.ok) {
-    throw new Error(`Failed to scrape recipe: ${response.statusText}`);
-  }
-
-  const data = await response.json()
-  data.thumbnail = data.source_image
-
-  return data as Promise<Recipe>;
 }
