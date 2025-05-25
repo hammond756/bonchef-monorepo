@@ -96,4 +96,8 @@ export default withSentryConfig(nextConfig, {
   // https://docs.sentry.io/product/crons/
   // https://vercel.com/docs/cron-jobs
   automaticVercelMonitors: true,
+
+  autoInstrumentServerFunctions: process.env.NODE_ENV === 'production',
+  autoInstrumentMiddleware: process.env.NODE_ENV === 'production',
+  autoInstrumentAppDirectory: process.env.NODE_ENV === 'production',
 });
