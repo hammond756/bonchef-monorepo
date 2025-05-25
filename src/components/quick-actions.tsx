@@ -273,27 +273,10 @@ export function QuickActions({
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold mb-4">Kies een snelle instructie</h2>
-        <div className="flex flex-wrap gap-2">
-          {quickPrompts.map((prompt) => (
-            <button
-              key={prompt}
-              onClick={() => onPromptClick(prompt)}
-              className={cn(
-                "px-3 py-1.5 rounded-full text-sm",
-                "bg-white hover:bg-gray-50 transition-colors",
-                "border border-gray-200"
-              )}
-            >
-              {prompt}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <h2 className="text-lg font-semibold mb-4">Kies meerdere startpunten</h2>
-        
+        <h2 className="text-lg font-semibold mb-4">Of kies een startpunt</h2>
+        <p className="text-muted-foreground mb-4">
+          Combineer verschillende eigenschappen om een recept op maat te maken
+        </p>
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
             {renderFilterButtons(allFilterOptions)}

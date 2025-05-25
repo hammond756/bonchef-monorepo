@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from "react"
 import { v4 as uuidv4 } from "uuid"
-import { Link, FileText, ChevronDown } from "lucide-react"
+import { Link, FileText, ChevronDown, MessageSquare } from "lucide-react"
 import { ChatMessage } from "./chat-message"
 import { ChatInput, ChatInputHandle } from "./chat-input"
 import { QuickActions } from "./quick-actions"
@@ -67,31 +67,9 @@ export function Chat() {
   }
 
   const quickActions = [
-    // { 
-    //   icon: Camera, 
-    //   label: "Fotografeer je koelkast",
-    //   onClick: handleNotImplemented
-    // },
     { 
-      icon: Link, 
-      label: "Importeer een recept",
-      onClick: () => {
-        const chatInput = document.querySelector("[data-testid='chat-input']") as HTMLTextAreaElement
-        if (chatInput) {
-          chatInput.focus()
-          setIsInputExpanded(true)
-          setInputPlaceholder("Plak hier de URL van een recept in. Je mag er ook nog vragen of aanpassingen bij schrijven.")
-        }
-      }
-    },
-    // { 
-    //   icon: User, 
-    //   label: "Pas jouw profiel aan",
-    //   onClick: handleNotImplemented
-    // },
-    { 
-      icon: FileText, 
-      label: "Beschrijf een recept",
+      icon: MessageSquare, 
+      label: "Stuur een bericht naar onze AI-chef",
       onClick: () => {
         const chatInput = document.querySelector("[data-testid='chat-input']") as HTMLTextAreaElement
         if (chatInput) {
@@ -100,17 +78,7 @@ export function Chat() {
           setInputPlaceholder("Schrijf hier wat je zou willen eten. Dit mag heel specifiek zijn, of breed en verkennend.")
         }
       }
-    },
-    // { 
-    //   icon: Globe, 
-    //   label: "Zoek een recept online",
-    //   onClick: handleNotImplemented
-    // },
-    // { 
-    //   icon: MessageSquare, 
-    //   label: "Spreek een bericht in",
-    //   onClick: handleNotImplemented
-    // }
+    }
   ]
 
   function handleQuickPrompt(prompt: string) {

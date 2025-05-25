@@ -2,7 +2,7 @@
 
 import { v4 as uuidv4 } from "uuid";
 import { GeneratedRecipe, RecipeRead } from "@/lib/types";
-import { createAdminClient } from "@/utils/supabase/server";
+import { createAdminClient, createClient } from "@/utils/supabase/server";
 import { formatRecipe, getRecipeContent } from "@/lib/services/web-service";
 import { RecipeService } from "@/lib/services/recipe-service";
 import { RecipeGenerationService } from "@/lib/services/recipe-generation-service";
@@ -98,6 +98,33 @@ export async function saveMarketingRecipe(recipe: GeneratedRecipe & { thumbnail:
     thumbnail: recipe.thumbnail,
     description: "",
     user_id: process.env.NEXT_PUBLIC_MARKETING_USER_ID!,
+  })
+
+  if (!savedRecipe.success) {
+    throw new Error(savedRecipe.error)
+  }
+
+  return savedRecipe.data
+}
+
+export async function saveRecipe(recipe: GeneratedRecipe & { thumbnail: string }): Promise<RecipeRead> {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error("User not found")
+  }
+
+  const recipeService = new RecipeService(supabase)
+
+  const savedRecipe = await recipeService.createRecipe({
+    ...recipe,
+    is_public: false,
+    source_url: "https://app.bonchef.io",
+    source_name: "BonChef",
+    description: "",
+    user_id: user.id,
   })
 
   if (!savedRecipe.success) {

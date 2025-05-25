@@ -1,12 +1,10 @@
 "use client"
 
-import { User } from "@supabase/supabase-js"
-import { LogOut, Menu, MessageSquarePlus, Plus, X, Search, LayoutDashboard, User as UserIcon, MessageSquare, BarChart2, FolderOpen, ShoppingCart, Bookmark, Settings } from "lucide-react"
+import { LogOut, Menu, MessageSquarePlus, Plus, X, Search, LayoutDashboard, User as UserIcon, MessageSquare, BarChart2, FolderOpen, ShoppingCart, Bookmark, Settings, Download } from "lucide-react"
 import { logout } from "@/app/actions"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { createClient } from "@/utils/supabase/client"
-import { AuthChangeEvent, Session } from "@supabase/supabase-js"
 import { Button } from "@/components/ui/button"
 import { cn, createProfileSlug } from "@/lib/utils"
 import { useChatStore } from "@/lib/store/chat-store"
@@ -44,7 +42,7 @@ export function Sidebar() {
   }, [isOpen])
 
   function handleNewChat() {
-    router.push("/")
+    router.push("/chat")
     clearConversation()
   }
   
@@ -162,6 +160,17 @@ export function Sidebar() {
             <li>
               <Link 
                 href="/" 
+                className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-100 transition-all duration-200 text-slate-900 hover:text-slate-900 group"
+                onClick={() => setIsOpen(false)}
+              >
+                <Download className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                <span>Importeren</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link 
+                href="/chat" 
                 className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-100 transition-all duration-200 text-slate-900 hover:text-slate-900 group"
                 onClick={() => setIsOpen(false)}
               >

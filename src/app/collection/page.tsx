@@ -35,7 +35,7 @@ function RecipeGrid({ recipes }: { recipes: RecipeRead[] }) {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw"
               />
               <div className="absolute bottom-0 left-0 right-0">
-                <div className="bg-gray-400/40 rounded-2xl p-2">
+                <div className="bg-gray-400/40 rounded-lg p-2">
                   <div className="flex items-center justify-between text-white">
                     <h2 className="text-md font-semibold line-clamp-2">
                       {recipe.title}
