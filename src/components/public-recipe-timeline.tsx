@@ -31,7 +31,7 @@ export function PublicRecipeTimeline() {
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                   sizes="100vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-gray-400/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
               </Link>
 
               <div className="absolute bottom-0 left-0 right-0 px-5 text-white">
