@@ -9,8 +9,13 @@ export async function likeRecipe(recipeId: string) {
         .insert({ recipe_id: recipeId })
 
     if (error) {
-        console.error("Error liking recipe:", error)
-        throw error
+        if (error.code === "42501") {
+            console.error("Error liking recipe:", error)
+            throw new Error("Log in om een recept te liken")
+        } else {
+            console.error("Error liking recipe:", error)
+            throw error
+        }
     }
 }
 

@@ -57,7 +57,7 @@ export function LikeButton({
       setLikeCount(previousLikeCount)
       toast({
         title: "Er is iets misgegaan",
-        description: "Probeer het later opnieuw",
+        description: (error instanceof Error) ? error.message : "Probeer het later opnieuw",
         variant: "destructive",
       })
     } finally {

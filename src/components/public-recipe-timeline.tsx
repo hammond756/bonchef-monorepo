@@ -4,9 +4,9 @@ import Link from "next/link"
 import Image from "next/image"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Loader2, User as UserIcon } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { Button } from "./ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "./ui/card"
+import { Card } from "./ui/card"
 import { usePublicRecipes } from "@/hooks/use-public-recipes"
 import { LikeButton } from "./like-button"
 import { ProfileImage } from "@/components/ui/profile-image"
@@ -31,16 +31,16 @@ export function PublicRecipeTimeline() {
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                   sizes="100vw"
                 />
-                {/* <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" /> */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-gray-400/30 to-transparent" />
               </Link>
 
-              <div className="absolute bottom-0 left-0 right-0 px-5 text-white text-shadow-lg/20">
+              <div className="absolute bottom-0 left-0 right-0 px-5 text-white">
                 {/* Recipe Title - Bottom Left, above User Info */}
                 <Link
                   href={`/recipes/${recipe.id}`}
                   className="block mb-4 w-10/12" // Keep some margin below title if needed
                 >
-                  <h3 className="text-xl md:text-3xl font-medium line-clamp-2 text-shadow-lg/40">
+                  <h3 className="text-xl md:text-3xl font-medium line-clamp-2">
                     {recipe.title}
                   </h3>
                 </Link>
@@ -68,6 +68,7 @@ export function PublicRecipeTimeline() {
                 <div className="absolute bottom-2 right-0 flex flex-col items-center">
                   <LikeButton
                     variant="solid"
+                    className="text-white/70"
                     buttonSize="2xl"
                     recipeId={recipe.id}
                     initialLiked={recipe.is_liked_by_current_user}
