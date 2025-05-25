@@ -271,7 +271,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
   async function handleDeleteRecipe(recipeId: string) {
     try {
       await deleteRecipe(recipeId);
-      router.push(`/`);
+      router.push("/collection");
     } catch (error) {
       setSubmitError("Failed to delete recipe.");
       console.error("Failed to delete recipe:", error);
