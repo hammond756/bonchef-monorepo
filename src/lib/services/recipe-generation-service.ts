@@ -137,7 +137,8 @@ export class RecipeGenerationService {
         const textToImagePrompt = await textToImagePromptClient.compile({...promptVariables, recipe: text})
 
         const openaiResponse = await openai.invoke(textToImagePrompt, {
-            response_format: { type: "text" }
+            response_format: { type: "text" },
+            callbacks: [new CallbackHandler()]
         })
 
         // TODO: better typing
