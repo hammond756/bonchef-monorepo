@@ -59,5 +59,6 @@ export const useFileUpload = ({ initialFilePath }: { initialFilePath?: string | 
         handleChange,
         handleRemove,
         reset,
+        setPreview,
     }
 }

@@ -34,11 +34,12 @@ export function ProfileImage({
     );
   }
   return (
-    <span style={{ width: size, height: size, display: "inline-block" }} className={className}>
+    <span style={{ width: size, height: size, display: "inline-block" }}>
       <Avatar
         size={size}
         name={name || "Anon"}
         variant="bauhaus"
+        className={`${className} rounded-full`}
         colors={[
           "#E6EEF6", // soft blue
           "#1A2A36", // navy

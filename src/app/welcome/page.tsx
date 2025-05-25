@@ -6,8 +6,8 @@ import Link from "next/link"
 
 export default function WelcomePage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 p-4">
-      <div className="flex flex-col items-center gap-4 bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="flex flex-col items-center gap-4 bg-white border border-slate-200 rounded-xl shadow-lg p-8 max-w-md w-full">
         <Image
           src="/icon.png"
           alt="Bonchef logo"

@@ -34,14 +34,16 @@ function RecipeGrid({ recipes }: { recipes: RecipeRead[] }) {
                 className="object-cover transition-transform group-hover:scale-105 rounded-lg"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw"
               />
-              <div className="absolute top-4 right-4">
-                <LikeButton recipeId={recipe.id} initialLiked={recipe.is_liked_by_current_user} initialLikeCount={recipe.like_count} />
+              <div className="absolute bottom-0 left-0 right-0">
+                <div className="bg-gray-400/40 rounded-2xl p-2">
+                  <div className="flex items-center justify-between text-white">
+                    <h2 className="text-md font-semibold line-clamp-2">
+                      {recipe.title}
+                    </h2>
+                    <LikeButton variant="solid" buttonSize="md" className="text-white p-0" recipeId={recipe.id} initialLiked={recipe.is_liked_by_current_user} initialLikeCount={recipe.like_count} />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 p-3 bg-white/70 rounded-b-lg">
-              <h2 className="text-md font-semibold text-gray-800 line-clamp-2">
-                {recipe.title}
-              </h2>
             </div>
           </Link>
         </div>
@@ -107,7 +109,7 @@ function RecipesSection() {
       onValueChange={(value) => setActiveTab(value as "my-recipes" | "favorieten")}
       className="space-y-6"
     >
-      <TabsList className="grid w-full grid-cols-2 bg-white">
+      <TabsList className="grid w-full grid-cols-2 bg-slate-200">
         <TabsTrigger className="data-[state=active]:bg-green-700 data-[state=active]:text-white data-[state=inactive]:bg-transparent data-[state=inactive]:text-black" value="my-recipes">Mijn recepten</TabsTrigger>
         <TabsTrigger className="data-[state=active]:bg-green-700 data-[state=active]:text-white data-[state=inactive]:bg-transparent data-[state=inactive]:text-black" value="favorieten">Mijn favorieten</TabsTrigger>
       </TabsList>

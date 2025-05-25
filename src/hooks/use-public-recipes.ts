@@ -4,7 +4,7 @@ import { useCallback } from "react"
 import useSWRInfinite from "swr/infinite"
 import { useQueryState, parseAsInteger } from "nuqs"
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 12
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 

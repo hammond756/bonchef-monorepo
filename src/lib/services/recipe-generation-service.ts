@@ -121,7 +121,7 @@ export class RecipeGenerationService {
         return publicUrl
     }
 
-    private async getImagePrompts(text: string) {
+    private async getImagePrompts(text: string, promptVariables: Record<string, string> | null = null) {
         const openai = new ChatOpenAI({
             apiKey: process.env.OPENAI_API_KEY,
         })
@@ -132,9 +132,10 @@ export class RecipeGenerationService {
         const negativeImagePrompt = (await langfuse.getPrompt("NegativeImage", undefined, { type: "text" })).compile()
         
         const config = textToImagePromptClient.config as LangFusePromptConfig
-        const promptVariables = this.sampleRandomValues(config.random_values)
 
-        const textToImagePrompt = await textToImagePromptClient.compile({...promptVariables, recipe: text})
+        const finalPromptVariables = promptVariables || this.sampleRandomValues(config.random_values)
+
+        const textToImagePrompt = await textToImagePromptClient.compile({...finalPromptVariables, recipe: text})
 
         const openaiResponse = await openai.invoke(textToImagePrompt, {
             response_format: { type: "text" },
@@ -147,8 +148,8 @@ export class RecipeGenerationService {
         return { positivePrompt, negativeImagePrompt }
     }
 
-    async generateThumbnail(text: string) {
-        const { positivePrompt, negativeImagePrompt } = await this.getImagePrompts(text)
+    async generateThumbnail(text: string, promptVariables: Record<string, string> | null = null) {
+        const { positivePrompt, negativeImagePrompt } = await this.getImagePrompts(text, promptVariables)
 
         const ai = new GoogleGenAI({vertexai: true,
             project: "bonchef-434908",

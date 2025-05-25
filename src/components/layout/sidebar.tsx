@@ -57,9 +57,9 @@ export function Sidebar() {
           onClick={() => setIsOpen(!isOpen)} 
           data-sidebar-toggle
           aria-label="Toggle menu"
-          className="text-slate-700 bg-transparent px-2 py-1 rounded-md"
+          className="bg-green-700 px-3 py-1 rounded-xl text-white font-medium"
         >
-          <Menu data-testid="side-bar-hamburger-menu" className="h-7 w-7" />
+          Menu
         </button>
         
         <div className="flex-1 flex justify-center">

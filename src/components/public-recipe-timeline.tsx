@@ -16,50 +16,77 @@ export function PublicRecipeTimeline() {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {recipes.map((recipe) => (
-          <div key={recipe.id}>
-              <Card className="h-full overflow-hidden hover:shadow-md transition-shadow duration-300">
-                <CardHeader className="pb-2">
-                  <Link href={`/profiles/~${recipe.profiles?.id}`} className="flex items-center gap-3 group">
-                    <ProfileImage src={recipe.profiles?.avatar} name={recipe.profiles?.display_name} size={40} />
-                    <span className="text-md font-semibold text-gray-800 underline group-hover:text-primary transition-colors">
-                      {recipe.profiles?.display_name || "Anonieme chef"}
-                    </span>
-                  </Link>
-                </CardHeader>
+          <div key={recipe.id} className="w-full">
+            <Card className="relative aspect-square w-full overflow-hidden group">
+              <Link
+                href={`/recipes/${recipe.id}`}
+                className="absolute inset-0 block"
+              >
+                <Image
+                  src={recipe.thumbnail || "https://placekitten.com/1200/800"}
+                  alt={recipe.title}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="100vw"
+                />
+                {/* <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" /> */}
+              </Link>
+
+              <div className="absolute bottom-0 left-0 right-0 px-5 text-white text-shadow-lg/20">
+                {/* Recipe Title - Bottom Left, above User Info */}
                 <Link
                   href={`/recipes/${recipe.id}`}
-                  className="group block"
+                  className="block mb-4 w-10/12" // Keep some margin below title if needed
                 >
-                  <div className="relative aspect-video w-full overflow-hidden">
-                    <Image
-                      src={recipe.thumbnail || "https://placekitten.com/800/450"}
-                      alt={recipe.title}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  </div>
-                  <CardContent className="pt-4">
-                    <h3 className="text-xl font-semibold text-gray-900 group-hover:text-gray-600 line-clamp-2">
-                      {recipe.title}
-                    </h3>
-                  </CardContent>
+                  <h3 className="text-xl md:text-3xl font-medium line-clamp-2 text-shadow-lg/40">
+                    {recipe.title}
+                  </h3>
                 </Link>
-                <CardFooter className="pt-0 flex justify-between items-center">
-                  <p className="text-sm text-gray-500">
-                    {recipe.created_at 
-                      ? format(new Date(recipe.created_at), "d MMMM yyyy", { locale: nl }) 
+
+                {/* User Info: Display Name and Date - Bottom Left, below Title */}
+                <Link 
+                  href={`/profiles/~${recipe.profiles?.id}`} 
+                  className="block mb-2 group/profile"
+                >
+                  <span className="text-sm font-semibold group-hover/profile:text-primary transition-colors">
+                    {recipe.profiles?.display_name || "Anonieme chef"}
+                  </span>
+                  <span className="mx-2 text-xs text-gray-300 group-hover/profile:text-primary transition-colors">
+                    |
+                  </span>
+                  <span className="text-xs text-gray-300 group-hover/profile:text-primary transition-colors">
+                    {recipe.created_at
+                      ? format(new Date(recipe.created_at), "d MMM yyyy", { locale: nl })
                       : ""}
-                  </p>
-                  <LikeButton 
-                    recipeId={recipe.id} 
-                    initialLiked={recipe.is_liked_by_current_user} 
+                  </span>
+                </Link>
+
+
+                {/* Right-aligned content: Like Button and Profile Image */}
+                <div className="absolute bottom-2 right-0 flex flex-col items-center">
+                  <LikeButton
+                    variant="solid"
+                    buttonSize="2xl"
+                    recipeId={recipe.id}
+                    initialLiked={recipe.is_liked_by_current_user}
                     initialLikeCount={recipe.like_count || 0}
                   />
-                </CardFooter>
-              </Card>
+                  <Link 
+                    href={`/profiles/~${recipe.profiles?.id}`} 
+                    className="group/profile"
+                  >
+                    <ProfileImage 
+                      src={recipe.profiles?.avatar} 
+                      name={recipe.profiles?.display_name} 
+                      size={40}
+                      className="border-2 border-white group-hover/profile:border-primary transition-colors"
+                    />
+                  </Link>
+                </div>
+              </div>
+            </Card>
           </div>
         ))}
       </div>

@@ -7,15 +7,14 @@ export const dynamic = "force-static";
 
 export default async function OntdekPage() {
   return (
-    <main className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Ontdek recepten</h1>
-      <p className="text-lg text-gray-700 mb-8">
-        Ontdek wat andere mensen koken en laat je inspireren door hun recepten.
-      </p>
+    <>
+      <div className="px-4 py-8 md:px-6 lg:px-8">
+        <h1 className="text-2xl font-bold">Community</h1>
+      </div>
       
       <Suspense fallback={<PublicRecipeTimelineSkeleton />}>
         <PublicRecipeTimeline />
       </Suspense>
-    </main>
+    </>
   )
 } 

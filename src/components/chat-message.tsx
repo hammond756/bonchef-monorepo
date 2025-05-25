@@ -137,7 +137,7 @@ export function ChatMessage({
       <div
         className={`w-full ${
           message.type === "user" 
-            ? "max-w-[80%] rounded-lg p-4 bg-white text-black" 
+            ? "max-w-[80%] rounded-lg p-4 bg-slate-200 text-black" 
             : "text-black"
         }`}
       >

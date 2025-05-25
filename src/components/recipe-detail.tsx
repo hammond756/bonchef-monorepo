@@ -54,6 +54,8 @@ function RecipeMetadata({
         )}
         {user && recipe.id && (
           <LikeButton
+            variant="outline"
+            className="text-gray-700"
             recipeId={recipe.id} 
             initialLiked={recipe.is_liked_by_current_user} 
             initialLikeCount={recipe.like_count || 0}

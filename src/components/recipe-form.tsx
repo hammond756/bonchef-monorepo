@@ -96,6 +96,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
     fileInputRef,
     handleChange: handleFileChange,
     handleRemove: handleRemoveFile,
+    setPreview,
     reset: resetFileUpload,
   } = useFileUpload({ initialFilePath: recipe.thumbnail });
 
@@ -137,6 +138,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
       // Simply set the image data in the recipe state
       // The server will handle the upload to Supabase Storage when saving
       setRecipe(prev => ({ ...prev, thumbnail: data.image }));
+      setPreview(data.image);
     } catch (error) {
       console.error("Failed to generate image:", error);
       setImageError("Failed to generate image. Please try again.");
@@ -335,7 +337,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                 )}
               </div>
 
-              {preview && (
+              {(preview) && (
                 <div className="w-full sm:-mx-6 md:-mx-8 lg:-mx-12 mt-4 relative group">
                   <img
                     src={preview}
