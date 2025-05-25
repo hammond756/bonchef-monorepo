@@ -14,7 +14,7 @@ export async function login(email: string, password: string) {
   })
 
   if (error) {
-    return { error }
+    return { error: error.message }
   }
 
   redirect("/auth-callback")
@@ -37,7 +37,7 @@ export async function createTemporaryUser() {
   })
 
   if (signUpError) {
-    return { error: signUpError }
+    return { error: signUpError.message }
   }
 
   const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -46,13 +46,13 @@ export async function createTemporaryUser() {
   })
 
   if (signInError) {
-    return { error: signInError }
+    return { error: signInError.message }
   }
 
   redirect("/auth-callback")
 }
 
-export async function loginWithGoogle() {
+export async function loginWithGoogle(): Promise<{redirectUrl: string | null, error: string | null}> {
   const supabase = await createClient()
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
@@ -60,8 +60,10 @@ export async function loginWithGoogle() {
       redirectTo: `${process.env.NEXT_PUBLIC_BONCHEF_FRONTEND_HOST}/api/0auth/exchange`,
     },
   })
-  if (data?.url) {
-    redirect(data.url)
+
+  if (error) {
+    return { error: error.message, redirectUrl: null }
   }
-  return { error }
+
+  return { redirectUrl: data.url, error: null }
 }

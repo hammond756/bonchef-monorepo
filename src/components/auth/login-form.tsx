@@ -8,11 +8,11 @@ import Link from "next/link"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
-import { AuthError } from "@supabase/supabase-js"
+
 
 interface LoginFormProps {
-  onGoogleLogin: () => Promise<{error: AuthError | null}>
-  onLogin: (email: string, password: string) => Promise<{ error: AuthError | null }>
+  onGoogleLogin: () => Promise<{redirectUrl: string | null, error: string | null}>
+  onLogin: (email: string, password: string) => Promise<{ error: string | null }>
 }
 
 export function LoginForm({ onGoogleLogin, onLogin }: LoginFormProps) {
@@ -23,7 +23,27 @@ export function LoginForm({ onGoogleLogin, onLogin }: LoginFormProps) {
   async function handleGoogleLogin() {
     setIsLoading(true)
     try {
-      await onGoogleLogin()
+      const { redirectUrl, error } = await onGoogleLogin()
+
+      if (redirectUrl) {
+        setIsLoading(false)
+        router.push(redirectUrl)
+      }
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error,
+        })
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to login with Google",
+        })
+      }
+      setIsLoading(false)
     } catch (error) {
       toast({
         variant: "destructive",
@@ -43,16 +63,16 @@ export function LoginForm({ onGoogleLogin, onLogin }: LoginFormProps) {
     const password = formData.get("password") as string
 
     const { error } = await onLogin(email, password)
+
     if (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: error,
       })
       setIsLoading(false)
       return
     }
-    router.refresh()
   }
 
   return (
