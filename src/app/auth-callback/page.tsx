@@ -76,6 +76,7 @@ export default function AuthCallbackPage() {
                 })
               }
             } catch (claimErr) {
+              posthog?.captureException(claimErr)
               console.error("Error claiming recipe:", claimErr)
               toast({
                 variant: "destructive",
@@ -88,6 +89,7 @@ export default function AuthCallbackPage() {
           router.push("/")
         }, 800)
       } catch (err) {
+        posthog?.captureException(err)
         console.error("Auth error:", err)
         setError(err instanceof Error ? err.message : "Authentication failed")
       } finally {

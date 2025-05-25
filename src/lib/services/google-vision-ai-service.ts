@@ -27,7 +27,6 @@ export async function detectText(filePath: string): Promise<string> {
     if (textAnnotations && textAnnotations.length > 0) {
       // The first element in textAnnotations is usually the full text detected
       const fullText = textAnnotations[0].description;
-      console.log("fullText", fullText);
       return fullText || '';
     } else {
       console.log('No text detected in the image.');

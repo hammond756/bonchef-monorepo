@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { saveMarketingRecipe, generateRecipeFromSnippet } from "../actions/recipe-imports";
 import { ProgressModal } from "../app/first-recipe/progress-modal";
+import { usePostHog } from "posthog-js/react";
 
 interface TextDialogProps {
   open: boolean;
@@ -17,7 +18,7 @@ interface TextDialogProps {
 function TextForm({ onSuccessfullyAdded, onSubmit }: { onSuccessfullyAdded: () => void, onSubmit: (validFormData: { text: string }) => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const posthog = usePostHog();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,6 +34,7 @@ function TextForm({ onSuccessfullyAdded, onSubmit }: { onSuccessfullyAdded: () =
     try {
         onSubmit({ text });
     } catch (e) {
+      posthog?.captureException(e)
       setError("Er is iets misgegaan. Probeer het opnieuw.");
       setIsLoading(false);
     }

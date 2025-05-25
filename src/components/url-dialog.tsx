@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { scrapeRecipe, saveMarketingRecipe } from "../actions/recipe-imports";
 import { ProgressModal } from "../app/first-recipe/progress-modal";
+import { usePostHog } from "posthog-js/react";
 
 interface UrlDialogProps {
   open: boolean;
@@ -33,20 +34,32 @@ function validateUrl(url: string) {
   try {
     const urlObject = new URL(url);
     if (urlObject.hostname.includes("instagram") || urlObject.hostname.includes("facebook") || urlObject.hostname.includes("tiktok")) {
-      return { validationError: `Helaas is het nog niet mogelijk om te importeren van ${urlObject.hostname}. We werken eraan om deze platforms te ondersteunen.` };
+      return { 
+        message: `Helaas is het nog niet mogelijk om te importeren van ${urlObject.hostname}. We werken eraan om meer bronnen te ondersteunen.`,
+        triggerEvent: {
+          name: "unsupported_url_import",
+          properties: {
+            details: {
+              platform: urlObject.hostname,
+              target_url: url
+            }
+          }
+        }
+      };
     }
     // TODO: check if the url is a valid recipe url
-    return { validationError: null };
+    return { message: null, triggerEvent: null };
   } catch (e) {
-    return { validationError: "Voer een geldige URL in." };
+    return { message: "Voer een geldige URL in.", triggerEvent: null };
   }
 }
 
-function UrlForm({ onSuccessfullyAdded, onSubmit }: { onSuccessfullyAdded: () => void, onSubmit: (validFormData: { url: string }) => void }) {
+function UrlForm({ onSubmit }: { onSubmit: (validFormData: { url: string }) => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const posthog = usePostHog()
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,15 +68,19 @@ function UrlForm({ onSuccessfullyAdded, onSubmit }: { onSuccessfullyAdded: () =>
     const formData = new FormData(event.currentTarget);
     const url = formData.get("url") as string;
 
-    const { validationError } = validateUrl(url);
-    if (validationError) {
-      setError(validationError);
+    const { message, triggerEvent } = validateUrl(url);
+    if (triggerEvent) {
+      posthog?.capture(triggerEvent.name, triggerEvent.properties);
+    }
+    if (message) {
+      setError(message);
       setIsLoading(false);
       return;
     }
     try {
       onSubmit({ url });
     } catch (e) {
+      posthog?.captureException(e)
       setError("Er is iets misgegaan. Probeer het opnieuw.");
       setIsLoading(false);
     }
@@ -101,7 +118,7 @@ export function UrlDialog({ open, onOpenChange, onSubmit }: UrlDialogProps) {
         <DialogHeader>
           <DialogTitle>Voeg toe via blogpost link</DialogTitle>
         </DialogHeader>
-        <UrlForm onSuccessfullyAdded={() => onOpenChange(false)} onSubmit={onSubmit} />
+        <UrlForm onSubmit={onSubmit} />
       </DialogContent>
     </Dialog>
   );

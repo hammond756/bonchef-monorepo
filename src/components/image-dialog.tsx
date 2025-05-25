@@ -13,6 +13,7 @@ import { X } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { StorageService } from "@/lib/services/storage-service";
 import { v4 as uuidv4 } from "uuid";
+import { usePostHog } from "posthog-js/react";
 
 interface ImageDialogProps {
   open: boolean;
@@ -31,8 +32,7 @@ async function uploadImageToSignedUrl(file: File): Promise<string> {
 function ImageForm({ onSubmit }: { onSubmit: (validFormData: { imageUrl: string }) => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-
+  const posthog = usePostHog();
   const { file, handleChange, handleRemove, preview, fileInputRef } = useFileUpload({ initialFilePath: null });
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -48,6 +48,7 @@ function ImageForm({ onSubmit }: { onSubmit: (validFormData: { imageUrl: string 
       const imageUrl = await uploadImageToSignedUrl(file);
       onSubmit({ imageUrl });
     } catch (e) {
+      posthog?.captureException(e)
       setError("Er is iets misgegaan. Probeer het opnieuw.");
       setIsLoading(false);
     }
