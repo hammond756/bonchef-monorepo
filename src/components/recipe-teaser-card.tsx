@@ -45,7 +45,7 @@ export function RecipeTeaserCard({ content, messageId, initialRecipe }: RecipeTe
         data-testid="teaser-card"
       >
         {isStreaming && (
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-200/50 to-transparent animate-[sheen_2s_infinite] pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-r from-transparent via-gray-200/50 to-transparent animate-sheen pointer-events-none" />
         )}
         <CardContent className="p-6">
           <div className="flex flex-col gap-4">

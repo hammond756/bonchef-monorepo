@@ -79,7 +79,7 @@ export function RecipeModal({ recipe, isOpen, onClose, onRecipeSaved, canSave }:
         </div>
 
         {/* Footer: non-scrollable and always visible */}
-        <DialogFooter className="flex-shrink-0">
+        <DialogFooter className="shrink-0">
           <div className="flex flex-col w-full justify-between space-y-2">
             <div className="w-full justify-center">
               {savedRecipeUrl ? (

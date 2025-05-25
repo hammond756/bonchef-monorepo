@@ -21,7 +21,7 @@ async function ProfileContent({ profile, recipes }: { profile: PublicProfile; re
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-card rounded-lg p-6 shadow-sm mb-8">
+      <div className="bg-card rounded-lg p-6 shadow-xs mb-8">
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-4 mb-4">
             <ProfileImage src={profile.avatar} name={profile.display_name} size={64} />

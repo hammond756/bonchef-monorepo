@@ -4,7 +4,7 @@ export default function ProfileLoading() {
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-card rounded-lg p-6 shadow-sm mb-8">
+        <div className="bg-card rounded-lg p-6 shadow-xs mb-8">
           <div className="flex justify-between items-start mb-4">
             <div className="w-full">
               <Skeleton className="h-8 w-64 mb-2" />
@@ -22,7 +22,7 @@ export default function ProfileLoading() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="h-full">
-                <Skeleton className="aspect-[4/3] w-full rounded-t-lg" />
+                <Skeleton className="aspect-4/3 w-full rounded-t-lg" />
                 <div className="p-4 space-y-3">
                   <Skeleton className="h-6 w-3/4" />
                   <Skeleton className="h-4 w-full" />

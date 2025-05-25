@@ -254,7 +254,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
             type="button"
             variant="ghost"
             size="icon"
-            className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-sm"
+            className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-xs"
             onClick={handleRemoveImage}
             data-testid="chat-message-remove-image-button"
             >

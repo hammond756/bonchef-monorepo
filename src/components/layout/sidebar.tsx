@@ -88,7 +88,7 @@ export function Sidebar() {
       {/* Sidebar overlay */}
       <div 
         className={cn(
-          "fixed inset-0 bg-slate-900/20 backdrop-blur-sm transition-opacity duration-300 ease-in-out z-40",
+          "fixed inset-0 bg-slate-900/20 backdrop-blur-xs transition-opacity duration-300 ease-in-out z-40",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={() => setIsOpen(false)}
@@ -129,7 +129,7 @@ export function Sidebar() {
             <input 
               type="text" 
               placeholder="Search..." 
-              className="w-full bg-[#1D1D27] rounded-md py-2 pl-10 pr-4 text-sm text-gray-300 placeholder:text-gray-500 focus:outline-none"
+              className="w-full bg-[#1D1D27] rounded-md py-2 pl-10 pr-4 text-sm text-gray-300 placeholder:text-gray-500 focus:outline-hidden"
             />
           </div>
         </div> */}
@@ -176,7 +176,7 @@ export function Sidebar() {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200 bg-slate-50">
           {profile ? (
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 border-2 border-slate-300 flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 border-2 border-slate-300 flex items-center justify-center shadow-xs">
                 <ProfileImage src={profile.avatar} name={profile.display_name} size={40} />
               </div>
               
@@ -203,7 +203,7 @@ export function Sidebar() {
           ) : (
             <Link 
               href="/login" 
-              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-colors shadow-sm"
+              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-colors shadow-xs"
               onClick={() => setIsOpen(false)}
             >
               <UserIcon className="h-5 w-5" />

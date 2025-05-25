@@ -32,7 +32,7 @@ export function PublicRecipeTimeline() {
                   href={`/recipes/${recipe.id}`}
                   className="group block"
                 >
-                  <div className="relative aspect-[16/9] w-full overflow-hidden">
+                  <div className="relative aspect-video w-full overflow-hidden">
                     <Image
                       src={recipe.thumbnail || "https://placekitten.com/800/450"}
                       alt={recipe.title}

@@ -116,7 +116,7 @@ export function EditProfileDialog({
                   type="button"
                   aria-label="Verwijder profielfoto"
                   onClick={handleRemoveAvatar}
-                  className="absolute -top-2 -right-2 bg-white rounded-full border border-gray-300 shadow p-0.5 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  className="absolute -top-2 -right-2 bg-white rounded-full border border-gray-300 shadow-sm p-0.5 flex items-center justify-center hover:bg-gray-100 transition-colors"
                   style={{ width: 32, height: 32 }}
                 >
                   <X className="w-2 h-2 text-gray-500" />

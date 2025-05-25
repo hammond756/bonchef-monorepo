@@ -22,7 +22,7 @@ function RecipeThumbnail({ title, thumbnail, showThumbnail = true }: RecipeThumb
   if (!showThumbnail || !thumbnail) return null;
   
   return (
-    <div className="relative aspect-[4/3] w-full mb-6 overflow-hidden">
+    <div className="relative aspect-4/3 w-full mb-6 overflow-hidden">
       <Image
         data-testid="recipe-image"
         src={thumbnail}
