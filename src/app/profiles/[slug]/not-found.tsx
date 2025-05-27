@@ -10,7 +10,7 @@ export default function ProfileNotFound() {
           Het profiel dat je zoekt bestaat niet of is niet beschikbaar.
         </p>
         <Button asChild>
-          <Link href="/">Ga terug</Link>
+          <Link href="/">Terug naar homepage</Link>
         </Button>
       </div>
     </main>

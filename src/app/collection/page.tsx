@@ -59,7 +59,7 @@ function WelcomeSection() {
         Welkom bij jouw recepten verzameling! Hier vind je al jouw recepten en favorieten op één plek.
       </p>
       
-      <Link href="/">
+      <Link href="/import">
         <Button className="mb-8">
           Voeg recept toe
         </Button>

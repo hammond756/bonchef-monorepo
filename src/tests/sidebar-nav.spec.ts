@@ -52,7 +52,7 @@ test.describe("Sidebar Navigation", () => {
 
     // Test navigation to Chat
     await page.locator("[data-sidebar]").getByText("Chat").click();
-    await expect(page).toHaveURL("/");
+    await expect(page).toHaveURL("/chat");
     await expect(page.locator("[data-sidebar]")).toHaveClass(/\-translate-x-full/);
   });
 

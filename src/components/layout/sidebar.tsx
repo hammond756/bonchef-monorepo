@@ -159,7 +159,7 @@ export function Sidebar() {
             
             <li>
               <Link 
-                href="/" 
+                href="/import" 
                 className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-100 transition-all duration-200 text-slate-900 hover:text-slate-900 group"
                 onClick={() => setIsOpen(false)}
               >

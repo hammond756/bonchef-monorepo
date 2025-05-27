@@ -14,7 +14,7 @@ test.describe("Authentication flows", () => {
         await page.fill("input[type='password']", process.env.TEST_USER_PASSWORD!);
         await page.click("button[type='submit']");
         
-        await expect(page).toHaveURL("/");
+        await expect(page).toHaveURL("/ontdek");
     });
     
 });
@@ -22,12 +22,12 @@ test.describe("Authentication flows", () => {
 test.describe("Signed in user flows", () => {
   test("Opens homepage when logged in", async ({ authenticatedPage: page, baseURL }) => {
     await page.goto(baseURL!);
-    await expect(page).toHaveURL("/");
+    await expect(page).toHaveURL("/ontdek");
   });
 
   test("Logs out successfully", async ({ authenticatedPage: page, baseURL }) => {
     await page.goto(baseURL!);
-    await expect(page).toHaveURL("/");
+    await expect(page).toHaveURL("/ontdek");
     await page.getByTestId("side-bar-hamburger-menu").click();
     await expect(page.getByText(process.env.TEST_USER_EMAIL!)).toBeVisible();
     await page.getByTestId("logout-button").click();
@@ -92,7 +92,7 @@ test.describe("Signup flows", () => {
     baseURL: string, 
     {
       formData = {},
-      expectedUrl = "/",
+      expectedUrl = "/ontdek",
       afterHomepageAssertions = (page) => Promise.resolve()
     }: SignupScenarioOptions = {}
   ): Promise<void> {

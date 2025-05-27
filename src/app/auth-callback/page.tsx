@@ -86,7 +86,7 @@ export default function AuthCallbackPage() {
             }
           }
           // Redirect to home page after successful authentication
-          router.push("/collection")
+          router.push("/")
         }, 800)
       } catch (err) {
         posthog?.captureException(err)
