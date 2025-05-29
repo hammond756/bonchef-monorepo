@@ -33,7 +33,7 @@ export default function FirstRecipePage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+    <div className="flex flex-1 flex-col items-center justify-center p-4">
       <div className="flex flex-col items-center gap-6 bg-white border border-slate-200 rounded-xl shadow-lg p-8 max-w-md w-full">
         <p className="text-lg text-center text-slate-700">
           Recepten toevoegen kan op drie manieren, zodat jouw hele collectie bij bonchef onder de pannen kunnen

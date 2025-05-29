@@ -101,7 +101,7 @@ export default function AuthCallbackPage() {
   }, [router, toast])
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex flex-1 items-center justify-center">
       {isLoading ? (
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Afronden...</h2>

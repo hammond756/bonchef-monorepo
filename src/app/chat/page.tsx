@@ -8,5 +8,9 @@ export default async function ChatPage() {
     if (!user) {
         redirect("/welcome")
     }
-    return <Chat />
+    return (
+        <main className="flex flex-col h-[calc(100vh-var(--top-bar-height))] overflow-hidden">
+            <Chat />
+        </main>
+    )
 }

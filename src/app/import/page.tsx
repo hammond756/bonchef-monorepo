@@ -2,7 +2,7 @@
 
 import { createClient } from "@/utils/supabase/client"
 import { redirect, useRouter } from "next/navigation"
-import { ImageIcon, LinkIcon, TextIcon } from "lucide-react"
+import { ImageIcon, LinkIcon, MessageSquarePlus, TextIcon } from "lucide-react"
 import { ImportButton } from "@/components/import-button"
 import { useEffect, useState } from "react"
 import { UrlDialog } from "@/components/url-dialog"
@@ -10,11 +10,13 @@ import { ImageDialog } from "@/components/image-dialog"
 import { TextDialog } from "@/components/text-dialog"
 import { generateRecipeFromImage, generateRecipeFromSnippet } from "@/actions/recipe-imports"
 import { saveRecipe, scrapeRecipe } from "@/actions/recipe-imports"
+import { useChatStore } from "@/lib/store/chat-store"
 
 export default function ImportPage() {
   const supabase = createClient()
   const [openDialog, setOpenDialog] = useState<null | "url" | "image" | "text">(null)
   const router = useRouter()
+  const { clearConversation } = useChatStore()
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -45,24 +47,33 @@ export default function ImportPage() {
     router.push(`/recipes/${id}`);
   }
 
+  const handleNewChat = () => {
+    clearConversation()
+    router.push("/chat")
+  }
+
   return (
-    <>
-    <div className="px-4 py-8 md:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold">Importeer een recept</h1>
-    </div>
-    <div className="flex flex-col items-center justify-center p-4">
-      <div className="flex flex-col items-center justify-center gap-4">
-        <ImportButton
-          onClick={() => setOpenDialog("url")} icon={<LinkIcon className="w-6 h-6 text-slate-600" />} backgroundColor="bg-slate-100" title="Recepten website" description="Plak een link uit de browser in de chat" />
-        <ImportButton
-          onClick={() => setOpenDialog("image")} icon={<ImageIcon className="w-6 h-6 text-purple-600" />} backgroundColor="bg-purple-100" title="Kookboek foto" description="Maak een foto van een kookboek" />
-        <ImportButton
-          onClick={() => setOpenDialog("text")} icon={<TextIcon className="w-6 h-6 text-blue-600" />} backgroundColor="bg-blue-100" title="Plak of schrijf tekst" description="Kopieer een tekst uit je notities" />
+    <div className="flex flex-1 flex-col px-4 space-y-4 pt-4">
+      <div className="flex flex-col items-center justify-center p-4">
+        <h1 className="text-2xl font-bold mb-4">Importeer een recept</h1>
+        <div className="flex flex-col items-center justify-center gap-4">
+          <ImportButton
+            className="bg-white"
+            onClick={() => setOpenDialog("url")} icon={<LinkIcon className="w-6 h-6 text-slate-600" />} backgroundColor="bg-slate-100" title="Site scannen" description="Plak een link naar een online recept" />
+          <ImportButton
+            className="bg-white"
+            onClick={() => setOpenDialog("image")} icon={<ImageIcon className="w-6 h-6 text-purple-600" />} backgroundColor="bg-purple-100" title="Kookboek scannen" description="Maak een foto van een kookboek" />
+          <ImportButton
+            className="bg-white"
+            onClick={() => setOpenDialog("text")} icon={<TextIcon className="w-6 h-6 text-blue-600" />} backgroundColor="bg-blue-100" title="Tekst invoeren" description="Kopieer een tekst uit je notities" />
+          <ImportButton
+            className="bg-white"
+            onClick={() => handleNewChat()} icon={<MessageSquarePlus className="w-6 h-6 text-green-600" />} backgroundColor="bg-green-100" title="Nieuw recept maken" description="Chat met AI om een recept te maken" />
+        </div>
+        <UrlDialog open={openDialog === "url"} onOpenChange={() => setOpenDialog(null)} onSubmit={submitUrl} />
+        <ImageDialog open={openDialog === "image"} onOpenChange={() => setOpenDialog(null)} onSubmit={submitImage} />
+        <TextDialog open={openDialog === "text"} onOpenChange={() => setOpenDialog(null)} onSubmit={submitText} />
       </div>
-      <UrlDialog open={openDialog === "url"} onOpenChange={() => setOpenDialog(null)} onSubmit={submitUrl} />
-      <ImageDialog open={openDialog === "image"} onOpenChange={() => setOpenDialog(null)} onSubmit={submitImage} />
-      <TextDialog open={openDialog === "text"} onOpenChange={() => setOpenDialog(null)} onSubmit={submitText} />
     </div>
-    </>
   )
 }

@@ -69,11 +69,11 @@ export default async function ProfilePage({ params }: {params: Promise<ProfilePa
   const recipes = await getPublicRecipesByUserId(profile.id);
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="flex flex-1 flex-col px-4 space-y-4 pt-4">
       <Suspense fallback={<RecipeGridSkeleton />}>
         <ProfileContent profile={profile} recipes={recipes} />
       </Suspense>
-    </main>
+    </div>
   );
 }
 

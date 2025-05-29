@@ -2,7 +2,6 @@
 
 import { useRef, useState, useEffect } from "react"
 import { v4 as uuidv4 } from "uuid"
-import { Link, FileText, ChevronDown, MessageSquare } from "lucide-react"
 import { ChatMessage } from "./chat-message"
 import { ChatInput, ChatInputHandle } from "./chat-input"
 import { QuickActions } from "./quick-actions"
@@ -65,21 +64,6 @@ export function Chat() {
       setGenerateRecipePrompt(null)
     }
   }
-
-  const quickActions = [
-    { 
-      icon: MessageSquare, 
-      label: "Stuur een bericht naar onze AI-chef",
-      onClick: () => {
-        const chatInput = document.querySelector("[data-testid='chat-input']") as HTMLTextAreaElement
-        if (chatInput) {
-          chatInput.focus()
-          setIsInputExpanded(true)
-          setInputPlaceholder("Schrijf hier wat je zou willen eten. Dit mag heel specifiek zijn, of breed en verkennend.")
-        }
-      }
-    }
-  ]
 
   function handleQuickPrompt(prompt: string) {
     handleSendMessage({ message: prompt, webContent: [] })
@@ -144,11 +128,11 @@ export function Chat() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-4rem)]">
-      <div className="flex-1 overflow-y-auto relative" ref={containerRef}>
+    <div className="flex flex-col flex-1 h-full">
+      <div className="flex-1 overflow-y-auto relative pb-[var(--chat-input-height)]" ref={containerRef}>
         {messages.length === 0 && !isHistoryLoading ? (
           <QuickActions 
-            actions={quickActions}
+            actions={[]}
             surpriseAction={handleSurpriseAction}
             onPromptClick={handleQuickPrompt}
             onFilterSelectionChange={handleFilterSelectionChange}
@@ -180,7 +164,7 @@ export function Chat() {
         )}
         {showScrollButton && <ShowMoreButton onClick={scrollToBottom} />}
       </div>
-      <div className="sticky bottom-0 w-full bg-white border-t border-gray-200">
+      <div className="fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 h-[var(--chat-input-height)]">
         {messages.length === 0 && hasSelectedFilters ? (
           <div className="p-4">
             <Button 

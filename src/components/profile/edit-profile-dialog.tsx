@@ -98,7 +98,7 @@ export function EditProfileDialog({
       }
     }}>
       <DialogTrigger asChild>
-        <Button variant="outline">Profiel bewerken</Button>
+        <Button variant="outline">Bewerken</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

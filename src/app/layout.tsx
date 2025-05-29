@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Montserrat, Lora } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { PostHogProvider } from "@/components/PostHogProvider";
+import { TopBar } from "@/components/layout/top-bar";
+import { TabBar } from "@/components/layout/tab-bar";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -37,8 +38,13 @@ export default async function RootLayout({
       <body className={`${montserrat.variable} ${lora.variable} antialiased bg-white`}>
         <PostHogProvider>
           <NuqsAdapter>
-            <Sidebar />
-            <main className="pt-16 h-dvh">{children}</main>
+            <div className="flex flex-col min-h-screen bg-slate-50">
+              <TopBar />
+              <main className="flex flex-grow overflow-y-auto w-full">
+                {children}
+              </main>
+              <TabBar />
+            </div>
             <Toaster />
           </NuqsAdapter>
         </PostHogProvider>

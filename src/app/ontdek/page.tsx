@@ -7,7 +7,7 @@ export const dynamic = "force-static";
 
 export default async function OntdekPage() {
   return (
-    <>
+    <div className="flex flex-1 flex-col" >
       <div className="px-4 py-8 md:px-6 lg:px-8">
         <h1 className="text-2xl font-bold">Community</h1>
       </div>
@@ -15,6 +15,6 @@ export default async function OntdekPage() {
       <Suspense fallback={<PublicRecipeTimelineSkeleton />}>
         <PublicRecipeTimeline />
       </Suspense>
-    </>
+    </div>
   )
 } 

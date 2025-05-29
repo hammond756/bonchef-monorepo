@@ -115,7 +115,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <div className="container mx-auto max-w-4xl">
+    <div className="flex flex-1 flex-col">
       <RecipeDetail 
         variant="saved"
         recipe={parsedRecipe}

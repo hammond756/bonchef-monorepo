@@ -140,11 +140,11 @@ function RecipeGridSkeleton() {
 
 export default function CollectionPage() {
   return (
-    <main className="container mx-auto px-4 py-8 space-y-4">
+    <div className="flex flex-1 flex-col px-4 space-y-4 pt-4 pb-10">
       <ViewProfileAlert />
       <Suspense fallback={<RecipeGridSkeleton />}>
         <RecipesSection />
       </Suspense>
-    </main>
+    </div>
   )
 }
