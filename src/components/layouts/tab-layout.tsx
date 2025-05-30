@@ -13,12 +13,12 @@ export const TabLayout = ({
   tabBarContent 
 }: TabLayoutProps) => {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <TopBar>
         {topBarContent}
       </TopBar>
       
-      <main className="flex-1">
+      <main className="flex flex-1">
         {children}
       </main>
       

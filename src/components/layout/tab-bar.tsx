@@ -16,12 +16,6 @@ export function TabBar({ children, className }: TabBarProps) {
     const pathname = usePathname()
     const { isVisible } = useScrollDirection()
 
-    const pagesWithBottomBar = ["/collection", "/ontdek", "/import"]
-
-    if (!pagesWithBottomBar.includes(pathname)) {
-        return null
-    }
-
     const defaultContent = (
         <>
             <Link
