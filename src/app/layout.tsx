@@ -4,8 +4,6 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { PostHogProvider } from "@/components/PostHogProvider";
-import { TopBar } from "@/components/layout/top-bar";
-import { TabBar } from "@/components/layout/tab-bar";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -28,23 +26,25 @@ export const metadata: Metadata = {
   description: "Wat eten we vandaag?",
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover', // Important for safe area handling
+};
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={`${montserrat.variable} ${lora.variable} antialiased bg-white`}>
+    <html lang="en" className="h-full">
+      <body className={`${montserrat.variable} ${lora.variable} antialiased h-full overflow-x-hidden`}>
         <PostHogProvider>
           <NuqsAdapter>
-            <div className="flex flex-col min-h-screen bg-slate-50">
-              <TopBar />
-              <main className="flex flex-grow overflow-y-auto w-full">
-                {children}
-              </main>
-              <TabBar />
-            </div>
+            {children}
             <Toaster />
           </NuqsAdapter>
         </PostHogProvider>
