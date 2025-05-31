@@ -101,6 +101,18 @@ file_size_limit = "50MiB"
 allowed_mime_types = ["image/png", "image/jpeg"]
 objects_path = "./recipe-images"
 
+[storage.buckets.profile_avatars]
+public = true
+file_size_limit = "50MiB"
+allowed_mime_types = ["image/png", "image/jpeg"]
+objects_path = "./profile_avatars"
+
+[storage.buckets.chat-images]
+public = false
+file_size_limit = "50MiB"
+allowed_mime_types = ["image/png", "image/jpeg"]
+objects_path = "./chat-images"
+
 [auth]
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
