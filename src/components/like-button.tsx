@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useLikedRecipes } from "@/hooks/use-liked-recipes"
 import { cn } from "@/lib/utils"
 
-type LikeButtonSize = "sm" | "md" | "lg" | "2xl"
+type LikeButtonSize = "xs" | "sm" | "md" | "lg" | "2xl"
 
 interface LikeButtonProps {
   recipeId: string
@@ -24,8 +24,7 @@ export function LikeButton({
   recipeId,
   initialLiked = false,
   initialLikeCount = 0,
-  variant = "solid",
-  buttonSize = "sm",
+  buttonSize = "md",
   className: propsClassName,
   showCount = true,
 }: LikeButtonProps) {
@@ -67,14 +66,15 @@ export function LikeButton({
     }
   }
 
-  const sizeStyles = {
-    sm: { padding: "px-3 py-2", icon: "h-4 w-4", text: "text-xs" },
-    md: { padding: "px-4 py-2.5", icon: "h-5 w-5", text: "text-sm" },
-    lg: { padding: "px-5 py-3", icon: "h-6 w-6", text: "text-base" },
-    "2xl": { padding: "px-6 py-3.5", icon: "h-8 w-8", text: "text-lg" },
+  const sizeStylesDefinition = {
+    xs: { button: "h-10 w-10", icon: "h-5 w-5", text: "text-[10px]" },
+    sm: { button: "h-9 w-9", icon: "h-5 w-5", text: "text-xs" },
+    md: { button: "h-12 w-12", icon: "h-6 w-6", text: "text-sm" },
+    lg: { button: "h-14 w-14", icon: "h-7 w-7", text: "text-base" },
+    "2xl": { button: "h-16 w-16", icon: "h-8 w-8", text: "text-lg" },
   }
 
-  const currentSizeStyles = sizeStyles[buttonSize]
+  const currentSizeStyles = sizeStylesDefinition[buttonSize]
 
   return (
     <div className="flex flex-col items-center space-y-1">
@@ -97,9 +97,10 @@ export function LikeButton({
         }}
         aria-disabled={isLoading}
         aria-label={isLiked ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"}
-        data-testid="like-recipe-button"
+        data-testid="like-recipe-button-icon"
         className={cn(
-          "flex items-center justify-center h-12 w-12 rounded-full cursor-pointer",
+          "flex items-center justify-center rounded-full cursor-pointer",
+          currentSizeStyles.button,
           "bg-white/80 hover:bg-white/95",
           "focus:outline-none",
           isLoading && "opacity-50 cursor-not-allowed",
@@ -108,16 +109,18 @@ export function LikeButton({
       >
         <Heart
           className={cn(
-            "h-6 w-6",
+            currentSizeStyles.icon,
             isLiked ? "text-red-500" : "text-gray-700"
           )}
           fill={isLiked ? "currentColor" : "none"}
         />
       </div>
 
-      {showCount && (
+      {showCount && likeCount > 0 && (
         <div className={cn(
-          "text-white text-xs font-medium drop-shadow-sm"
+          "px-2 py-0.5 rounded-full font-medium",
+          "bg-gray-700/80 text-white",
+          currentSizeStyles.text
         )} data-testid="like-count">
           {likeCount}
         </div>

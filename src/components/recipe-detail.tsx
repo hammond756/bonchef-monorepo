@@ -11,7 +11,8 @@ import { User } from "@supabase/supabase-js";
 import { LikeButton } from "./like-button";
 import React, { useState } from "react";
 import { ClaimRecipeButton } from "./claim-recipe-button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { AppTabsList } from "@/components/ui/app-tabs";
 import { ProfileImage } from "@/components/ui/profile-image";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -52,6 +53,14 @@ function RecipeMetadata({
 }: RecipeMetadataProps & { user?: User }) {
   return (
     <div className="px-4 space-y-2 py-1.5">
+      {recipe.profiles && (
+        <Link href={`/profiles/${createProfileSlug(recipe.profiles!.display_name!, recipe.profiles!.id)}`}>
+          <p className="text-sm text-gray-500 hover:underline">
+            {recipe.profiles.display_name}
+          </p>
+        </Link>
+      )}
+
       <div className="flex justify-between items-center text-sm text-gray-600">
         <div className="flex items-center gap-1.5">
           <Clock className="h-5 w-5" />
@@ -127,6 +136,19 @@ interface SavedRecipeDetailProps extends BaseRecipeDetailProps {
 type RecipeDetailProps = GeneratedRecipeDetailProps | SavedRecipeDetailProps;
 
 export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
+  // Log de profiel data om te debuggen
+  if (variant === "saved" && recipe.profiles) {
+    console.log("[RecipeDetail] Profiles data:", JSON.stringify((recipe as RecipeRead).profiles, null, 2));
+  } else if (variant === "saved") {
+    console.log("[RecipeDetail] Profiles data is missing or undefined.");
+  }
+
+  const detailTabs = [
+    { value: "ing", label: "Ingrediënten" },
+    { value: "ins", label: "Bereiding" },
+    { value: "nutr", label: "Voeding" },
+  ];
+
   return (
     <>
       {/* De ClaimRecipeButton wordt verplaatst naar de gepadde content hieronder */}
@@ -178,7 +200,7 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                 )}
               </div>
               {/* Actieknoppen op afbeelding */}
-              <div className="absolute bottom-4 right-4 flex flex-col items-center space-y-1">
+              <div className="absolute bottom-4 right-4 flex flex-col items-center space-y-2">
                 <ShareRecipeButton 
                   title={recipe.title} 
                   text={`Bekijk dit recept: ${recipe.title}`}
@@ -229,28 +251,16 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
           />}
 
           <div className="mt-8">
-            <Tabs defaultValue="ing">
-              <TabsList className="flex border-b border-gray-200 bg-green-50 rounded-lg p-1">
-                <TabsTrigger 
-                  value="ing" 
-                  className="flex-1 py-3 px-2 text-base transition-all duration-200 relative text-gray-500 font-medium hover:text-green-600 data-[state=active]:text-green-700 data-[state=active]:font-semibold data-[state=active]:border-b-2 data-[state=active]:border-green-700 data-[state=active]:bg-white data-[state=active]:rounded-md data-[state=active]:shadow-sm"
-                >
-                  Ingrediënten
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="ins" 
-                  className="flex-1 py-3 px-2 text-base transition-all duration-200 relative text-gray-500 font-medium hover:text-green-600 data-[state=active]:text-green-700 data-[state=active]:font-semibold data-[state=active]:border-b-2 data-[state=active]:border-green-700 data-[state=active]:bg-white data-[state=active]:rounded-md data-[state=active]:shadow-sm"
-                >
-                  Bereiding
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="nutr" 
-                  className="flex-1 py-3 px-2 text-base transition-all duration-200 relative text-gray-500 font-medium hover:text-green-600 data-[state=active]:text-green-700 data-[state=active]:font-semibold data-[state=active]:border-b-2 data-[state=active]:border-green-700 data-[state=active]:bg-white data-[state=active]:rounded-md data-[state=active]:shadow-sm"
-                >
-                  Voeding
-                </TabsTrigger>
-              </TabsList>
+            <Tabs 
+              defaultValue="ing"
+              // className for Tabs root can be added here if needed
+            >
+              <AppTabsList 
+                tabs={detailTabs}
+                // tabsListClassName="bg-green-50" // This prop is now removed
+              />
 
+              {/* TabsContent needs to be managed here, outside AppTabs */}
               <TabsContent value="ing" className="pt-6">
                 <InteractiveIngredientsList 
                   ingredientGroups={recipe.ingredients || []}

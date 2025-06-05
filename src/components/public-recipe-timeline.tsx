@@ -65,11 +65,11 @@ export function PublicRecipeTimeline() {
 
 
                 {/* Right-aligned content: Like Button and Profile Image */}
-                <div className="absolute bottom-2 right-0 flex flex-col items-center">
+                <div className="absolute bottom-2 right-4 flex flex-col items-center space-y-2">
                   <LikeButton
                     variant="solid"
                     className="text-white/70"
-                    buttonSize="2xl"
+                    buttonSize="xs"
                     recipeId={recipe.id}
                     initialLiked={recipe.is_liked_by_current_user}
                     initialLikeCount={recipe.like_count || 0}

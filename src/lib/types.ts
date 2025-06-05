@@ -27,11 +27,8 @@ export const unitEnum = z.enum([
 ]);
 
 export const IngredientSchema = z.object({
-  quantity: z.object({
-    type: z.literal("range"),
-    low: z.number(),
-    high: z.number(),
-  }),
+  id: z.string().optional(),
+  quantity: z.object({ type: z.literal("range"), low: z.number(), high: z.number() }),
   unit: unitEnum,
   description: z.string(),
 });
