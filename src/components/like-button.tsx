@@ -116,7 +116,7 @@ export function LikeButton({
         />
       </div>
 
-      {showCount && likeCount > 0 && (
+      {showCount && (
         <div className={cn(
           "text-white text-xs font-medium drop-shadow-sm",
           currentSizeStyles.text
