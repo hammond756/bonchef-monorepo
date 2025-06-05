@@ -1,15 +1,13 @@
-import { Ingredient, RecipeRead, GeneratedRecipe } from "@/lib/types";
+import { RecipeRead, GeneratedRecipe } from "@/lib/types";
 import Image from "next/image";
-import { Clock, Users, Globe, Lock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { PencilIcon } from "lucide-react";
 import Link from "next/link";
-import { createProfileSlug, formatIngredientLine, parseDescription } from "@/lib/utils";
+import { createProfileSlug, parseDescription } from "@/lib/utils";
 import { User } from "@supabase/supabase-js";
 import { LikeButton } from "./like-button";
-import React, { useState } from "react";
+import React from "react";
 import { ClaimRecipeButton } from "./claim-recipe-button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { AppTabsList } from "@/components/ui/app-tabs";
@@ -53,14 +51,6 @@ function RecipeMetadata({
 }: RecipeMetadataProps & { user?: User }) {
   return (
     <div className="px-4 space-y-2 py-1.5">
-      {recipe.profiles && (
-        <Link href={`/profiles/${createProfileSlug(recipe.profiles!.display_name!, recipe.profiles!.id)}`}>
-          <p className="text-sm text-gray-500 hover:underline">
-            {recipe.profiles.display_name}
-          </p>
-        </Link>
-      )}
-
       <div className="flex justify-between items-center text-sm text-gray-600">
         <div className="flex items-center gap-1.5">
           <Clock className="h-5 w-5" />
@@ -207,7 +197,7 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                 />
                 {user && recipe.id && (
                   <LikeButton
-                    buttonSize="lg"
+                    buttonSize="md"
                     recipeId={recipe.id!}
                     initialLiked={recipe.is_liked_by_current_user}
                     initialLikeCount={recipe.like_count || 0}
@@ -239,7 +229,7 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
             recipeId={recipe.id}
           />}
           
-          { (variant !== "saved" || !(recipe as RecipeRead).thumbnail) && 
+          { (variant !== "saved" || recipe.thumbnail) && 
             <h1 className="text-3xl font-bold text-gray-900 pb-4" data-testid="recipe-title"> {/* px-4 hier verwijderd, pb-4 blijft */} 
               {recipe.title}
             </h1>

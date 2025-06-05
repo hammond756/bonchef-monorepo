@@ -118,8 +118,7 @@ export function LikeButton({
 
       {showCount && likeCount > 0 && (
         <div className={cn(
-          "px-2 py-0.5 rounded-full font-medium",
-          "bg-gray-700/80 text-white",
+          "text-white text-xs font-medium drop-shadow-sm",
           currentSizeStyles.text
         )} data-testid="like-count">
           {likeCount}
