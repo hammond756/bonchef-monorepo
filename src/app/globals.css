@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Lora:wght@400;500;600;700&display=swap");
 @import 'tailwindcss';
 
 @plugin 'tailwindcss-animate';
@@ -109,6 +110,8 @@
 html {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable; /* Reserve space for scrollbar */
+  overflow-y: scroll; /* Always show vertical scrollbar */
 }
 
 body {
@@ -136,11 +139,11 @@ input, select, textarea {
 
 @layer utilities {
   body {
-    font-family: var(--font-montserrat), sans-serif;
+    font-family: 'Montserrat', sans-serif;
   }
   /* Add rules for headings */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-lora), serif; /* Lora for headings, with serif fallback */
+    font-family: 'Lora', serif;
   }
 }
 
@@ -203,7 +206,10 @@ input, select, textarea {
   }
   /* Add rules for headings in base layer as well for consistency */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-lora), serif; /* Lora for headings, with serif fallback */
+    font-family: 'Lora', serif;
+  }
+  .font-serif {
+    font-family: 'Lora', serif;
   }
 }
 
@@ -213,24 +219,9 @@ input, select, textarea {
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-montserrat), sans-serif; /* Montserrat for body */
+    font-family: 'Montserrat', sans-serif;
   }
-  /* Add rules for headings here too if this is the overriding base style block */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-lora), serif; /* Lora for headings, with serif fallback */
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-    /* Montserrat for body is likely already set by the previous @layer base body rule */
-  }
-  /* Add rules for headings here too if this is the overriding base style block */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-lora), serif; /* Lora for headings, with serif fallback */
+  .font-serif {
+    font-family: 'Lora', serif;
   }
 }

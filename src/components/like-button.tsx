@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useLikedRecipes } from "@/hooks/use-liked-recipes"
 import { cn } from "@/lib/utils"
 
-type LikeButtonSize = "sm" | "md" | "2xl"
+type LikeButtonSize = "sm" | "md" | "lg" | "2xl"
 
 interface LikeButtonProps {
   recipeId: string
@@ -17,6 +17,7 @@ interface LikeButtonProps {
   variant?: "solid" | "outline"
   buttonSize?: LikeButtonSize
   className?: string
+  showCount?: boolean
 }
 
 export function LikeButton({
@@ -26,6 +27,7 @@ export function LikeButton({
   variant = "solid",
   buttonSize = "sm",
   className: propsClassName,
+  showCount = true,
 }: LikeButtonProps) {
   const [isLiked, setIsLiked] = useState(initialLiked)
   const [likeCount, setLikeCount] = useState(initialLikeCount)
@@ -68,64 +70,58 @@ export function LikeButton({
   const sizeStyles = {
     sm: { padding: "px-3 py-2", icon: "h-4 w-4", text: "text-xs" },
     md: { padding: "px-4 py-2.5", icon: "h-5 w-5", text: "text-sm" },
+    lg: { padding: "px-5 py-3", icon: "h-6 w-6", text: "text-base" },
     "2xl": { padding: "px-6 py-3.5", icon: "h-8 w-8", text: "text-lg" },
   }
 
   const currentSizeStyles = sizeStyles[buttonSize]
 
   return (
-    <div
-      role="button"
-      tabIndex={isLoading ? -1 : 0}
-      onClick={(e: React.MouseEvent) => {
-        if (isLoading) return
-        e.preventDefault()
-        e.stopPropagation()
-        handleLike()
-      }}
-      onKeyDown={(e: React.KeyboardEvent) => {
-        if (isLoading) return
-        if (e.key === "Enter" || e.key === " ") {
+    <div className="flex flex-col items-center space-y-1">
+      <div
+        role="button"
+        tabIndex={isLoading ? -1 : 0}
+        onClick={(e: React.MouseEvent) => {
+          if (isLoading) return
           e.preventDefault()
           e.stopPropagation()
           handleLike()
-        }
-      }}
-      aria-disabled={isLoading}
-      aria-label={isLiked ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"}
-      data-testid="like-recipe-button"
-      className={cn(
-        // Base structure and interaction
-        "flex flex-col items-center justify-center h-auto cursor-pointer",
-        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2", // Common focus style
-        currentSizeStyles.padding, // Size-dependent padding
-
-        isLoading && "opacity-50 cursor-not-allowed", // Loading state
-
-        // Apply the passed className for color inheritance, especially for not-liked state
-        propsClassName,
-
-        // Override the text color to red if the button is liked
-        isLiked && "text-red-500",
-      )}
-    >
-      <Heart
+        }}
+        onKeyDown={(e: React.KeyboardEvent) => {
+          if (isLoading) return
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            e.stopPropagation()
+            handleLike()
+          }
+        }}
+        aria-disabled={isLoading}
+        aria-label={isLiked ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"}
+        data-testid="like-recipe-button"
         className={cn(
-          currentSizeStyles.icon,
-          "mb-0.5",
-          // Color is inherited from parent div's text color, which is set by propsClassName or 'text-white' for liked state
-        )}
-        fill={isLiked || variant === "solid" ? "currentColor" : "none"}
-        strokeOpacity={variant === "outline" && !isLiked ? 1 : 0}
-        strokeWidth={variant === "outline" && !isLiked ? 1.5 : 0} // Using 1.5 for a slightly thinner outline, lucide default is 2
-      />
-      <span
-        className={cn(
-          currentSizeStyles.text
+          "flex items-center justify-center h-12 w-12 rounded-full cursor-pointer",
+          "bg-white/80 hover:bg-white/95",
+          "focus:outline-none",
+          isLoading && "opacity-50 cursor-not-allowed",
+          propsClassName
         )}
       >
-        {likeCount}
-      </span>
+        <Heart
+          className={cn(
+            "h-6 w-6",
+            isLiked ? "text-red-500" : "text-gray-700"
+          )}
+          fill={isLiked ? "currentColor" : "none"}
+        />
+      </div>
+
+      {showCount && (
+        <div className={cn(
+          "text-white text-xs font-medium drop-shadow-sm"
+        )} data-testid="like-count">
+          {likeCount}
+        </div>
+      )}
     </div>
   )
 }

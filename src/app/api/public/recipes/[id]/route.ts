@@ -7,13 +7,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  
   const supabase = await createClient();
 
   const { data: recipe, error: recipeError } = await supabase
     .from("recipe_creation_prototype")
     .select(`
       *,
-      profiles!recipe_creation_prototype_user_id_fkey(display_name, id),
+      profiles!recipe_creation_prototype_user_id_fkey(display_name, id, avatar),
       recipe_likes(count),
       is_liked_by_current_user
     `)

@@ -9,8 +9,15 @@ import Link from "next/link";
 import { createProfileSlug, formatIngredientLine, parseDescription } from "@/lib/utils";
 import { User } from "@supabase/supabase-js";
 import { LikeButton } from "./like-button";
-import React from "react";
+import React, { useState } from "react";
 import { ClaimRecipeButton } from "./claim-recipe-button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProfileImage } from "@/components/ui/profile-image";
+import { format } from "date-fns";
+import { nl } from "date-fns/locale";
+import { InteractiveIngredientsList } from "@/components/interactive-ingredients-list";
+import { RecipeInstructions, InstructionStep } from "./recipe-instructions";
+import { ShareRecipeButton } from "./share-recipe-button";
 
 interface RecipeThumbnailProps {
   title: string;
@@ -37,74 +44,47 @@ function RecipeThumbnail({ title, thumbnail, showThumbnail = true }: RecipeThumb
 
 interface RecipeMetadataProps {
   recipe: RecipeRead
-  user?: User;
 }
 
 function RecipeMetadata({ 
   recipe,
   user
-}: RecipeMetadataProps) {
+}: RecipeMetadataProps & { user?: User }) {
   return (
-    <div className="px-4 space-y-4">
-      <div className="flex justify-between items-center">
-        {recipe.profiles && (
-          <Link href={`/profiles/${createProfileSlug(recipe.profiles.display_name, recipe.profiles.id)}`}>
-            <p className="text-gray-500">Door: <span className="underline">{recipe.profiles.display_name}</span></p>
-          </Link>
-        )}
-        {user && recipe.id && (
-          <LikeButton
-            variant="outline"
-            className="text-gray-700"
-            recipeId={recipe.id} 
-            initialLiked={recipe.is_liked_by_current_user} 
-            initialLikeCount={recipe.like_count || 0}
-          />
-        )}
-      </div>
-
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2 text-gray-500">
+    <div className="px-4 space-y-2 py-1.5">
+      <div className="flex justify-between items-center text-sm text-gray-600">
+        <div className="flex items-center gap-1.5">
           <Clock className="h-5 w-5" />
           <span>{recipe.total_cook_time_minutes} min</span>
         </div>
-        <div className="flex items-center gap-2 text-gray-500">
-          <Users className="h-5 w-5" />
-          <span>{recipe.n_portions} personen</span>
-        </div>
-        <Badge variant={recipe.is_public ? "default" : "secondary"}>
-          {recipe.is_public ? (
-            <>
-              <Globe className="h-4 w-4 mr-1" />
-              Openbaar
-            </>
-          ) : (
-            <>
-              <Lock className="h-4 w-4 mr-1" />
-              Privé
-            </>
-          )}
-        </Badge>
+        
+        <EditRecipeButton 
+          user={user} 
+          ownerId={recipe.user_id} 
+          recipeId={recipe.id} 
+        />
       </div>
 
-      <div className="prose prose-lg max-w-none">
-        {parseDescription(recipe.description).map((part, index) => {
-          if (part.type === "url") {
-            return (
-              <a
-                key={index}
-                href={part.content}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:text-blue-700 underline"
-              >
-                {part.content}
-              </a>
-            );
-          }
-          return <React.Fragment key={index}>{part.content}</React.Fragment>;
-        })}
-      </div>
+      {recipe.description && (
+        <div className="prose prose-sm max-w-none pt-1.5 text-gray-600">
+          {parseDescription(recipe.description).map((part, index) => {
+            if (part.type === "url") {
+              return (
+                <a
+                  key={index}
+                  href={part.content}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-700 underline"
+                >
+                  {part.content}
+                </a>
+              );
+            }
+            return <React.Fragment key={index}>{part.content}</React.Fragment>;
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -119,63 +99,15 @@ function EditRecipeButton({ user, ownerId, recipeId }: EditRecipeButtonProps) {
   if (!user || !ownerId || !recipeId || user.id !== ownerId) return null;
 
   return (
-    <div className="flex justify-center mb-4">
-      <Link
-        href={`/edit/${recipeId}`}
-        className="inline-flex items-center gap-2 text-blue-500 hover:text-blue-700"
-      >
-        <PencilIcon className="h-4 w-4" />
-        <span>Bewerk recept</span>
-      </Link>
-    </div>
+    <Link
+      href={`/edit/${recipeId}`}
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
+    >
+      <PencilIcon className="h-3.5 w-3.5" />
+      <span>Bewerk recept</span>
+    </Link>
   );
 }
-
-interface RecipeIngredientsProps {
-  ingredients: { ingredients: Ingredient[]; name: string }[];
-}
-
-function RecipeIngredients({ ingredients }: RecipeIngredientsProps) {
-  return (
-    <Card className="p-6">
-      <h2 className="text-2xl font-semibold mb-4">Ingrediënten</h2>
-      <Separator className="mb-4" />
-      {ingredients.map((group: any, index: number) => (
-        <div key={index} className="mb-6">
-          {group.name !== "no_group" && <h3 className="font-medium mb-2">{group.name}</h3>}
-          <ul className="space-y-2">
-            {group.ingredients && group.ingredients.map((ingredient: any, idx: number) => (
-              <li key={idx} className="text-muted-foreground">
-                {ingredient.description && formatIngredientLine(ingredient, 1)}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </Card>
-  );
-}
-
-interface RecipeInstructionsProps {
-  instructions: string[];
-}
-
-function RecipeInstructions({ instructions }: RecipeInstructionsProps) {
-  return (
-    <Card className="p-6">
-      <h2 className="text-2xl font-semibold mb-4">Instructies</h2>
-      <Separator className="mb-4" />
-      <ol className="space-y-4 list-decimal list-inside">
-        {instructions.map((instruction: string, index: number) => (
-          <li key={index} className="text-muted-foreground">
-            {instruction}
-          </li>
-        ))}
-      </ol>
-    </Card>
-  );
-}
-
 
 interface BaseRecipeDetailProps {
   variant: "generated" | "saved";
@@ -197,35 +129,151 @@ type RecipeDetailProps = GeneratedRecipeDetailProps | SavedRecipeDetailProps;
 export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
   return (
     <>
-      {variant === "saved" && <ClaimRecipeButton
-        user={user}
-        ownerId={recipe.user_id}
-        recipeId={recipe.id}
-      />}
+      {/* De ClaimRecipeButton wordt verplaatst naar de gepadde content hieronder */}
       
-      <div className="container mx-auto max-w-4xl">
-        {variant === "saved" && <RecipeThumbnail
-          title={recipe.title}
-          thumbnail={recipe.thumbnail}
-          showThumbnail={true}
-        />}
+      <div className="container mx-auto max-w-4xl"> {/* Hoofdcontainer nu weer met 'container' class, zonder px-4 */}
+        {variant === "saved" && recipe.thumbnail && (
+          <div className="relative aspect-[3/4] w-full overflow-hidden mb-6"> {/* Afbeelding wrapper, geen -mx-4, geen rounded-lg */}
+            {recipe.thumbnail && (
+              <Image
+                src={recipe.thumbnail!}
+                alt={recipe.title}
+                fill
+                className="object-cover"
+                sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 600px"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
-        <h1 className="text-3xl font-bold text-gray-900 px-4 pb-4" data-testid="recipe-title">{recipe.title}</h1>
+            <div className="absolute bottom-0 left-0 right-0 p-4 flex justify-between items-end text-white">
+              {/* Titel en chef info op afbeelding */}
+              <div className="flex flex-col pr-16">
+                <Link
+                  href={`/recipes/${recipe.id}`}
+                  className="block mb-1"
+                >
+                  <h1 className="text-2xl md:text-4xl font-extrabold line-clamp-2 drop-shadow-lg" data-testid="recipe-title">
+                    {recipe.title}
+                  </h1>
+                </Link>
+                {recipe.profiles && (
+                  <Link 
+                    href={`/profiles/~${recipe.profiles.id}`}
+                    className="block text-xs group/profile"
+                  >
+                    <span className="font-medium group-hover/profile:underline">
+                      {recipe.profiles.display_name || "Anonieme chef"}
+                    </span>
+                    {recipe.created_at && (
+                      <>
+                        <span className="mx-2 text-xs text-gray-300 group-hover/profile:text-primary transition-colors">
+                          |
+                        </span>
+                        <span className="text-xs text-gray-300 group-hover/profile:text-primary transition-colors">
+                          {format(new Date((recipe as RecipeRead).created_at!), "d MMM yyyy", { locale: nl })}
+                        </span>
+                      </>
+                    )}
+                  </Link>
+                )}
+              </div>
+              {/* Actieknoppen op afbeelding */}
+              <div className="absolute bottom-4 right-4 flex flex-col items-center space-y-1">
+                <ShareRecipeButton 
+                  title={recipe.title} 
+                  text={`Bekijk dit recept: ${recipe.title}`}
+                />
+                {user && recipe.id && (
+                  <LikeButton
+                    buttonSize="lg"
+                    recipeId={recipe.id!}
+                    initialLiked={recipe.is_liked_by_current_user}
+                    initialLikeCount={recipe.like_count || 0}
+                  />
+                )}
+                {recipe.profiles && (
+                  <Link 
+                    href={`/profiles/~${recipe.profiles.id}`}
+                    className="group/profile rounded-full h-12 w-12 flex items-center justify-center bg-white/80 hover:bg-white/95 transition-colors duration-200"
+                  >
+                    <ProfileImage
+                      src={recipe.profiles.avatar}
+                      name={recipe.profiles.display_name || "Anonieme chef"}
+                      size={46}
+                      className="border-2 border-transparent group-hover/profile:border-primary transition-colors"
+                    />
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
-        {variant === "saved" && <RecipeMetadata
-          recipe={recipe}
-          user={user}
-        />}
+        {/* Nieuwe wrapper voor alle content die padding nodig heeft */}
+        <div className="px-4">
+          {variant === "saved" && <ClaimRecipeButton
+            user={user}
+            ownerId={recipe.user_id}
+            recipeId={recipe.id}
+          />}
+          
+          { (variant !== "saved" || !(recipe as RecipeRead).thumbnail) && 
+            <h1 className="text-3xl font-bold text-gray-900 pb-4" data-testid="recipe-title"> {/* px-4 hier verwijderd, pb-4 blijft */} 
+              {recipe.title}
+            </h1>
+          }
 
-        {variant === "saved" && <EditRecipeButton
-          user={user}
-          ownerId={recipe.user_id}
-          recipeId={recipe.id}
-        />}
+          {variant === "saved" && <RecipeMetadata
+            recipe={recipe}
+            user={user}
+          />}
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <RecipeIngredients ingredients={recipe.ingredients || []} />
-          <RecipeInstructions instructions={recipe.instructions || []} />
+          <div className="mt-8">
+            <Tabs defaultValue="ing">
+              <TabsList className="flex border-b border-gray-200 bg-green-50 rounded-lg p-1">
+                <TabsTrigger 
+                  value="ing" 
+                  className="flex-1 py-3 px-2 text-base transition-all duration-200 relative text-gray-500 font-medium hover:text-green-600 data-[state=active]:text-green-700 data-[state=active]:font-semibold data-[state=active]:border-b-2 data-[state=active]:border-green-700 data-[state=active]:bg-white data-[state=active]:rounded-md data-[state=active]:shadow-sm"
+                >
+                  Ingrediënten
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="ins" 
+                  className="flex-1 py-3 px-2 text-base transition-all duration-200 relative text-gray-500 font-medium hover:text-green-600 data-[state=active]:text-green-700 data-[state=active]:font-semibold data-[state=active]:border-b-2 data-[state=active]:border-green-700 data-[state=active]:bg-white data-[state=active]:rounded-md data-[state=active]:shadow-sm"
+                >
+                  Bereiding
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="nutr" 
+                  className="flex-1 py-3 px-2 text-base transition-all duration-200 relative text-gray-500 font-medium hover:text-green-600 data-[state=active]:text-green-700 data-[state=active]:font-semibold data-[state=active]:border-b-2 data-[state=active]:border-green-700 data-[state=active]:bg-white data-[state=active]:rounded-md data-[state=active]:shadow-sm"
+                >
+                  Voeding
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="ing" className="pt-6">
+                <InteractiveIngredientsList 
+                  ingredientGroups={recipe.ingredients || []}
+                  initialServings={recipe.n_portions || 1}
+                />
+              </TabsContent>
+              <TabsContent value="ins" className="pt-6">
+                <RecipeInstructions 
+                  instructions={((recipe.instructions as string[]) || []).map((text, index): InstructionStep => ({
+                    id: `instr-${index}-${variant === 'saved' ? recipe.id : 'generated'}`,
+                    text 
+                  }))}
+                />
+              </TabsContent>
+              <TabsContent value="nutr" className="pt-6">
+                <Card className="py-6 rounded-lg">
+                  <p className="text-center italic text-gray-400">
+                    Deze functionaliteit komt spoedig.
+                  </p>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </div>
     </>

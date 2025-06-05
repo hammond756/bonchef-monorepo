@@ -141,17 +141,16 @@ export const unitMap = {
 export function formatIngredientLine(
   ingredient: Ingredient,
   portionFactor: number,
-): string {
-  if (ingredient.quantity === undefined || ingredient.unit === undefined) {
-    return ingredient.description;
+): { quantity: string; description: string } | null {
+  if (!ingredient.quantity || !ingredient.unit) {
+    return { quantity: "", description: ingredient.description };
   }
 
   if (ingredient.quantity.low === 0 && ingredient.quantity.high === 0) {
-    return ingredient.description;
+    return { quantity: "", description: ingredient.description };
   }
 
   let newAmount = ingredient.quantity.low * portionFactor;
-
   let newUnit = ingredient.unit;
 
   if (
@@ -174,9 +173,18 @@ export function formatIngredientLine(
     newAmount = Math.ceil(newAmount / 5) * 5;
   }
 
+  const unit = unitMap[newUnit]
+
+  if (!unit) {
+    return { quantity: "", description: ingredient.description };
+  }
+
   const displayUnit =
-    newAmount < 2 ? unitMap[newUnit].nl.singular : unitMap[newUnit].nl.plural;
-  return `${formatQuantity(Math.round(newAmount * 100) / 100, { tolerance: 0.01 })} ${displayUnit} ${ingredient.description}`;
+    newAmount < 2 ? unit.nl.singular : unit.nl.plural;
+  
+  const quantityString = `${formatQuantity(Math.round(newAmount * 100) / 100, { tolerance: 0.01 })} ${displayUnit}`.trim();
+
+  return { quantity: quantityString, description: ingredient.description };
 }
 
 export function parseDescription(text: string): Array<{ type: "text" | "url"; content: string }> {
