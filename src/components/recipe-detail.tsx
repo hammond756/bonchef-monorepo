@@ -229,7 +229,7 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
             recipeId={recipe.id}
           />}
           
-          { (variant !== "saved" || recipe.thumbnail) && 
+          { (variant !== "saved" || !recipe.thumbnail) && 
             <h1 className="text-3xl font-bold text-gray-900 pb-4" data-testid="recipe-title"> {/* px-4 hier verwijderd, pb-4 blijft */} 
               {recipe.title}
             </h1>
