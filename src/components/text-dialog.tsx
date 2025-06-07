@@ -67,7 +67,7 @@ function TextForm({ onSuccessfullyAdded, onSubmit }: { onSuccessfullyAdded: () =
 export function TextDialog({ open, onOpenChange, onSubmit }: TextDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="top-[40%]">
         <DialogHeader>
           <DialogTitle>Plak tekst uit notities of WhatsApp</DialogTitle>
         </DialogHeader>

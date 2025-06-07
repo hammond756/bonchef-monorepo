@@ -114,7 +114,7 @@ function UrlForm({ onSubmit }: { onSubmit: (validFormData: { url: string }) => v
 export function UrlDialog({ open, onOpenChange, onSubmit }: UrlDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="top-[40%]">
         <DialogHeader>
           <DialogTitle>Voeg toe via blogpost link</DialogTitle>
         </DialogHeader>

@@ -109,7 +109,7 @@ function ImageForm({ onSubmit }: { onSubmit: (validFormData: { imageUrl: string 
 export function ImageDialog({ open, onOpenChange, onSubmit }: ImageDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="top-[40%]">
         <DialogHeader>
           <DialogTitle>Upload foto van kookboek</DialogTitle>
         </DialogHeader>
