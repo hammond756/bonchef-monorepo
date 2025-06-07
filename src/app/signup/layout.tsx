@@ -1,4 +1,4 @@
-import { TabLayout } from '@/components/layouts/tab-layout';
+import { BaseLayout } from '@/components/layouts/base-layout';
 
 export default function SignupLayout({
   children,
@@ -6,8 +6,8 @@ export default function SignupLayout({
   children: React.ReactNode;
 }) {
   return (
-    <TabLayout>
+    <BaseLayout>
       {children}
-    </TabLayout>
+    </BaseLayout>
   );
 }

@@ -1,6 +1,7 @@
 import { Chat } from "@/components/chat";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import { PageContentSpacer } from "@/components/layout/page-content-spacer";
 
 export default async function ChatPage() {
     const supabase = await createClient()
@@ -9,8 +10,11 @@ export default async function ChatPage() {
         redirect("/welcome")
     }
     return (
-        <main className="flex flex-col h-[calc(100vh-var(--top-bar-height))] overflow-hidden">
-            <Chat />
-        </main>
+        <>
+            <PageContentSpacer />
+            <main className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
+                <Chat />
+            </main>
+        </>
     )
 }

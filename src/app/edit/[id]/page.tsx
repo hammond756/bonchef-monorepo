@@ -2,6 +2,7 @@ import { getRecipe } from "@/app/recipes/[id]/actions";
 import { RecipeForm } from "@/components/recipe-form";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import { PageContentSpacer } from "@/components/layout/page-content-spacer";
 
 export default async function EditRecipePage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
@@ -25,9 +26,12 @@ export default async function EditRecipePage({ params }: { params: Promise<{ id:
   }
 
   return (
-    <main className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Recept bewerken</h1>
-      <RecipeForm recipe={recipe} recipeId={id} isPublic={recipe.is_public} />
-    </main>
+    <>
+      <PageContentSpacer />
+      <main className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-6">Recept bewerken</h1>
+        <RecipeForm recipe={recipe} recipeId={id} isPublic={recipe.is_public} />
+      </main>
+    </>
   );
 }

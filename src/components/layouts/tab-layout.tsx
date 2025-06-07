@@ -18,7 +18,7 @@ export const TabLayout = ({
         {topBarContent}
       </TopBar>
       
-      <main className="flex flex-1">
+      <main className="flex flex-1 justify-center">
         {children}
       </main>
       

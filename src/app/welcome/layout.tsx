@@ -7,8 +7,8 @@ export default function WelcomeLayout({
   children: React.ReactNode;
 }) {
   return (
-    <TabLayout>
+    <BaseLayout>
       {children}
-    </TabLayout>
+    </BaseLayout>
   );
 } 

@@ -40,10 +40,24 @@ export function Chat() {
   const [hasSelectedFilters, setHasSelectedFilters] = useState(false)
   const [selectedFiltersCount, setSelectedFiltersCount] = useState(0)
   const chatInputRef = useRef<ChatInputHandle>(null)
+  const chatInputContainerRef = useRef<HTMLDivElement>(null)
+  const [chatInputHeight, setChatInputHeight] = useState(0)
 
   const { containerRef, showScrollButton, scrollToBottom } = useScrollContainer({
     dependencies: [messages]
   })
+
+  useEffect(() => {
+    const element = chatInputContainerRef.current
+    if (element) {
+      setChatInputHeight(element.offsetHeight)
+      const resizeObserver = new ResizeObserver(() => {
+        setChatInputHeight(element.offsetHeight)
+      })
+      resizeObserver.observe(element)
+      return () => resizeObserver.disconnect()
+    }
+  }, [])
 
   // Directly handle filter result submission
   const [generateRecipePrompt, setGenerateRecipePrompt] = useState<string | null>(null)
@@ -129,7 +143,11 @@ export function Chat() {
 
   return (
     <div className="flex flex-col flex-1 h-full">
-      <div className="flex-1 overflow-y-auto relative pb-[var(--chat-input-height)]" ref={containerRef}>
+      <div 
+        className="flex-1 overflow-y-auto relative" 
+        ref={containerRef}
+        style={{ paddingBottom: chatInputHeight ? `${chatInputHeight}px` : 'var(--chat-input-height)' }}
+      >
         {messages.length === 0 && !isHistoryLoading ? (
           <QuickActions 
             actions={[]}
@@ -164,7 +182,10 @@ export function Chat() {
         )}
         {showScrollButton && <ShowMoreButton onClick={scrollToBottom} />}
       </div>
-      <div className="fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 h-[var(--chat-input-height)]">
+      <div 
+        ref={chatInputContainerRef}
+        className="fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200"
+      >
         {messages.length === 0 && hasSelectedFilters ? (
           <div className="p-4">
             <Button 

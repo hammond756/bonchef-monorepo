@@ -1,37 +1,33 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const AutoGrowingTextarea = React.forwardRef<
-HTMLTextAreaElement,
-React.ComponentProps<"textarea">
+  HTMLTextAreaElement,
+  React.ComponentProps<"textarea">
 >(({ 
   className, 
-  placeholder = "Type something...",
+  value,
   ...props 
 }, ref) => {
-  const [value, setValue] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const internalRef = useRef<HTMLTextAreaElement>(null);
+
+  // This allows the parent to have a ref to the textarea element
+  React.useImperativeHandle(ref, () => internalRef.current!, []);
 
   useEffect(() => {
-    if (textareaRef.current) {
+    if (internalRef.current) {
       // Reset height to auto to get the correct scrollHeight
-      textareaRef.current.style.height = 'auto';
+      internalRef.current.style.height = 'auto';
       // Set the height to match the content
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      internalRef.current.style.height = `${internalRef.current.scrollHeight}px`;
     }
   }, [value]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setValue(e.target.value);
-  };
-
   return (
     <Textarea
-      ref={textareaRef}
+      ref={internalRef}
       value={value}
-      onChange={handleChange}
-      placeholder={placeholder}
       className={cn(
         "min-h-[40px] resize-none overflow-hidden",
         className
@@ -41,5 +37,7 @@ React.ComponentProps<"textarea">
     />
   );
 });
+
+AutoGrowingTextarea.displayName = 'AutoGrowingTextarea';
 
 export default AutoGrowingTextarea;

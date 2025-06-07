@@ -43,11 +43,6 @@ async function fetchUrlContent(url: string): Promise<string> {
   return data.content
 }
 
-function autoResizeTextarea(element: HTMLTextAreaElement) {
-  element.style.height = "auto"
-  element.style.height = `${element.scrollHeight}px`
-}
-
 // Convert plain URLs to markdown links
 function convertUrlsToMarkdown(text: string): string {
   return text.replace(
@@ -146,13 +141,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
     })
   }, [message])
 
-  useEffect(() => {
-    // Resize textarea when message changes
-    if (textareaRef.current) {
-      autoResizeTextarea(textareaRef.current)
-    }
-  }, [message])
-
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = handleFileChange(e)
 
@@ -220,7 +208,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
   }
 
   function handleTextareaChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    autoResizeTextarea(e.target)
     setMessage(e.target.value)
   }
 
