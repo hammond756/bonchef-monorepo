@@ -25,6 +25,10 @@ This is a Next.js application using the App Router pattern, with Supabase for au
 - **Testing**: Playwright for E2E testing
 - **AI Integration**: OpenAI for chat and image generation
 
+### Seeding test data for Supabase
+
+An easy way to create a seed.sql file for Supabase is to simple create objects locally and dump the database. See this GH comment: https://github.com/orgs/supabase/discussions/9251#discussioncomment-6481081
+
 ### Project Structure
 
 - `/src/app`: Next.js App Router pages and API routes
