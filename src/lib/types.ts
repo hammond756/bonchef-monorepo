@@ -130,6 +130,7 @@ export type IntentResponse = z.infer<typeof IntentResponseSchema>;
 export type Message = z.infer<typeof ResponseMessage>;
 export type AgentResponse = Message[];
 
+
 export interface BaseMessage {
   type: "user" | "bot" | "bot_error" | "bot_loading";
   id: string | null;

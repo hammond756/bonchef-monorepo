@@ -4,7 +4,7 @@ import { Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { PencilIcon } from "lucide-react";
 import Link from "next/link";
-import { createProfileSlug, parseDescription } from "@/lib/utils";
+import { parseDescription } from "@/lib/utils";
 import { User } from "@supabase/supabase-js";
 import { LikeButton } from "./like-button";
 import React from "react";
@@ -17,29 +17,6 @@ import { nl } from "date-fns/locale";
 import { InteractiveIngredientsList } from "@/components/interactive-ingredients-list";
 import { RecipeInstructions, InstructionStep } from "./recipe-instructions";
 import { ShareRecipeButton } from "./share-recipe-button";
-
-interface RecipeThumbnailProps {
-  title: string;
-  thumbnail?: string;
-  showThumbnail?: boolean;
-}
-
-function RecipeThumbnail({ title, thumbnail, showThumbnail = true }: RecipeThumbnailProps) {
-  if (!showThumbnail || !thumbnail) return null;
-  
-  return (
-    <div className="relative aspect-4/3 w-full mb-6 overflow-hidden">
-      <Image
-        data-testid="recipe-image"
-        src={thumbnail}
-        alt={title}
-        fill
-        className="object-cover"
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-      />
-    </div>
-  );
-}
 
 interface RecipeMetadataProps {
   recipe: RecipeRead

@@ -5,7 +5,7 @@ test.describe("Chat interface", () => {
     await page.goto(baseURL!);
   });
 
-  test("saves recipe to collection from chat", async ({ authenticatedPage: page, context }) => {
+  test("saves recipe to collection from chat", async ({ authenticatedPage: page }) => {
     const message = "Geef me een recept voor lasagne";
     await page.fill("[data-testid='chat-input']", message);
     await page.click("[data-testid='send-button']");

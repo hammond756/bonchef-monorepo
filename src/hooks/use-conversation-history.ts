@@ -8,16 +8,7 @@ const fetcher = async (conversationId: string) => {
   return await fetchConversationHistory(conversationId)
 }
 
-export function useConversationHistory(conversationId: string | null) {
-  if (!conversationId) {
-    return {
-      history: [],
-      isLoading: false,
-      isError: false,
-      mutate: () => {}
-    }
-  }
-
+export function useConversationHistory(conversationId: string) {
   const { data, error, mutate } = useSWR<ChatMessageData[]>(
     conversationId,
     fetcher,
@@ -34,4 +25,4 @@ export function useConversationHistory(conversationId: string | null) {
     isError: error,
     mutate,
   }
-} 
+}

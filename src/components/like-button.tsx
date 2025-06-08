@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Heart } from "lucide-react"
-import { Button } from "./ui/button"
 import { likeRecipe, unlikeRecipe } from "@/app/ontdek/actions"
 import { useToast } from "@/hooks/use-toast"
 import { useLikedRecipes } from "@/hooks/use-liked-recipes"

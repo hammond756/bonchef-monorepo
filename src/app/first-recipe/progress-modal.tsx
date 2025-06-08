@@ -19,7 +19,7 @@ export function ProgressModal({ progressSteps, stepDuration = 3000, loop = false
       }, stepDuration);
       return () => clearTimeout(timeout);
     }
-  }, [stepIndex]);
+  }, [stepIndex, loop, progressSteps.length, stepDuration]);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">

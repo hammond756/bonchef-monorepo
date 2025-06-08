@@ -1,8 +1,9 @@
 "use client"
 
-import useSWR from "swr";
+import { RecipeRead } from "@/lib/types"
+import useSWR from "swr"
 
-const fetcher = async () => {
+const fetcher = async (): Promise<RecipeRead[]> => {
     const response = await fetch("/api/collection")
     if (!response.ok) {
         throw new Error("Failed to fetch own recipes")
@@ -11,7 +12,7 @@ const fetcher = async () => {
 }
 
 export function useOwnRecipes() {
-    const { data, error, isLoading, mutate } = useSWR(
+    const { data, error, isLoading, mutate } = useSWR<RecipeRead[]>(
         "own-recipes",
         fetcher,
         {

@@ -13,9 +13,6 @@ export async function GET(request: Request) {
     const from = (offset - 1) * pageSize
     const to = from + pageSize - 1
     
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser()
-    
     // Fetch public recipes with profiles join and like status
     let query = supabase
       .from("recipe_creation_prototype")

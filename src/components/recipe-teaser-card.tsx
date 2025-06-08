@@ -20,7 +20,7 @@ export function RecipeTeaserCard({ content, messageId, initialRecipe }: RecipeTe
   const [recipe, setRecipe] = useState<GeneratedRecipe | null>(initialRecipe || null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { generateRecipe, isStreaming, isCompleted, hasError, error } = useRecipeGeneration({
+  const { generateRecipe, isStreaming, hasError, error } = useRecipeGeneration({
     onStreaming: (generatedRecipe) => {
       setRecipe(generatedRecipe);
     },
@@ -53,7 +53,7 @@ export function RecipeTeaserCard({ content, messageId, initialRecipe }: RecipeTe
               <ReactMarkdown 
                 rehypePlugins={[rehypeSanitize]}
                 components={{
-                  a: ({ node, ...props }) => (
+                  a: ({ ...props }) => (
                     <a 
                       {...props} 
                       className="text-blue-500 hover:underline" 
@@ -61,13 +61,13 @@ export function RecipeTeaserCard({ content, messageId, initialRecipe }: RecipeTe
                       rel="noopener noreferrer"
                     />
                   ),
-                  ol: ({ node, ...props }) => (
+                  ol: ({ ...props }) => (
                     <ol {...props} className="list-decimal pl-4" />
                   ),
-                  ul: ({ node, ...props }) => (
+                  ul: ({ ...props }) => (
                     <ul {...props} className="list-disc pl-4" />
                   ),
-                  p: ({ node, ...props }) => (
+                  p: ({ ...props }) => (
                     <p {...props} className="py-1 whitespace-pre-wrap" />
                   ),
                 }}

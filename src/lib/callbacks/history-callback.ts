@@ -13,7 +13,7 @@ export class HistoryCallbackHandler extends BaseCallbackHandler {
     super()
   }
 
-  async handleChainEnd(outputs: LLMResponse, runId: string, parentRunId?: string, tags?: string[], kwargs?: {
+  async handleChainEnd(outputs: LLMResponse, _runId: string, parentRunId?: string, _tags?: string[], _kwargs?: {
     inputs?: Record<string, unknown>;
   }) {
     if (parentRunId) {

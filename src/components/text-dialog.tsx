@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { saveMarketingRecipe, generateRecipeFromSnippet } from "../actions/recipe-imports";
 import { ProgressModal } from "../app/first-recipe/progress-modal";
 import { usePostHog } from "posthog-js/react";
 
@@ -15,7 +13,7 @@ interface TextDialogProps {
   onSubmit: (validFormData: { text: string }) => void;
 }
 
-function TextForm({ onSuccessfullyAdded, onSubmit }: { onSuccessfullyAdded: () => void, onSubmit: (validFormData: { text: string }) => void }) {
+function TextForm({ onSubmit }: { onSubmit: (validFormData: { text: string }) => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const posthog = usePostHog();
@@ -33,7 +31,7 @@ function TextForm({ onSuccessfullyAdded, onSubmit }: { onSuccessfullyAdded: () =
     }
     try {
         onSubmit({ text });
-    } catch (e) {
+    } catch (e: unknown) {
       posthog?.captureException(e)
       setError("Er is iets misgegaan. Probeer het opnieuw.");
       setIsLoading(false);
@@ -64,14 +62,14 @@ function TextForm({ onSuccessfullyAdded, onSubmit }: { onSuccessfullyAdded: () =
   );
 }
 
-export function TextDialog({ open, onOpenChange, onSubmit }: TextDialogProps) {
+export function TextDialog({ open, onOpenChange, onSubmit }: Readonly<TextDialogProps>) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="top-[40%]">
         <DialogHeader>
           <DialogTitle>Plak tekst uit notities of WhatsApp</DialogTitle>
         </DialogHeader>
-        <TextForm onSuccessfullyAdded={() => onOpenChange(false)} onSubmit={onSubmit} />
+        <TextForm onSubmit={onSubmit} />
       </DialogContent>
     </Dialog>
   );

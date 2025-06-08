@@ -43,9 +43,7 @@ export function Chat() {
   const chatInputContainerRef = useRef<HTMLDivElement>(null)
   const [chatInputHeight, setChatInputHeight] = useState(0)
 
-  const { containerRef, showScrollButton, scrollToBottom } = useScrollContainer({
-    dependencies: [messages]
-  })
+  const { containerRef, showScrollButton, scrollToBottom, checkScrollPosition } = useScrollContainer()
 
   useEffect(() => {
     const element = chatInputContainerRef.current
@@ -58,6 +56,10 @@ export function Chat() {
       return () => resizeObserver.disconnect()
     }
   }, [])
+
+  useEffect(() => {
+    checkScrollPosition()
+  }, [messages, checkScrollPosition])
 
   // Directly handle filter result submission
   const [generateRecipePrompt, setGenerateRecipePrompt] = useState<string | null>(null)
@@ -77,10 +79,6 @@ export function Chat() {
       handleSendMessage({ message: generateRecipePrompt, webContent: [] })
       setGenerateRecipePrompt(null)
     }
-  }
-
-  function handleQuickPrompt(prompt: string) {
-    handleSendMessage({ message: prompt, webContent: [] })
   }
 
   function handleApiError(errorMessage: string, userInput: UserInput) {
@@ -127,7 +125,7 @@ export function Chat() {
       msg.id === message.id ? { ...msg, type: "bot_loading", isLoading: true } : msg
     ))
 
-    await retryMessage(message.userInputToRetry, message.id)
+    await retryMessage(message.userInputToRetry)
   }
 
   async function handleRecipeSaved(url: string) {
@@ -135,7 +133,7 @@ export function Chat() {
     // Implement recipe saving functionality
   }
 
-  function handleConversationComplete(conversationId: string, finalMessages: ChatMessageData[]) {
+  function handleConversationComplete(_conversationId: string, _finalMessages: ChatMessageData[]) {
     setTimeout(() => {
       mutateHistory()
     }, 1000)
@@ -152,7 +150,6 @@ export function Chat() {
           <QuickActions 
             actions={[]}
             surpriseAction={handleSurpriseAction}
-            onPromptClick={handleQuickPrompt}
             onFilterSelectionChange={handleFilterSelectionChange}
           />
         ) : (
@@ -162,7 +159,6 @@ export function Chat() {
                 key={index}
                 message={message}
                 onRecipeSaved={handleRecipeSaved}
-                isLastMessage={index === messages.length - 1}
                 onRetry={handleRetry}
               />
             ))}
@@ -174,7 +170,6 @@ export function Chat() {
                   isLoading: true
                 }}
                 onRecipeSaved={handleRecipeSaved}
-                isLastMessage={true}
                 onRetry={handleRetry}
               />
             )}
@@ -208,4 +203,4 @@ export function Chat() {
       </div>
     </div>
   )
-} 
+}

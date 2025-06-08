@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, forwardRef, useImperativeHandle, useRef } from "react"
+import { useEffect, useState, forwardRef, useImperativeHandle, useRef, useCallback } from "react"
 import { Button } from "./ui/button"
 import { UrlStatusList } from "./url-status-list"
 import { SendIcon, ImageIcon, X, Loader2 } from "lucide-react"
@@ -79,12 +79,15 @@ export interface ChatInputHandle {
   focus: () => void
 }
 
-export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({ 
+
+// Is exported at the bottom of the file with forwardRef to allow for ref forwarding
+// TODO: figure out if this is still needed
+const ChatInputBase = ({ 
   onSend, 
   isLoading, 
   isExpanded = false,
   placeholder = "Typ hier je bericht..."
-}, ref) => {
+}: ChatInputProps, ref: React.Ref<ChatInputHandle>) => {
   const [message, setMessage] = useState("")
   const [urlStatuses, setUrlStatuses] = useState<UrlStatus[]>([])
   const [imageData, setImageData] = useState<ImageData | null>(null)
@@ -109,37 +112,48 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
     }
   }))
 
+  const updateUrlStatus = useCallback((url: string, newStatus: Partial<UrlStatus>) => {
+    setUrlStatuses(prev =>
+      prev.map(status =>
+        status.url === url ? { ...status, ...newStatus } : status
+      )
+    )
+  }, [])
+
+  const handleUrlFetch = useCallback(async (url: string) => {
+    try {
+      const content = await fetchUrlContent(url)
+      updateUrlStatus(url, { status: "success", content })
+    } catch {
+      updateUrlStatus(url, { status: "error" })
+    }
+  }, [updateUrlStatus])
+
   useEffect(() => {
     const newUrls = extractUrls(message)
-    
-    // Remove URLs that are no longer in the message
-    setUrlStatuses(prev => prev.filter(status => 
-      newUrls.includes(status.url)
-    ))
-    
-    // Add new URLs
-    newUrls.forEach(url => {
-      if (!urlStatuses.some(status => status.url === url)) {
-        setUrlStatuses(prev => [...prev, { url, status: "loading" }])
-        
-        fetchUrlContent(url)
-          .then(content => {
-            setUrlStatuses(prev => prev.map(status =>
-              status.url === url 
-                ? { ...status, status: "success", content }
-                : status
-            ))
-          })
-          .catch(() => {
-            setUrlStatuses(prev => prev.map(status =>
-              status.url === url 
-                ? { ...status, status: "error" }
-                : status
-            ))
-          })
+
+    setUrlStatuses(prevStatuses => {
+      const prevUrls = new Set(prevStatuses.map(s => s.url))
+
+      // Keep statuses for URLs that are still in the message
+      const statusesToKeep = prevStatuses.filter(s => newUrls.includes(s.url))
+      
+      // Identify new URLs to fetch
+      const urlsToFetch = newUrls.filter(url => !prevUrls.has(url))
+
+      // If no new URLs to fetch and no URLs removed, do nothing to prevent re-renders.
+      if (urlsToFetch.length === 0 && statusesToKeep.length === prevStatuses.length) {
+        return prevStatuses
       }
+
+      // For new URLs, trigger fetch and add to statuses with 'loading' state
+      urlsToFetch.forEach(handleUrlFetch)
+
+      const newStatuses = urlsToFetch.map(url => ({ url, status: 'loading' as const }))
+      
+      return [...statusesToKeep, ...newStatuses]
     })
-  }, [message])
+  }, [message, handleUrlFetch])
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = handleFileChange(e)
@@ -296,4 +310,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
       </div>
     </form>
   )
-}) 
+}
+
+
+export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(ChatInputBase)

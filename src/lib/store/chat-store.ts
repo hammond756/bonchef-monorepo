@@ -9,7 +9,7 @@ interface ChatStore {
 
 export const useChatStore = create<ChatStore>()(
   persist<ChatStore>(
-    (set, get) => ({
+    (set) => ({
       conversationId: uuidv4(),
       clearConversation: () => set({ conversationId: uuidv4() }),
     }),

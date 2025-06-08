@@ -93,7 +93,7 @@ test.describe("Signup flows", () => {
     {
       formData = {},
       expectedUrl = "/ontdek",
-      afterHomepageAssertions = (page) => Promise.resolve()
+      afterHomepageAssertions = () => Promise.resolve()
     }: SignupScenarioOptions = {}
   ): Promise<void> {
     await fillSignupForm(page, baseURL, formData);

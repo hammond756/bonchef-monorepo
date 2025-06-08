@@ -33,7 +33,7 @@ export async function uploadImageFromBase64Server(
   const buffer = Buffer.from(data, "base64");
   
   // Upload to Supabase storage
-  const { data: storageData, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from(RECIPE_IMAGES_BUCKET)
     .upload(`${finalFileName}`, buffer, {
       contentType

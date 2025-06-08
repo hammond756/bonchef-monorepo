@@ -1,14 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { v4 as uuidv4 } from "uuid"
 import { 
   UserInput, 
   ChatMessageData, 
   BotMessageType, 
   Message,
-  LLMResponse,
-  GeneratedRecipe
+  LLMResponse
 } from "@/lib/types"
 import { useChatStore } from "@/lib/store/chat-store"
 import { createStreamingRequest } from "@/lib/stream-parsers"
@@ -39,7 +37,7 @@ export function useChat({
     }
   }
 
-  const retryMessage = async (userInput: UserInput, messageId: string) => {
+  const retryMessage = async (userInput: UserInput) => {
     setIsLoading(true)
     
     try {
@@ -70,7 +68,7 @@ export function useChat({
 
     const lastMessageIdx = messages.length + 1
     
-    await createStreamingRequest<LLMResponse>(
+    await createStreamingRequest<{userInput: UserInput, conversationId: string}, LLMResponse>(
       "/api/chat",
       requestBody,
       {

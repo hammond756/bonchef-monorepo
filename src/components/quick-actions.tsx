@@ -1,4 +1,4 @@
-import { Camera, Link, User, FileText, Globe, MessageSquare, Sparkles, LucideIcon } from "lucide-react"
+import { Sparkles, LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useState, useEffect } from "react"
 
@@ -17,33 +17,85 @@ interface QuickAction {
 interface QuickActionsProps {
   actions: QuickAction[]
   surpriseAction: () => void
-  onPromptClick: (prompt: string) => void
   onFilterSelectionChange?: (hasSelectedFilters: boolean, count: number, prompt: string) => void
+}
+
+const generatePromptFromFilters = (selectedFilters: FilterOption[]) => {
+  // Group filters by category
+  const filtersByCategory = selectedFilters.reduce<Record<string, FilterOption[]>>(
+    (acc, filter) => {
+      if (!acc[filter.category]) {
+        acc[filter.category] = []
+      }
+      acc[filter.category].push(filter)
+      return acc
+    },
+    {}
+  )
+  
+  // Build a natural language prompt from the selected filters
+  const promptParts: string[] = []
+  
+  if (filtersByCategory.dietary?.length) {
+    promptParts.push(filtersByCategory.dietary.map(f => f.label).join(" en "))
+  }
+  
+  if (filtersByCategory.time?.length) {
+    promptParts.push(`klaar in ${filtersByCategory.time[0].label}`) // Use only the first time filter
+  }
+  
+  if (filtersByCategory.mealType?.length) {
+    promptParts.push(filtersByCategory.mealType.map(f => f.label.toLowerCase()).join(" en "))
+  }
+  
+  const ingredientParts: string[] = []
+  
+  if (filtersByCategory.protein?.length) {
+    ingredientParts.push(...filtersByCategory.protein.map(f => f.label))
+  }
+  
+  if (filtersByCategory.vegetable?.length) {
+    ingredientParts.push(...filtersByCategory.vegetable.map(f => f.label))
+  }
+  
+  if (filtersByCategory.herb?.length) {
+    ingredientParts.push(...filtersByCategory.herb.map(f => f.label))
+  }
+  
+  if (ingredientParts.length) {
+    promptParts.push(`met ${ingredientParts.join(", ")}`)
+  }
+  
+  const cookingParts: string[] = []
+  
+  if (filtersByCategory.cookingMethod?.length) {
+    cookingParts.push(...filtersByCategory.cookingMethod.map(f => f.label))
+  }
+  
+  if (filtersByCategory.cookingTechnique?.length) {
+    cookingParts.push(...filtersByCategory.cookingTechnique.map(f => f.label))
+  }
+  
+  if (cookingParts.length) {
+    promptParts.push(`bereid met ${cookingParts.join(" en ")}`)
+  }
+  
+  return `Drie opties voor een recept: ${promptParts.join(", ")}`
 }
 
 export function QuickActions({ 
   actions, 
   surpriseAction, 
-  onPromptClick, 
   onFilterSelectionChange,
 }: QuickActionsProps) {
   const [selectedFilters, setSelectedFilters] = useState<FilterOption[]>([])
   
   // Notify parent component when filter selection changes
   useEffect(() => {
-    // When filters change, generate a new prompt and notify the parent
-    if (selectedFilters.length > 0) {
-      const prompt = generatePromptFromFilters()
-      onFilterSelectionChange?.(selectedFilters.length > 0, selectedFilters.length, prompt)
-    }
-    
+    const hasSelectedFilters = selectedFilters.length > 0
+    const prompt = hasSelectedFilters ? generatePromptFromFilters(selectedFilters) : ""
+    onFilterSelectionChange?.(hasSelectedFilters, selectedFilters.length, prompt)
   }, [selectedFilters, onFilterSelectionChange])
-  
-  const quickPrompts = [
-    "Vegan comfortfood",
-    "Iets lichts voor het sporten",
-    "Een goede lunch om mee te nemen naar werk",
-  ]
 
   // Filter options
   const dietaryOptions: FilterOption[] = [
@@ -138,79 +190,6 @@ export function QuickActions({
   
   const isFilterSelected = (filterId: string) => {
     return selectedFilters.some((filter) => filter.id === filterId)
-  }
-
-  const generatePromptFromFilters = () => {
-    // Group filters by category
-    const filtersByCategory = selectedFilters.reduce<Record<string, FilterOption[]>>(
-      (acc, filter) => {
-        if (!acc[filter.category]) {
-          acc[filter.category] = []
-        }
-        acc[filter.category].push(filter)
-        return acc
-      },
-      {}
-    )
-    
-    // Build a natural language prompt from the selected filters
-    let promptParts: string[] = []
-    
-    if (filtersByCategory.dietary?.length) {
-      promptParts.push(filtersByCategory.dietary.map(f => f.label).join(" en "))
-    }
-    
-    if (filtersByCategory.time?.length) {
-      promptParts.push(`klaar in ${filtersByCategory.time[0].label}`) // Use only the first time filter
-    }
-    
-    if (filtersByCategory.mealType?.length) {
-      promptParts.push(filtersByCategory.mealType.map(f => f.label.toLowerCase()).join(" en "))
-    }
-    
-    let ingredientParts: string[] = []
-    
-    if (filtersByCategory.protein?.length) {
-      ingredientParts.push(...filtersByCategory.protein.map(f => f.label))
-    }
-    
-    if (filtersByCategory.vegetable?.length) {
-      ingredientParts.push(...filtersByCategory.vegetable.map(f => f.label))
-    }
-    
-    if (filtersByCategory.herb?.length) {
-      ingredientParts.push(...filtersByCategory.herb.map(f => f.label))
-    }
-    
-    if (ingredientParts.length) {
-      promptParts.push(`met ${ingredientParts.join(", ")}`)
-    }
-    
-    let cookingParts: string[] = []
-    
-    if (filtersByCategory.cookingMethod?.length) {
-      cookingParts.push(...filtersByCategory.cookingMethod.map(f => f.label))
-    }
-    
-    if (filtersByCategory.cookingTechnique?.length) {
-      cookingParts.push(...filtersByCategory.cookingTechnique.map(f => f.label))
-    }
-    
-    if (cookingParts.length) {
-      promptParts.push(`bereid met ${cookingParts.join(" en ")}`)
-    }
-    
-    return `Drie opties voor een recept: ${promptParts.join(", ")}`
-  }
-
-  const handleGeneratePrompt = () => {
-    const prompt = generatePromptFromFilters()
-    
-    // Send the generated prompt
-    onPromptClick(prompt)
-    
-    // Reset the filters
-    setSelectedFilters([])
   }
 
   const renderFilterButtons = (options: FilterOption[]) => {

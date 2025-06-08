@@ -3,13 +3,11 @@
 import React, { useState } from "react";
 import { Card } from "./ui/card";
 import { ClockIcon, CheckIcon } from "lucide-react";
-import type { RecipeRead, GeneratedRecipe } from "@/lib/types"; // Nodig voor recipe.id in de props
 
-// Definitie van InstructionStep (kan ook uit types.ts komen als het daar relevant is)
 export interface InstructionStep {
   id: string;
   text: string;
-  time?: number; // Optionele tijd in minuten
+  time?: number;
 }
 
 export interface RecipeInstructionsProps {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
@@ -14,11 +14,9 @@ import {
 import { 
   LoaderIcon, 
   ImageIcon, 
-  RefreshCwIcon, 
   Trash2 as TrashIcon, 
   Plus as PlusIcon, 
   AlertCircle,
-  X,
 } from "lucide-react";
 import type { Recipe, Unit } from "@/lib/types";
 import { unitEnum } from "@/lib/types";
@@ -32,10 +30,11 @@ import { useFileUpload } from "@/hooks/use-file-upload"
 import { createClient } from "@/utils/supabase/client";
 import { StorageService } from "@/lib/services/storage-service";
 import { v4 as uuidv4 } from 'uuid';
+import Image from "next/image";
 
 interface RecipeFormProps {
   recipe: Recipe;
-  recipeId: string;  // Optional ID for edit mode
+  recipeId: string;
   isPublic?: boolean;
 }
 
@@ -62,30 +61,14 @@ function updateIngredientInGroup(
   );
 }
 
-function updateIngredientAtIndex(
-  group: Recipe["ingredients"][number],
-  ingredientIdx: number,
-  updateFn: (ingredient: typeof group["ingredients"][number]) => typeof group["ingredients"][number]
-) {
-  return {
-    ...group,
-    ingredients: group.ingredients.map((ing, idx) =>
-      idx === ingredientIdx ? updateFn(ing) : ing
-    ),
-  };
-}
-
 export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }: RecipeFormProps) {
   const [recipe, setRecipe] = useState(initialRecipe);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [savedRecipeUrl, setSavedRecipeUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false);
-  const [recipeVisibility, setRecipeVisibility] = useState<boolean>(isPublic);
   const units = unitEnum.options;
   const router = useRouter();
 
@@ -95,9 +78,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
     file,
     fileInputRef,
     handleChange: handleFileChange,
-    handleRemove: handleRemoveFile,
     setPreview,
-    reset: resetFileUpload,
   } = useFileUpload({ initialFilePath: recipe.thumbnail });
 
   useEffect(() => {
@@ -159,7 +140,6 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError(null);
-    setSavedRecipeUrl(null);
     
     // Open the visibility modal instead of saving directly
     setIsVisibilityModalOpen(true);
@@ -306,20 +286,11 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                   type="button" 
                   variant="outline" 
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
+                  disabled={isGenerating}
                   data-testid="upload-image-button"
                 >
-                  {isUploading ? (
-                    <>
-                      <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <ImageIcon className="mr-2 h-4 w-4" />
-                      Upload afbeelding
-                    </>
-                  )}
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  Upload afbeelding
                 </Button>
                 <input
                   type="file"
@@ -339,7 +310,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
 
               {(preview) && (
                 <div className="w-full sm:-mx-6 md:-mx-8 lg:-mx-12 mt-4 relative group">
-                  <img
+                  <Image
                     src={preview}
                     alt="Recipe preview"
                     data-testid="recipe-image-preview"
@@ -585,7 +556,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
         isOpen={isVisibilityModalOpen}
         onClose={() => setIsVisibilityModalOpen(false)}
         onConfirm={(isPublic: boolean) => saveRecipe(isPublic)}
-        defaultVisibility={recipeVisibility}
+        defaultVisibility={isPublic}
       />
     </form>
   );

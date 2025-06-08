@@ -9,11 +9,6 @@ export function useNavigationVisibility() {
 
   const handleScroll = useCallback(() => {
     const currentScrollY = window.scrollY
-    const windowHeight = window.innerHeight
-    const documentHeight = document.documentElement.scrollHeight
-
-    const distanceFromBottom = documentHeight - (currentScrollY + windowHeight)
-    const isNearBottom = distanceFromBottom <= 100
 
     if (currentScrollY > lastScrollY && currentScrollY > 10) {
       setScrollDirection("down")

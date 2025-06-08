@@ -25,7 +25,7 @@ export async function formatRecipe(text: string): Promise<{ recipe: GeneratedRec
 
   try {
     return await model.invoke(prompt, { callbacks: [new CallbackHandler()] })
-  } catch (error: any) {
+  } catch (error: unknown) {
     // const errorMessage = error?.message || error?.response?.data?.error?.message || "";
 
     // if (errorMessage.includes("maximum context length")) {

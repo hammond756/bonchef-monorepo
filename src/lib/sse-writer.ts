@@ -6,6 +6,14 @@ export interface StreamCallbacks<T> {
   onError?: (error: Error) => void;
 }
 
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
 export class SSEWriter {
   private encoder: TextEncoder
   private controller: ReadableStreamDefaultController | null = null
@@ -20,7 +28,7 @@ export class SSEWriter {
     })
   }
 
-  private writeEvent(data: any, eventType: "streaming" | "complete") {
+  private writeEvent(data: JsonValue, eventType: "streaming" | "complete") {
     if (!this.controller) {
       throw new Error("Stream controller not initialized")
     }
@@ -42,8 +50,8 @@ export class SSEWriter {
     this.controller.error(error)
   }
 
-  public async writeStream<T>(
-    stream: AsyncIterable<any>,
+  public async writeStream<T extends JsonValue>(
+    stream: AsyncIterable<any>, // eslint-disable-line @typescript-eslint/no-explicit-any
     callbacks?: StreamCallbacks<T>
   ) {
     let accumulatedJson = ""

@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { saveMarketingRecipe, generateRecipeFromImage, getSignedUploadUrl } from "../actions/recipe-imports";
+import { getSignedUploadUrl } from "../actions/recipe-imports";
 import { ProgressModal } from "../app/first-recipe/progress-modal";
 import { useFileUpload } from "@/hooks/use-file-upload";
 import Image from "next/image";
@@ -24,7 +23,7 @@ interface ImageDialogProps {
 async function uploadImageToSignedUrl(file: File): Promise<string> {
   const supabase = await createClient();
   const filePath = `${uuidv4()}.${file.name.split(".").pop()}`;
-  const { signedUrl, path, token } = await getSignedUploadUrl(filePath);
+  const { path, token } = await getSignedUploadUrl(filePath);
   const storageService = new StorageService(supabase);
   return await storageService.uploadToSignedUrl("recipe-images", path, file, token);
 }

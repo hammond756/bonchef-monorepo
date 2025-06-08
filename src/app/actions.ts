@@ -2,16 +2,13 @@
 
 import { createRecipeModel } from "@/lib/model-factory"
 import { HistoryService } from "@/lib/services/history-service"
-import { StorageService } from "@/lib/services/storage-service"
-import { ChatMessageData, GeneratedRecipe, Recipe } from "@/lib/types"
+import { ChatMessageData, GeneratedRecipe, UserInput } from "@/lib/types"
 import { createClient } from "@/utils/supabase/server"
 import { Langfuse } from "langfuse"
 import { CallbackHandler } from "langfuse-langchain"
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 export async function logout() {
-  const cookieStore = cookies()
   const supabase = await createClient()
 
   await supabase.auth.signOut()
@@ -20,7 +17,7 @@ export async function logout() {
 
 export async function getRecipes(userId: string) {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("recipe_creation_prototype")
     .select("*, is_liked_by_current_user")
     .eq("user_id", userId)
@@ -55,30 +52,33 @@ export async function fetchConversationHistory(conversationId: string): Promise<
   const history = await historyService.getHistory(conversationId)
   return history.map((message) => {
     if (message.type === "user") {
+      const userInput: UserInput = {
+        message: message.content,
+        webContent: [],
+        image: undefined
+      }
+
+      if ("webContent" in message.payload) {
+        userInput.webContent = message.payload.webContent
+      }
+
+      if ("image" in message.payload) {
+        userInput.image = message.payload.image
+      }
+
       return {
         id: message.message_id,
         type: message.type,
-        userInput: {
-          message: message.content,
-          webContent: message.payload.webContent,
-          image: message.payload.image
-        },
+        userInput,
       }
     } else {
       try {
-        const payload = {
-          type: message.payload.type,
-          recipe: message.payload.recipe
-        }
-
-        console.log("payload", payload)
-        
         return {
           id: message.message_id,
           type: message.type,
           botResponse: {
             content: message.content,
-            payload
+            payload: message.payload
           }
         }
       } catch (error) {
@@ -98,7 +98,12 @@ export async function fetchConversationHistory(conversationId: string): Promise<
   })
 }
 
-export async function patchMessagePayload(messageId: string, payload: Record<string, any>) {
+export type PayloadPatchRequest = {
+  recipe?: GeneratedRecipe
+  type?: string
+}
+
+export async function patchMessagePayload(messageId: string, payload: PayloadPatchRequest) {
   const supabase = await createClient()
   const { error } = await supabase.rpc("patch_message_payload", {
     p_message_id: messageId,

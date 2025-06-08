@@ -3,23 +3,77 @@ import { HumanMessage, AIMessage, MessageContentComplex } from "@langchain/core/
 import { GeneratedRecipe } from "../types"
 import { hostedImageToBase64, resignImageUrl } from "../utils"
 
-export interface ConversationMessage {
+
+export interface BaseConversationMessage {
   message_id: string
   conversation_id: string
   user_id: string
   type: "user" | "bot"
   content: string
-  payload: Record<string, any>
   order: number
   archived: boolean
   created_at: string
 }
 
+export interface BotRecipeConverstationMessage extends BaseConversationMessage {
+  type: "bot"
+  payload: {
+    type: "recipe"
+  }
+}
+
+export interface BotTeaserConversationMessage extends BaseConversationMessage {
+  type: "bot"
+  payload: {
+    type: "teaser"
+    recipe?: GeneratedRecipe
+  }
+}
+
+export interface BotTextConversationMessage extends BaseConversationMessage {
+  type: "bot"
+  payload: {
+    type: "text"
+  }
+}
+
+export interface UserWebContentConversationMessage extends BaseConversationMessage {
+  type: "user"
+  payload: {
+    webContent: {
+      url: string
+      content: string
+    }[]
+  }
+}
+
+
+export interface UserImageConversationMessage extends BaseConversationMessage {
+  type: "user"
+  payload: {
+    image: {
+      url: string
+      type: "image/jpeg" | "image/png" | "image/heic"
+      size: number
+    }
+  }
+}
+
+export type ConversationMessage = BotRecipeConverstationMessage | BotTeaserConversationMessage | BotTextConversationMessage | UserWebContentConversationMessage | UserImageConversationMessage
+
 export class HistoryService {
   async addUserMessage(
     conversationId: string,
     content: string,
-    payload: Record<string, any> = {},
+    payload: {
+      webContent?: {
+        url: string
+        content: string
+      }[]
+      image?: {
+        url: string
+      }
+    },
     order: number
   ): Promise<ConversationMessage> {
     const supabase = await createClient()
@@ -52,8 +106,11 @@ export class HistoryService {
   async addBotMessage(
     conversationId: string,
     content: string,
-    payload: Record<string, any> = {},
-    order: number
+    payload: {
+      type: "recipe" | "teaser" | "text"
+      recipe?: GeneratedRecipe
+    },
+    order: number,
   ): Promise<ConversationMessage> {
     const supabase = await createClient()
 
@@ -136,7 +193,7 @@ export class HistoryService {
           }
         ]
 
-        if (message.payload?.image) {
+        if ("image" in message.payload && message.payload.image) {
           const signedUrl = await resignImageUrl(supabase, message.payload.image.url)
           const base64Image = await hostedImageToBase64(signedUrl)
           console.log("base64Image", base64Image.slice(0, 100))
@@ -152,7 +209,7 @@ export class HistoryService {
         agentMessages.push(new HumanMessage({content: messageContent}))
         
         // If message has webContent in payload, add it as separate messages
-        const webContent = message.payload?.webContent
+        const webContent = "webContent" in message.payload && message.payload.webContent
         if (Array.isArray(webContent)) {
           for (const content of webContent) {
             agentMessages.push(
@@ -162,12 +219,10 @@ export class HistoryService {
             )
           }
         }
+      } else if (message.payload.type === "teaser" && "recipe" in message.payload && message.payload.recipe) {
+        agentMessages.push(new AIMessage(this.templateTeaserWithRecipe(message.content, message.payload.recipe)))
       } else {
-        if (message.payload.type === "teaser" && message.payload.recipe) {
-          agentMessages.push(new AIMessage(this.templateTeaserWithRecipe(message.content, message.payload.recipe)))
-        } else {
-          agentMessages.push(new AIMessage(message.content))
-        }
+        agentMessages.push(new AIMessage(message.content))
       }
     }
     

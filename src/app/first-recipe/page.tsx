@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ImageIcon, LinkIcon, TextIcon, X } from "lucide-react"
+import { ImageIcon, LinkIcon, TextIcon } from "lucide-react"
 import { UrlDialog } from "@/components/url-dialog";
 import { ImageDialog } from "@/components/image-dialog";
 import { TextDialog } from "@/components/text-dialog";

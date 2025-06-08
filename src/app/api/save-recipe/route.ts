@@ -45,7 +45,7 @@ async function processThumbnail(thumbnail: string): Promise<{ success: true, dat
 export async function POST(request: Request) {
   const supabase = await createClient();
 
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     return NextResponse.json(

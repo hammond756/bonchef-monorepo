@@ -1,7 +1,7 @@
 import { expect, test } from "./fixtures";
 
 test.describe("Sidebar Navigation", () => {
-  test.beforeEach(async ({ authenticatedPage: page, baseURL }) => {
+  test.beforeEach(async ({ authenticatedPage: page }) => {
     await page.goto("/")
   });
 

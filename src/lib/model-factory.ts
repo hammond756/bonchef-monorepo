@@ -1,14 +1,14 @@
 import { ChatOpenAI } from "@langchain/openai"
 import { FakeListChatModel } from "@langchain/core/utils/testing"
-import { LLMResponseSchema, IntentResponseSchema, LLMResponse, IntentResponse, GeneratedRecipeSchema, Recipe, GeneratedRecipe } from "./types"
+import { LLMResponseSchema, IntentResponseSchema, LLMResponse, IntentResponse, GeneratedRecipeSchema, GeneratedRecipe } from "./types"
 import { Runnable } from "@langchain/core/runnables"
 import { RunnableConfig } from "@langchain/core/runnables"
 import { BaseLanguageModelInput } from "@langchain/core/language_models/base"
 
 export interface ChatModelSet {
-  smart: Runnable<BaseLanguageModelInput, LLMResponse, RunnableConfig<Record<string, any>>>;
-  fast: Runnable<BaseLanguageModelInput, LLMResponse, RunnableConfig<Record<string, any>>>;
-  intentModel: Runnable<BaseLanguageModelInput, IntentResponse, RunnableConfig<Record<string, any>>>;
+  smart: Runnable<BaseLanguageModelInput, LLMResponse, RunnableConfig<Record<string, unknown>>>;
+  fast: Runnable<BaseLanguageModelInput, LLMResponse, RunnableConfig<Record<string, unknown>>>;
+  intentModel: Runnable<BaseLanguageModelInput, IntentResponse, RunnableConfig<Record<string, unknown>>>;
 }
 
 function createTestModels(): ChatModelSet {
@@ -108,7 +108,7 @@ export function createChatModels(): ChatModelSet {
   }
 } 
 
-export function createTestRecipeModel(recipe?: GeneratedRecipe): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, any>>> {
+export function createTestRecipeModel(recipe?: GeneratedRecipe): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, unknown>>> {
   const DEV_RECIPE: GeneratedRecipe = {
     title: "Classic Spaghetti Bolognese",
     total_cook_time_minutes: 60,
@@ -136,7 +136,7 @@ export function createTestRecipeModel(recipe?: GeneratedRecipe): Runnable<BaseLa
 }
 
 
-function createProductionRecipeModel(modelName: string, streaming: boolean): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, any>>> {
+function createProductionRecipeModel(modelName: string, streaming: boolean): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, unknown>>> {
   return new ChatOpenAI({
     modelName: modelName,
     streaming: streaming,
@@ -148,7 +148,7 @@ function createProductionRecipeModel(modelName: string, streaming: boolean): Run
   })
 }
 
-export function createRecipeModel(modelName: string = "gpt-4o", streaming: boolean = true): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, any>>> {
+export function createRecipeModel(modelName: string = "gpt-4o", streaming: boolean = true): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, unknown>>> {
   switch (process.env.NODE_ENV) {
     case "test":
       return createTestRecipeModel()

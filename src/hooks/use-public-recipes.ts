@@ -9,7 +9,7 @@ const PAGE_SIZE = 12
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export function usePublicRecipes() {
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1))
+  const [_, setPage] = useQueryState("page", parseAsInteger.withDefault(1))
 
   const getKey = useCallback(
     (pageIndex: number) => {

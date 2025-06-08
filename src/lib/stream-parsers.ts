@@ -1,21 +1,23 @@
+import { AIMessageChunk } from "@langchain/core/messages"
 import { Allow, parse } from "partial-json"
 
 /**
  * Processes streaming data from a LangChain event stream.
  * This utility extracts content from different types of chunk formats.
  */
-export function extractContentFromChunk(chunk: any): string {
+export function extractContentFromChunk(chunk: AIMessageChunk): string {
   let content = ""
 
   // Handle different chunk formats
   if (chunk && chunk.tool_call_chunks && chunk.tool_call_chunks.length > 0) {
     console.log("tool_call_chunks", chunk.tool_call_chunks)
     // Looks like output from gpt-4o with json_schema model
-    content = chunk.tool_call_chunks[0].args
+    content = chunk.tool_call_chunks[0].args ?? ""
   } else if (chunk && chunk.content) {
     console.log("content", chunk.content)
     // Looks like output from gpt-4o with function_calling mode
-    content = chunk.content
+    // the typing here is hacky...
+    content = chunk.content as string
   }
 
   return content
@@ -31,7 +33,7 @@ export function processAccumulatedContent<T>(accumulatedJson: string): T | null 
     const parsedResponse = parse(accumulatedJson, Allow.ALL) as T
     
     return parsedResponse
-  } catch (jsonError) {
+  } catch {
     // If we can't parse the accumulated JSON yet, it's incomplete
     console.log("Accumulating JSON chunks...")
   }
@@ -54,10 +56,10 @@ export interface StreamCallbacks<T> {
   onError?: (error: Error) => void;
 }
 
-export async function createStreamingRequest<T>(
+export async function createStreamingRequest<InputT, OutputT>(
   url: string, 
-  requestBody: any, 
-  callbacks: StreamCallbacks<T>
+  requestBody: InputT, 
+  callbacks: StreamCallbacks<OutputT>
 ) {
   const { fetchEventSource } = await import("@microsoft/fetch-event-source")
   
@@ -95,7 +97,7 @@ export async function createStreamingRequest<T>(
                   accumulatedJson += content
                   
                   // Try to parse the accumulated content
-                  const parsedResponse = processAccumulatedContent<T>(accumulatedJson)
+                  const parsedResponse = processAccumulatedContent<OutputT>(accumulatedJson)
                   
                   // Call the chunk callback with the parsed response
                   if (callbacks.onChunkReceived) {
@@ -110,7 +112,7 @@ export async function createStreamingRequest<T>(
               streamComplete = true
               console.log("Stream completed successfully")
               
-              const finalResponse = data.data.output as T
+              const finalResponse = data.data.output as OutputT
               
               if (callbacks.onStreamComplete) {
                 callbacks.onStreamComplete(finalResponse)

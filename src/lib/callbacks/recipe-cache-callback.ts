@@ -11,10 +11,10 @@ export class RecipeCacheCallbackHandler extends BaseCallbackHandler {
 
   async handleChainEnd(
     outputs: GeneratedRecipe,
-    runId: string,
+    _runId: string,
     parentRunId?: string,
-    tags?: string[],
-    kwargs?: {
+    _tags?: string[],
+    _kwargs?: {
       inputs?: Record<string, unknown>
     }
   ) {

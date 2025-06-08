@@ -51,7 +51,7 @@ export class StorageService {
   }
 
   async uploadToSignedUrl(bucket: string, filePath: string, file: File, token: string): Promise<string> {
-    const { data, error } = await this.supabase.storage
+    const { error } = await this.supabase.storage
       .from(bucket)
       .uploadToSignedUrl(filePath, token, file, {
         contentType: file.type,

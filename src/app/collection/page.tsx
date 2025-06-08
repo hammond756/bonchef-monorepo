@@ -12,7 +12,7 @@ import { LikeButton } from "@/components/like-button"
 import { useLikedRecipes } from "@/hooks/use-liked-recipes"
 import { useOwnRecipes } from "@/hooks/use-own-recipes"
 import { useQueryState } from "nuqs"
-import { LayoutGrid, List, Check } from "lucide-react"
+import { LayoutGrid, List } from "lucide-react"
 import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import React from "react"
@@ -36,14 +36,7 @@ function RecipeGrid({ recipes, activeTab }: { recipes: RecipeRead[], activeTab: 
 
         if (recipe.total_cook_time_minutes !== undefined && recipe.total_cook_time_minutes > 0) {
           infoParts.push(`${recipe.total_cook_time_minutes} min`);
-        }
-
-        if ((recipe as any).difficulty) {
-          infoParts.push((recipe as any).difficulty);
-        } else if (recipe.total_cook_time_minutes !== undefined && recipe.total_cook_time_minutes > 0) {
-          if (!(activeTab === "favorieten" && chefDisplayGridString)) {
-            infoParts.push("Medium");
-          }
+          infoParts.push("Medium");
         }
 
         if (chefDisplayGridString) {
@@ -54,7 +47,7 @@ function RecipeGrid({ recipes, activeTab }: { recipes: RecipeRead[], activeTab: 
           <div key={recipe.id} className="group overflow-hidden rounded-lg bg-white shadow-md border border-gray-300 flex flex-col">
             <Link
               href={`/recipes/${recipe.id}`}
-              className="block w-full flex flex-col flex-grow"
+              className="w-full flex flex-col flex-grow"
             >
               <div className="relative aspect-[3/4] w-full">
                 <Image
@@ -67,13 +60,6 @@ function RecipeGrid({ recipes, activeTab }: { recipes: RecipeRead[], activeTab: 
                 <div className="absolute top-2 right-2 z-10">
                   <LikeButton buttonSize="sm" recipeId={recipe.id} initialLiked={recipe.is_liked_by_current_user} initialLikeCount={recipe.like_count} showCount={false} />
                 </div>
-                {(recipe as any).status && (
-                  <div className="absolute bottom-2 left-2 z-10">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${(recipe as any).status === 'gemaakt' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                      {(recipe as any).status === 'gemaakt' ? 'Gemaakt' : 'Wil koken'}
-                    </span>
-                  </div>
-                )}
               </div>
               <div className="p-3 bg-white flex-grow flex flex-col justify-between">
                 <div>
@@ -123,44 +109,18 @@ function RecipeListItem({ recipe, activeTab }: { recipe: RecipeRead, activeTab: 
           <h2 className="text-lg font-semibold text-bonchef-dark line-clamp-2 group-hover:underline font-['Montserrat'] mb-0.5">
             {recipe.title}
           </h2>
-          {chefDisplayString && activeTab !== "favorieten" && (
-            <p className="text-xs text-gray-500 line-clamp-1 font-['Montserrat'] mt-0.5 mb-1.5">
-              door {chefDisplayString}
-            </p>
-          )}
           <div className="flex items-center text-xs text-gray-600 mb-1.5 flex-wrap">
             {recipe.total_cook_time_minutes !== undefined && recipe.total_cook_time_minutes > 0 && (
-              <p>{recipe.total_cook_time_minutes} min</p>
-            )}
-            {recipe.total_cook_time_minutes !== undefined && recipe.total_cook_time_minutes > 0 &&
-              ((recipe as any).difficulty || (recipe.total_cook_time_minutes !== undefined && recipe.total_cook_time_minutes > 0)) && (
+              <>
+                <p>{recipe.total_cook_time_minutes} min</p>
                 <span className="mx-1.5">·</span>
-              )}
-            {(recipe as any).difficulty ? (
-              <p>{(recipe as any).difficulty}</p>
-            ) : recipe.total_cook_time_minutes !== undefined && recipe.total_cook_time_minutes > 0 ? (
-              <p>Medium</p>
-            ) : null}
+                <p>Medium</p>
+              </>
+            )}
           </div>
           {chefDisplayString && (
             <div className="flex items-center text-[11px] text-gray-500 font-['Montserrat'] mt-0.5 flex-wrap">
-              {chefDisplayString && (
-                <span>door {chefDisplayString}</span>
-              )}
-            </div>
-          )}
-          {(recipe as any).status && (
-            <div className="mt-auto">
-              {(recipe as any).status === 'gemaakt' ? (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                  <Check className="w-3 h-3 mr-1" />
-                  Gemaakt
-                </span>
-              ) : (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                  Wil koken
-                </span>
-              )}
+              <span>door {chefDisplayString}</span>
             </div>
           )}
         </div>
@@ -230,21 +190,24 @@ function RecipesSection() {
 
   const sortRecipes = (recipes: RecipeRead[], order: "newest" | "oldest"): RecipeRead[] => {
     if (!recipes) return []
-    return [...recipes].sort((a, b) => {
-      const dateA = new Date((a as any).created_at).getTime();
-      const dateB = new Date((b as any).created_at).getTime();
+    return [...recipes].sort((a: RecipeRead, b: RecipeRead) => {
+      const dateA = new Date(a.created_at ?? "").getTime();
+      const dateB = new Date(b.created_at ?? "").getTime();
       return order === "newest" ? dateB - dateA : dateA - dateB;
     });
   };
 
-  const loadingLogic = (isLoading: boolean, data: RecipeRead[] | undefined, emptyComponent: React.ReactNode) => {
+  const loadingLogic = (isLoading: boolean, data: RecipeRead[], emptyComponent: React.ReactNode) => {
     if (isLoading) {
       return <RecipeGridSkeleton />
     }
-    const sortedData = data ? sortRecipes(data, sortOrder) : [];
-    if (!sortedData || sortedData.length === 0) {
+
+    if (data.length === 0) {
       return emptyComponent
     }
+
+    const sortedData = sortRecipes(data, sortOrder);
+
     if (viewMode === "grid") {
       return <RecipeGrid recipes={sortedData} activeTab={activeTab} />;
     }

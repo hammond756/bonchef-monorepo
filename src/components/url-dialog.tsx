@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { scrapeRecipe, saveMarketingRecipe } from "../actions/recipe-imports";
 import { ProgressModal } from "../app/first-recipe/progress-modal";
 import { usePostHog } from "posthog-js/react";
+import { posthog } from "posthog-js";
 
 interface UrlDialogProps {
   open: boolean;
@@ -49,7 +48,8 @@ function validateUrl(url: string) {
     }
     // TODO: check if the url is a valid recipe url
     return { message: null, triggerEvent: null };
-  } catch (e) {
+  } catch (e: unknown) {
+    posthog?.captureException(e)
     return { message: "Voer een geldige URL in.", triggerEvent: null };
   }
 }
@@ -57,7 +57,6 @@ function validateUrl(url: string) {
 function UrlForm({ onSubmit }: { onSubmit: (validFormData: { url: string }) => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const posthog = usePostHog()
 

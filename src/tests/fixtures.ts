@@ -1,4 +1,4 @@
-import { APIRequestContext, test as base, Page, PlaywrightTestArgs, PlaywrightTestOptions } from "@playwright/test";
+import { APIRequestContext, test as base, Page } from "@playwright/test";
 
 /**
  * Helper function to log in a user
@@ -26,9 +26,10 @@ interface CustomFixtures {
  */
 export const test = base.extend<CustomFixtures>({
   // Fixture for a page with no authentication
-  unauthenticatedPage: async ({ browser, baseURL }, use) => {
+  unauthenticatedPage: async ({ browser }, use) => {
     const context = await browser.newContext();
     const page = await context.newPage();
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(page);
     await context.close();
   },
@@ -43,6 +44,7 @@ export const test = base.extend<CustomFixtures>({
       process.env.TEST_USER_EMAIL!,
       process.env.TEST_USER_PASSWORD!
     );
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(page);
     await context.close();
   },
@@ -57,13 +59,15 @@ export const test = base.extend<CustomFixtures>({
       "test2@playwright.com",
       process.env.TEST_USER_PASSWORD!
     );
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(page);
     await context.close();
   },
 
-  authenticatedRequest: async ({ browser, baseURL }, use) => {
+  authenticatedRequest: async ({ browser }, use) => {
     const context = await browser.newContext();
     const request = context.request;
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(request);
     await context.close();
   },

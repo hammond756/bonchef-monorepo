@@ -10,7 +10,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p $PORT",
-    "lint": "next lint",
+    "lint": "next lint --fix",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug"
@@ -74,6 +74,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "9.28.0",
+    "eslint-config-next": "15.3.3",
     "postcss": "^8",
     "tailwindcss": "^4.1.7",
     "typescript": "^5"

@@ -98,7 +98,7 @@ export default function AuthCallbackPage() {
     }
 
     processAuth()
-  }, [router, toast])
+  }, [router, toast, posthog])
 
   return (
     <div className="flex flex-1 items-center justify-center">

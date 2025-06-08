@@ -1,12 +1,12 @@
 import { useState, useCallback } from "react";
-import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { EventSourceMessage, fetchEventSource } from "@microsoft/fetch-event-source";
 import { GeneratedRecipe } from "@/lib/types";
 
 interface UseRecipeGenerationProps {
   onStreaming?: (recipe: GeneratedRecipe) => void;
   onComplete?: (recipe: GeneratedRecipe) => void;
   onClose?: () => void;
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
 }
 
 export function useRecipeGeneration({
@@ -34,7 +34,7 @@ export function useRecipeGeneration({
           headers: {
             "Content-Type": "application/json",
           },
-          onmessage: (event: any) => {
+          onmessage: (event: EventSourceMessage) => {
             const generatedRecipe = JSON.parse(event.data);
 
             switch (event.event) {
@@ -51,7 +51,7 @@ export function useRecipeGeneration({
             setIsStreaming(false);
             onClose?.();
           },
-          onerror: (error: any) => {
+          onerror: (error: ErrorEvent) => {
             setHasError(true);
             setError(error.message || "An error occurred");
             onError?.(error);

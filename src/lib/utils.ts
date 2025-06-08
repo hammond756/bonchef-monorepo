@@ -1,11 +1,10 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import crypto from "crypto"
-import { Ingredient, Recipe, RecipeRead, RecipeWrite } from "./types"
+import { Ingredient, RecipeWrite } from "./types"
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
 import { GeneratedRecipe } from "./types"
 import { formatQuantity } from "format-quantity";
-import { createClient } from "@/utils/supabase/client"
 import { SupabaseClient } from "@supabase/supabase-js"
 
 export function cn(...inputs: ClassValue[]) {

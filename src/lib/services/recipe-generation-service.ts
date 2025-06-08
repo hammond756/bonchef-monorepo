@@ -1,13 +1,13 @@
 import {GoogleGenAI} from '@google/genai';
 import { createRecipeModel } from "@/lib/model-factory"
-import { HumanMessage, SystemMessage } from "@langchain/core/messages"
+import { HumanMessage, MessageContent, SystemMessage } from "@langchain/core/messages"
 import { hostedImageToBase64 } from "@/lib/utils"
 import { Runnable } from "@langchain/core/runnables"
 import { RunnableConfig } from "@langchain/core/runnables"
 import { GeneratedRecipe } from "@/lib/types"
 import { BaseLanguageModelInput } from "@langchain/core/language_models/base"
 import Langfuse from "langfuse"
-import { createAdminClient, createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/server';
 import { ChatOpenAI } from '@langchain/openai';
 import { CallbackHandler } from 'langfuse-langchain';
 
@@ -28,7 +28,7 @@ interface LangFusePromptConfig {
 
 export class RecipeGenerationService {
     private langfuse: Langfuse
-    private recipeModel: Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, any>>>
+    private recipeModel: Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, unknown>>>
 
     constructor() {
         this.langfuse = new Langfuse()
@@ -39,7 +39,7 @@ export class RecipeGenerationService {
         const promptClient = await this.langfuse.getPrompt("GenerateRecipe", undefined, { type: "text" })
         const prompt = new SystemMessage(await promptClient.compile())
 
-        const content: any[] = [
+        const content: MessageContent = [
             {
                 type: "text",
                 text: text,

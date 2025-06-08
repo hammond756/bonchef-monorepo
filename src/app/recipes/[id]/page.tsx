@@ -11,7 +11,7 @@ export const revalidate = 3600 // Revalidate every hour
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> },
-  parent: ResolvingMetadata,
+  _parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const { id } = await params;
 

@@ -50,7 +50,7 @@ export function ShareRecipeButton({ title, text, className, buttonContainerClass
           title: 'Link gekopieerd!',
           description: 'De link naar het recept is naar je klembord gekopieerd.',
         });
-      } catch (err) {
+      } catch {
         toast({
           title: 'Delen niet ondersteund',
           description: 'Je browser ondersteunt deze deelfunctie niet en de link kon niet worden gekopieerd.',

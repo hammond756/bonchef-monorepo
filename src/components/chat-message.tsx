@@ -1,7 +1,7 @@
 import { Loader2, RotateCcw } from "lucide-react"
 import { SaveRecipeButton } from "./save-recipe-button"
 import { Button } from "@/components/ui/button"
-import { BotErrorMessageType, ChatMessageData as ChatMessageType, GeneratedRecipe } from "@/lib/types"
+import { BotErrorMessageType, ChatMessageData as ChatMessageType } from "@/lib/types"
 import ReactMarkdown from "react-markdown"
 import rehypeSanitize from "rehype-sanitize"
 import { RecipeTeaserCard } from "./recipe-teaser-card"
@@ -10,14 +10,12 @@ import Image from "next/image"
 interface ChatMessageProps {
   message: ChatMessageType
   onRecipeSaved: (url: string) => void
-  isLastMessage: boolean
   onRetry?: (message: BotErrorMessageType) => void
 }
 
 export function ChatMessage({ 
   message, 
   onRecipeSaved, 
-  isLastMessage,
   onRetry,
 }: ChatMessageProps) {
   let displayText = ""
@@ -92,7 +90,7 @@ export function ChatMessage({
         <ReactMarkdown 
           rehypePlugins={[rehypeSanitize]}
           components={{
-            a: ({ node, ...props }) => (
+            a: ({ ...props }) => (
               <a 
                 {...props} 
                 className="text-blue-500 hover:underline" 
@@ -100,25 +98,25 @@ export function ChatMessage({
                 rel="noopener noreferrer"
               />
             ),
-            ol: ({ node, ...props }) => (
+            ol: ({ ...props }) => (
               <ol {...props} className="list-decimal pl-4" />
             ),
-            ul: ({ node, ...props }) => (
+            ul: ({ ...props }) => (
               <ul {...props} className="list-disc pl-4" />
             ),
-            p: ({ node, ...props }) => (
+            p: ({ ...props }) => (
               <p {...props} className="py-1 whitespace-pre-wrap" />
             ),
-            h1: ({ node, ...props }) => (
+            h1: ({ ...props }) => (
               <h1 {...props} className="text-2xl font-bold" />
             ),
-            h2: ({ node, ...props }) => (
+            h2: ({ ...props }) => (
               <h2 {...props} className="text-xl font-bold" />
             ),
-            h3: ({ node, ...props }) => (
+            h3: ({ ...props }) => (
               <h3 {...props} className="text-lg font-bold" />
             ),
-            h4: ({ node, ...props }) => (
+            h4: ({ ...props }) => (
               <h4 {...props} className="text-base font-bold" />
             ),
           }}

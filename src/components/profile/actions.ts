@@ -6,14 +6,33 @@ import { createAnonymousClient, createClient } from "@/utils/supabase/server";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
-function transformProfileData(data: any): PublicProfile {
-  const total_likes_received = data.recipe_creation_prototype?.reduce(
-    (acc: number, recipe: any) => acc + (recipe.recipe_likes?.[0]?.count || 0),
-    0
-  ) || 0;
+
+interface OwnedRecipe {
+  recipe_likes: {
+    count: number;
+  }[];
+}
+
+
+interface ProfileData {
+  id: string;
+  display_name: string;
+  bio: string;
+  avatar: string;
+  recipe_creation_prototype: OwnedRecipe[];
+}
+
+
+function transformProfileData(data: ProfileData): PublicProfile {
+  const total_likes_received =
+    data.recipe_creation_prototype?.reduce((acc, recipe) => {
+      // The query returns an array with a single object for recipes with likes: `[{ count: number }]`, or an empty array.
+      const likesForRecipe = recipe.recipe_likes[0]?.count || 0;
+      return acc + likesForRecipe;
+    }, 0);
 
   const recipe_count = data.recipe_creation_prototype?.length || 0;
-  
+
   return {
     id: data.id,
     display_name: data.display_name,
@@ -43,9 +62,9 @@ function profileQuery(supabase: SupabaseClient) {
 
 export async function getPublicProfileByUserId(userId: string): Promise<PublicProfile | null> {
   const supabase = await createAnonymousClient();
-  
+
   const { data, error } = await profileQuery(supabase).eq("id", userId).single();
-    
+
   if (error || !data) {
     return null;
   }
@@ -107,7 +126,7 @@ export async function updateUserProfile(userId: string, displayName: string | nu
 
 export async function getPublicRecipesByUserId(userId: string): Promise<RecipeRead[]> {
   const supabase = await createAnonymousClient();
-  
+
   const { data, error } = await supabase
     .from("recipe_creation_prototype")
     .select(`
@@ -133,7 +152,7 @@ export async function getPublicRecipesByUserId(userId: string): Promise<RecipeRe
     .eq("user_id", userId)
     .eq("is_public", true)
     .order("created_at", { ascending: false });
-    
+
   if (error) {
     console.error(error);
     throw new Error("Failed to fetch public recipes");
@@ -144,6 +163,6 @@ export async function getPublicRecipesByUserId(userId: string): Promise<RecipeRe
     like_count: recipe.recipe_likes?.[0]?.count || 0,
     recipe_likes: undefined
   })));
-  
+
   return validatedRecipes;
 } 

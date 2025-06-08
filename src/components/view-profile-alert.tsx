@@ -2,7 +2,6 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { createProfileSlug } from "@/lib/utils";
 import { useProfile } from "@/hooks/use-profile";
 import Link from "next/link";
-import { Info, InfoIcon } from "lucide-react";
 
 export default function ViewProfileAlert() {
     const { profile, isLoading } = useProfile()

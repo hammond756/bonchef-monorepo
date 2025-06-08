@@ -16,9 +16,9 @@ import { TextPromptClient, Langfuse } from "langfuse"
 const langfuse = new Langfuse()
 
 export class CulinaryAgent {
-  private smart: Runnable<BaseLanguageModelInput, LLMResponse, RunnableConfig<Record<string, any>>>
-  private fast: Runnable<BaseLanguageModelInput, LLMResponse, RunnableConfig<Record<string, any>>>
-  private intentModel: Runnable<BaseLanguageModelInput, IntentResponse, RunnableConfig<Record<string, any>>>
+  private smart: Runnable<BaseLanguageModelInput, LLMResponse, RunnableConfig<Record<string, unknown>>>
+  private fast: Runnable<BaseLanguageModelInput, LLMResponse, RunnableConfig<Record<string, unknown>>>
+  private intentModel: Runnable<BaseLanguageModelInput, IntentResponse, RunnableConfig<Record<string, unknown>>>
   private prompts!: Record<string, TextPromptClient>
   private langfuseHandler: CallbackHandler
   private historyService: HistoryService
