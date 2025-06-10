@@ -28,11 +28,128 @@ The user asks questions about the following coding languages:
 - HTML
 - CSS
 
-### Code Implementation Guidelines
-Follow these rules when you write code:
-- Use early returns whenever possible to make the code more readable.
-- Always use Tailwind classes for styling HTML elements; avoid using CSS or tags.
-- Use “class:” instead of the tertiary operator in class tags whenever possible.
-- Use descriptive variable and function/const names. Also, event functions should be named with a “handle” prefix, like “handleClick” for onClick and “handleKeyDown” for onKeyDown.
-- Implement accessibility features on elements. For example, a tag should have a tabindex=“0”, aria-label, on:click, and on:keydown, and similar attributes.
-- Use consts instead of functions, for example, “const toggle = () =>”. Also, define a type if possible.
+The app is designed to scale across platforms (web, iOS, Android) and must remain maintainable by a small engineering team. As such, the codebase favors reusability, clarity, and strong architectural boundaries.
+
+---
+
+## 🔧 Tech Stack Overview
+
+- **Frontend & Backend:** Next.js (App Router, TypeScript)
+- **Database:** Supabase (PostgreSQL)
+- **Authentication & Storage:** Supabase
+- **Deployment:** Heroku
+- **E2E Testing:** Playwright (using `data-testid` selectors)
+
+---
+
+## 🧱 Database Standards
+
+- Use **UUIDs** as primary keys on all tables  
+  - Type: `uuid`  
+  - Default: `gen_random_uuid()`
+- Use the Supabase CLI:  
+  - Create migrations via `supabase migrations new <name>`  
+  - Commit and version-control all schema changes
+- ❌ **Avoid database functions or Supabase edge functions**  
+  - Reason: Difficult to version, hard to observe/debug
+  - All business logic should live in versioned application code
+
+---
+
+## 🧠 Business Logic Architecture
+
+- Business logic must live in **pure service modules**:
+  - Must be reusable across:
+    - Server actions
+    - API routes
+    - Client components (when applicable)
+  - Inject all dependencies (e.g. Supabase client, config, user context)
+    - Never hardcode dependencies inside services
+    - Services must be portable across runtime contexts
+
+---
+
+## 📦 Code Quality & Style
+
+- Language: TypeScript (ES modules)
+- Use modern ES/React idioms (e.g. async/await, arrow functions, hooks)
+- **Docstrings are required** for all exported functions
+- Comments:
+  - Use sparingly
+  - Focus on the **why**, not the what
+  - Write all comments in **English**
+- Avoid unnecessary abstraction or early optimization
+- Service methods never throw errors, but return a success flag, like
+
+```
+type ServiceResponse<T> = Promise<{
+    success: false
+    error: string
+} | {
+    success: true
+    data: T
+}>
+```
+
+- Always mark component props as Readonly
+- Avoid complex nesting, don't go more than 4 levels deep
+- Default parameters should come last in the function signature
+- Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator.
+
+---
+
+## 🔁 Code Reuse Rules
+
+- Prefer reuse over duplication
+- When building new functionality:
+  1. Search for similar patterns in the codebase
+  2. Refactor shared logic first if needed
+  3. Apply the logic in the new feature
+- Respect existing folder and file structure
+  - Organize code by domain or feature
+  - src/components: re-usable ui components 
+  - src/app: pages
+  - src/hooks: re-usable state logic
+  - src/callbacks: callbacks for langchain invocations
+  - src/services: business logic services, organized by domain (recipes, users, storage, etc..)
+  - src/stores: localized caching tools (like those using zustand)
+  - src/lib/utils.ts: helper functions that are domain agnostic
+
+---
+
+## ✅ Testing Requirements
+
+- Use **Playwright** for E2E tests
+  - Target elements via `data-testid` attributes
+  - UI components **must** expose `data-testid` props as needed
+- Prioritize:
+  - E2E and integration tests for user flows
+  - Unit tests for core business logic
+- Ensure all new features include or extend tests
+
+---
+
+## 🔄 Deployment & CI
+
+- App is deployed on **Heroku**
+- Use Heroku Config Vars for environment settings
+- All migrations must be committed before release
+- No changes should rely solely on the Supabase UI
+
+---
+
+## ✅ Summary Checklist for LLMs
+
+- [ ] Use UUIDs as PKs  
+- [ ] Write and version migrations  
+- [ ] Avoid edge/database functions  
+- [ ] Use services with injected dependencies  
+- [ ] Reuse and refactor before duplicating code  
+- [ ] Add `data-testid` in UI components  
+- [ ] Provide docstrings for all functions  
+- [ ] Comment *why*, not what  
+- [ ] Include tests or extend existing ones
+
+---
+
+> Generated code should be idiomatic, modular, testable, and follow the practices above. When in doubt, prefer explicitness over cleverness.
