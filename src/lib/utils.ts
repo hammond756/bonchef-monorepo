@@ -241,3 +241,12 @@ export async function resignImageUrl(supabase: SupabaseClient, url: string): Pro
   }
   return data.signedUrl
 }
+
+export function getHostnameFromUrl(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    console.error("Invalid URL provided to getHostnameFromUrl:", url);
+    return "";
+  }
+}

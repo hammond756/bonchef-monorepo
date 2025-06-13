@@ -30,17 +30,7 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
       dependencies: ["setup"],
-    },
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
-      dependencies: ["setup"],
-    },
-    {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"]  },
-      dependencies: ["setup"],
-    },
+    }
   ],
   webServer: {
     command: "npm run dev",

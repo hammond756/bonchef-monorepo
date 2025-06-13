@@ -31,7 +31,7 @@ export function ClaimRecipeButton({ recipeId, ownerId, user }: ClaimRecipeButton
   };
 
   return (
-    <div className="sticky top-16 z-20 bg-white border-b shadow-xs py-4">
+    <div className="sticky z-20 bg-white border-b shadow-xs py-4">
       <Container>
         <div className="flex flex-col items-center space-y-4 px-4">
           <div className="text-center space-y-2 max-w-xl">

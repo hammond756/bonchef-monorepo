@@ -8,14 +8,20 @@ import { Defuddle } from 'defuddle/node';
 import { Recipe as SchemaOrgRecipe } from "schema-dts";
 
 
-export async function formatRecipe(text: string): Promise<{ recipe: GeneratedRecipe, thumbnailUrl: string }> {
+type GeneratedRecipeWithSource = GeneratedRecipe & { source_name: string, source_url: string }
+
+
+export async function formatRecipe(text: string): Promise<{ recipe: GeneratedRecipeWithSource, thumbnailUrl: string }> {
   const model = new ChatOpenAI({
     apiKey: process.env.OPENAI_API_KEY,
     modelName: "gpt-4.1-mini",
     temperature: 0.1,
     maxTokens: 4096,
   }).withStructuredOutput(z.object({
-    recipe: GeneratedRecipeSchema,
+    recipe: GeneratedRecipeSchema.extend({
+      source_name: z.string(),
+      source_url: z.string(),
+    }),
     thumbnailUrl: z.string()
   }))
 

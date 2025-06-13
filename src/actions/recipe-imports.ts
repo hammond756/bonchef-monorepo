@@ -6,19 +6,25 @@ import { createAdminClient, createClient } from "@/utils/supabase/server";
 import { formatRecipe, getRecipeContent } from "@/lib/services/web-service";
 import { RecipeService } from "@/lib/services/recipe-service";
 import { RecipeGenerationService } from "@/lib/services/recipe-generation-service";
-import { hostedImageToBuffer } from "@/lib/utils";
+import { getHostnameFromUrl, hostedImageToBuffer } from "@/lib/utils";
 import { withTempFileFromUrl } from "@/lib/temp-file-utils";
 import { detectText } from "@/lib/services/google-vision-ai-service";
 import { StorageService } from "@/lib/services/storage-service";
 
-export async function scrapeRecipe(url: string): Promise<GeneratedRecipe & { thumbnail: string }> {
+type GeneratedRecipeWithSource = GeneratedRecipe & { source_name?: string | null, source_url?: string | null }
+
+export async function scrapeRecipe(url: string): Promise<GeneratedRecipeWithSource & { thumbnail: string }> {
   const recipeData = await getRecipeContent(url)
   const recipeInfo = await formatRecipe(recipeData)
   const { data, contentType, extension } = await hostedImageToBuffer(recipeInfo.thumbnailUrl)
   const thumbnail = await uploadImage(new File([data], `scraped-thumbnail.${extension}`, { type: contentType }))
 
+  const sourceName = recipeInfo.recipe.source_name || getHostnameFromUrl(url);
+
   return {
     ...recipeInfo.recipe,
+    source_name: sourceName,
+    source_url: url,
     thumbnail: thumbnail
   }
 }
@@ -86,7 +92,7 @@ export async function extractTextFromImage(imageUrl: string): Promise<string> {
   });
 }
 
-export async function createDraftRecipe(recipe: GeneratedRecipe & { thumbnail: string }, { isPublic = false }: { isPublic?: boolean } = {}): Promise<{id: string}> {
+export async function createDraftRecipe(recipe: GeneratedRecipeWithSource & { thumbnail: string }, { isPublic = false }: { isPublic?: boolean } = {}): Promise<{id: string}> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -106,15 +112,16 @@ export async function createDraftRecipe(recipe: GeneratedRecipe & { thumbnail: s
   const savedRecipe = await recipeService.createRecipe({
     ...recipe,
     is_public: isPublic,
-    source_url: "https://app.bonchef.io",
-    source_name: "BonChef",
+    source_url: recipe.source_url || "https://app.bonchef.io",
+    source_name: recipe.source_name || "BonChef",
+    thumbnail: recipe.thumbnail,
     description: "",
     user_id: userId,
-  });
+  })
 
   if (!savedRecipe.success) {
-    throw new Error(savedRecipe.error);
+    throw new Error(savedRecipe.error)
   }
 
-  return { id: savedRecipe.data.id };
+  return savedRecipe.data
 }

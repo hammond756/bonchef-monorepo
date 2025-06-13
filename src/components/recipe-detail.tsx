@@ -117,12 +117,10 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
   ];
 
   return (
-    <>
-      {/* De ClaimRecipeButton wordt verplaatst naar de gepadde content hieronder */}
-      
-      <div className="container mx-auto max-w-4xl"> {/* Hoofdcontainer nu weer met 'container' class, zonder px-4 */}
+    <>      
+      <div className="container mx-auto max-w-4xl">
         {variant === "saved" && recipe.thumbnail && (
-          <div className="relative aspect-[3/4] w-full overflow-hidden mb-6"> {/* Afbeelding wrapper, geen -mx-4, geen rounded-lg */}
+          <div className="relative aspect-[3/4] w-full overflow-hidden mb-6">
             {recipe.thumbnail && (
               <Image
                 src={recipe.thumbnail!}
@@ -135,7 +133,6 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
             <div className="absolute bottom-0 left-0 right-0 p-4 flex justify-between items-end text-white">
-              {/* Titel en chef info op afbeelding */}
               <div className="flex flex-col pr-16">
                 <Link
                   href={`/recipes/${recipe.id}`}
@@ -166,7 +163,6 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                   </Link>
                 )}
               </div>
-              {/* Actieknoppen op afbeelding */}
               <div className="absolute bottom-4 right-4 flex flex-col items-center space-y-2">
                 <ShareRecipeButton 
                   title={recipe.title} 
@@ -198,7 +194,6 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
           </div>
         )}
 
-        {/* Nieuwe wrapper voor alle content die padding nodig heeft */}
         <div className="px-4">
           {variant === "saved" && <ClaimRecipeButton
             user={user}
@@ -251,6 +246,21 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
               </TabsContent>
             </Tabs>
           </div>
+
+          {variant === 'saved' && recipe.source_name && recipe.source_name !== 'BonChef' && recipe.source_url && recipe.source_url !== 'https://app.bonchef.io' && (
+            <div className="text-center text-xs text-gray-500 py-8">
+              <span>Bron: </span>
+              <a
+                data-testid="recipe-source-link"
+                href={recipe.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-700 underline"
+              >
+                {recipe.source_name}
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </>
