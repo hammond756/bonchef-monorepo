@@ -1,0 +1,1 @@
+pg_dump postgresql://postgres:postgres@localhost:54322/postgres --data-only --inserts --column-inserts -n public -n auth > backup.sql

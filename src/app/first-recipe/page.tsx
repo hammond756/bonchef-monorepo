@@ -6,7 +6,7 @@ import { UrlDialog } from "@/components/url-dialog";
 import { ImageDialog } from "@/components/image-dialog";
 import { TextDialog } from "@/components/text-dialog";
 import { ImportButton } from "@/components/import-button"
-import { generateRecipeFromImage, generateRecipeFromSnippet, saveMarketingRecipe } from "@/actions/recipe-imports";
+import { generateRecipeFromImage, generateRecipeFromSnippet, createDraftRecipe } from "@/actions/recipe-imports";
 import { scrapeRecipe } from "@/actions/recipe-imports";
 import { useRouter } from "next/navigation";
 
@@ -16,20 +16,20 @@ export default function FirstRecipePage() {
 
   const submitUrl = async (validFormData: { url: string }) => {
     const recipe = await scrapeRecipe(validFormData.url);
-    const { id } = await saveMarketingRecipe({ ...recipe, thumbnail: recipe.thumbnail });
-    router.push(`/recipes/${id}`);
+    const { id } = await createDraftRecipe({ ...recipe, thumbnail: recipe.thumbnail }, { isPublic: true });
+    router.push(`/edit/${id}`);
   }
 
   const submitImage = async (validFormData: { imageUrl: string }) => {
     const recipe = await generateRecipeFromImage(validFormData.imageUrl);
-    const { id } = await saveMarketingRecipe(recipe);
-    router.push(`/recipes/${id}`);
+    const { id } = await createDraftRecipe(recipe, { isPublic: true });
+    router.push(`/edit/${id}`);
   }
 
   const submitText = async (validFormData: { text: string }) => {
     const recipe = await generateRecipeFromSnippet(validFormData.text);
-    const { id } = await saveMarketingRecipe(recipe);
-    router.push(`/recipes/${id}`);
+    const { id } = await createDraftRecipe(recipe, { isPublic: true });
+    router.push(`/edit/${id}`);
   }
 
   return (
@@ -39,12 +39,15 @@ export default function FirstRecipePage() {
           Recepten toevoegen kan op drie manieren, zodat jouw hele collectie bij bonchef onder de pannen kunnen
         </p>
         <div className="flex flex-col gap-4 w-full">
+        <ImportButton
+            className="bg-white"
+            onClick={() => setOpenDialog("url")} icon={<LinkIcon className="w-6 h-6 text-slate-600" />} backgroundColor="bg-slate-100" title="Site scannen" description="Plak een link naar een online recept" />
           <ImportButton
-            onClick={() => setOpenDialog("url")} icon={<LinkIcon className="w-6 h-6 text-slate-600" />} backgroundColor="bg-slate-100" title="Recepten website" description="Plak een link uit de browser in de chat" />
+            className="bg-white"
+            onClick={() => setOpenDialog("image")} icon={<ImageIcon className="w-6 h-6 text-purple-600" />} backgroundColor="bg-purple-100" title="Kookboek scannen" description="Maak een foto van een kookboek" />
           <ImportButton
-            onClick={() => setOpenDialog("image")} icon={<ImageIcon className="w-6 h-6 text-purple-600" />} backgroundColor="bg-purple-100" title="Kookboek foto" description="Maak een foto van een kookboek" />
-          <ImportButton
-            onClick={() => setOpenDialog("text")} icon={<TextIcon className="w-6 h-6 text-blue-600" />} backgroundColor="bg-blue-100" title="Plak of schrijf tekst" description="Kopieer een tekst uit je notities" />
+            className="bg-white"
+            onClick={() => setOpenDialog("text")} icon={<TextIcon className="w-6 h-6 text-blue-600" />} backgroundColor="bg-blue-100" title="Tekst invoeren" description="Kopieer een tekst uit je notities" />
         </div>
       </div>
       <UrlDialog open={openDialog === "url"} onOpenChange={() => setOpenDialog(null)} onSubmit={submitUrl} />

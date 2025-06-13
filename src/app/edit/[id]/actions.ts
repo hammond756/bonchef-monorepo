@@ -1,6 +1,8 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { RecipeService } from "@/lib/services/recipe-service";
+import { RecipeWrite } from "@/lib/types";
+import { createAdminClient, createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
 export async function deleteRecipe(recipeId: string) {
@@ -19,4 +21,19 @@ export async function deleteRecipe(recipeId: string) {
   if (error) {
     throw error;
   }
+}
+
+
+export async function updateRecipe(id: string, recipe: RecipeWrite) {
+  const supabase = await createAdminClient();
+
+  const recipeService = new RecipeService(supabase)
+
+  const response = await recipeService.updateRecipe(id, recipe)
+
+  if (!response.success) {
+    throw new Error(response.error)
+  }
+
+  return response.data
 }

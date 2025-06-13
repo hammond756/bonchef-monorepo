@@ -1,5 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { RecipeWrite, RecipeWriteSchema, RecipeRead } from "../types";
+import { RecipeWrite, RecipeWriteSchema, RecipeRead, RecipeStatusEnum } from "../types";
+
 
 type ServiceResponse<T> = Promise<{
     success: false
@@ -60,8 +61,13 @@ export class RecipeService {
             return { success: false, error: validatedRecipe.error }
         }
 
+        const updateData = {
+            ...validatedRecipe.data,
+            status: RecipeStatusEnum.enum.PUBLISHED
+        };
+
         const { data, error, status, statusText } = await this.supabase
-            .from("recipe_creation_prototype").update(validatedRecipe.data).eq("id", id)
+            .from("recipe_creation_prototype").update(updateData).eq("id", id)
             .select("*")
             .single()
 

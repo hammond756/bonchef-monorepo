@@ -1,6 +1,7 @@
 import { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants";
+import { importRecipe, saveRecipe } from "./utils/recipe-helpers";
 
 async function createRecipe(page: Page, baseURL: string) {
   const response = await page.request.post(`${baseURL}/api/save-recipe`, {
@@ -215,4 +216,85 @@ test("deletes recipe", async ({ authenticatedPage: page, baseURL }) => {
   await page.goto(`${baseURL}/recipes/${recipeForDeletion}`);
   await expect(page.getByText("Recept niet gevonden")).toBeVisible();
   await expect(page.getByText("Terug naar homepage")).toBeVisible();
+});
+
+test.describe("Recipe import and edit flows", () => {
+  test.beforeEach(async ({ authenticatedPage: page, baseURL }) => {
+    // Navigate to import page before each test
+    await page.goto(`${baseURL}/import`);
+  });
+
+  test("imports a recipe from a URL, edits, and saves it", async ({ authenticatedPage: page }) => {
+    const recipeId = await importRecipe({
+      page,
+      importMethod: "url",
+      importContent: "https://www.hellofresh.nl/recipes/kleine-half-om-half-hamburgers-met-tapenade-roomsaus-63a2d0fc858485949306b4d5"
+    });
+
+    // Edit the title
+    const newTitle = "Mijn Geweldige Enchiladas";
+    await page.locator("input[placeholder='Recept naam']").fill(newTitle);
+
+    // Save the recipe
+    await saveRecipe({ page, recipeId, visibility: "Privé" });
+
+    // Verify the title was updated
+    await expect(page.getByTestId("recipe-title")).toContainText(newTitle);
+  });
+
+  test("imports a recipe, edits, and cancels, deleting the draft", async ({ authenticatedPage: page, baseURL }) => {
+    const recipeId = await importRecipe({
+      page,
+      importMethod: "url",
+      importContent: "https://www.hellofresh.nl/recipes/kleine-half-om-half-hamburgers-met-tapenade-roomsaus-63a2d0fc858485949306b4d5"
+    });
+
+    // Edit the title to make the form "dirty"
+    await page.locator("input[placeholder='Recept naam']").fill("This should be deleted");
+
+    // Click the cancel button
+    await page.getByTestId("cancel-recipe").click();
+
+    // Verify the confirmation dialog appears and accept it
+    await expect(page.getByText("Weet je het zeker?")).toBeVisible();
+    await page.getByRole('button', { name: 'Annuleer en verlies wijzigingen' }).click();
+
+    // Verify we are navigated back to the import page
+    await expect(page).toHaveURL(`${baseURL}/import`);
+
+    // Verify the draft recipe was deleted by trying to navigate to its edit page
+    await page.goto(`${baseURL}/edit/${recipeId}`);
+    await expect(page.getByText("Er is iets misgegaan bij het laden van het recept.")).toBeVisible();
+  });
+
+  test("triggers unsaved changes warning on browser navigation", async ({ authenticatedPage: page }) => {
+    await importRecipe({
+      page,
+      importMethod: "text",
+      importContent: "havermout pap"
+    });
+
+    const editPageUrl = page.url();
+
+    // Edit the title to make the form "dirty"
+    await page.locator("input[placeholder='Recept naam']").fill("Unsaved Changes Test");
+
+    let dialogAppeared = false;
+    // Set up a listener to automatically dismiss the 'beforeunload' dialog
+    page.once('dialog', dialog => {
+      dialog.dismiss();
+      dialogAppeared = true;
+    });
+
+    // Attempt to close the tab by navigating to about:blank
+    await page.evaluate(() => window.location.href = 'about:blank');
+
+    // Wait for the dialog to appear
+    await page.waitForTimeout(500);
+    
+    expect(dialogAppeared).toBe(true);
+
+    // Verify that the URL has NOT changed, confirming navigation was blocked
+    expect(page.url()).toBe(editPageUrl);
+  });
 });

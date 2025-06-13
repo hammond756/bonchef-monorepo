@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createAdminClient, createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { uploadImageFromBase64Server, imageUrlToBase64Server } from "@/utils/supabase/storage-server";
 import { RecipeService } from "@/lib/services/recipe-service";
@@ -43,20 +43,30 @@ async function processThumbnail(thumbnail: string): Promise<{ success: true, dat
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
+  const data = await request.json();
+  const { id, ...recipeData } = data;
 
+  let supabase = await createClient();
+  let userId = null
+  
   const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
+  
+  if (!user && recipeData.user_id !== process.env.NEXT_PUBLIC_MARKETING_USER_ID) {
     return NextResponse.json(
       { error: "User not found" },
       { status: 401 }
     );
   }
+
+  userId = user?.id
+
+  // When part of the onboarding flow
+  if (recipeData.user_id === process.env.NEXT_PUBLIC_MARKETING_USER_ID) {
+    supabase = await createAdminClient()
+    userId = process.env.NEXT_PUBLIC_MARKETING_USER_ID
+  }
   
   const recipeService = new RecipeService(supabase)
-  const data = await request.json();
-  const { id, ...recipeData } = data;
 
   // Process thumbnail to store in Supabase Storage instead of as base64
   if (recipeData.thumbnail) {
@@ -93,7 +103,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ recipe: response.data });
   } else {
-    const response = await recipeService.createRecipe({...recipeData, user_id: user.id})
+    const response = await recipeService.createRecipe({...recipeData, user_id: userId})
 
     if (!response.success) {
       return NextResponse.json(

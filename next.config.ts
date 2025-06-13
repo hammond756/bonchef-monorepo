@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 
+const supabaseDomain = process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1];
+
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
-    domains: ['localhost', '127.0.0.1', 'lwnjybqifrnppmahxera.supabase.co', 'lh3.googleusercontent.com', 'ui-avatars.com'],
+    domains: ['localhost', '127.0.0.1', supabaseDomain || 'supabase.co', 'lh3.googleusercontent.com', 'ui-avatars.com'],
   },
   async headers() {
     return [

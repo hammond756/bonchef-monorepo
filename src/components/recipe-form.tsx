@@ -18,15 +18,26 @@ import {
   Plus as PlusIcon, 
   AlertCircle,
 } from "lucide-react";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Recipe, Unit } from "@/lib/types";
-import { unitEnum } from "@/lib/types";
+import { unitEnum, RecipeStatusEnum } from "@/lib/types";
 import { Alert, AlertDescription } from "./ui/alert";
 import { useRouter } from "next/navigation";
-import { deleteRecipe } from "@/app/edit/[id]/actions";
+import { deleteRecipe, updateRecipe } from "@/app/edit/[id]/actions";
 import { ImageGenerationModal } from "./image-generation-modal";
 import { RecipeVisibilityModal } from "./recipe-visibility-modal";
 import { unitMap } from "@/lib/utils";
 import { useFileUpload } from "@/hooks/use-file-upload"
+import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning";
 import { createClient } from "@/utils/supabase/client";
 import { StorageService } from "@/lib/services/storage-service";
 import { v4 as uuidv4 } from 'uuid';
@@ -63,6 +74,8 @@ function updateIngredientInGroup(
 
 export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }: RecipeFormProps) {
   const [recipe, setRecipe] = useState(initialRecipe);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -72,14 +85,36 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
   const units = unitEnum.options;
   const router = useRouter();
 
+  useUnsavedChangesWarning(isDirty);
+
+  async function proceedWithCancel() {
+    if (recipe.status === RecipeStatusEnum.enum.DRAFT) {
+      await deleteRecipe(recipeId);
+    }
+    router.back();
+  }
+
+  async function handleCancel() {
+    if (isDirty) {
+      setIsCancelConfirmOpen(true);
+    } else {
+      await proceedWithCancel();
+    }
+  }
+
   // Use the file upload hook
   const { 
     preview,
     file,
     fileInputRef,
-    handleChange: handleFileChange,
+    handleChange: baseHandleFileChange,
     setPreview,
   } = useFileUpload({ initialFilePath: recipe.thumbnail });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    baseHandleFileChange(e);
+    setIsDirty(true);
+  }
 
   useEffect(() => {
     // Resize all textareas on mount and when recipe changes
@@ -120,6 +155,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
       // The server will handle the upload to Supabase Storage when saving
       setRecipe(prev => ({ ...prev, thumbnail: data.image }));
       setPreview(data.image);
+      setIsDirty(true);
     } catch (error) {
       console.error("Failed to generate image:", error);
       setImageError("Failed to generate image. Please try again.");
@@ -154,26 +190,12 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
     }
 
     try {
-      const response = await fetch("/api/save-recipe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...recipe,
-          id: recipeId,
-          is_public: isPublic,
-          // Fallback to the existing thumbnail if no new image is uploaded
-          thumbnail: imageUrl || recipe.thumbnail,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        setSubmitError(errorData.error);
-        return;
-      }
-
-      const data = await response.json();
-      router.push(`/recipes/${recipeId || data.recipe.id}`);
+      const response = await updateRecipe(recipeId, {
+        ...recipe,
+        is_public: isPublic,
+        thumbnail: imageUrl || recipe.thumbnail,
+      })
+      router.push(`/recipes/${recipeId || response.id}`);
     } catch (error) {
       console.error("Failed to save recipe:", error);
       setSubmitError("Failed to save recipe. Please try again.");
@@ -188,6 +210,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
   ) {
     autoResizeTextarea(e.target);
     updateFn(e.target.value);
+    setIsDirty(true);
   }
 
   function handleAddIngredient(groupIdx: number) {
@@ -198,6 +221,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
         ingredients: [...group.ingredients, createDefaultIngredient()],
       })),
     }));
+    setIsDirty(true);
   }
 
   function handleRemoveIngredient(groupIdx: number, ingredientIdx: number) {
@@ -208,6 +232,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
         ingredients: group.ingredients.filter((_, idx) => idx !== ingredientIdx),
       })),
     }));
+    setIsDirty(true);
   }
 
   function handleIngredientChange(
@@ -232,6 +257,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
         ingredients: updatedIngredients
       };
     });
+    setIsDirty(true);
   }
 
   function handleAddInstruction() {
@@ -239,6 +265,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
       ...prev,
       instructions: [...prev.instructions, ""],
     }));
+    setIsDirty(true);
   }
 
   function handleRemoveInstruction(idx: number) {
@@ -246,6 +273,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
       ...prev,
       instructions: prev.instructions.filter((_, i) => i !== idx),
     }));
+    setIsDirty(true);
   }
 
   async function handleDeleteRecipe(recipeId: string) {
@@ -312,6 +340,8 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                 <div className="w-full sm:-mx-6 md:-mx-8 lg:-mx-12 mt-4 relative group">
                   <Image
                     src={preview}
+                    width={1000}
+                    height={1000}
                     alt="Recipe preview"
                     data-testid="recipe-image-preview"
                     className="w-full h-[300px] md:h-[400px] object-contain"
@@ -325,8 +355,10 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
         <Input
           className="bg-white"
           value={recipe.title}
-          onChange={(e) =>
+          onChange={(e) => {
             setRecipe((prev) => ({ ...prev, title: e.target.value }))
+            setIsDirty(true)
+          }
           }
           placeholder="Recept naam"
         />
@@ -529,7 +561,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
           <Button 
             type="button" 
             variant="outline"
-            onClick={() => router.push(`/recipes/${recipeId}`)}
+            onClick={handleCancel}
             data-testid="cancel-recipe"
           >
             Annuleren
@@ -558,6 +590,21 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
         onConfirm={(isPublic: boolean) => saveRecipe(isPublic)}
         defaultVisibility={isPublic}
       />
+
+      <AlertDialog open={isCancelConfirmOpen} onOpenChange={setIsCancelConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Weet je het zeker?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Je hebt wijzigingen die nog niet zijn opgeslagen. Als je annuleert, gaan deze wijzigingen verloren.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Blijf bewerken</AlertDialogCancel>
+            <AlertDialogAction onClick={proceedWithCancel}>Annuleer en verlies wijzigingen</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </form>
   );
 }

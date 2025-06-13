@@ -36,6 +36,8 @@ export const IngredientSchema = z.object({
   description: z.string(),
 });
 
+export const RecipeStatusEnum = z.enum(["DRAFT", "PUBLISHED"]);
+
 export type Ingredient = z.infer<typeof IngredientSchema>;
 
 // Base recipe schema with shared fields
@@ -64,6 +66,7 @@ export const RecipeWriteSchema = BaseRecipeSchema.extend({
   source_name: z.string(),
   is_public: z.boolean().optional().default(false),
   user_id: z.string().optional(),
+  status: RecipeStatusEnum.optional(),
 });
 
 // Schema for database read operations (includes computed fields)

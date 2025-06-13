@@ -1,7 +1,7 @@
 "use server"
 
 import { v4 as uuidv4 } from "uuid";
-import { GeneratedRecipe, RecipeRead } from "@/lib/types";
+import { GeneratedRecipe } from "@/lib/types";
 import { createAdminClient, createClient } from "@/utils/supabase/server";
 import { formatRecipe, getRecipeContent } from "@/lib/services/web-service";
 import { RecipeService } from "@/lib/services/recipe-service";
@@ -86,50 +86,35 @@ export async function extractTextFromImage(imageUrl: string): Promise<string> {
   });
 }
 
-export async function saveMarketingRecipe(recipe: GeneratedRecipe & { thumbnail: string }): Promise<RecipeRead> {
-  const supabaseAdmin = await createAdminClient()
-  const recipeService = new RecipeService(supabaseAdmin)
+export async function createDraftRecipe(recipe: GeneratedRecipe & { thumbnail: string }, { isPublic = false }: { isPublic?: boolean } = {}): Promise<{id: string}> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let userId = user?.id;
+
+  if (!userId) {
+    userId = process.env.NEXT_PUBLIC_MARKETING_USER_ID;
+    if (!userId) {
+      throw new Error("Marketing user ID not configured");
+    }
+  }
+
+  // Use the admin client to allow creating a recipe for another user
+  const supabaseAdmin = await createAdminClient();
+  const recipeService = new RecipeService(supabaseAdmin);
 
   const savedRecipe = await recipeService.createRecipe({
     ...recipe,
-    is_public: true,
-    source_url: "https://app.bonchef.io",
-    source_name: "BonChef",
-    thumbnail: recipe.thumbnail,
-    description: "",
-    user_id: process.env.NEXT_PUBLIC_MARKETING_USER_ID!,
-  })
-
-  if (!savedRecipe.success) {
-    throw new Error(savedRecipe.error)
-  }
-
-  return savedRecipe.data
-}
-
-export async function saveRecipe(recipe: GeneratedRecipe & { thumbnail: string }): Promise<RecipeRead> {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    throw new Error("User not found")
-  }
-
-  const recipeService = new RecipeService(supabase)
-
-  const savedRecipe = await recipeService.createRecipe({
-    ...recipe,
-    is_public: false,
+    is_public: isPublic,
     source_url: "https://app.bonchef.io",
     source_name: "BonChef",
     description: "",
-    user_id: user.id,
-  })
+    user_id: userId,
+  });
 
   if (!savedRecipe.success) {
-    throw new Error(savedRecipe.error)
+    throw new Error(savedRecipe.error);
   }
 
-  return savedRecipe.data
+  return { id: savedRecipe.data.id };
 }

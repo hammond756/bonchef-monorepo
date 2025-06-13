@@ -8,8 +8,8 @@ import { useEffect, useState } from "react"
 import { UrlDialog } from "@/components/url-dialog"
 import { ImageDialog } from "@/components/image-dialog"
 import { TextDialog } from "@/components/text-dialog"
-import { generateRecipeFromImage, generateRecipeFromSnippet } from "@/actions/recipe-imports"
-import { saveRecipe, scrapeRecipe } from "@/actions/recipe-imports"
+import { generateRecipeFromImage, generateRecipeFromSnippet, createDraftRecipe } from "@/actions/recipe-imports"
+import { scrapeRecipe } from "@/actions/recipe-imports"
 import { useChatStore } from "@/lib/store/chat-store"
 
 export default function ImportPage() {
@@ -31,20 +31,20 @@ export default function ImportPage() {
 
   const submitUrl = async (validFormData: { url: string }) => {
     const recipe = await scrapeRecipe(validFormData.url);
-    const { id } = await saveRecipe({ ...recipe, thumbnail: recipe.thumbnail });
-    router.push(`/recipes/${id}`);
+    const { id } = await createDraftRecipe({ ...recipe, thumbnail: recipe.thumbnail });
+    router.push(`/edit/${id}`);
   }
 
   const submitImage = async (validFormData: { imageUrl: string }) => {
     const recipe = await generateRecipeFromImage(validFormData.imageUrl);
-    const { id } = await saveRecipe(recipe);
-    router.push(`/recipes/${id}`);
+    const { id } = await createDraftRecipe(recipe);
+    router.push(`/edit/${id}`);
   }
 
   const submitText = async (validFormData: { text: string }) => {
     const recipe = await generateRecipeFromSnippet(validFormData.text);
-    const { id } = await saveRecipe(recipe);
-    router.push(`/recipes/${id}`);
+    const { id } = await createDraftRecipe(recipe);
+    router.push(`/edit/${id}`);
   }
 
   const handleNewChat = () => {
