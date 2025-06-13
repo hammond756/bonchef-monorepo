@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react"
 
 interface PageContentSpacerProps {
-  className?: string;
+    className?: string
 }
 
 /**
@@ -10,8 +10,8 @@ interface PageContentSpacerProps {
  * This is typically needed on pages that do not start with a full-bleed image.
  */
 export function PageContentSpacer({ className }: PageContentSpacerProps) {
-  // BackButton is h-10 (40px) and positioned top-4 (16px).
-  // Total space occupied by button from top: 40px + 16px = 56px.
-  // h-16 (64px) provides 8px clearance below the button.
-  return <div className={`h-16 ${className || ''}`} aria-hidden="true" />;
-} 
+    // BackButton is h-10 (40px) and positioned top-4 (16px).
+    // Total space occupied by button from top: 40px + 16px = 56px.
+    // h-16 (64px) provides 8px clearance below the button.
+    return <div className={`h-16 ${className || ""}`} aria-hidden="true" />
+}

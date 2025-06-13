@@ -1,20 +1,18 @@
-import Langfuse from "langfuse";
-import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
+import Langfuse from "langfuse"
+import { NextRequest, NextResponse } from "next/server"
+import OpenAI from "openai"
 
 const langfuse = new Langfuse()
 
 export async function POST(request: NextRequest) {
-    const { text, image } = await request.json();
+    const { text, image } = await request.json()
 
     const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
-    });
-
+    })
 
     const prompt = await langfuse.getPrompt("DishcoveryTeaser", undefined, { type: "text" })
     const promptText = await prompt.compile()
-
 
     const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -39,11 +37,11 @@ export async function POST(request: NextRequest) {
                 ],
             },
         ],
-    });
+    })
 
     const textResponse = response.choices[0].message.content
 
     return NextResponse.json({
         teaser: textResponse,
-    });
+    })
 }

@@ -33,12 +33,12 @@ An easy way to create a seed.sql file for Supabase is to simple create objects l
 
 - `/src/app`: Next.js App Router pages and API routes
 - `/src/components`: Reusable React components
-  - `/ui`: Shadcn UI components
-  - `/layout`: Layout components (header, footer, etc.)
-  - `/auth`: Authentication-related components
+    - `/ui`: Shadcn UI components
+    - `/layout`: Layout components (header, footer, etc.)
+    - `/auth`: Authentication-related components
 - `/src/lib`: Library code and utilities
 - `/src/utils`: Utility functions
-  - `/supabase`: Supabase client and utilities
+    - `/supabase`: Supabase client and utilities
 - `/src/hooks`: Custom React hooks
 - `/src/tests`: Test files
 
@@ -49,21 +49,25 @@ This application implements a sophisticated, mobile-first layout strategy design
 ### Architecture Principles
 
 **1. Scroll-Aware Navigation**
+
 - Navigation elements (top bar, tab bar) intelligently hide/show based on scroll direction
 - Provides maximum content viewing area while maintaining easy access to navigation
 - Uses `requestAnimationFrame` for smooth, performant animations
 
 **2. Layout Composition**
+
 - Two primary layout types: `BaseLayout` (top bar only) and `TabLayout` (top + tab bar)
 - Layouts wrap page content and handle navigation positioning automatically
 - Clean separation between layout logic and page content
 
 **3. Mobile-First Design**
+
 - Safe area handling for iOS devices (notches, home indicators)
 - Fixed positioning with proper content spacing
 - Touch-friendly interaction zones
 
 **4. Route-Based Behavior**
+
 - Tab navigation only appears on designated pages (`/ontdek`, `/collection`, `/import`)
 - Other pages use simplified top-bar-only layout
 - Automatic layout selection based on route structure
@@ -71,11 +75,13 @@ This application implements a sophisticated, mobile-first layout strategy design
 ### Layout Components
 
 **BaseLayout** (`src/components/layouts/base-layout.tsx`)
+
 - For pages requiring only top navigation
 - Used by: authentication pages, settings, individual content views
 - Accepts `topBarContent` prop for custom header content
 
 **TabLayout** (`src/components/layouts/tab-layout.tsx`)
+
 - For main application pages with bottom navigation
 - Inherits all BaseLayout functionality plus tab bar
 - Accepts both `topBarContent` and `tabBarContent` props
@@ -83,16 +89,19 @@ This application implements a sophisticated, mobile-first layout strategy design
 ### Core Components
 
 **TopBar** (`src/components/layout/top-bar.tsx`)
+
 - Fixed-position header with scroll-aware visibility
 - Handles safe area insets automatically
 - Provides spacer element to prevent content overlap
 
 **TabBar** (`src/components/layout/tab-bar.tsx`)
+
 - Fixed-position bottom navigation
 - Route-aware visibility (only shows on tab pages)
 - Floating action button integration
 
 **useScrollDirection Hook** (`src/hooks/use-scroll-direction.ts`)
+
 - Detects scroll direction with configurable threshold
 - Optimized with `requestAnimationFrame` for performance
 - Returns visibility state for navigation elements
@@ -102,37 +111,40 @@ This application implements a sophisticated, mobile-first layout strategy design
 **Adding New Pages:**
 
 1. **For content pages** (profiles, recipes, settings):
-   ```tsx
-   // app/your-page/layout.tsx
-   import { BaseLayout } from '@/components/layouts/base-layout';
-   
-   export default function YourPageLayout({ children }) {
-     return <BaseLayout>{children}</BaseLayout>;
-   }
-   ```
+
+    ```tsx
+    // app/your-page/layout.tsx
+    import { BaseLayout } from "@/components/layouts/base-layout"
+
+    export default function YourPageLayout({ children }) {
+        return <BaseLayout>{children}</BaseLayout>
+    }
+    ```
 
 2. **For main navigation pages** (if adding to tab structure):
-   ```tsx
-   // app/your-tab-page/layout.tsx
-   import { TabLayout } from '@/components/layouts/tab-layout';
-   
-   export default function YourTabPageLayout({ children }) {
-     return <TabLayout>{children}</TabLayout>;
-   }
-   ```
+
+    ```tsx
+    // app/your-tab-page/layout.tsx
+    import { TabLayout } from "@/components/layouts/tab-layout"
+
+    export default function YourTabPageLayout({ children }) {
+        return <TabLayout>{children}</TabLayout>
+    }
+    ```
 
 **Customizing Navigation Content:**
+
 ```tsx
-<BaseLayout 
-  topBarContent={
-    <div className="flex items-center justify-between w-full">
-      <BackButton />
-      <h1>Custom Title</h1>
-      <SettingsButton />
-    </div>
-  }
+<BaseLayout
+    topBarContent={
+        <div className="flex w-full items-center justify-between">
+            <BackButton />
+            <h1>Custom Title</h1>
+            <SettingsButton />
+        </div>
+    }
 >
-  {children}
+    {children}
 </BaseLayout>
 ```
 
@@ -166,12 +178,14 @@ This layout strategy ensures consistent user experience while providing flexibil
 ### Authentication and Authorization
 
 The application uses Supabase for authentication. Middleware ensures that user sessions are properly managed. Recipe endpoints are authenticated and only return:
+
 - Public recipes from the Bonchef collection
 - The logged-in user's own recipes
 
 ### Database Schema
 
 The database includes relationships between Users and Recipes, where:
+
 - Each Recipe has an owner (User)
 - Recipes can be public or private
 - Only the owner can edit their own recipes
@@ -223,6 +237,7 @@ Teaser messages are sent by the bot as messages with a specific type:
 ```
 
 When a user clicks on a teaser card:
+
 1. The application makes a streaming request to the `/api/generate-recipe` endpoint
 2. The response is processed using the stream parser utilities
 3. The full recipe details are displayed in a modal without leaving the chat interface

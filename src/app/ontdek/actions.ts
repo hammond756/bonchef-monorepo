@@ -4,9 +4,7 @@ import { createClient } from "@/utils/supabase/server"
 
 export async function likeRecipe(recipeId: string) {
     const supabase = await createClient()
-    const { error } = await supabase
-        .from("recipe_likes")
-        .insert({ recipe_id: recipeId })
+    const { error } = await supabase.from("recipe_likes").insert({ recipe_id: recipeId })
 
     if (error) {
         if (error.code === "42501") {
@@ -21,10 +19,7 @@ export async function likeRecipe(recipeId: string) {
 
 export async function unlikeRecipe(recipeId: string) {
     const supabase = await createClient()
-    const { error } = await supabase
-        .from("recipe_likes")
-        .delete()
-        .eq("recipe_id", recipeId)
+    const { error } = await supabase.from("recipe_likes").delete().eq("recipe_id", recipeId)
 
     if (error) {
         console.error("Error unliking recipe:", error)

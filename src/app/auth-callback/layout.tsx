@@ -1,13 +1,5 @@
-import { BaseLayout } from '@/components/layouts/base-layout';
+import { BaseLayout } from "@/components/layouts/base-layout"
 
-export default function AuthCallbackLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <BaseLayout>
-      {children}
-    </BaseLayout>
-  );
-} 
+export default function AuthCallbackLayout({ children }: { children: React.ReactNode }) {
+    return <BaseLayout>{children}</BaseLayout>
+}

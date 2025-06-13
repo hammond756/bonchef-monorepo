@@ -1,9 +1,9 @@
-import { Page, expect } from "@playwright/test";
+import { Page, expect } from "@playwright/test"
 
 interface ImportRecipeOptions {
-  page: Page;
-  importMethod: "url" | "text";
-  importContent: string;
+    page: Page
+    importMethod: "url" | "text"
+    importContent: string
 }
 
 /**
@@ -12,30 +12,30 @@ interface ImportRecipeOptions {
  * @returns The ID of the newly created recipe draft.
  */
 export async function importRecipe(options: ImportRecipeOptions): Promise<string> {
-  const { page, importMethod, importContent } = options;
+    const { page, importMethod, importContent } = options
 
-  if (importMethod === "url") {
-    await page.getByRole("button", { name: "Site scannen" }).click();
-    await page.locator("input[name='url']").fill(importContent);
-  } else {
-    await page.getByRole("button", { name: "Tekst invoeren" }).click();
-    await page.locator("textarea[name='text']").fill(importContent);
-  }
+    if (importMethod === "url") {
+        await page.getByRole("button", { name: "Site scannen" }).click()
+        await page.locator("input[name='url']").fill(importContent)
+    } else {
+        await page.getByRole("button", { name: "Tekst invoeren" }).click()
+        await page.locator("textarea[name='text']").fill(importContent)
+    }
 
-  await page.getByRole("button", { name: "Toevoegen" }).click();
+    await page.getByRole("button", { name: "Toevoegen" }).click()
 
-  await page.waitForURL(/\/edit\//, { timeout: 60000 });
-  const url = page.url();
-  const recipeId = url.split("/").pop()!;
-  expect(url).toContain(`/edit/${recipeId}`);
+    await page.waitForURL(/\/edit\//, { timeout: 60000 })
+    const url = page.url()
+    const recipeId = url.split("/").pop()!
+    expect(url).toContain(`/edit/${recipeId}`)
 
-  return recipeId;
+    return recipeId
 }
 
 interface SaveRecipeOptions {
-  page: Page;
-  recipeId: string;
-  visibility: "Privé" | "Openbaar";
+    page: Page
+    recipeId: string
+    visibility: "Privé" | "Openbaar"
 }
 
 /**
@@ -44,10 +44,10 @@ interface SaveRecipeOptions {
  * @param options
  */
 export async function saveRecipe(options: SaveRecipeOptions): Promise<void> {
-  const { page, recipeId, visibility } = options;
+    const { page, recipeId, visibility } = options
 
-  await page.getByTestId("save-recipe").click();
-  await page.getByText(visibility).click();
-  await page.getByRole("button", { name: "Opslaan" }).click();
-  await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`), { timeout: 60000 });
-} 
+    await page.getByTestId("save-recipe").click()
+    await page.getByText(visibility).click()
+    await page.getByRole("button", { name: "Opslaan" }).click()
+    await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`), { timeout: 60000 })
+}

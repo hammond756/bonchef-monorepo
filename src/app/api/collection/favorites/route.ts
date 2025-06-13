@@ -13,7 +13,7 @@ export async function GET() {
         return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    data.forEach(recipe => {
+    data.forEach((recipe) => {
         recipe.like_count = recipe.recipe_likes?.[0]?.count || 0
     })
     return NextResponse.json(data)

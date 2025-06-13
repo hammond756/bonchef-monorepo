@@ -3,7 +3,10 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
     const supabase = await createClient()
-    const { data: { user }, error } = await supabase.auth.getUser()
+    const {
+        data: { user },
+        error,
+    } = await supabase.auth.getUser()
 
     if (error || !user) {
         console.error(error)
@@ -20,7 +23,7 @@ export async function GET() {
         return NextResponse.json({ error: recipeError.message }, { status: 500 })
     }
 
-    data.forEach(recipe => {
+    data.forEach((recipe) => {
         recipe.like_count = recipe.recipe_likes?.[0]?.count || 0
     })
     return NextResponse.json(data)

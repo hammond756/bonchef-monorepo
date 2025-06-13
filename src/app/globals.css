@@ -1,72 +1,72 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Lora:wght@400;500;600;700&display=swap");
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @plugin 'tailwindcss-animate';
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --animate-jiggle: jiggle 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
-  --animate-sheen: sheen 2s infinite;
+    --animate-jiggle: jiggle 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
+    --animate-sheen: sheen 2s infinite;
 
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
+    --color-background: hsl(var(--background));
+    --color-foreground: hsl(var(--foreground));
 
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
+    --color-card: hsl(var(--card));
+    --color-card-foreground: hsl(var(--card-foreground));
 
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
+    --color-popover: hsl(var(--popover));
+    --color-popover-foreground: hsl(var(--popover-foreground));
 
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
+    --color-primary: hsl(var(--primary));
+    --color-primary-foreground: hsl(var(--primary-foreground));
 
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
+    --color-secondary: hsl(var(--secondary));
+    --color-secondary-foreground: hsl(var(--secondary-foreground));
 
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
+    --color-muted: hsl(var(--muted));
+    --color-muted-foreground: hsl(var(--muted-foreground));
 
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
+    --color-accent: hsl(var(--accent));
+    --color-accent-foreground: hsl(var(--accent-foreground));
 
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
+    --color-destructive: hsl(var(--destructive));
+    --color-destructive-foreground: hsl(var(--destructive-foreground));
 
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
+    --color-border: hsl(var(--border));
+    --color-input: hsl(var(--input));
+    --color-ring: hsl(var(--ring));
 
-  --color-chart-1: hsl(var(--chart-1));
-  --color-chart-2: hsl(var(--chart-2));
-  --color-chart-3: hsl(var(--chart-3));
-  --color-chart-4: hsl(var(--chart-4));
-  --color-chart-5: hsl(var(--chart-5));
+    --color-chart-1: hsl(var(--chart-1));
+    --color-chart-2: hsl(var(--chart-2));
+    --color-chart-3: hsl(var(--chart-3));
+    --color-chart-4: hsl(var(--chart-4));
+    --color-chart-5: hsl(var(--chart-5));
 
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
 
-  @keyframes jiggle {
-    0%,
-    100% {
-      transform: translateX(0);
+    @keyframes jiggle {
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+        25% {
+            transform: translateX(-4px);
+        }
+        75% {
+            transform: translateX(4px);
+        }
     }
-    25% {
-      transform: translateX(-4px);
+    @keyframes sheen {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(100%);
+        }
     }
-    75% {
-      transform: translateX(4px);
-    }
-  }
-  @keyframes sheen {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(100%);
-    }
-  }
 }
 
 /*
@@ -78,177 +78,191 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
-  }
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentcolor);
+    }
 }
 
 /* Safe area utilities */
 @layer utilities {
-  .safe-area-top {
-    padding-top: env(safe-area-inset-top);
-  }
-  
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  .safe-area-left {
-    padding-left: env(safe-area-inset-left);
-  }
-  
-  .safe-area-right {
-    padding-right: env(safe-area-inset-right);
-  }
+    .safe-area-top {
+        padding-top: env(safe-area-inset-top);
+    }
 
-  .bg-bonchef-green-tab {
-    background-color: var(--bonchef-green-tab);
-  }
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .safe-area-left {
+        padding-left: env(safe-area-inset-left);
+    }
+
+    .safe-area-right {
+        padding-right: env(safe-area-inset-right);
+    }
+
+    .bg-bonchef-green-tab {
+        background-color: var(--bonchef-green-tab);
+    }
 }
 
 /* Ensure smooth scrolling and prevent scroll bounce on iOS */
 html {
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: stable; /* Reserve space for scrollbar */
-  overflow-y: scroll; /* Always show vertical scrollbar */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable; /* Reserve space for scrollbar */
+    overflow-y: scroll; /* Always show vertical scrollbar */
 }
 
 body {
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Fix for iOS Safari address bar behavior */
 @supports (-webkit-touch-callout: none) {
-  .min-h-screen {
-    min-height: -webkit-fill-available;
-  }
+    .min-h-screen {
+        min-height: -webkit-fill-available;
+    }
 }
 
 /* Prevent zoom on input focus (mobile) */
-input, select, textarea {
-  font-size: 16px;
+input,
+select,
+textarea {
+    font-size: 16px;
 }
 
 @media screen and (max-width: 768px) {
-  input, select, textarea {
-    font-size: 16px !important;
-  }
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
 }
 
 @layer utilities {
-  body {
-    font-family: 'Montserrat', sans-serif;
-  }
-  /* Add rules for headings */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Lora', serif;
-  }
+    body {
+        font-family: "Montserrat", sans-serif;
+    }
+    /* Add rules for headings */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: "Lora", serif;
+    }
 }
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    /* Manually Added values*/
-    --top-bar-height: 4rem;
-    --chat-input-height: 4.5rem;
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 214, 219, 220;
-    --background-end-rgb: 255, 255, 255;
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 240 10% 3.9%;
+        --card: 0 0% 100%;
+        --card-foreground: 240 10% 3.9%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 240 10% 3.9%;
+        --primary: 240 5.9% 10%;
+        --primary-foreground: 0 0% 98%;
+        --secondary: 240 4.8% 95.9%;
+        --secondary-foreground: 240 5.9% 10%;
+        --muted: 240 4.8% 95.9%;
+        --muted-foreground: 240 3.8% 46.1%;
+        --accent: 240 4.8% 95.9%;
+        --accent-foreground: 240 5.9% 10%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 240 5.9% 90%;
+        --input: 240 5.9% 90%;
+        --ring: 240 5.9% 10%;
+        --chart-1: 12 76% 61%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+        --radius: 0.5rem;
+        /* Manually Added values*/
+        --top-bar-height: 4rem;
+        --chat-input-height: 4.5rem;
+        --foreground-rgb: 0, 0, 0;
+        --background-start-rgb: 214, 219, 220;
+        --background-end-rgb: 255, 255, 255;
 
-    /* Custom Bonchef colors */
-    --bonchef-background: #FEFEFE;
-    --bonchef-dark: #2D3748;
-    --bonchef-sage: #E8F4F0;
-    --bonchef-sage-border: #D4E6DE;
-    --bonchef-yellow: #FEF3C7;
-    --bonchef-yellow-border: #F3E8A3;
-    --bonchef-green-tab: #f0fdf4;
-    --bonchef-sage-green-buttons: #D4E6DE;
-  }
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 0 0% 63.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+        /* Custom Bonchef colors */
+        --bonchef-background: #fefefe;
+        --bonchef-dark: #2d3748;
+        --bonchef-sage: #e8f4f0;
+        --bonchef-sage-border: #d4e6de;
+        --bonchef-yellow: #fef3c7;
+        --bonchef-yellow-border: #f3e8a3;
+        --bonchef-green-tab: #f0fdf4;
+        --bonchef-sage-green-buttons: #d4e6de;
+    }
+    .dark {
+        --background: 240 10% 3.9%;
+        --foreground: 0 0% 98%;
+        --card: 240 10% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 240 10% 3.9%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 0 0% 98%;
+        --primary-foreground: 240 5.9% 10%;
+        --secondary: 240 3.7% 15.9%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 240 3.7% 15.9%;
+        --muted-foreground: 0 0% 63.9%;
+        --accent: 240 3.7% 15.9%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 240 3.7% 15.9%;
+        --input: 240 3.7% 15.9%;
+        --ring: 0 0% 63.9%;
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
 
-    /* Custom Bonchef colors */
-    --bonchef-background: #FEFEFE;
-    --bonchef-dark: #2D3748;
-    --bonchef-sage: #E8F4F0;
-    --bonchef-sage-border: #D4E6DE;
-    --bonchef-yellow: #FEF3C7;
-    --bonchef-yellow-border: #F3E8A3;
-    --bonchef-green-tab: #f0fdf4;
-    --bonchef-sage-green-buttons: #D4E6DE;
-  }
-  /* Add rules for headings in base layer as well for consistency */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Lora', serif;
-  }
-  .font-serif {
-    font-family: 'Lora', serif;
-  }
+        /* Custom Bonchef colors */
+        --bonchef-background: #fefefe;
+        --bonchef-dark: #2d3748;
+        --bonchef-sage: #e8f4f0;
+        --bonchef-sage-border: #d4e6de;
+        --bonchef-yellow: #fef3c7;
+        --bonchef-yellow-border: #f3e8a3;
+        --bonchef-green-tab: #f0fdf4;
+        --bonchef-sage-green-buttons: #d4e6de;
+    }
+    /* Add rules for headings in base layer as well for consistency */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: "Lora", serif;
+    }
+    .font-serif {
+        font-family: "Lora", serif;
+    }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Montserrat', sans-serif;
-  }
-  .font-serif {
-    font-family: 'Lora', serif;
-  }
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+        font-family: "Montserrat", sans-serif;
+    }
+    .font-serif {
+        font-family: "Lora", serif;
+    }
 }

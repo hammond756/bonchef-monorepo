@@ -23,21 +23,21 @@ Recipes created by anonymous users will be temporarily assigned to a generic "ma
 
 ## 3. Functional Requirements
 
-| ID    | Requirement                                                                                                                              |
-| :---- | :--------------------------------------------------------------------------------------------------------------------------------------- |
-| **FR1** | **Restrict Onboarding Access:** Logged-in users must be redirected away from the `/welcome` and `/first-recipe` pages to the main application dashboard or homepage. |
+| ID      | Requirement                                                                                                                                                                               |
+| :------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **FR1** | **Restrict Onboarding Access:** Logged-in users must be redirected away from the `/welcome` and `/first-recipe` pages to the main application dashboard or homepage.                      |
 | **FR2** | **Anonymous Draft Creation:** The import/creation logic on the `/first-recipe` page must create a `DRAFT` recipe assigned to the designated "marketing user" if no user is authenticated. |
-| **FR3** | **Post-Creation Redirect:** After successful draft creation, the anonymous user must be redirected to the `/edit/[recipeId]` page.       |
-| **FR4** | **Post-Publish Redirect:** After the user saves (publishes) the recipe from the edit page, they must be redirected to the `/recipe/[recipeId]` page. |
+| **FR3** | **Post-Creation Redirect:** After successful draft creation, the anonymous user must be redirected to the `/edit/[recipeId]` page.                                                        |
+| **FR4** | **Post-Publish Redirect:** After the user saves (publishes) the recipe from the edit page, they must be redirected to the `/recipe/[recipeId]` page.                                      |
 
 ## 4. Out of Scope
 
--   **Recipe Claiming:** The mechanism for a new user to sign up and claim recipes associated with their session is considered an existing, separate feature.
--   **CTA Implementation:** The sign-up CTA on the public recipe page is pre-existing.
--   **UI of Onboarding Pages:** The visual design and content of the `/welcome` and `/first-recipe` pages are not covered by this PRD.
+- **Recipe Claiming:** The mechanism for a new user to sign up and claim recipes associated with their session is considered an existing, separate feature.
+- **CTA Implementation:** The sign-up CTA on the public recipe page is pre-existing.
+- **UI of Onboarding Pages:** The visual design and content of the `/welcome` and `/first-recipe` pages are not covered by this PRD.
 
 ## 5. Technical Considerations
 
--   **Marketing User ID:** A consistent method for identifying the "marketing user" is required. An environment variable (`MARKETING_USER_ID`) is the recommended approach.
--   **Server Actions:** Existing server actions for recipe creation will need to be adapted to handle requests from unauthenticated users by assigning ownership to the marketing user.
--   **Routing/Middleware:** Logic must be implemented (e.g., in middleware or on the specific pages) to enforce the access restrictions outlined in **FR1**. 
+- **Marketing User ID:** A consistent method for identifying the "marketing user" is required. An environment variable (`MARKETING_USER_ID`) is the recommended approach.
+- **Server Actions:** Existing server actions for recipe creation will need to be adapted to handle requests from unauthenticated users by assigning ownership to the marketing user.
+- **Routing/Middleware:** Logic must be implemented (e.g., in middleware or on the specific pages) to enforce the access restrictions outlined in **FR1**.

@@ -1,14 +1,16 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-import { RecipeWrite, RecipeWriteSchema, RecipeRead, RecipeStatusEnum } from "../types";
+import { SupabaseClient } from "@supabase/supabase-js"
+import { RecipeWrite, RecipeWriteSchema, RecipeRead, RecipeStatusEnum } from "../types"
 
-
-type ServiceResponse<T> = Promise<{
-    success: false
-    error: string
-} | {
-    success: true
-    data: T
-}>
+type ServiceResponse<T> = Promise<
+    | {
+          success: false
+          error: string
+      }
+    | {
+          success: true
+          data: T
+      }
+>
 
 export class RecipeService {
     private supabase: SupabaseClient
@@ -17,14 +19,18 @@ export class RecipeService {
         this.supabase = supabase
     }
 
-    private validateRecipe(recipe: RecipeWrite): {success: true, data: RecipeWrite} | {success: false, error: string} {
+    private validateRecipe(
+        recipe: RecipeWrite
+    ): { success: true; data: RecipeWrite } | { success: false; error: string } {
         const validatedRecipe = RecipeWriteSchema.safeParse(recipe)
 
         if (!validatedRecipe.success) {
-            const errorMessages = validatedRecipe.error.issues.map((issue) => {
-                const path = issue.path.join(".");
-                return `${path}: ${issue.message}`;
-            }).join(", ");
+            const errorMessages = validatedRecipe.error.issues
+                .map((issue) => {
+                    const path = issue.path.join(".")
+                    return `${path}: ${issue.message}`
+                })
+                .join(", ")
 
             return { success: false, error: `Invalid recipe data: ${errorMessages}` }
         }
@@ -39,10 +45,9 @@ export class RecipeService {
             return { success: false, error: validatedRecipe.error }
         }
 
-        
-
         const { data, error, status, statusText } = await this.supabase
-            .from("recipe_creation_prototype").insert(validatedRecipe.data)
+            .from("recipe_creation_prototype")
+            .insert(validatedRecipe.data)
             .select("*")
             .single()
 
@@ -63,11 +68,13 @@ export class RecipeService {
 
         const updateData = {
             ...validatedRecipe.data,
-            status: RecipeStatusEnum.enum.PUBLISHED
-        };
+            status: RecipeStatusEnum.enum.PUBLISHED,
+        }
 
         const { data, error, status, statusText } = await this.supabase
-            .from("recipe_creation_prototype").update(updateData).eq("id", id)
+            .from("recipe_creation_prototype")
+            .update(updateData)
+            .eq("id", id)
             .select("*")
             .single()
 

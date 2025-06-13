@@ -5,19 +5,21 @@ This edge function posts recent conversations to a Slack channel. It is designed
 ## Setup
 
 1. Deploy the edge function:
-   ```bash
-   supabase functions deploy post-conversations-to-slack
-   ```
+
+    ```bash
+    supabase functions deploy post-conversations-to-slack
+    ```
 
 2. Set the required secrets:
-   ```bash
-   supabase secrets set SLACK_TOKEN=xoxb-your-bot-token
-   ```
+
+    ```bash
+    supabase secrets set SLACK_TOKEN=xoxb-your-bot-token
+    ```
 
 3. The database migrations will:
-   - Enable the required extensions (pg_net, pg_cron)
-   - Create a scheduled function that runs hourly
-   - Set up environment detection to prevent execution in local development
+    - Enable the required extensions (pg_net, pg_cron)
+    - Create a scheduled function that runs hourly
+    - Set up environment detection to prevent execution in local development
 
 ## Production Configuration
 
@@ -54,4 +56,4 @@ SELECT cron.schedule(
   '0 * * * *',  -- Change this expression (default: every hour)
   'SELECT trigger_post_conversations_to_slack()'
 );
-``` 
+```
