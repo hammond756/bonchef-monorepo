@@ -4,51 +4,53 @@ import { NextResponse } from "next/server"
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const offset = parseInt(searchParams.get("offset") || "1")
-    const pageSize = parseInt(searchParams.get("page_size") || "10")
-    
+    const page = parseInt(searchParams.get("page") || "1")
+    const pageSize = parseInt(searchParams.get("pageSize") || "12")
+    const queryParam = searchParams.get("q")
+
     const supabase = await createClient()
-    
-    // Calculate pagination
-    const from = (offset - 1) * pageSize
+
+    const from = (page - 1) * pageSize
     const to = from + pageSize - 1
-    
-    // Fetch public recipes with profiles join and like status
+
     let query = supabase
       .from("recipe_creation_prototype")
-      .select(`
+      .select(
+        `
         *,
         profiles(display_name, id, avatar),
         is_liked_by_current_user,
         recipe_likes(count)
-      `, { count: "exact" })
+      `,
+        { count: "exact" }
+      )
       .eq("is_public", true)
       .order("created_at", { ascending: false })
       .range(from, to)
+
+    if (queryParam) {
+      query = query.or(`title.ilike.%${queryParam}%,description.ilike.%${queryParam}%`)
+    }
     
     if (process.env.NEXT_PUBLIC_MARKETING_USER_ID) {
-      // Exclude recipes created by marketing user. These should be public
-      // for the target audience, but we don't want to show them in the
-      // public recipe timeline.
       query = query.neq("user_id", process.env.NEXT_PUBLIC_MARKETING_USER_ID)
     }
-    
+
     const { data, error, count } = await query
-    
+
     if (error) {
       console.error("Error fetching public recipes:", error)
-      return NextResponse.json({ data: [], count: 0 }, { status: 500 })
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
-  
-    // Add like counts to recipes
-    const recipesWithLikes = data.map(recipe => ({
+
+    const recipesWithLikes = data.map((recipe) => ({
       ...recipe,
-      like_count: recipe.recipe_likes?.[0]?.count || 0
+      like_count: recipe.recipe_likes?.[0]?.count || 0,
     }))
-  
+
     return NextResponse.json({ data: recipesWithLikes, count })
   } catch (error) {
     console.error("Error in recipes API route:", error)
-    return NextResponse.json({ data: [], count: 0 }, { status: 500 })
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }

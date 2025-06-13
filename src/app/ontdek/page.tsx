@@ -1,17 +1,17 @@
 import { Suspense } from "react"
 import { PublicRecipeTimeline } from "@/components/public-recipe-timeline"
 import { PublicRecipeTimelineSkeleton } from "@/components/public-recipe-timeline-skeleton"
+import { SearchBar } from "@/components/ui/search-bar"
 
-export const revalidate = 300; // 5 minutes in seconds
-export const dynamic = "force-static";
-
-export default async function OntdekPage() {
+export default function OntdekPage() {
   return (
-    <div className="flex flex-1 flex-col" >
-      <div className="px-4 py-8 md:px-6 lg:px-8">
-        <h1 className="text-2xl font-bold">Community</h1>
+    <div className="flex flex-1 flex-col">
+      <div className="px-4 pt-6 pb-4">
+        <Suspense>
+          <SearchBar placeholder="Zoek en druk op Enter..." />
+        </Suspense>
       </div>
-      
+
       <Suspense fallback={<PublicRecipeTimelineSkeleton />}>
         <PublicRecipeTimeline />
       </Suspense>

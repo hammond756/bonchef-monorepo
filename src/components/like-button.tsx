@@ -17,6 +17,7 @@ interface LikeButtonProps {
   buttonSize?: LikeButtonSize
   className?: string
   showCount?: boolean
+  theme?: "light" | "dark"
 }
 
 export function LikeButton({
@@ -26,6 +27,7 @@ export function LikeButton({
   buttonSize = "md",
   className: propsClassName,
   showCount = true,
+  theme = "light",
 }: LikeButtonProps) {
   const [isLiked, setIsLiked] = useState(initialLiked)
   const [likeCount, setLikeCount] = useState(initialLikeCount)
@@ -75,6 +77,19 @@ export function LikeButton({
 
   const currentSizeStyles = sizeStylesDefinition[buttonSize]
 
+  const themeStyles = {
+    light: {
+      bg: "bg-white/80 hover:bg-white/95",
+      iconColor: isLiked ? "text-red-500" : "text-gray-700",
+    },
+    dark: {
+      bg: "bg-black/30 hover:bg-black/50",
+      iconColor: isLiked ? "text-red-500" : "text-white",
+    },
+  }
+
+  const currentTheme = themeStyles[theme]
+
   return (
     <div className="flex flex-col items-center space-y-1">
       <div
@@ -100,17 +115,14 @@ export function LikeButton({
         className={cn(
           "flex items-center justify-center rounded-full cursor-pointer",
           currentSizeStyles.button,
-          "bg-white/80 hover:bg-white/95",
+          currentTheme.bg,
           "focus:outline-none",
           isLoading && "opacity-50 cursor-not-allowed",
           propsClassName
         )}
       >
         <Heart
-          className={cn(
-            currentSizeStyles.icon,
-            isLiked ? "text-red-500" : "text-gray-700"
-          )}
+          className={cn(currentSizeStyles.icon, currentTheme.iconColor)}
           fill={isLiked ? "currentColor" : "none"}
         />
       </div>
