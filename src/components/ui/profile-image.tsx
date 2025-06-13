@@ -38,14 +38,14 @@ export function ProfileImage({
             <Avatar
                 size={size}
                 name={name || "Anon"}
-                variant="bauhaus"
+                variant="beam"
                 className={`${className} rounded-full`}
                 colors={[
-                    "#E6EEF6", // soft blue
-                    "#1A2A36", // navy
-                    "#7BC47F", // green
-                    "#F5F7FA", // very light gray
-                    "#F5B971", // orange
+                    "#E7F3FB", // blue-1
+                    "#E5F7EB", // green-1
+                    "#FFF9D9", // yellow-1
+                    "#FFFFFF", // red-1
+                    "#B3D8F2", // blue-border
                 ]}
             />
         </span>
