@@ -32,24 +32,19 @@ function RecipeGrid({ recipes, activeTab }: { recipes: RecipeRead[]; activeTab: 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {recipes.map((recipe) => {
                 let chefDisplayGridString: string | null = null
+
                 if (activeTab === "favorieten") {
-                    chefDisplayGridString = recipe.profiles?.display_name || "Auteur onbekend"
-                } else if (recipe.profiles?.display_name) {
-                    chefDisplayGridString = recipe.profiles.display_name
+                    chefDisplayGridString = recipe.profiles.display_name ?? "Auteur onbekend"
                 }
 
-                const infoParts: string[] = []
+                const timeAndDifficultyParts: string[] = []
 
                 if (
                     recipe.total_cook_time_minutes !== undefined &&
                     recipe.total_cook_time_minutes > 0
                 ) {
-                    infoParts.push(`${recipe.total_cook_time_minutes} min`)
-                    infoParts.push("Medium")
-                }
-
-                if (chefDisplayGridString) {
-                    infoParts.push(`door ${chefDisplayGridString}`)
+                    timeAndDifficultyParts.push(`${recipe.total_cook_time_minutes} min`)
+                    timeAndDifficultyParts.push("Medium")
                 }
 
                 return (
@@ -81,18 +76,20 @@ function RecipeGrid({ recipes, activeTab }: { recipes: RecipeRead[]; activeTab: 
                             </div>
                             <div className="flex flex-grow flex-col justify-between bg-white p-3">
                                 <div>
-                                    <h2 className="text-bonchef-dark mb-0.5 line-clamp-2 font-['Montserrat'] text-[15px] font-semibold">
+                                    <h2 className="text-bonchef-dark mb-0.5 line-clamp-2 h-10 font-['Montserrat'] text-[15px] leading-5 font-semibold">
                                         {recipe.title}
                                     </h2>
-                                    <div className="mt-1 flex flex-wrap items-center font-['Montserrat'] text-[10px] text-gray-500">
-                                        {infoParts.map((part, index) => (
-                                            <React.Fragment key={index}>
-                                                <span className="line-clamp-1">{part}</span>
-                                                {index < infoParts.length - 1 && (
-                                                    <span className="mx-1">·</span>
-                                                )}
-                                            </React.Fragment>
-                                        ))}
+                                    <div className="mt-1 font-['Montserrat'] text-[10px] text-gray-500">
+                                        {timeAndDifficultyParts.length > 0 && (
+                                            <div className="line-clamp-1">
+                                                {timeAndDifficultyParts.join(" · ")}
+                                            </div>
+                                        )}
+                                        {chefDisplayGridString && (
+                                            <div className="line-clamp-1">
+                                                door {chefDisplayGridString}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -114,7 +111,7 @@ function RecipeListItem({ recipe, activeTab }: { recipe: RecipeRead; activeTab: 
 
     return (
         <div className="group relative flex gap-4 rounded-xl border border-gray-300 bg-white p-4 shadow-md">
-            <Link href={`/recipes/${recipe.id}`} className="flex flex-1 items-start gap-4">
+            <Link href={`/recipes/${recipe.id}`} className="flex flex-1 gap-4">
                 <div className="relative aspect-square h-28 w-28 flex-shrink-0 overflow-hidden rounded-md">
                     <Image
                         src={recipe.thumbnail}
@@ -139,7 +136,7 @@ function RecipeListItem({ recipe, activeTab }: { recipe: RecipeRead; activeTab: 
                             )}
                     </div>
                     {chefDisplayString && (
-                        <div className="mt-0.5 flex flex-wrap items-center font-['Montserrat'] text-[11px] text-gray-500">
+                        <div className="mt-auto flex flex-wrap items-center font-['Montserrat'] text-[11px] text-gray-500">
                             <span>door {chefDisplayString}</span>
                         </div>
                     )}
@@ -175,8 +172,7 @@ function WelcomeSection() {
     return (
         <div className="mb-8">
             <p className="mb-6 text-lg text-gray-700">
-                Welkom bij jouw recepten verzameling! Hier vind je al jouw recepten en favorieten op
-                één plek.
+                Welkom bij jouw kookboek! Hier vind je al jouw recepten en favorieten op één plek.
             </p>
 
             <Link href="/import">

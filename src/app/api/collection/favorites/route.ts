@@ -5,7 +5,7 @@ export async function GET() {
     const supabase = await createClient()
     const { data, error } = await supabase
         .from("recipe_creation_prototype")
-        .select("*, is_liked_by_current_user, recipe_likes(count)")
+        .select("*, is_liked_by_current_user, recipe_likes(count), profiles(display_name)")
         .eq("is_liked_by_current_user", true)
 
     if (error) {
