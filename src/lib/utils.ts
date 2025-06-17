@@ -4,7 +4,6 @@ import crypto from "crypto"
 import { Ingredient, RecipeWrite } from "./types"
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
 import { GeneratedRecipe } from "./types"
-import { formatQuantity } from "format-quantity"
 import { SupabaseClient } from "@supabase/supabase-js"
 
 export function cn(...inputs: ClassValue[]) {
@@ -34,7 +33,65 @@ export function generatedRecipeToRecipe(generatedRecipe: GeneratedRecipe): Recip
     }
 }
 
-export const unitMap = {
+// Helper to find the greatest common divisor
+function gcd(a: number, b: number): number {
+    return b === 0 ? a : gcd(b, a % b)
+}
+
+// Converts a decimal number to a fraction string, e.g., 1.5 -> "1 1/2"
+function numberToFraction(num: number): string {
+    if (num === 0) return "0"
+    // Handle whole numbers directly
+    if (num % 1 === 0) {
+        return num.toString()
+    }
+
+    const tolerance = 1.0e-6
+    const wholePart = Math.floor(num)
+    const decimalPart = num - wholePart
+
+    if (decimalPart < tolerance) {
+        return wholePart.toString()
+    }
+
+    let h1 = 1,
+        h2 = 0,
+        k1 = 0,
+        k2 = 1
+    let b = decimalPart
+    do {
+        const a = Math.floor(b)
+        let aux = h1
+        h1 = a * h1 + h2
+        h2 = aux
+        aux = k1
+        k1 = a * k1 + k2
+        k2 = aux
+        b = 1 / (b - a)
+    } while (Math.abs(decimalPart - h1 / k1) > decimalPart * tolerance)
+
+    const numerator = h1
+    const denominator = k1
+
+    // Simplify the fraction
+    const commonDivisor = gcd(numerator, denominator)
+    const simplifiedNumerator = numerator / commonDivisor
+    const simplifiedDenominator = denominator / commonDivisor
+
+    let result = ""
+    if (wholePart > 0) {
+        result += wholePart + " "
+    }
+
+    result += `${simplifiedNumerator}/${simplifiedDenominator}`
+
+    return result
+}
+
+export const unitMap: Record<
+    string,
+    { nl: { singular: string; plural: string }; en: { singular: string; plural: string } }
+> = {
     gram: {
         nl: { singular: "g", plural: "g" },
         en: { singular: "g", plural: "g" },
@@ -139,45 +196,44 @@ export const unitMap = {
 
 export function formatIngredientLine(
     ingredient: Ingredient,
-    portionFactor: number
+    multiplier: number
 ): { quantity: string; description: string } | null {
-    if (!ingredient.quantity || !ingredient.unit) {
-        return { quantity: "", description: ingredient.description }
+    if (!ingredient || typeof ingredient.description !== "string") {
+        return null
     }
 
-    if (ingredient.quantity.low === 0 && ingredient.quantity.high === 0) {
-        return { quantity: "", description: ingredient.description }
+    // Per user request, always display the lowest number of the range.
+    // The long-term fix is to adjust the LLM prompt to only generate ranges for specific terms.
+    const low = ingredient.quantity.low * multiplier
+    const unit = ingredient.unit
+
+    // Define which units should always be displayed as decimals instead of fractions.
+    const decimalUnits = ["kg", "l"]
+    const shouldUseDecimal = decimalUnits.includes(unit)
+
+    let quantityStr = ""
+
+    if (low > 0) {
+        if (shouldUseDecimal) {
+            // For specified units, use decimals (e.g., 1.5 kg)
+            const formatDecimal = (num: number) => {
+                const rounded = parseFloat(num.toFixed(2))
+                return rounded.toString()
+            }
+            quantityStr = formatDecimal(low)
+        } else {
+            // For all other units, use fractions (e.g., 1 1/2 tl)
+            quantityStr = numberToFraction(low)
+        }
     }
 
-    let newAmount = ingredient.quantity.low * portionFactor
-    let newUnit = ingredient.unit
+    // Don't display the unit if it is 'none'
+    const unitStr = unit && unit.toLowerCase() !== "none" ? unit : ""
 
-    if (newUnit === "kilogram" && (newAmount < 1 || !Number.isSafeInteger(newAmount))) {
-        newUnit = "gram"
-        newAmount = newAmount * 1000
+    return {
+        quantity: `${quantityStr} ${unitStr}`.trim().replace(/ +/g, " "), // Combine, trim, and collapse multiple spaces
+        description: ingredient.description,
     }
-
-    if (newUnit === "liter" && (newAmount < 1 || !Number.isSafeInteger(newAmount))) {
-        newUnit = "milliliter"
-        newAmount = newAmount * 1000
-    }
-
-    if (newUnit === "milliliter" || (newUnit === "gram" && newAmount > 10)) {
-        newAmount = Math.ceil(newAmount / 5) * 5
-    }
-
-    const unit = unitMap[newUnit]
-
-    if (!unit) {
-        return { quantity: "", description: ingredient.description }
-    }
-
-    const displayUnit = newAmount < 2 ? unit.nl.singular : unit.nl.plural
-
-    const quantityString =
-        `${formatQuantity(Math.round(newAmount * 100) / 100, { tolerance: 0.01 })} ${displayUnit}`.trim()
-
-    return { quantity: quantityString, description: ingredient.description }
 }
 
 export function parseDescription(text: string): Array<{ type: "text" | "url"; content: string }> {

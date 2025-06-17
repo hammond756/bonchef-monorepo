@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Textarea } from "./ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import {
     LoaderIcon,
     ImageIcon,
@@ -23,13 +22,12 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import type { Recipe, Unit } from "@/lib/types"
-import { unitEnum, RecipeStatusEnum } from "@/lib/types"
+import { RecipeStatusEnum } from "@/lib/types"
 import { Alert, AlertDescription } from "./ui/alert"
 import { useRouter } from "next/navigation"
 import { deleteRecipe, updateRecipe } from "@/app/edit/[id]/actions"
 import { ImageGenerationModal } from "./image-generation-modal"
 import { RecipeVisibilityModal } from "./recipe-visibility-modal"
-import { unitMap } from "@/lib/utils"
 import { useFileUpload } from "@/hooks/use-file-upload"
 import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning"
 import { createClient } from "@/utils/supabase/client"
@@ -74,7 +72,6 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
     const [isSaving, setIsSaving] = useState(false)
     const [isImageModalOpen, setIsImageModalOpen] = useState(false)
     const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false)
-    const units = unitEnum.options
     const router = useRouter()
 
     useUnsavedChangesWarning(isDirty)
@@ -394,79 +391,68 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                             </h3>
                         )}
                         <div className="ingredients-list">
-                            {group.ingredients.map((ingredient, idx) => (
+                            {group.ingredients.map((ingredient, ingredientIdx) => (
                                 <div
-                                    key={`${groupIdx}-${idx}`}
+                                    key={`${groupIdx}-${ingredientIdx}`}
                                     className="flex gap-2"
                                     data-testid="ingredient-item"
                                 >
                                     <Input
-                                        type="text"
-                                        value={ingredient.quantity?.low || ""}
+                                        type="number"
+                                        value={ingredient.quantity.low}
                                         onChange={(e) =>
-                                            handleIngredientChange(groupIdx, idx, (ing) => ({
-                                                ...ing,
-                                                quantity: {
-                                                    type: "range",
-                                                    low:
-                                                        e.target.value === ""
-                                                            ? 0
-                                                            : parseFloat(e.target.value),
-                                                    high:
-                                                        e.target.value === ""
-                                                            ? 0
-                                                            : parseFloat(e.target.value),
-                                                },
-                                            }))
+                                            handleIngredientChange(
+                                                groupIdx,
+                                                ingredientIdx,
+                                                (ing) => ({
+                                                    ...ing,
+                                                    quantity: {
+                                                        ...ing.quantity,
+                                                        low: parseInt(e.target.value, 10),
+                                                    },
+                                                })
+                                            )
                                         }
-                                        className="w-16 bg-white"
-                                        data-testid="ingredient-quantity"
+                                        className="w-16"
                                     />
-
-                                    <Select
+                                    <Input
+                                        type="text"
                                         value={ingredient.unit}
-                                        onValueChange={(value: Unit) =>
-                                            handleIngredientChange(groupIdx, idx, (ing) => ({
-                                                ...ing,
-                                                unit: value,
-                                            }))
+                                        onChange={(e) =>
+                                            handleIngredientChange(
+                                                groupIdx,
+                                                ingredientIdx,
+                                                (ing) => ({
+                                                    ...ing,
+                                                    unit: e.target.value,
+                                                })
+                                            )
                                         }
-                                    >
-                                        <SelectTrigger
-                                            className="w-16 bg-white"
-                                            data-testid="ingredient-unit"
-                                        >
-                                            <SelectValue placeholder="Eenheid" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {units.map((unit) => (
-                                                <SelectItem
-                                                    key={unit}
-                                                    value={unit}
-                                                    data-testid={`ingredient-unit-${unit}`}
-                                                >
-                                                    {renderUnitDisplay(unit)}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-
-                                    <Textarea
+                                        className="w-24"
+                                        placeholder="g"
+                                    />
+                                    <Input
                                         value={ingredient.description}
                                         onChange={(e) =>
-                                            handleIngredientChange(groupIdx, idx, (ing) => ({
-                                                ...ing,
-                                                description: e.target.value,
-                                            }))
+                                            handleIngredientChange(
+                                                groupIdx,
+                                                ingredientIdx,
+                                                (ing) => ({
+                                                    ...ing,
+                                                    description: e.target.value,
+                                                })
+                                            )
                                         }
-                                        className="flex-1 bg-white"
-                                        data-testid="ingredient-description"
+                                        className="flex-1"
+                                        placeholder="bv. fijngehakt"
                                     />
                                     <Button
                                         type="button"
                                         variant="ghost"
                                         size="icon"
-                                        onClick={() => handleRemoveIngredient(groupIdx, idx)}
+                                        onClick={() =>
+                                            handleRemoveIngredient(groupIdx, ingredientIdx)
+                                        }
                                         className="text-red-500 hover:text-red-700"
                                         data-testid="remove-ingredient"
                                     >
@@ -606,9 +592,4 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
             </AlertDialog>
         </form>
     )
-}
-
-function renderUnitDisplay(unit: Unit | undefined) {
-    if (!unit) return ""
-    return unitMap[unit].nl.singular || "<leeg>"
 }

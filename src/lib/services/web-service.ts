@@ -6,8 +6,26 @@ import { GeneratedRecipe, GeneratedRecipeSchema } from "../types"
 import { JSDOM } from "jsdom"
 import { Defuddle } from "defuddle/node"
 import { Recipe as SchemaOrgRecipe } from "schema-dts"
+import { unitTranslations } from "@/lib/translations"
 
 type GeneratedRecipeWithSource = GeneratedRecipe & { source_name: string; source_url: string }
+
+function translateRecipeUnits<T extends GeneratedRecipe>(recipe: T): T {
+    return {
+        ...recipe,
+        ingredients: recipe.ingredients.map((group) => ({
+            ...group,
+            ingredients: group.ingredients.map((ingredient) => {
+                const lowerCaseUnit = ingredient.unit.toLowerCase()
+                const translatedUnit = unitTranslations[lowerCaseUnit]
+                return {
+                    ...ingredient,
+                    unit: translatedUnit || ingredient.unit,
+                }
+            }),
+        })),
+    }
+}
 
 export async function formatRecipe(
     text: string
@@ -34,7 +52,12 @@ export async function formatRecipe(
     const prompt = promptClient.compile({ input: text })
 
     try {
-        return await model.invoke(prompt, { callbacks: [new CallbackHandler()] })
+        const result = await model.invoke(prompt, { callbacks: [new CallbackHandler()] })
+        const translatedRecipe = translateRecipeUnits(result.recipe)
+        return {
+            ...result,
+            recipe: translatedRecipe,
+        }
     } catch (error: unknown) {
         // const errorMessage = error?.message || error?.response?.data?.error?.message || "";
 

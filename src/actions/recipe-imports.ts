@@ -10,10 +10,28 @@ import { getHostnameFromUrl, hostedImageToBuffer } from "@/lib/utils"
 import { withTempFileFromUrl } from "@/lib/temp-file-utils"
 import { detectText } from "@/lib/services/google-vision-ai-service"
 import { StorageService } from "@/lib/services/storage-service"
+import { unitTranslations } from "@/lib/translations"
 
 type GeneratedRecipeWithSource = GeneratedRecipe & {
     source_name?: string | null
     source_url?: string | null
+}
+
+function translateRecipeUnits<T extends GeneratedRecipe>(recipe: T): T {
+    return {
+        ...recipe,
+        ingredients: recipe.ingredients.map((group) => ({
+            ...group,
+            ingredients: group.ingredients.map((ingredient) => {
+                const lowerCaseUnit = ingredient.unit.toLowerCase()
+                const translatedUnit = unitTranslations[lowerCaseUnit]
+                return {
+                    ...ingredient,
+                    unit: translatedUnit || ingredient.unit,
+                }
+            }),
+        })),
+    }
 }
 
 export async function scrapeRecipe(
@@ -27,9 +45,10 @@ export async function scrapeRecipe(
     )
 
     const sourceName = recipeInfo.recipe.source_name || getHostnameFromUrl(url)
+    const translatedRecipe = translateRecipeUnits(recipeInfo.recipe)
 
     return {
-        ...recipeInfo.recipe,
+        ...translatedRecipe,
         source_name: sourceName,
         source_url: url,
         thumbnail: thumbnail,
@@ -45,8 +64,9 @@ export async function generateRecipeFromSnippet(
         recipeGenerationService.generateBlocking(text, null),
         recipeGenerationService.generateThumbnail(text),
     ] as [Promise<GeneratedRecipe>, Promise<string>])
+    const translatedRecipe = translateRecipeUnits(recipe)
     return {
-        ...recipe,
+        ...translatedRecipe,
         thumbnail: thumbnail,
     }
 }
@@ -56,8 +76,9 @@ export async function generateRecipeFromImage(
 ): Promise<GeneratedRecipe & { thumbnail: string }> {
     const text = await extractTextFromImage(imageUrl)
     const recipeInfo = await formatRecipe(text)
+    const translatedRecipe = translateRecipeUnits(recipeInfo.recipe)
     return {
-        ...recipeInfo.recipe,
+        ...translatedRecipe,
         thumbnail: imageUrl,
     }
 }

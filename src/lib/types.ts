@@ -1,30 +1,5 @@
 import { z } from "zod"
-
-export const unitEnum = z.enum([
-    "gram",
-    "kilogram",
-    "milligram",
-    "milliliter",
-    "liter",
-    "teaspoon",
-    "tablespoon",
-    "slice",
-    "whole",
-    "clove",
-    "bunch",
-    "centimeter",
-    "pinch",
-    "dash",
-    "handful",
-    "can",
-    "jar",
-    "pack",
-    "sheet",
-    "sprig",
-    "scoop",
-    "none",
-    "cup",
-])
+import { unitTranslations } from "./translations"
 
 export const IngredientSchema = z.object({
     quantity: z.object({
@@ -32,7 +7,7 @@ export const IngredientSchema = z.object({
         low: z.number(),
         high: z.number(),
     }),
-    unit: unitEnum,
+    unit: z.string(),
     description: z.string(),
 })
 
@@ -81,7 +56,54 @@ export const RecipeReadSchema = RecipeWriteSchema.extend({
         id: z.string(),
         avatar: z.string().nullable().optional(),
     }),
-})
+}).transform((recipe) => ({
+    ...recipe,
+    ingredients: recipe.ingredients.map((group) => ({
+        ...group,
+        ingredients: group.ingredients.map((ingredient) => {
+            let unit = ingredient.unit
+
+            // For backward compatibility, transform old uppercase enum-like units to lowercase.
+            const upperCaseUnit = unit.toUpperCase()
+            const oldEnumStyleUnits = [
+                "GRAM",
+                "KILOGRAM",
+                "MILLIGRAM",
+                "MILLILITER",
+                "LITER",
+                "TEASPOON",
+                "TABLESPOON",
+                "SLICE",
+                "WHOLE",
+                "CLOVE",
+                "BUNCH",
+                "CENTIMETER",
+                "PINCH",
+                "DASH",
+                "HANDFUL",
+                "CAN",
+                "JAR",
+                "PACK",
+                "SHEET",
+                "SPRIG",
+                "SCOOP",
+                "NONE",
+                "CUP",
+            ]
+            if (oldEnumStyleUnits.includes(upperCaseUnit)) {
+                unit = unit.toLowerCase()
+            }
+
+            // Translate units to Dutch for display
+            const translatedUnit = unitTranslations[unit]
+            if (translatedUnit) {
+                unit = translatedUnit
+            }
+
+            return { ...ingredient, unit: unit }
+        }),
+    })),
+}))
 
 // Type definitions
 export type BaseRecipe = z.infer<typeof BaseRecipeSchema>
@@ -92,7 +114,7 @@ export type RecipeRead = z.infer<typeof RecipeReadSchema>
 // For backward compatibility, we can keep Recipe as an alias
 export type Recipe = RecipeRead
 
-export type Unit = z.infer<typeof unitEnum>
+export type Unit = string
 
 export interface ImageData {
     url: string
