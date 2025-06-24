@@ -1,39 +1,42 @@
-import { useState, useEffect } from "react"
+"use client"
 
-export const useScrollDirection = (threshold = 10) => {
-    const [scrollDirection, setScrollDirection] = useState<"up" | "down" | null>(null)
-    const [isVisible, setIsVisible] = useState(true)
-    const [lastScrollY, setLastScrollY] = useState(0)
+import { useState, useEffect, useRef, RefObject } from "react"
+
+type ScrollDirection = "up" | "down"
+
+export function useScrollDirection(
+    threshold = 10,
+    targetRef?: RefObject<HTMLElement | null>
+): ScrollDirection | null {
+    const [scrollDirection, setScrollDirection] = useState<ScrollDirection | null>(null)
+    const lastScrollY = useRef(0)
 
     useEffect(() => {
-        let ticking = false
+        const targetElement = targetRef?.current || window
+        const getScrollY = () =>
+            targetElement instanceof Window ? targetElement.scrollY : targetElement.scrollTop
 
-        const updateScrollDirection = () => {
-            const scrollY = window.scrollY
+        lastScrollY.current = getScrollY()
 
-            if (Math.abs(scrollY - lastScrollY) < threshold) {
-                ticking = false
+        const handleScroll = () => {
+            const currentScrollY = getScrollY()
+            if (Math.abs(currentScrollY - lastScrollY.current) < threshold) {
                 return
             }
-
-            const direction = scrollY > lastScrollY ? "down" : "up"
-            setScrollDirection(direction)
-            setIsVisible(scrollY < 100 || direction === "up")
-            setLastScrollY(scrollY > 0 ? scrollY : 0)
-            ticking = false
+            setScrollDirection(currentScrollY > lastScrollY.current ? "down" : "up")
+            lastScrollY.current = currentScrollY
         }
 
         const onScroll = () => {
-            if (!ticking) {
-                requestAnimationFrame(updateScrollDirection)
-                ticking = true
-            }
+            window.requestAnimationFrame(handleScroll)
         }
 
-        window.addEventListener("scroll", onScroll, { passive: true })
+        targetElement.addEventListener("scroll", onScroll, { passive: true })
 
-        return () => window.removeEventListener("scroll", onScroll)
-    }, [lastScrollY, threshold])
+        return () => {
+            targetElement.removeEventListener("scroll", onScroll)
+        }
+    }, [threshold, targetRef])
 
-    return { scrollDirection, isVisible }
+    return scrollDirection
 }

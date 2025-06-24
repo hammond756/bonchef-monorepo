@@ -32,7 +32,6 @@
     --color-status-red-text: #8f1d1d;
     --color-status-red-border: #f5b5b5;
 
-
     /* 3. Border Radius */
     --radius-lg: 8px;
     --radius-xl: 12px;
@@ -119,7 +118,6 @@
             transform: translateX(100%);
         }
     }
-
 }
 
 @layer base {

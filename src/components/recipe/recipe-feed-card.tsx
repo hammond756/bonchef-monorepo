@@ -8,7 +8,6 @@ import Image from "next/image"
 
 import { cn } from "@/lib/utils"
 
-
 import { RecipeActionButtons } from "./recipe-action-buttons"
 
 interface RecipeFeedCardProps {
@@ -100,7 +99,6 @@ export function RecipeFeedCard({ recipe }: RecipeFeedCardProps) {
                 </div>
 
                 <div className="absolute right-4 bottom-4">
-
                     <RecipeActionButtons
                         recipe={recipe}
                         theme="dark"

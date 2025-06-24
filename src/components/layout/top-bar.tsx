@@ -7,8 +7,8 @@ import Image from "next/image"
 import { ProfileImage } from "../ui/profile-image"
 import { useProfile } from "@/hooks/use-profile"
 import { logout } from "@/app/actions"
-import { useScrollDirection } from "@/hooks/use-scroll-direction"
 import Link from "next/link"
+
 interface TopBarProps {
     children?: React.ReactNode
     className?: string
@@ -16,7 +16,6 @@ interface TopBarProps {
 
 export function TopBar({ children, className }: TopBarProps) {
     const { profile } = useProfile()
-    const { isVisible } = useScrollDirection()
 
     const defaultContent = (
         <>
@@ -72,32 +71,10 @@ export function TopBar({ children, className }: TopBarProps) {
     )
 
     return (
-        <>
-            {/* Fixed positioned bar */}
-            <header
-                className={cn(
-                    "fixed top-0 right-0 left-0 z-50 border-b border-slate-200 bg-white",
-                    "transition-transform duration-300 ease-in-out",
-                    "safe-area-top",
-                    isVisible ? "translate-y-0" : "-translate-y-full",
-                    className
-                )}
-                style={{
-                    paddingTop: "env(safe-area-inset-top)",
-                }}
-            >
-                <div className="flex min-h-[56px] items-center justify-between px-4 py-3">
-                    {children || defaultContent}
-                </div>
-            </header>
-
-            {/* Spacer to prevent content overlap */}
-            <div
-                className="topbar-spacer"
-                style={{
-                    height: "calc(56px + env(safe-area-inset-top))",
-                }}
-            />
-        </>
+        <div className={cn("safe-area-top w-full border-b border-slate-200 bg-white", className)}>
+            <div className="flex min-h-[56px] items-center justify-between px-4 py-3">
+                {children || defaultContent}
+            </div>
+        </div>
     )
 }
