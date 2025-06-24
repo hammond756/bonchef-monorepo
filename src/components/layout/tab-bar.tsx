@@ -21,12 +21,16 @@ export function TabBar({ children, className }: TabBarProps) {
             <Link
                 href="/ontdek"
                 className={cn(
-                    "flex w-1/4 flex-col items-center justify-center rounded-lg pt-1 pb-2 text-slate-700 transition-colors hover:bg-slate-50 hover:text-green-600",
-                    pathname === "/ontdek" && "bg-green-100 text-green-700"
+                    "text-muted-foreground hover:bg-surface/5 flex w-1/4 flex-col items-center justify-center rounded-lg pb-2 transition-colors",
+                    pathname === "/ontdek" ? "bg-status-green-bg text-primary pt-2" : "pt-1"
                 )}
             >
                 <Home className="mb-1 h-6 w-6" />
-                <span className="text-xs font-medium">Feed</span>
+                <span
+                    className={cn("text-xs font-medium", pathname === "/ontdek" && "font-semibold")}
+                >
+                    Feed
+                </span>
             </Link>
 
             <div
@@ -37,7 +41,7 @@ export function TabBar({ children, className }: TabBarProps) {
             >
                 <Link
                     href="/import"
-                    className="flex h-16 w-16 transform items-center justify-center rounded-full bg-green-700 text-white shadow-lg transition-all duration-150 ease-in-out hover:scale-105 hover:bg-green-800"
+                    className="bg-primary hover:bg-primary/90 flex h-16 w-16 transform items-center justify-center rounded-full text-white shadow-lg transition-all duration-150 ease-in-out hover:scale-105"
                     aria-label="Importeer recept"
                 >
                     <Plus className="h-8 w-8" />
@@ -47,12 +51,19 @@ export function TabBar({ children, className }: TabBarProps) {
             <Link
                 href="/collection"
                 className={cn(
-                    "flex w-1/4 flex-col items-center justify-center rounded-lg pt-1 pb-2 text-slate-700 transition-colors hover:bg-slate-50 hover:text-green-600",
-                    pathname === "/collection" && "bg-green-100 text-green-700"
+                    "text-muted-foreground hover:bg-surface/5 flex w-1/4 flex-col items-center justify-center rounded-lg pb-2 transition-colors",
+                    pathname === "/collection" ? "bg-status-green-bg text-primary pt-2" : "pt-1"
                 )}
             >
                 <Bookmark className="mb-1 h-6 w-6" />
-                <span className="text-xs font-medium">Collectie</span>
+                <span
+                    className={cn(
+                        "text-xs font-medium",
+                        pathname === "/collection" && "font-semibold"
+                    )}
+                >
+                    Collectie
+                </span>
             </Link>
         </>
     )
@@ -70,7 +81,7 @@ export function TabBar({ children, className }: TabBarProps) {
             {/* Fixed positioned tab bar */}
             <nav
                 className={cn(
-                    "fixed right-0 bottom-0 left-0 z-50 border-t border-slate-200 bg-white",
+                    "border-border bg-surface fixed right-0 bottom-0 left-0 z-50 border-t",
                     "transition-transform duration-300 ease-in-out",
                     "safe-area-bottom shadow-[0_-2px_10px_-3px_rgba(0,0,0,0.1)]",
                     isVisible ? "translate-y-0" : "translate-y-full",

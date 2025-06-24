@@ -5,49 +5,8 @@ import Link from "next/link"
 import { Recipe } from "@/lib/types"
 import { Card } from "@/components/ui/card"
 import Image from "next/image"
-import { LikeButton } from "@/components/like-button"
-import { ProfileImage } from "@/components/ui/profile-image"
-import { Share2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
 
-function ShareButton({ recipeId }: { recipeId: string }) {
-    const { toast } = useToast()
-    const recipeUrl = `${window.location.origin}/recipes/${recipeId}`
-
-    const handleShare = async (e: React.MouseEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: "Bekijk dit recept op Bonchef!",
-                    url: recipeUrl,
-                })
-            } catch (error) {
-                console.error("Error sharing:", error)
-            }
-        } else {
-            await navigator.clipboard.writeText(recipeUrl)
-            toast({
-                title: "Link gekopieerd!",
-                description: "De link naar het recept is gekopieerd naar je klembord.",
-            })
-        }
-    }
-
-    return (
-        <div className="flex flex-col items-center space-y-1">
-            <button
-                onClick={handleShare}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50"
-                aria-label="Deel recept"
-            >
-                <Share2 className="h-5 w-5" />
-            </button>
-            <span className="text-[10px] font-medium text-white drop-shadow-sm">Delen</span>
-        </div>
-    )
-}
+import { RecipeActionButtons } from "./recipe-action-buttons"
 
 interface RecipeFeedCardProps {
     recipe: Recipe
@@ -108,29 +67,14 @@ export function RecipeFeedCard({ recipe }: RecipeFeedCardProps) {
                         door {recipe.profiles?.display_name || "een anonieme chef"}
                     </p>
                 </div>
-
-                <div className="absolute right-6 bottom-6 flex flex-col items-center space-y-4">
-                    <ShareButton recipeId={recipe.id} />
-                    <LikeButton
-                        recipeId={recipe.id}
-                        initialLiked={recipe.is_liked_by_current_user}
-                        initialLikeCount={recipe.like_count || 0}
-                        buttonSize="xs"
-                        showCount={true}
+                <div className="absolute right-8 bottom-3">
+                    <RecipeActionButtons
+                        recipe={recipe}
                         theme="dark"
+                        shareButtonSize="md"
+                        likeButtonSize="md"
+                        avatarSize="lg"
                     />
-                    <Link
-                        href={`/profiles/~${recipe.profiles?.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 hover:bg-black/50"
-                    >
-                        <ProfileImage
-                            src={recipe.profiles?.avatar}
-                            name={recipe.profiles?.display_name}
-                            size={36}
-                            className="border-2 border-transparent"
-                        />
-                    </Link>
                 </div>
             </Card>
         </div>

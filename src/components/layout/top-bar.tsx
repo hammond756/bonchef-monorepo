@@ -9,7 +9,6 @@ import { useProfile } from "@/hooks/use-profile"
 import { logout } from "@/app/actions"
 import { useScrollDirection } from "@/hooks/use-scroll-direction"
 import Link from "next/link"
-
 interface TopBarProps {
     children?: React.ReactNode
     className?: string
@@ -21,7 +20,7 @@ export function TopBar({ children, className }: TopBarProps) {
 
     const defaultContent = (
         <>
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center gap-2">
                 <Image
                     src="/bonchef.png"
                     alt="Bonchef"

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { formatRecipe } from "@/app/actions"
 import { Loader2 } from "lucide-react"
 import { GeneratedRecipe } from "@/lib/types"
-import { generatedRecipeToRecipe } from "@/lib/utils"
+import { generatedRecipeToRecipe, cn } from "@/lib/utils"
 
 interface SaveRecipeButtonProps {
     message: string
@@ -14,6 +14,9 @@ interface SaveRecipeButtonProps {
 export function SaveRecipeButton({ message, onSaved }: SaveRecipeButtonProps) {
     const [recipeUrl, setRecipeUrl] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
+
+    const buttonStyles =
+        "rounded-full border-2 border-status-green-border px-3 py-1.5 text-sm font-medium text-status-green-text transition-colors hover:bg-status-green-bg"
 
     const saveRecipe = async (recipe: GeneratedRecipe) => {
         try {
@@ -57,7 +60,7 @@ export function SaveRecipeButton({ message, onSaved }: SaveRecipeButtonProps) {
                 <button
                     onClick={handleSave}
                     disabled={isLoading}
-                    className="rounded-full border-2 border-green-500 px-3 py-1.5 text-sm font-medium text-green-600 transition-colors hover:bg-green-50"
+                    className={cn(buttonStyles)}
                     data-testid="save-recipe-button"
                 >
                     {isLoading ? (
@@ -75,7 +78,7 @@ export function SaveRecipeButton({ message, onSaved }: SaveRecipeButtonProps) {
                     href={recipeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block rounded-full border-2 border-green-500 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50"
+                    className={cn(buttonStyles)}
                     data-testid="save-view-button"
                 >
                     Bekijk recept

@@ -1,33 +1,70 @@
 "use client"
 
 import { useState } from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 import { Heart } from "lucide-react"
 import { likeRecipe, unlikeRecipe } from "@/app/ontdek/actions"
 import { useToast } from "@/hooks/use-toast"
 import { useLikedRecipes } from "@/hooks/use-liked-recipes"
 import { cn } from "@/lib/utils"
+import { lightThemeClasses, darkThemeClasses } from "@/components/recipe/action-button-variants"
 
-type LikeButtonSize = "xs" | "sm" | "md" | "lg" | "2xl"
+const likeButtonVariants = cva(
+    "group flex items-center justify-center rounded-full transition-all duration-200 ease-in-out",
+    {
+        variants: {
+            theme: {
+                light: lightThemeClasses,
+                dark: darkThemeClasses,
+            },
+            size: {
+                sm: "h-8 w-8",
+                md: "h-10 w-10",
+                lg: "h-12 w-12",
+            },
+        },
+        defaultVariants: {
+            theme: "light",
+            size: "md",
+        },
+    }
+)
 
-interface LikeButtonProps {
+const iconVariants = cva("transition-all duration-200 ease-in-out group-hover:scale-110", {
+    variants: {
+        size: {
+            sm: "h-4 w-4",
+            md: "h-5 w-5",
+            lg: "h-6 w-6",
+        },
+    },
+    defaultVariants: {
+        size: "md",
+    },
+})
+
+const textVariants = cva("text-xs font-medium text-white drop-shadow-sm")
+
+export interface LikeButtonProps
+    extends VariantProps<typeof likeButtonVariants>,
+        Omit<VariantProps<typeof textVariants>, "size"> {
     recipeId: string
-    initialLiked?: boolean
-    initialLikeCount?: number
-    variant?: "solid" | "outline"
-    buttonSize?: LikeButtonSize
-    className?: string
+    initialLiked: boolean
+    initialLikeCount: number
     showCount?: boolean
+    className?: string
     theme?: "light" | "dark"
+    size?: "sm" | "md" | "lg"
 }
 
 export function LikeButton({
+    size,
     recipeId,
-    initialLiked = false,
-    initialLikeCount = 0,
-    buttonSize = "md",
-    className: propsClassName,
+    initialLiked,
+    initialLikeCount,
     showCount = true,
-    theme = "light",
+    className,
+    theme,
 }: LikeButtonProps) {
     const [isLiked, setIsLiked] = useState(initialLiked)
     const [likeCount, setLikeCount] = useState(initialLikeCount)
@@ -36,7 +73,10 @@ export function LikeButton({
 
     const { mutate: mutateLikedRecipes } = useLikedRecipes()
 
-    const handleLike = async () => {
+    const handleLike = async (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+
         setIsLoading(true)
         const previousIsLiked = isLiked
         const previousLikeCount = likeCount
@@ -48,11 +88,11 @@ export function LikeButton({
         try {
             if (previousIsLiked) {
                 await unlikeRecipe(recipeId)
-                mutateLikedRecipes()
             } else {
                 await likeRecipe(recipeId)
-                mutateLikedRecipes()
             }
+            // After successful action, revalidate the liked recipes list
+            mutateLikedRecipes()
         } catch (error) {
             // Rollback on error
             setIsLiked(previousIsLiked)
@@ -67,76 +107,35 @@ export function LikeButton({
         }
     }
 
-    const sizeStylesDefinition = {
-        xs: { button: "h-10 w-10", icon: "h-5 w-5", text: "text-[10px]" },
-        sm: { button: "h-9 w-9", icon: "h-5 w-5", text: "text-xs" },
-        md: { button: "h-12 w-12", icon: "h-6 w-6", text: "text-sm" },
-        lg: { button: "h-14 w-14", icon: "h-7 w-7", text: "text-base" },
-        "2xl": { button: "h-16 w-16", icon: "h-8 w-8", text: "text-lg" },
-    }
-
-    const currentSizeStyles = sizeStylesDefinition[buttonSize]
-
-    const themeStyles = {
-        light: {
-            bg: "bg-white/80 hover:bg-white/95",
-            iconColor: isLiked ? "text-red-500" : "text-gray-700",
-        },
-        dark: {
-            bg: "bg-black/30 hover:bg-black/50",
-            iconColor: isLiked ? "text-red-500" : "text-white",
-        },
-    }
-
-    const currentTheme = themeStyles[theme]
-
     return (
-        <div className="flex flex-col items-center space-y-1">
-            <div
-                role="button"
-                tabIndex={isLoading ? -1 : 0}
-                onClick={(e: React.MouseEvent) => {
-                    if (isLoading) return
-                    e.preventDefault()
-                    e.stopPropagation()
-                    handleLike()
-                }}
-                onKeyDown={(e: React.KeyboardEvent) => {
-                    if (isLoading) return
-                    if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleLike()
-                    }
-                }}
-                aria-disabled={isLoading}
+        <div className="flex flex-col items-center">
+            <button
+                onClick={handleLike}
+                disabled={isLoading}
                 aria-label={isLiked ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"}
-                data-testid="like-recipe-button-icon"
-                className={cn(
-                    "flex cursor-pointer items-center justify-center rounded-full",
-                    currentSizeStyles.button,
-                    currentTheme.bg,
-                    "focus:outline-none",
-                    isLoading && "cursor-not-allowed opacity-50",
-                    propsClassName
-                )}
+                data-testid="like-recipe-button"
+                className={cn(likeButtonVariants({ size, theme }), className)}
             >
                 <Heart
-                    className={cn(currentSizeStyles.icon, currentTheme.iconColor)}
-                    fill={isLiked ? "currentColor" : "none"}
+                    className={cn(
+                        iconVariants({ size }),
+                        isLiked
+                            ? cn("fill-status-red-bg", {
+                                  "text-status-red-bg": theme === "dark",
+                                  "text-status-red": theme !== "dark",
+                              })
+                            : cn("fill-none", {
+                                  "text-surface": theme === "dark",
+                                  "text-foreground": theme !== "dark",
+                              })
+                    )}
                 />
-            </div>
+            </button>
 
             {showCount && (
-                <div
-                    className={cn(
-                        "text-xs font-medium text-white drop-shadow-sm",
-                        currentSizeStyles.text
-                    )}
-                    data-testid="like-count"
-                >
+                <span className={cn(textVariants())} data-testid="like-count">
                     {likeCount}
-                </div>
+                </span>
             )}
         </div>
     )

@@ -1,8 +1,14 @@
 ---
 description: 
 globs: 
+alwaysApply: false
+---
+---
+description: 
+globs: 
 alwaysApply: true
 ---
+
 # Bonchef LLM Coding Guidelines
 
 ## 🧑‍🍳 Business Context
@@ -95,6 +101,21 @@ type ServiceResponse<T> = Promise<{
   - src/services: business logic services, organized by domain (recipes, users, storage, etc..)
   - src/stores: localized caching tools (like those using zustand)
   - src/lib/utils.ts: helper functions that are domain agnostic
+
+---
+
+## 🎨 Styling & Design System
+
+All new UI implementations and modifications **must** use the central Bonchef Design System.
+
+*   **Use Tokens:** Always use the defined design tokens from `src/app/globals.css` for colors, fonts, spacing, and border-radius.
+    *   **Example:** Use `bg-primary` instead of `bg-[#1E4D37]`. Use `rounded-xl` instead of `rounded-[12px]`.
+*   **Use `shadcn/ui` Components:** Leverage the existing UI components in `src/components/ui` (like `Button`, `Card`, `Alert`, `Badge`). These components already incorporate the correct styling and variants.
+*   **No Ad-Hoc Styling:** It is **forbidden** to use hardcoded hex colors, pixel values, or other "magic numbers" directly in component `className`s.
+*   **New Styles? Update the System!** If a new design introduces a style that doesn't yet exist in the design system, the **first step** must be to extend the system:
+    1.  Add the new color, font, etc., as a token to the `@theme` block in `src/app/globals.css`.
+    2.  Update the variants of an existing `ui` component (e.g., `badge.tsx`) or create a new reusable component if necessary.
+    3.  Only then, use the new token or component in the feature.
 
 ---
 

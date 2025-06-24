@@ -9,7 +9,7 @@ interface TabLayoutProps {
 
 export const TabLayout = ({ children, topBarContent, tabBarContent }: TabLayoutProps) => {
     return (
-        <div className="flex min-h-screen flex-col bg-slate-50">
+        <div className="bg-surface flex min-h-screen flex-col">
             <TopBar>{topBarContent}</TopBar>
 
             <main className="flex flex-1 justify-center">{children}</main>

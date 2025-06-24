@@ -39,23 +39,23 @@ export function RecipeTeaserCard({ content, messageId, initialRecipe }: RecipeTe
     return (
         <>
             <Card
-                className={`group relative overflow-hidden rounded-lg transition-all duration-300 ${!messageId ? "cursor-not-allowed opacity-50" : "hover:shadow-lg"}`}
+                className={`group relative overflow-hidden rounded-xl transition-all duration-300 ${!messageId ? "cursor-not-allowed opacity-50" : "hover:shadow-lg"}`}
                 onClick={messageId ? handleTeaserClick : undefined}
                 data-testid="teaser-card"
             >
                 {isStreaming && (
-                    <div className="animate-sheen pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-gray-200/50 to-transparent" />
+                    <div className="animate-sheen pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-gray-200/20 to-transparent" />
                 )}
                 <CardContent className="p-6">
                     <div className="flex flex-col gap-4">
-                        <div className="prose prose-sm max-w-none">
+                        <div className="prose prose-sm text-p font-montserrat max-w-none">
                             <ReactMarkdown
                                 rehypePlugins={[rehypeSanitize]}
                                 components={{
                                     a: ({ ...props }) => (
                                         <a
                                             {...props}
-                                            className="text-blue-500 hover:underline"
+                                            className="text-accent-new hover:underline"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         />
@@ -75,7 +75,7 @@ export function RecipeTeaserCard({ content, messageId, initialRecipe }: RecipeTe
                             </ReactMarkdown>
                         </div>
                         <div className="mt-2 flex items-center justify-between">
-                            <p className="text-muted-foreground text-sm">
+                            <p className="text-muted-foreground text-small">
                                 {isStreaming
                                     ? "Recept laden..."
                                     : recipe
@@ -96,7 +96,7 @@ export function RecipeTeaserCard({ content, messageId, initialRecipe }: RecipeTe
                                 )}
                             </div>
                         </div>
-                        {hasError && <p className="mt-1 text-sm text-red-500">{error}</p>}
+                        {hasError && <p className="text-status-red-text mt-1 text-sm">{error}</p>}
                     </div>
                 </CardContent>
             </Card>

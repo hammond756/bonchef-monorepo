@@ -1,38 +1,27 @@
-import Image from "next/image"
 import Avatar from "boring-avatars"
 import React from "react"
 
 interface ProfileImageProps {
-    src?: string | null
     name?: string | null
+    src?: string | null
     size?: number
-    alt?: string
     className?: string
 }
 
-export function ProfileImage({
-    src,
-    name,
-    size = 40,
-    alt = "Avatar",
-    className = "",
-}: ProfileImageProps) {
+export function ProfileImage({ name, src, size = 40, className = "" }: ProfileImageProps) {
     if (src) {
         return (
-            <span
-                style={{ width: size, height: size, display: "inline-block" }}
-                className={`relative overflow-hidden rounded-full ${className}`}
-            >
-                <Image
-                    src={src}
-                    alt={alt}
-                    fill
-                    style={{ objectFit: "cover" }}
-                    className="aspect-square h-full w-full rounded-full"
-                />
-            </span>
+            <img
+                src={src}
+                alt={name || "User avatar"}
+                width={size}
+                height={size}
+                className={`${className} rounded-full object-cover`}
+                style={{ width: size, height: size }}
+            />
         )
     }
+
     return (
         <span style={{ width: size, height: size, display: "inline-block" }}>
             <Avatar

@@ -233,7 +233,7 @@ const ChatInputBase = (
     }
 
     return (
-        <form onSubmit={handleSubmit} className="border-t bg-white p-4">
+        <form onSubmit={handleSubmit} className="bg-surface border-t p-4">
             <UrlStatusList urls={urlStatuses} className={shouldJiggle ? "animate-jiggle" : ""} />
             {preview && (
                 <div className="relative mb-2 w-full max-w-[200px]">
@@ -249,24 +249,28 @@ const ChatInputBase = (
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-xs"
                         onClick={handleRemoveImage}
-                        data-testid="chat-message-remove-image-button"
+                        className="bg-overlay-dark text-surface hover:bg-overlay-dark/80 absolute top-1 right-1 h-6 w-6 rounded-full"
+                        data-testid="remove-image-button"
                     >
                         <X className="h-4 w-4" />
                     </Button>
                 </div>
             )}
-            {error && <div className="mb-2 text-red-500">{error}</div>}
-            <div className="flex gap-2">
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="image/jpeg,image/png,image/heic"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    data-testid="image-upload-input"
-                />
+            {error && <p className="text-status-red-text mb-2 text-sm">{error}</p>}
+            <div
+                className={`bg-accent focus-within:ring-primary flex items-center space-x-2 rounded-2xl p-2 transition-shadow focus-within:ring-2 ${isExpanded ? "shadow-md" : "shadow-sm"}`}
+            >
+                <div className="flex-shrink-0">
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/jpeg,image/png,image/heic"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        data-testid="image-upload-input"
+                    />
+                </div>
                 <Button
                     type="button"
                     variant="outline"

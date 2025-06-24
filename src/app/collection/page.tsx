@@ -50,7 +50,7 @@ function RecipeGrid({ recipes, activeTab }: { recipes: RecipeRead[]; activeTab: 
                 return (
                     <div
                         key={recipe.id}
-                        className="group flex flex-col overflow-hidden rounded-lg border border-gray-300 bg-white shadow-md"
+                        className="group border-border bg-surface flex flex-col overflow-hidden rounded-lg border shadow-md"
                     >
                         <Link
                             href={`/recipes/${recipe.id}`}
@@ -66,20 +66,20 @@ function RecipeGrid({ recipes, activeTab }: { recipes: RecipeRead[]; activeTab: 
                                 />
                                 <div className="absolute top-2 right-2 z-10">
                                     <LikeButton
-                                        buttonSize="sm"
+                                        size="sm"
                                         recipeId={recipe.id}
-                                        initialLiked={recipe.is_liked_by_current_user}
-                                        initialLikeCount={recipe.like_count}
+                                        initialLiked={recipe.is_liked_by_current_user ?? false}
+                                        initialLikeCount={recipe.like_count || 0}
                                         showCount={false}
                                     />
                                 </div>
                             </div>
-                            <div className="flex flex-grow flex-col justify-between bg-white p-3">
+                            <div className="bg-surface flex flex-grow flex-col justify-between p-3">
                                 <div>
-                                    <h2 className="text-bonchef-dark mb-0.5 line-clamp-2 h-10 font-['Montserrat'] text-[15px] leading-5 font-semibold">
+                                    <h2 className="text-default mb-0.5 line-clamp-2 h-10 font-['Montserrat'] text-[15px] leading-5 font-semibold">
                                         {recipe.title}
                                     </h2>
-                                    <div className="mt-1 font-['Montserrat'] text-[10px] text-gray-500">
+                                    <div className="text-muted-foreground mt-1 font-['Montserrat'] text-[10px]">
                                         {timeAndDifficultyParts.length > 0 && (
                                             <div className="line-clamp-1">
                                                 {timeAndDifficultyParts.join(" · ")}
@@ -110,7 +110,7 @@ function RecipeListItem({ recipe, activeTab }: { recipe: RecipeRead; activeTab: 
     }
 
     return (
-        <div className="group relative flex gap-4 rounded-xl border border-gray-300 bg-white p-4 shadow-md">
+        <div className="group border-border bg-surface relative flex gap-4 rounded-xl border p-4 shadow-md">
             <Link href={`/recipes/${recipe.id}`} className="flex flex-1 gap-4">
                 <div className="relative aspect-square h-28 w-28 flex-shrink-0 overflow-hidden rounded-md">
                     <Image
@@ -122,10 +122,10 @@ function RecipeListItem({ recipe, activeTab }: { recipe: RecipeRead; activeTab: 
                     />
                 </div>
                 <div className="flex flex-1 flex-col py-0.5 pr-12">
-                    <h2 className="text-bonchef-dark mb-0.5 line-clamp-2 font-['Montserrat'] text-lg font-semibold group-hover:underline">
+                    <h2 className="text-default mb-0.5 line-clamp-2 font-['Montserrat'] text-lg font-semibold group-hover:underline">
                         {recipe.title}
                     </h2>
-                    <div className="mb-1.5 flex flex-wrap items-center text-xs text-gray-600">
+                    <div className="text-muted-foreground mb-1.5 flex flex-wrap items-center text-xs">
                         {recipe.total_cook_time_minutes !== undefined &&
                             recipe.total_cook_time_minutes > 0 && (
                                 <>
@@ -136,7 +136,7 @@ function RecipeListItem({ recipe, activeTab }: { recipe: RecipeRead; activeTab: 
                             )}
                     </div>
                     {chefDisplayString && (
-                        <div className="mt-auto flex flex-wrap items-center font-['Montserrat'] text-[11px] text-gray-500">
+                        <div className="text-muted-foreground mt-auto flex flex-wrap items-center font-['Montserrat'] text-[11px]">
                             <span>door {chefDisplayString}</span>
                         </div>
                     )}
@@ -144,10 +144,10 @@ function RecipeListItem({ recipe, activeTab }: { recipe: RecipeRead; activeTab: 
             </Link>
             <div className="absolute top-4 right-4 z-10">
                 <LikeButton
-                    buttonSize="sm"
+                    size="sm"
                     recipeId={recipe.id}
-                    initialLiked={recipe.is_liked_by_current_user}
-                    initialLikeCount={recipe.like_count}
+                    initialLiked={recipe.is_liked_by_current_user ?? false}
+                    initialLikeCount={recipe.like_count || 0}
                     showCount={false}
                 />
             </div>
@@ -243,21 +243,25 @@ function RecipesSection() {
     ]
 
     return (
-        <div className="space-y-6">
-            <Tabs
-                value={activeTab}
-                defaultValue="my-recipes"
-                onValueChange={(value) => setActiveTab(value as "my-recipes" | "favorieten")}
-            >
-                <AppTabsList tabs={collectionTabs} />
+        <Tabs
+            value={activeTab}
+            defaultValue="my-recipes"
+            onValueChange={(value) => setActiveTab(value as "my-recipes" | "favorieten")}
+        >
+            <div className="border-border border-b">
+                <div className="container mx-auto max-w-4xl">
+                    <AppTabsList tabs={collectionTabs} />
+                </div>
+            </div>
 
-                <div className="mt-4 flex items-end justify-between">
+            <div className="container mx-auto max-w-4xl px-4">
+                <div className="mt-4 flex w-full items-end justify-between">
                     <div>
                         <Select
                             value={sortOrder}
                             onValueChange={(value) => setSortOrder(value as "newest" | "oldest")}
                         >
-                            <SelectTrigger className="focus:ring-offset-bonchef-background min-w-max rounded-md border-yellow-300 bg-amber-100 px-3 py-0 text-[11px] leading-none font-medium text-yellow-800 transition-colors duration-150 focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2">
+                            <SelectTrigger className="focus:ring-offset-background border-border bg-surface text-default focus:ring-ring min-w-max rounded-md px-3 py-0 text-[11px] leading-none font-medium transition-colors duration-150 focus:ring-2 focus:ring-offset-2">
                                 <SelectValue placeholder="Sorteer op..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -266,33 +270,27 @@ function RecipesSection() {
                             </SelectContent>
                         </Select>
                     </div>
-                    <div className="flex gap-2">
-                        <Button
-                            variant={viewMode === "grid" ? "default" : "outline"}
-                            size="icon"
+                    <div className="border-border flex rounded-lg border p-0.5">
+                        <button
                             onClick={() => setViewMode("grid")}
-                            className={
+                            className={`rounded-md p-1.5 transition-colors ${
                                 viewMode === "grid"
-                                    ? "hover:bg-opacity-80 text-bonchef-dark bg-[#D4E6DE]"
-                                    : "text-bonchef-dark border-[#D4E6DE]"
-                            }
+                                    ? "text-primary-foreground bg-primary hover:bg-primary/80"
+                                    : "text-muted-foreground"
+                            }`}
                         >
                             <LayoutGrid className="h-5 w-5" />
-                            <span className="sr-only">Grid view</span>
-                        </Button>
-                        <Button
-                            variant={viewMode === "list" ? "default" : "outline"}
-                            size="icon"
+                        </button>
+                        <button
                             onClick={() => setViewMode("list")}
-                            className={
+                            className={`rounded-md p-1.5 transition-colors ${
                                 viewMode === "list"
-                                    ? "hover:bg-opacity-80 text-bonchef-dark bg-[#D4E6DE]"
-                                    : "text-bonchef-dark border-[#D4E6DE]"
-                            }
+                                    ? "text-primary-foreground bg-primary hover:bg-primary/80"
+                                    : "text-muted-foreground"
+                            }`}
                         >
                             <List className="h-5 w-5" />
-                            <span className="sr-only">List view</span>
-                        </Button>
+                        </button>
                     </div>
                 </div>
 
@@ -306,8 +304,8 @@ function RecipesSection() {
                         {loadingLogic(likedRecipesLoading, likedRecipes, <FavoritesCTA />)}
                     </TabsContent>
                 )}
-            </Tabs>
-        </div>
+            </div>
+        </Tabs>
     )
 }
 
@@ -326,8 +324,7 @@ function RecipeGridSkeleton() {
 
 export default function CollectionPage() {
     return (
-        <div className="bg-bonchef-background flex flex-1 flex-col space-y-4 px-4 pt-4 pb-10">
-            <h1 className="text-bonchef-dark py-2 text-3xl font-bold">Jouw kookboek</h1>
+        <div className="flex flex-1 flex-col pt-4 pb-10">
             <Suspense fallback={<RecipeGridSkeleton />}>
                 <RecipesSection />
             </Suspense>

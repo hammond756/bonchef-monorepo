@@ -11,22 +11,26 @@ interface TabDefinition {
 
 interface AppTabsListProps {
     tabs: TabDefinition[]
+    className?: string
 }
 
-const defaultTabTriggerClassName =
-    "flex-1 py-3 px-2 text-base transition-all duration-200 relative text-gray-500 font-medium hover:text-green-600 data-[state=active]:text-green-700 data-[state=active]:font-semibold data-[state=active]:border-b-2 data-[state=active]:border-green-700 data-[state=active]:bg-white data-[state=active]:rounded-md data-[state=active]:shadow-sm"
-const defaultTabsListClassName =
-    "flex border-b border-gray-200 rounded-lg p-1 bg-bonchef-green-tab w-full"
-
-export function AppTabsList({ tabs }: AppTabsListProps) {
+export function AppTabsList({ tabs, className }: AppTabsListProps) {
     return (
-        <TabsList className={cn(defaultTabsListClassName)}>
+        <TabsList
+            className={cn(
+                "border-border h-auto w-full justify-start rounded-none border-b bg-transparent p-0",
+                className
+            )}
+        >
             {tabs.map((tab) => (
                 <TabsTrigger
                     key={tab.value}
                     value={tab.value}
                     disabled={tab.disabled}
-                    className={defaultTabTriggerClassName} // Gebruik de vaste class hier
+                    className={cn(
+                        "text-muted-foreground hover:text-foreground data-[state=active]:text-status-green-text relative h-10 flex-1 rounded-none bg-transparent px-4 pt-2 pb-3 text-base font-medium shadow-none transition-colors data-[state=active]:font-semibold data-[state=active]:shadow-none",
+                        "after:bg-status-green-text after:absolute after:right-0 after:bottom-0 after:left-0 after:h-[2px] after:origin-center after:scale-x-0 after:transition-transform after:duration-200 data-[state=active]:after:scale-x-100"
+                    )}
                 >
                     {tab.label}
                 </TabsTrigger>

@@ -27,11 +27,11 @@ export function RecipeGrid({ recipes }: { recipes: RecipeRead[] }) {
                                 className="rounded-lg object-cover transition-transform group-hover:scale-105"
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw"
                             />
-                            <div className="absolute top-4 right-4">
+                            <div className="absolute top-2 right-2 z-10">
                                 <LikeButton
                                     recipeId={recipe.id}
-                                    initialLiked={recipe.is_liked_by_current_user}
-                                    initialLikeCount={recipe.like_count}
+                                    initialLiked={recipe.is_liked_by_current_user ?? false}
+                                    initialLikeCount={recipe.like_count || 0}
                                 />
                             </div>
                         </div>

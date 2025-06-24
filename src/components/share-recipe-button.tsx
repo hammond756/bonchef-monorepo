@@ -1,42 +1,62 @@
 "use client"
 
 import { Share2Icon } from "lucide-react"
-import { Button } from "@/components/ui/button" // Shadcn Button voor styling
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-import React from "react" // Import React for Fragment if not already there
+import { cva, type VariantProps } from "class-variance-authority"
+import { lightThemeClasses, darkThemeClasses } from "@/components/recipe/action-button-variants"
 
-interface ShareRecipeButtonProps {
+const buttonVariants = cva("flex items-center justify-center rounded-full transition-colors", {
+    variants: {
+        theme: {
+            light: lightThemeClasses,
+            dark: darkThemeClasses,
+        },
+        size: {
+            md: "h-10 w-10",
+            lg: "h-12 w-12",
+        },
+    },
+    defaultVariants: {
+        theme: "light",
+        size: "lg",
+    },
+})
+
+const iconVariants = cva("", {
+    variants: {
+        size: {
+            md: "h-5 w-5",
+            lg: "h-6 w-6",
+        },
+    },
+    defaultVariants: {
+        size: "lg",
+    },
+})
+
+const textVariants = cva("text-xs font-medium text-white drop-shadow-sm")
+
+export interface ShareRecipeButtonProps extends VariantProps<typeof buttonVariants> {
     title: string
-    text: string // Bijvoorbeeld een korte beschrijving of gewoon de titel nogmaals
+    text: string
     className?: string
-    buttonContainerClassName?: string // New prop for the outer div styling
 }
 
-export function ShareRecipeButton({
-    title,
-    text,
-    className,
-    buttonContainerClassName,
-}: ShareRecipeButtonProps) {
+export function ShareRecipeButton({ title, text, className, theme, size }: ShareRecipeButtonProps) {
     const { toast } = useToast()
 
     const handleShare = async () => {
         const shareData = {
             title: title,
             text: text,
-            url: window.location.href, // Deel de huidige pagina URL
+            url: window.location.href,
         }
 
         if (navigator.share) {
             try {
                 await navigator.share(shareData)
-                // Optioneel: toast bericht voor succes
-                // toast({ title: 'Recept gedeeld!' });
             } catch (error) {
-                // Gebruiker annuleert delen of er is een fout opgetreden
-                // Je kunt hier een toast tonen als het geen AbortError is,
-                // maar vaak is het niet nodig om de gebruiker lastig te vallen als ze zelf annuleren.
                 if ((error as Error).name !== "AbortError") {
                     console.error("Fout bij delen:", error)
                     toast({
@@ -47,8 +67,6 @@ export function ShareRecipeButton({
                 }
             }
         } else {
-            // Fallback voor browsers die navigator.share niet ondersteunen
-            // Kopieer naar klembord als simpele fallback
             try {
                 await navigator.clipboard.writeText(window.location.href)
                 toast({
@@ -67,22 +85,15 @@ export function ShareRecipeButton({
     }
 
     return (
-        <div className={cn("flex flex-col items-center", buttonContainerClassName)}>
-            <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                    "h-12 w-12 rounded-full",
-                    "bg-white/80 hover:bg-white/95",
-                    "text-gray-700 hover:text-gray-900",
-                    className
-                )}
+        <div className="flex flex-col items-center">
+            <button
+                className={cn(buttonVariants({ theme, size }), className)}
                 onClick={handleShare}
                 aria-label="Deel recept"
             >
-                <Share2Icon className="h-6 w-6" />
-            </Button>
-            <span className="mt-1 text-xs font-medium text-white drop-shadow-sm">Delen</span>
+                <Share2Icon className={cn(iconVariants({ size }))} />
+            </button>
+            <span className={cn(textVariants())}>Delen</span>
         </div>
     )
 }

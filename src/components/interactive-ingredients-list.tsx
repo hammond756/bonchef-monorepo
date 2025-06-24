@@ -7,7 +7,8 @@ import { Card } from "./ui/card"
 import { Separator } from "./ui/separator"
 import type { Ingredient } from "@/lib/types"
 import { formatIngredientLine } from "@/lib/utils"
-import { Checkbox } from "./ui/checkbox" // Importeren van Checkbox
+import { cn } from "@/lib/utils"
+import { CheckIcon } from "lucide-react"
 
 interface IngredientGroup {
     name: string
@@ -59,26 +60,26 @@ export function InteractiveIngredientsList({
     return (
         <div className="space-y-6">
             {/* Portion Calculator */}
-            <Card className="rounded-lg bg-[#D4E6DE] p-4">
+            <Card className="bg-status-green-bg rounded-lg p-4">
                 <div className="flex items-center justify-between">
-                    <span className="text-bonchef-dark text-sm font-medium">Aantal personen</span>
+                    <span className="text-default text-sm font-medium">Aantal personen</span>
                     <div className="flex items-center space-x-3">
                         <Button
                             variant="outline"
                             size="icon"
-                            className="text-bonchef-dark h-8 w-8 border-gray-300 bg-white hover:bg-gray-50"
+                            className="border-border bg-surface hover:bg-accent h-8 w-8"
                             onClick={() => setCurrentServings(Math.max(1, currentServings - 1))}
                             aria-label="Verminder aantal personen"
                         >
                             <Minus size={16} />
                         </Button>
-                        <span className="text-bonchef-dark w-8 text-center font-semibold">
+                        <span className="text-default w-8 text-center font-semibold">
                             {currentServings}
                         </span>
                         <Button
                             variant="outline"
                             size="icon"
-                            className="text-bonchef-dark h-8 w-8 border-gray-300 bg-white hover:bg-gray-50"
+                            className="border-border bg-surface hover:bg-accent h-8 w-8"
                             onClick={() => setCurrentServings(currentServings + 1)}
                             aria-label="Verhoog aantal personen"
                         >
@@ -89,79 +90,73 @@ export function InteractiveIngredientsList({
             </Card>
 
             {/* Ingredients List */}
-            <Card className="rounded-lg p-6">
-                {ingredientGroups.map((group, groupIndex) => (
-                    <div key={groupIndex} className="mb-6 last:mb-0">
-                        {group.name !== "no_group" && (
-                            <h3 className="mb-3 text-lg font-semibold text-gray-700">
-                                {group.name}
-                            </h3>
-                        )}
-                        <ul className="space-y-4">
-                            {group.ingredients &&
-                                group.ingredients.map((ingredient, ingredientIndex) => {
-                                    const ingredientKey = getIngredientKey(
-                                        groupIndex,
-                                        ingredientIndex
-                                    )
-                                    const isChecked = checkedIngredients.has(ingredientKey)
-                                    const formattedParts = formatIngredientLine(
-                                        ingredient,
-                                        servingsMultiplier
-                                    )
+            {ingredientGroups.map((group, groupIndex) => (
+                <div key={groupIndex} className="mb-6 last:mb-0">
+                    {group.name !== "no_group" && (
+                        <h3 className="text-default mb-3 text-lg font-semibold">{group.name}</h3>
+                    )}
+                    <ul className="space-y-2">
+                        {group.ingredients &&
+                            group.ingredients.map((ingredient, ingredientIndex) => {
+                                const ingredientKey = getIngredientKey(groupIndex, ingredientIndex)
+                                const isChecked = checkedIngredients.has(ingredientKey)
+                                const formattedParts = formatIngredientLine(
+                                    ingredient,
+                                    servingsMultiplier
+                                )
 
-                                    if (!formattedParts || !formattedParts.description) return null
+                                if (!formattedParts || !formattedParts.description) return null
 
-                                    return (
-                                        <li
-                                            key={ingredientKey}
-                                            className={`flex items-center space-x-3 rounded-lg p-3 transition-colors ${
-                                                isChecked
-                                                    ? "bg-green-50"
-                                                    : "hover:bg-bonchef-sage/30"
-                                            }`}
-                                            role="checkbox"
-                                            aria-checked={isChecked}
-                                            tabIndex={0}
-                                            onKeyDown={(e) => {
-                                                if (e.key === "Enter" || e.key === " ") {
-                                                    e.preventDefault()
-                                                    toggleIngredient(ingredientKey)
-                                                }
-                                            }}
-                                        >
-                                            <Checkbox
-                                                id={ingredientKey}
-                                                checked={isChecked}
-                                                onCheckedChange={() =>
-                                                    toggleIngredient(ingredientKey)
-                                                }
-                                                className="h-5 w-5 text-white data-[state=checked]:border-green-600 data-[state=checked]:bg-green-600"
-                                                aria-label={`Markeer ${formattedParts.quantity} ${formattedParts.description} als voltooid`}
-                                            />
-                                            <label
-                                                htmlFor={ingredientKey}
-                                                className={`flex-1 cursor-pointer text-base ${
-                                                    isChecked
-                                                        ? "text-gray-500 line-through"
-                                                        : "text-gray-700"
-                                                }`}
-                                            >
-                                                {formattedParts.quantity && (
-                                                    <span className="mr-1 font-semibold">
-                                                        {formattedParts.quantity}
-                                                    </span>
+                                return (
+                                    <li
+                                        key={ingredientKey}
+                                        className={cn(
+                                            "flex cursor-pointer items-center justify-between p-3 transition-all",
+                                            isChecked && "text-foreground rounded-lg"
+                                        )}
+                                        onClick={() => toggleIngredient(ingredientKey)}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className={cn(
+                                                    "border-muted-foreground flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border-2 transition-colors",
+                                                    isChecked &&
+                                                        "border-primary bg-primary text-primary-foreground"
                                                 )}
-                                                {formattedParts.description}
-                                            </label>
-                                        </li>
-                                    )
-                                })}
-                        </ul>
-                        {groupIndex < ingredientGroups.length - 1 && <Separator className="mt-6" />}
-                    </div>
-                ))}
-            </Card>
+                                                aria-hidden="true"
+                                            >
+                                                {isChecked && <CheckIcon className="h-4 w-4" />}
+                                            </div>
+                                            <span
+                                                className={cn(
+                                                    "flex-1 text-lg",
+                                                    isChecked
+                                                        ? "text-muted-foreground"
+                                                        : "text-default"
+                                                )}
+                                            >
+                                                <span
+                                                    className={cn(
+                                                        isChecked &&
+                                                            "decoration-status-green-text line-through"
+                                                    )}
+                                                >
+                                                    {formattedParts.quantity && (
+                                                        <span className="font-semibold">
+                                                            {formattedParts.quantity}
+                                                        </span>
+                                                    )}{" "}
+                                                    {formattedParts.description}
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                )
+                            })}
+                    </ul>
+                    {groupIndex < ingredientGroups.length - 1 && <Separator className="mt-6" />}
+                </div>
+            ))}
         </div>
     )
 }

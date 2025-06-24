@@ -6,6 +6,56 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+    /* --- New Bonchef Design System --- */
+    /* 1. Core Color Palette */
+    --color-primary: #385940; /* Main CTA, navigation, accents */
+    --color-text-default: #2B2B2B; /* Body text */
+    --color-text-muted: #6F6F6F; /* Subtext, explanations */
+    --color-accent-new: #268A40; /* Active tab underline, highlights (renamed to avoid conflict) */
+    --color-overlay-dark: rgba(0, 0, 0, 0.5); /* Text overlay on images */
+    --color-surface: #FFFFFF; /* Background, cards */
+
+    /* 2. Status Colors (for labels/badges) */
+    --color-status-blue-bg: #E7F3FB;
+    --color-status-blue-text: #264E76;
+    --color-status-blue-border: #B3D8F2;
+    --color-status-green-0: #EFFDF6; /* New, lighter green for checked items */
+    --color-status-green-bg: #E5F7EB;
+    --color-status-green-text: #157F3D;
+    --color-status-green-border: #B9E7CA;
+    --color-status-yellow-bg: #FFF9D9;
+    --color-status-yellow-text: #8A5A00;
+    --color-status-yellow-border: #FFEEAA;
+    --color-status-red-bg: #FCE7E7;
+    --color-status-red-text: #8F1D1D;
+    --color-status-red-border: #F5B5B5;
+
+    /* 3. Border Radius */
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-2xl: 24px;
+
+    /* 4. Typography */
+    --font-lora: "Lora", serif;
+    --font-montserrat: "Montserrat", sans-serif;
+    --font-size-h1: 24px;
+    --line-height-h1: 32px;
+    --font-size-h2: 20px;
+    --line-height-h2: 25px;
+    --font-size-h3: 14px;
+    --line-height-h3: 22px;
+    --font-size-h4: 14px;
+    --line-height-h4: 20px;
+    --font-size-p: 16px;
+    --line-height-p: 24px;
+    --font-size-lg: 18px; /* New size for instructions */
+    --line-height-lg: 28px; /* New line-height for instructions */
+    --font-size-small: 14px;
+    --line-height-small: 20px;
+    --font-size-span: 12px;
+    --line-height-span: 19px;
+
+    /* --- Existing Theme --- */
     --animate-jiggle: jiggle 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
     --animate-sheen: sheen 2s infinite;
 
@@ -18,7 +68,7 @@
     --color-popover: hsl(var(--popover));
     --color-popover-foreground: hsl(var(--popover-foreground));
 
-    --color-primary: hsl(var(--primary));
+    /* --color-primary: hsl(var(--primary)); */ /* This is now overridden by the new system above */
     --color-primary-foreground: hsl(var(--primary-foreground));
 
     --color-secondary: hsl(var(--secondary));
@@ -43,7 +93,6 @@
     --color-chart-4: hsl(var(--chart-4));
     --color-chart-5: hsl(var(--chart-5));
 
-    --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
 
@@ -67,9 +116,7 @@
             transform: translateX(100%);
         }
     }
-}
-
-/*
+}/*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
   looks the same as it did with Tailwind CSS v3.
@@ -84,6 +131,11 @@
     ::backdrop,
     ::file-selector-button {
         border-color: var(--color-gray-200, currentcolor);
+    }
+
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 }
 
@@ -163,17 +215,17 @@ textarea {
 @layer base {
     :root {
         --background: 0 0% 100%;
-        --foreground: 240 10% 3.9%;
+        --foreground: 0 0% 17%; /* Mapped to text-default */
         --card: 0 0% 100%;
-        --card-foreground: 240 10% 3.9%;
+        --card-foreground: 0 0% 17%;
         --popover: 0 0% 100%;
-        --popover-foreground: 240 10% 3.9%;
-        --primary: 240 5.9% 10%;
+        --popover-foreground: 0 0% 17%;
+        --primary: 138 23% 29%; /* New: #385940 */
         --primary-foreground: 0 0% 98%;
         --secondary: 240 4.8% 95.9%;
         --secondary-foreground: 240 5.9% 10%;
         --muted: 240 4.8% 95.9%;
-        --muted-foreground: 240 3.8% 46.1%;
+        --muted-foreground: 0 0% 44%; /* New: #6F6F6F */
         --accent: 240 4.8% 95.9%;
         --accent-foreground: 240 5.9% 10%;
         --destructive: 0 84.2% 60.2%;
@@ -190,57 +242,7 @@ textarea {
         /* Manually Added values*/
         --top-bar-height: 4rem;
         --chat-input-height: 4.5rem;
-        --foreground-rgb: 0, 0, 0;
-        --background-start-rgb: 214, 219, 220;
-        --background-end-rgb: 255, 255, 255;
-
-        /* Custom Bonchef colors */
-        --bonchef-background: #fefefe;
-        --bonchef-dark: #2d3748;
-        --bonchef-sage: #e8f4f0;
-        --bonchef-sage-border: #d4e6de;
-        --bonchef-yellow: #fef3c7;
-        --bonchef-yellow-border: #f3e8a3;
-        --bonchef-green-tab: #f0fdf4;
-        --bonchef-sage-green-buttons: #d4e6de;
-    }
-    .dark {
-        --background: 240 10% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 240 10% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 240 10% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 240 5.9% 10%;
-        --secondary: 240 3.7% 15.9%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 240 3.7% 15.9%;
-        --muted-foreground: 0 0% 63.9%;
-        --accent: 240 3.7% 15.9%;
-        --accent-foreground: 0 0% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 240 3.7% 15.9%;
-        --input: 240 3.7% 15.9%;
-        --ring: 0 0% 63.9%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
-
-        /* Custom Bonchef colors */
-        --bonchef-background: #fefefe;
-        --bonchef-dark: #2d3748;
-        --bonchef-sage: #e8f4f0;
-        --bonchef-sage-border: #d4e6de;
-        --bonchef-yellow: #fef3c7;
-        --bonchef-yellow-border: #f3e8a3;
-        --bonchef-green-tab: #f0fdf4;
-        --bonchef-sage-green-buttons: #d4e6de;
-    }
-    /* Add rules for headings in base layer as well for consistency */
+    }    /* Add rules for headings in base layer as well for consistency */
     h1,
     h2,
     h3,
@@ -255,14 +257,101 @@ textarea {
 }
 
 @layer base {
-    * {
-        @apply border-border;
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentcolor);
     }
     body {
-        @apply bg-background text-foreground;
-        font-family: "Montserrat", sans-serif;
-    }
-    .font-serif {
-        font-family: "Lora", serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 }
+
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 0 0% 17%; /* Mapped to text-default */
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 17%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 17%;
+        --primary: 138 23% 29%; /* New: #385940 */
+        --primary-foreground: 0 0% 98%;
+        --secondary: 240 4.8% 95.9%;
+        --secondary-foreground: 240 5.9% 10%;
+        --muted: 240 4.8% 95.9%;
+        --muted-foreground: 0 0% 44%; /* New: #6F6F6F */
+        --accent: 240 4.8% 95.9%;
+        --accent-foreground: 240 5.9% 10%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 240 5.9% 90%;
+        --input: 240 5.9% 90%;
+        --ring: 240 5.9% 10%;
+        --chart-1: 12 76% 61%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+        --radius: 0.5rem;
+        /* Manually Added values*/
+        --top-bar-height: 4rem;
+        --chat-input-height: 4.5rem;
+    }
+
+    .dark {
+        --background: 240 5.9% 10%;
+        --foreground: 0 0% 98%;
+        --card: 240 5.9% 10%;
+        --card-foreground: 0 0% 98%;
+        --popover: 240 5.9% 10%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 0 0% 98%;
+        --primary-foreground: 240 5.9% 10%;
+        --secondary: 240 3.7% 15.9%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 240 3.7% 15.9%;
+        --muted-foreground: 240 5% 64.9%;
+        --accent: 240 3.7% 15.9%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 240 3.7% 15.9%;
+        --input: 240 3.7% 15.9%;
+        --ring: 240 4.9% 83.9%;
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 350 75% 55%;
+    }
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+    font-family: var(--font-lora);
+    font-weight: 700;
+    }
+
+    .font-serif {
+    font-family: var(--font-lora);
+    }
+
+*,
+::before,
+::after {
+    border-color: theme("colors.gray.200", currentColor);
+}
+
+    body {
+    font-family: var(--font-montserrat);
+    color: theme("colors.foreground");
+    background-color: theme("colors.background");
+    }

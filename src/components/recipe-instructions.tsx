@@ -3,6 +3,7 @@
 import React, { useState } from "react"
 import { Card } from "./ui/card"
 import { ClockIcon, CheckIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 export interface InstructionStep {
     id: string
@@ -45,7 +46,11 @@ export function RecipeInstructions({ instructions }: RecipeInstructionsProps) {
                     return (
                         <li
                             key={step.id}
-                            className={`flex cursor-pointer items-start space-x-4 rounded-lg border p-4 transition-colors ${isChecked ? "border-green-200 bg-green-50" : "border-gray-200 bg-white hover:bg-gray-50"}`}
+                            className={cn(
+                                "flex cursor-pointer items-start space-x-4 rounded-lg border p-4 transition-colors",
+                                isChecked &&
+                                    "bg-green-0 text-muted-foreground decoration-status-green-text border-green-200 line-through"
+                            )}
                             onClick={() => toggleStep(step.id)}
                             role="checkbox"
                             aria-checked={isChecked}
@@ -58,25 +63,33 @@ export function RecipeInstructions({ instructions }: RecipeInstructionsProps) {
                             }}
                         >
                             <div
-                                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 data-[checked=true]:border-green-600 data-[checked=true]:bg-green-600 data-[checked=true]:text-white"
+                                className="data-[checked=true]:border-primary data-[checked=true]:bg-primary data-[checked=true]:text-surface flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2"
                                 data-checked={isChecked}
                             >
                                 {isChecked ? (
                                     <CheckIcon className="h-5 w-5" />
                                 ) : (
-                                    <span className="text-sm font-semibold text-gray-700">
+                                    <span className="text-default text-sm font-semibold">
                                         {index + 1}
                                     </span>
                                 )}
                             </div>
                             <div className="flex-1">
                                 <span
-                                    className={`block text-sm font-medium ${isChecked ? "text-gray-500 line-through" : "text-gray-800"}`}
+                                    className={cn(
+                                        "block text-lg font-normal",
+                                        isChecked ? "text-muted-foreground" : "text-default"
+                                    )}
                                 >
                                     {step.text}
                                 </span>
                                 {step.time !== undefined && (
-                                    <div className="mt-1.5 flex items-center text-sm text-gray-500">
+                                    <div
+                                        className={cn(
+                                            "mt-1.5 flex items-center text-sm",
+                                            isChecked ? "text-default" : "text-muted"
+                                        )}
+                                    >
                                         <ClockIcon className="mr-1.5 h-4 w-4 flex-shrink-0" />
                                         <span>{step.time} min</span>
                                     </div>
