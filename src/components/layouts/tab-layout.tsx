@@ -16,17 +16,33 @@ export const TabLayout = ({ children, topBarContent, tabBarContent }: TabLayoutP
     const mainRef = useRef<HTMLElement>(null)
     const scrollDirection = useScrollDirection(10, mainRef)
     const [isVisible, setIsVisible] = useState(true)
+    const [isAtTop, setIsAtTop] = useState(true)
 
     useEffect(() => {
-        const timer = setTimeout(() => {
+        const mainEl = mainRef.current
+        if (!mainEl) return
+
+        const handleScroll = () => {
+            setIsAtTop(mainEl.scrollTop <= 10)
+        }
+
+        mainEl.addEventListener("scroll", handleScroll, { passive: true })
+        handleScroll() // Initial check
+
+        return () => mainEl.removeEventListener("scroll", handleScroll)
+    }, [])
+
+    useEffect(() => {
+        if (isAtTop) {
+            setIsVisible(true)
+        } else {
             if (scrollDirection === "down") {
                 setIsVisible(false)
             } else if (scrollDirection === "up") {
                 setIsVisible(true)
             }
-        }, 100)
-        return () => clearTimeout(timer)
-    }, [scrollDirection])
+        }
+    }, [scrollDirection, isAtTop])
 
     return (
         <div className="bg-surface relative flex h-screen flex-col">
