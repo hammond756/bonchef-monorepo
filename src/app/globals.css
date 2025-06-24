@@ -235,10 +235,6 @@
     .bg-bonchef-green-tab {
         background-color: var(--bonchef-green-tab);
     }
-
-    h3 {
-        color: white;
-    }
 }
 
 /* Ensure smooth scrolling and prevent scroll bounce on iOS */
