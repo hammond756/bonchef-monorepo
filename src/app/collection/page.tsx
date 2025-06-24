@@ -1,9 +1,13 @@
 "use client"
 
+import { TopBar } from "@/components/layout/top-bar"
+import { TabBar } from "@/components/layout/tab-bar"
+import { useScrollDirection } from "@/hooks/use-scroll-direction"
+import { useState, useEffect, useRef, Suspense } from "react"
+import { cn } from "@/lib/utils"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { RecipeRead } from "@/lib/types"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
@@ -13,7 +17,6 @@ import { useLikedRecipes } from "@/hooks/use-liked-recipes"
 import { useOwnRecipes } from "@/hooks/use-own-recipes"
 import { useQueryState } from "nuqs"
 import { LayoutGrid, List } from "lucide-react"
-import { useState } from "react"
 import {
     Select,
     SelectContent,
@@ -22,131 +25,31 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import React from "react"
+import { RecipeCard } from "@/components/recipe/recipe-card"
 
-function RecipeGrid({ recipes, activeTab }: { recipes: RecipeRead[]; activeTab: string }) {
-    if (!recipes || recipes.length === 0) {
-        return null
-    }
-
+function CompactRecipeCard({ recipe }: { recipe: RecipeRead }) {
     return (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            {recipes.map((recipe) => {
-                let chefDisplayGridString: string | null = null
-
-                if (activeTab === "favorieten") {
-                    chefDisplayGridString = recipe.profiles.display_name ?? "Auteur onbekend"
-                }
-
-                const timeAndDifficultyParts: string[] = []
-
-                if (
-                    recipe.total_cook_time_minutes !== undefined &&
-                    recipe.total_cook_time_minutes > 0
-                ) {
-                    timeAndDifficultyParts.push(`${recipe.total_cook_time_minutes} min`)
-                    timeAndDifficultyParts.push("Medium")
-                }
-
-                return (
-                    <div
-                        key={recipe.id}
-                        className="group border-border bg-surface flex flex-col overflow-hidden rounded-lg border shadow-md"
-                    >
-                        <Link
-                            href={`/recipes/${recipe.id}`}
-                            className="flex w-full flex-grow flex-col"
-                        >
-                            <div className="relative aspect-[3/4] w-full">
-                                <Image
-                                    src={recipe.thumbnail}
-                                    alt={recipe.title}
-                                    fill
-                                    className="rounded-t-lg object-cover transition-transform group-hover:scale-105"
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw"
-                                />
-                                <div className="absolute top-2 right-2 z-10">
-                                    <LikeButton
-                                        size="sm"
-                                        recipeId={recipe.id}
-                                        initialLiked={recipe.is_liked_by_current_user ?? false}
-                                        initialLikeCount={recipe.like_count || 0}
-                                        showCount={false}
-                                    />
-                                </div>
-                            </div>
-                            <div className="bg-surface flex flex-grow flex-col justify-between p-3">
-                                <div>
-                                    <h2 className="text-default mb-0.5 line-clamp-2 h-10 font-['Montserrat'] text-[15px] leading-5 font-semibold">
-                                        {recipe.title}
-                                    </h2>
-                                    <div className="text-muted-foreground mt-1 font-['Montserrat'] text-[10px]">
-                                        {timeAndDifficultyParts.length > 0 && (
-                                            <div className="line-clamp-1">
-                                                {timeAndDifficultyParts.join(" · ")}
-                                            </div>
-                                        )}
-                                        {chefDisplayGridString && (
-                                            <div className="line-clamp-1">
-                                                door {chefDisplayGridString}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
-                    </div>
-                )
-            })}
-        </div>
-    )
-}
-
-function RecipeListItem({ recipe, activeTab }: { recipe: RecipeRead; activeTab: string }) {
-    let chefDisplayString: string | null = null
-    if (activeTab === "favorieten") {
-        chefDisplayString = recipe.profiles?.display_name || "Auteur onbekend"
-    } else if (recipe.profiles?.display_name) {
-        chefDisplayString = recipe.profiles.display_name
-    }
-
-    return (
-        <div className="group border-border bg-surface relative flex gap-4 rounded-xl border p-4 shadow-md">
-            <Link href={`/recipes/${recipe.id}`} className="flex flex-1 gap-4">
-                <div className="relative aspect-square h-28 w-28 flex-shrink-0 overflow-hidden rounded-md">
+        <div className="group border-border bg-surface relative flex items-center gap-4 rounded-xl border p-2 shadow-sm">
+            <Link href={`/recipes/${recipe.id}`} className="flex flex-1 items-center gap-4">
+                <div className="relative aspect-square h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
                     <Image
                         src={recipe.thumbnail}
                         alt={recipe.title}
                         fill
-                        className="object-cover transition-transform group-hover:scale-105"
-                        sizes="112px"
+                        className="object-cover"
+                        sizes="64px"
                     />
                 </div>
-                <div className="flex flex-1 flex-col py-0.5 pr-12">
-                    <h2 className="text-default mb-0.5 line-clamp-2 font-['Montserrat'] text-lg font-semibold group-hover:underline">
+                <div className="flex-1">
+                    <h2 className="text-default line-clamp-2 font-semibold group-hover:underline">
                         {recipe.title}
                     </h2>
-                    <div className="text-muted-foreground mb-1.5 flex flex-wrap items-center text-xs">
-                        {recipe.total_cook_time_minutes !== undefined &&
-                            recipe.total_cook_time_minutes > 0 && (
-                                <>
-                                    <p>{recipe.total_cook_time_minutes} min</p>
-                                    <span className="mx-1.5">·</span>
-                                    <p>Medium</p>
-                                </>
-                            )}
-                    </div>
-                    {chefDisplayString && (
-                        <div className="text-muted-foreground mt-auto flex flex-wrap items-center font-['Montserrat'] text-[11px]">
-                            <span>door {chefDisplayString}</span>
-                        </div>
-                    )}
                 </div>
             </Link>
-            <div className="absolute top-4 right-4 z-10">
+            <div className="pr-2">
                 <LikeButton
-                    size="sm"
                     recipeId={recipe.id}
-                    initialLiked={recipe.is_liked_by_current_user ?? false}
+                    initialLiked={!!recipe.is_liked_by_current_user}
                     initialLikeCount={recipe.like_count || 0}
                     showCount={false}
                 />
@@ -155,14 +58,25 @@ function RecipeListItem({ recipe, activeTab }: { recipe: RecipeRead; activeTab: 
     )
 }
 
-function RecipeList({ recipes, activeTab }: { recipes: RecipeRead[]; activeTab: string }) {
+function RecipeGrid({ recipes }: { recipes: RecipeRead[] }) {
     if (!recipes || recipes.length === 0) {
         return null
     }
     return (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-2 gap-4">
             {recipes.map((recipe) => (
-                <RecipeListItem key={recipe.id} recipe={recipe} activeTab={activeTab} />
+                <RecipeCard key={recipe.id} recipe={recipe} />
+            ))}
+        </div>
+    )
+}
+
+function RecipeList({ recipes }: { recipes: RecipeRead[] }) {
+    if (!recipes || recipes.length === 0) return null
+    return (
+        <div className="flex flex-col gap-3">
+            {recipes.map((recipe) => (
+                <CompactRecipeCard key={recipe.id} recipe={recipe} />
             ))}
         </div>
     )
@@ -170,50 +84,68 @@ function RecipeList({ recipes, activeTab }: { recipes: RecipeRead[]; activeTab: 
 
 function WelcomeSection() {
     return (
-        <div className="mb-8">
-            <p className="mb-6 text-lg text-gray-700">
-                Welkom bij jouw kookboek! Hier vind je al jouw recepten en favorieten op één plek.
+        <div className="py-10 text-center">
+            <h2 className="mb-2 text-xl font-bold">Welkom bij jouw kookboek!</h2>
+            <p className="text-muted-foreground mb-4">
+                Hier vind je al jouw recepten en favorieten op één plek.
             </p>
-
-            <Link href="/import">
-                <Button className="mb-8">Voeg recept toe</Button>
-            </Link>
+            <Button asChild>
+                <Link href="/import">Voeg je eerste recept toe</Link>
+            </Button>
         </div>
     )
 }
 
 function FavoritesCTA() {
     return (
-        <div className="mb-8">
-            <p className="mb-6 text-lg text-gray-700">
-                Je hebt nog geen favoriete recepten. Ontdek nieuwe recepten op de ontdek pagina!
+        <div className="py-10 text-center">
+            <h2 className="mb-2 text-xl font-bold">Nog geen favorieten</h2>
+            <p className="text-muted-foreground mb-4">
+                Ontdek nieuwe recepten en sla ze op als favoriet.
             </p>
-
-            <Link href="/ontdek">
-                <Button className="mb-8">Ontdek recepten</Button>
-            </Link>
+            <Button asChild>
+                <Link href="/ontdek">Ontdek recepten</Link>
+            </Button>
         </div>
     )
 }
 
-function RecipesSection() {
+function RecipePageSkeleton() {
+    return (
+        <div className="container mx-auto max-w-4xl px-4 pt-4 pb-10">
+            <div className="grid grid-cols-2 gap-4">
+                {Array.from({ length: 8 }).map((_, index) => (
+                    <div key={index} className="flex flex-col gap-2">
+                        <Skeleton className="aspect-[3/4] w-full" />
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+function RecipesSection({ isVisible }: { isVisible: boolean }) {
     const { recipes: userRecipes, isLoading: userRecipesLoading } = useOwnRecipes()
     const { recipes: likedRecipes, isLoading: likedRecipesLoading } = useLikedRecipes()
     const [activeTab, setActiveTab] = useQueryState("tab", {
         defaultValue: "my-recipes",
-        parse: (value) => value as "my-recipes" | "favorieten",
-        serialize: (value) => value,
     })
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
     const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
 
+    const transitionStyle = {
+        transition: "transform 0.2s ease-in-out",
+        transform: isVisible ? "translateY(0px)" : "translateY(-58px)",
+    }
+
     const sortRecipes = (recipes: RecipeRead[], order: "newest" | "oldest"): RecipeRead[] => {
-        if (!recipes) return []
-        return [...recipes].sort((a: RecipeRead, b: RecipeRead) => {
-            const dateA = new Date(a.created_at ?? "").getTime()
-            const dateB = new Date(b.created_at ?? "").getTime()
+        const sorted = [...(recipes || [])]
+        sorted.sort((a, b) => {
+            const dateA = new Date(a.created_at ?? 0).getTime()
+            const dateB = new Date(b.created_at ?? 0).getTime()
             return order === "newest" ? dateB - dateA : dateA - dateB
         })
+        return sorted
     }
 
     const loadingLogic = (
@@ -222,19 +154,17 @@ function RecipesSection() {
         emptyComponent: React.ReactNode
     ) => {
         if (isLoading) {
-            return <RecipeGridSkeleton />
+            return <RecipePageSkeleton />
         }
-
-        if (data.length === 0) {
+        const sortedData = sortRecipes(data, sortOrder)
+        if (sortedData.length === 0) {
             return emptyComponent
         }
-
-        const sortedData = sortRecipes(data, sortOrder)
-
-        if (viewMode === "grid") {
-            return <RecipeGrid recipes={sortedData} activeTab={activeTab} />
-        }
-        return <RecipeList recipes={sortedData} activeTab={activeTab} />
+        return viewMode === "grid" ? (
+            <RecipeGrid recipes={sortedData} />
+        ) : (
+            <RecipeList recipes={sortedData} />
+        )
     }
 
     const collectionTabs = [
@@ -243,39 +173,36 @@ function RecipesSection() {
     ]
 
     return (
-        <Tabs
-            value={activeTab}
-            defaultValue="my-recipes"
-            onValueChange={(value) => setActiveTab(value as "my-recipes" | "favorieten")}
-        >
-            <div className="border-border border-b">
-                <div className="container mx-auto max-w-4xl">
-                    <AppTabsList tabs={collectionTabs} />
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v)}>
+            <div className="sticky top-0 z-10" style={transitionStyle}>
+                <div className="bg-surface pt-6 pb-2">
+                    <div className="container mx-auto flex max-w-4xl items-center justify-between px-4">
+                        <AppTabsList tabs={collectionTabs} className="w-auto flex-grow" />
+                    </div>
                 </div>
+                <div className="from-surface pointer-events-none h-2 bg-gradient-to-b to-transparent" />
             </div>
 
-            <div className="container mx-auto max-w-4xl px-4">
-                <div className="mt-4 flex w-full items-end justify-between">
-                    <div>
-                        <Select
-                            value={sortOrder}
-                            onValueChange={(value) => setSortOrder(value as "newest" | "oldest")}
-                        >
-                            <SelectTrigger className="focus:ring-offset-background border-border bg-surface text-default focus:ring-ring min-w-max rounded-md px-3 py-0 text-[11px] leading-none font-medium transition-colors duration-150 focus:ring-2 focus:ring-offset-2">
-                                <SelectValue placeholder="Sorteer op..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="newest">Nieuwste eerst</SelectItem>
-                                <SelectItem value="oldest">Oudste eerst</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="border-border flex rounded-lg border p-0.5">
+            <div className="container mx-auto max-w-4xl px-4 pt-4 pb-10" style={transitionStyle}>
+                <div className="mb-4 flex items-center justify-between gap-2">
+                    <Select
+                        value={sortOrder}
+                        onValueChange={(value) => setSortOrder(value as "newest" | "oldest")}
+                    >
+                        <SelectTrigger className="bg-status-yellow-bg text-status-yellow-text hover:bg-status-yellow-bg/80 border-status-yellow-bg w-[110px] border text-xs font-medium transition-colors focus:ring-0 focus:ring-offset-0">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="newest">Nieuwste</SelectItem>
+                            <SelectItem value="oldest">Oudste</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <div className="border-border bg-background flex rounded-lg border p-0.5">
                         <button
                             onClick={() => setViewMode("grid")}
                             className={`rounded-md p-1.5 transition-colors ${
                                 viewMode === "grid"
-                                    ? "text-primary-foreground bg-primary hover:bg-primary/80"
+                                    ? "bg-primary text-primary-foreground"
                                     : "text-muted-foreground"
                             }`}
                         >
@@ -285,7 +212,7 @@ function RecipesSection() {
                             onClick={() => setViewMode("list")}
                             className={`rounded-md p-1.5 transition-colors ${
                                 viewMode === "list"
-                                    ? "text-primary-foreground bg-primary hover:bg-primary/80"
+                                    ? "bg-primary text-primary-foreground"
                                     : "text-muted-foreground"
                             }`}
                         >
@@ -293,41 +220,83 @@ function RecipesSection() {
                         </button>
                     </div>
                 </div>
-
-                {activeTab === "my-recipes" && (
-                    <TabsContent value="my-recipes" className="mt-6">
-                        {loadingLogic(userRecipesLoading, userRecipes, <WelcomeSection />)}
-                    </TabsContent>
-                )}
-                {activeTab === "favorieten" && (
-                    <TabsContent value="favorieten" className="mt-6">
-                        {loadingLogic(likedRecipesLoading, likedRecipes, <FavoritesCTA />)}
-                    </TabsContent>
-                )}
+                <TabsContent value="my-recipes" className="mt-0">
+                    {loadingLogic(userRecipesLoading, userRecipes, <WelcomeSection />)}
+                </TabsContent>
+                <TabsContent value="favorieten" className="mt-0">
+                    {loadingLogic(likedRecipesLoading, likedRecipes, <FavoritesCTA />)}
+                </TabsContent>
             </div>
         </Tabs>
     )
 }
 
-// Skeleton loader for recipe grid
-function RecipeGridSkeleton() {
-    return (
-        <div className="grid grid-cols-2 gap-6">
-            {[...Array(4)].map((_, i) => (
-                <div key={i} className="relative aspect-4/3 overflow-hidden rounded-lg">
-                    <Skeleton className="h-full w-full" />
-                </div>
-            ))}
-        </div>
-    )
-}
-
 export default function CollectionPage() {
+    const mainRef = useRef<HTMLElement>(null)
+    const scrollDirection = useScrollDirection(10, mainRef)
+    const [isVisible, setIsVisible] = useState(true)
+    const [isAtTop, setIsAtTop] = useState(true)
+
+    useEffect(() => {
+        const mainEl = mainRef.current
+        if (!mainEl) return
+        const handleScroll = () => {
+            setIsAtTop(mainEl.scrollTop <= 10)
+        }
+        mainEl.addEventListener("scroll", handleScroll, { passive: true })
+        handleScroll()
+        return () => mainEl.removeEventListener("scroll", handleScroll)
+    }, [])
+
+    useEffect(() => {
+        if (isAtTop) {
+            setIsVisible(true)
+        } else {
+            if (scrollDirection === "down") {
+                setIsVisible(false)
+            } else if (scrollDirection === "up") {
+                setIsVisible(true)
+            }
+        }
+    }, [scrollDirection, isAtTop])
+
     return (
-        <div className="flex flex-1 flex-col pt-4 pb-10">
-            <Suspense fallback={<RecipeGridSkeleton />}>
-                <RecipesSection />
-            </Suspense>
+        <div className="bg-surface relative flex h-screen flex-col">
+            <header
+                className={cn(
+                    "fixed top-0 right-0 left-0 z-20 transition-transform duration-300 ease-in-out",
+                    {
+                        "-translate-y-full": !isVisible,
+                        "translate-y-0": isVisible,
+                    }
+                )}
+            >
+                <TopBar />
+            </header>
+
+            <main
+                ref={mainRef}
+                className="flex flex-1 flex-col overflow-y-auto"
+                style={{
+                    paddingTop: "56px",
+                }}
+            >
+                <Suspense fallback={<RecipePageSkeleton />}>
+                    <RecipesSection isVisible={isVisible} />
+                </Suspense>
+            </main>
+
+            <footer
+                className={cn(
+                    "fixed right-0 bottom-0 left-0 z-20 pt-8 transition-transform duration-300 ease-in-out",
+                    {
+                        "translate-y-full": !isVisible,
+                        "translate-y-0": isVisible,
+                    }
+                )}
+            >
+                <TabBar />
+            </footer>
         </div>
     )
 }

@@ -1,5 +1,5 @@
-import { TabLayout } from "@/components/layouts/tab-layout"
+"use client"
 
 export default function CollectionLayout({ children }: { children: React.ReactNode }) {
-    return <TabLayout>{children}</TabLayout>
+    return <>{children}</>
 }

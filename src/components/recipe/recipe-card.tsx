@@ -21,7 +21,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
 
             <div className="absolute bottom-0 left-0 p-4">
-                <h3 className="line-clamp-2 text-base font-bold">{recipe.title}</h3>
+                <h3 className="text-surface line-clamp-2 text-base font-bold">{recipe.title}</h3>
             </div>
 
             <div className="absolute top-2 right-2">
