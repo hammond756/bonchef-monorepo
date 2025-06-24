@@ -1,5 +1,5 @@
-import { TabLayout } from "@/components/layouts/tab-layout"
+import React from "react"
 
-export default function ProfilesLayout({ children }: { children: React.ReactNode }) {
-    return <TabLayout>{children}</TabLayout>
+export default function FullWidthLayout({ children }: { children: React.ReactNode }) {
+    return <main>{children}</main>
 }

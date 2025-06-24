@@ -18,11 +18,13 @@ import { ProfileImage } from "@/components/ui/profile-image"
 import { X } from "lucide-react"
 import { useProfile } from "@/hooks/use-profile"
 import { useFileUpload } from "@/hooks/use-file-upload"
+
 interface EditProfileDialogProps {
     userId: string
     initialDisplayName: string | null
     initialBio: string | null
     initialAvatar?: string | null
+    children?: React.ReactElement
 }
 
 export function EditProfileDialog({
@@ -30,6 +32,7 @@ export function EditProfileDialog({
     initialDisplayName,
     initialBio,
     initialAvatar,
+    children,
 }: EditProfileDialogProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [displayName, setDisplayName] = useState(initialDisplayName || "")
@@ -99,7 +102,7 @@ export function EditProfileDialog({
             }}
         >
             <DialogTrigger asChild>
-                <Button variant="outline">Bewerken</Button>
+                {children || <Button variant="outline">Bewerken</Button>}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
@@ -169,7 +172,11 @@ export function EditProfileDialog({
                             placeholder="Vertel iets over jezelf..."
                             disabled={isLoading}
                             className="h-32"
+                            maxLength={250}
                         />
+                        <p className="text-muted-foreground text-right text-sm">
+                            {bio.length} / 250
+                        </p>
                     </div>
                     <div className="flex justify-end space-x-2">
                         <Button

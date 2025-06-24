@@ -248,8 +248,14 @@ export function parseDescription(text: string): Array<{ type: "text" | "url"; co
     })
 }
 
-export function createProfileSlug(display_name: string | null, id: string) {
-    return display_name?.toLowerCase().replace(/ /g, "-") + "~" + id
+export function createProfileSlug(displayName: string | null, userId: string): string {
+    const namePart = (displayName || "user").toLowerCase().replace(/[^a-z0-9]+/g, "-")
+    return `${namePart}~${userId}`
+}
+
+export function createRecipeSlug(title: string, recipeId: string): string {
+    const titlePart = title.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+    return `${titlePart}~${recipeId}`
 }
 
 export function fileToBase64(file: File): Promise<string> {

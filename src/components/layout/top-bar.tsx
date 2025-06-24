@@ -51,17 +51,17 @@ export function TopBar({ children, className }: TopBarProps) {
                                 variant="ghost"
                                 size="icon"
                                 type="submit"
-                                className="rounded-full text-slate-600 transition-colors hover:bg-slate-200 hover:text-slate-900"
+                                className="text-primary hover:bg-primary/10 rounded-full transition-colors"
                                 data-testid="logout-button"
                             >
-                                <LogOut className="h-5 w-5" />
+                                <LogOut className="h-5 w-5" strokeWidth={2.5} />
                             </Button>
                         </form>
                     </div>
                 ) : (
                     <Link
                         href="/login"
-                        className="flex items-center justify-center gap-2 rounded-lg bg-slate-700 px-3 py-2 text-sm text-white shadow-xs transition-colors hover:bg-slate-800"
+                        className="bg-primary hover:bg-primary/90 flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-white shadow-xs transition-colors"
                     >
                         <UserIcon className="h-4 w-4" />
                         <span>Inloggen</span>

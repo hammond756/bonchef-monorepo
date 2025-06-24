@@ -16,7 +16,9 @@ export function ProfileImage({ name, src, size = 40, className = "" }: ProfileIm
                 alt={name || "User avatar"}
                 width={size}
                 height={size}
-                className={`${className} rounded-full object-cover`}
+
+                className={`${className} rounded-full`}
+
                 style={{ width: size, height: size }}
             />
         )

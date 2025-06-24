@@ -19,11 +19,11 @@ export function BackButton() {
 
     return (
         <Button
-            variant="ghost"
+            variant="outline-neutral"
             size="icon"
             onClick={handleBack}
             aria-label="Ga terug"
-            className="absolute top-4 left-4 z-[100] h-10 w-10 rounded-full bg-white/80 text-slate-700 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-green-700 hover:shadow-lg"
+            className="absolute top-4 left-4 z-[100] h-10 w-10 rounded-full bg-white/80 backdrop-blur-sm"
         >
             <ArrowLeft className="h-5 w-5" />
         </Button>

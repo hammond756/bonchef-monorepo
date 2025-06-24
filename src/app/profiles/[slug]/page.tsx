@@ -1,60 +1,52 @@
 import { notFound } from "next/navigation"
-import { EditProfileDialog } from "@/components/profile/edit-profile-dialog"
-import { RecipeGrid, RecipeGridSkeleton } from "@/components/recipe/recipe-grid"
 import { Suspense } from "react"
 import { PublicProfile, Recipe } from "@/lib/types"
 import { createAdminClient, createClient } from "@/utils/supabase/server"
 import { getPublicProfileByUserId, getPublicRecipesByUserId } from "@/components/profile/actions"
 import { createProfileSlug } from "@/lib/utils"
-import { ProfileImage } from "@/components/ui/profile-image"
+import { RecipeCard } from "@/components/recipe/recipe-card"
+import { ProfileHeader } from "@/components/profile/profile-header"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { RecipeGridSkeleton } from "@/components/recipe/recipe-grid"
+import { BackButton } from "@/components/ui/back-button"
+import { ShareButton } from "@/components/ui/share-button"
+import { EditButton } from "@/components/ui/edit-button"
+import { EditProfileDialog } from "@/components/profile/edit-profile-dialog"
 
 interface ProfilePageProps {
     slug: string
 }
 
 async function ProfileContent({ profile, recipes }: { profile: PublicProfile; recipes: Recipe[] }) {
-    // Check if current user is the profile owner
-    const supabase = await createClient()
-    const {
-        data: { session },
-    } = await supabase.auth.getSession()
-    const isOwner = session?.user?.id === profile.id
-
     return (
-        <div className="mx-auto max-w-4xl">
-            <div className="bg-card mb-8 rounded-lg p-6 shadow-xs">
-                <div className="mb-4 flex items-start justify-between">
-                    <div className="mb-4 flex items-center gap-4">
-                        <ProfileImage src={profile.avatar} name={profile.display_name} size={64} />
-                        <div>
-                            <h1 className="mb-2 text-3xl font-bold">
-                                {profile.display_name || "Naamloos"}
-                            </h1>
-                            {profile.bio && (
-                                <p className="text-muted-foreground mb-4">{profile.bio}</p>
-                            )}
-                            <div className="text-muted-foreground flex gap-4 text-sm">
-                                <span>{recipes.length} recepten</span>
-                                <span> | </span>
-                                <span>{profile.total_likes} likes</span>
-                            </div>
+        <div className="flex flex-col space-y-8">
+            <div className="container mx-auto max-w-4xl px-4">
+                <ProfileHeader profile={profile} recipesCount={recipes.length} />
+            </div>
+
+            <Tabs defaultValue="recipes" className="w-full">
+                <div className="border-border border-b">
+                    <div className="container mx-auto flex max-w-4xl justify-center">
+                        <TabsList className="bg-transparent p-0">
+                            <TabsTrigger
+                                value="recipes"
+                                className="text-muted-foreground data-[state=active]:text-status-green-text after:bg-status-green-text relative rounded-none bg-transparent px-[3.75rem] py-2 text-lg font-bold shadow-none transition-colors after:absolute after:right-0 after:bottom-0 after:left-0 after:h-[2px] after:origin-center after:scale-x-0 after:transition-transform after:duration-200 data-[state=active]:after:scale-x-100"
+                            >
+                                Recepten
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
+                </div>
+                <TabsContent value="recipes" className="pt-6">
+                    <div className="container mx-auto max-w-4xl px-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            {recipes.map((recipe) => (
+                                <RecipeCard key={recipe.id} recipe={recipe} />
+                            ))}
                         </div>
                     </div>
-                    {isOwner && (
-                        <EditProfileDialog
-                            userId={profile.id}
-                            initialDisplayName={profile.display_name}
-                            initialBio={profile.bio}
-                            initialAvatar={profile.avatar}
-                        />
-                    )}
-                </div>
-            </div>
-
-            <div className="space-y-6">
-                <h2 className="text-2xl font-semibold">Recepten</h2>
-                <RecipeGrid recipes={recipes} />
-            </div>
+                </TabsContent>
+            </Tabs>
         </div>
     )
 }
@@ -69,8 +61,36 @@ export default async function ProfilePage({ params }: { params: Promise<ProfileP
 
     const recipes = await getPublicRecipesByUserId(profile.id)
 
+    const supabase = await createClient()
+    const {
+        data: { session },
+    } = await supabase.auth.getSession()
+    const isOwner = session?.user?.id === profile.id
+
     return (
-        <div className="flex flex-1 flex-col space-y-4 px-4 pt-4">
+        <div className="relative flex flex-1 flex-col space-y-4 pt-16">
+            <BackButton />
+
+            <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+                {isOwner && (
+                    <EditProfileDialog
+                        userId={profile.id}
+                        initialDisplayName={profile.display_name}
+                        initialBio={profile.bio}
+                        initialAvatar={profile.avatar}
+                    >
+                        <EditButton />
+                    </EditProfileDialog>
+                )}
+                <ShareButton
+                    shareData={{
+                        title: `Bekijk het profiel van ${profile.display_name} op Bonchef`,
+                        text: `Gepassioneerde thuiskok die graag nieuwe recepten uitprobeert en deelt.`,
+                        url: `/profiles/${createProfileSlug(profile.display_name, profile.id)}`,
+                    }}
+                />
+            </div>
+
             <Suspense fallback={<RecipeGridSkeleton />}>
                 <ProfileContent profile={profile} recipes={recipes} />
             </Suspense>

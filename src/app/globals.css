@@ -9,26 +9,29 @@
     /* --- New Bonchef Design System --- */
     /* 1. Core Color Palette */
     --color-primary: #385940; /* Main CTA, navigation, accents */
-    --color-text-default: #2B2B2B; /* Body text */
-    --color-text-muted: #6F6F6F; /* Subtext, explanations */
-    --color-accent-new: #268A40; /* Active tab underline, highlights (renamed to avoid conflict) */
+
+    --color-text-default: #2b2b2b; /* Body text */
+    --color-text-muted: #6f6f6f; /* Subtext, explanations */
+    --color-accent-new: #268a40; /* Active tab underline, highlights (renamed to avoid conflict) */
     --color-overlay-dark: rgba(0, 0, 0, 0.5); /* Text overlay on images */
-    --color-surface: #FFFFFF; /* Background, cards */
+    --color-surface: #ffffff; /* Background, cards */
 
     /* 2. Status Colors (for labels/badges) */
-    --color-status-blue-bg: #E7F3FB;
-    --color-status-blue-text: #264E76;
-    --color-status-blue-border: #B3D8F2;
-    --color-status-green-0: #EFFDF6; /* New, lighter green for checked items */
-    --color-status-green-bg: #E5F7EB;
-    --color-status-green-text: #157F3D;
-    --color-status-green-border: #B9E7CA;
-    --color-status-yellow-bg: #FFF9D9;
-    --color-status-yellow-text: #8A5A00;
-    --color-status-yellow-border: #FFEEAA;
-    --color-status-red-bg: #FCE7E7;
-    --color-status-red-text: #8F1D1D;
-    --color-status-red-border: #F5B5B5;
+    --color-status-blue-0: #8ed0ff; /* badge blauw */
+    --color-status-blue-bg: #e7f3fb; /* babyblauw */
+    --color-status-blue-text: #264e76; /* bonchef blauw */
+    --color-status-blue-border: #b3d8f2; /* hemelsblauw */
+    --color-status-green-0: #effdf6; /* New, lighter green for checked items */
+    --color-status-green-bg: #e5f7eb; /* heel lichtgroen */
+    --color-status-green-text: #157f3d; /* donkergroen */
+    --color-status-green-border: #b9e7ca; /* pastelgroen */
+    --color-status-yellow-bg: #fff9d9;
+    --color-status-yellow-text: #8a5a00;
+    --color-status-yellow-border: #ffeeaa;
+    --color-status-red-bg: #fce7e7;
+    --color-status-red-text: #8f1d1d;
+    --color-status-red-border: #f5b5b5;
+
 
     /* 3. Border Radius */
     --radius-lg: 8px;
@@ -116,158 +119,7 @@
             transform: translateX(100%);
         }
     }
-}/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
 
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
-@layer base {
-    *,
-    ::after,
-    ::before,
-    ::backdrop,
-    ::file-selector-button {
-        border-color: var(--color-gray-200, currentcolor);
-    }
-
-    body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-    }
-}
-
-/* Safe area utilities */
-@layer utilities {
-    .safe-area-top {
-        padding-top: env(safe-area-inset-top);
-    }
-
-    .safe-area-bottom {
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    .safe-area-left {
-        padding-left: env(safe-area-inset-left);
-    }
-
-    .safe-area-right {
-        padding-right: env(safe-area-inset-right);
-    }
-
-    .bg-bonchef-green-tab {
-        background-color: var(--bonchef-green-tab);
-    }
-}
-
-/* Ensure smooth scrolling and prevent scroll bounce on iOS */
-html {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-gutter: stable; /* Reserve space for scrollbar */
-    overflow-y: scroll; /* Always show vertical scrollbar */
-}
-
-body {
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Fix for iOS Safari address bar behavior */
-@supports (-webkit-touch-callout: none) {
-    .min-h-screen {
-        min-height: -webkit-fill-available;
-    }
-}
-
-/* Prevent zoom on input focus (mobile) */
-input,
-select,
-textarea {
-    font-size: 16px;
-}
-
-@media screen and (max-width: 768px) {
-    input,
-    select,
-    textarea {
-        font-size: 16px !important;
-    }
-}
-
-@layer utilities {
-    body {
-        font-family: "Montserrat", sans-serif;
-    }
-    /* Add rules for headings */
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        font-family: "Lora", serif;
-    }
-}
-
-@layer base {
-    :root {
-        --background: 0 0% 100%;
-        --foreground: 0 0% 17%; /* Mapped to text-default */
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 17%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 17%;
-        --primary: 138 23% 29%; /* New: #385940 */
-        --primary-foreground: 0 0% 98%;
-        --secondary: 240 4.8% 95.9%;
-        --secondary-foreground: 240 5.9% 10%;
-        --muted: 240 4.8% 95.9%;
-        --muted-foreground: 0 0% 44%; /* New: #6F6F6F */
-        --accent: 240 4.8% 95.9%;
-        --accent-foreground: 240 5.9% 10%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 240 5.9% 90%;
-        --input: 240 5.9% 90%;
-        --ring: 240 5.9% 10%;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
-        /* Manually Added values*/
-        --top-bar-height: 4rem;
-        --chat-input-height: 4.5rem;
-    }    /* Add rules for headings in base layer as well for consistency */
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        font-family: "Lora", serif;
-    }
-    .font-serif {
-        font-family: "Lora", serif;
-    }
-}
-
-@layer base {
-    *,
-    ::after,
-    ::before,
-    ::backdrop,
-    ::file-selector-button {
-        border-color: var(--color-gray-200, currentcolor);
-    }
-    body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-    }
 }
 
 @layer base {
@@ -328,6 +180,25 @@ textarea {
         --chart-4: 280 65% 60%;
         --chart-5: 350 75% 55%;
     }
+
+    *,
+    ::before,
+    ::after {
+        border-color: theme("colors.gray.200", currentColor);
+    }
+
+    img {
+        color-rendering: optimizeSpeed;
+    }
+
+    body {
+        font-family: var(--font-montserrat);
+        color: theme("colors.foreground");
+        background-color: theme("colors.background");
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
     }
 
     h1,
@@ -336,22 +207,68 @@ textarea {
     h4,
     h5,
     h6 {
-    font-family: var(--font-lora);
-    font-weight: 700;
+        font-family: var(--font-lora);
+        font-weight: 700;
     }
 
     .font-serif {
-    font-family: var(--font-lora);
+        font-family: var(--font-lora);
     }
-
-*,
-::before,
-::after {
-    border-color: theme("colors.gray.200", currentColor);
 }
 
-    body {
-    font-family: var(--font-montserrat);
-    color: theme("colors.foreground");
-    background-color: theme("colors.background");
+/* Safe area utilities */
+@layer utilities {
+    .safe-area-top {
+        padding-top: env(safe-area-inset-top);
     }
+
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .safe-area-left {
+        padding-left: env(safe-area-inset-left);
+    }
+
+    .safe-area-right {
+        padding-right: env(safe-area-inset-right);
+    }
+
+    .bg-bonchef-green-tab {
+        background-color: var(--bonchef-green-tab);
+    }
+
+    h3 {
+        color: white;
+    }
+}
+
+/* Ensure smooth scrolling and prevent scroll bounce on iOS */
+html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable; /* Reserve space for scrollbar */
+    overflow-y: scroll; /* Always show vertical scrollbar */
+}
+
+/* Fix for iOS Safari address bar behavior */
+@supports (-webkit-touch-callout: none) {
+    .min-h-screen {
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Prevent zoom on input focus (mobile) */
+input,
+select,
+textarea {
+    font-size: 16px;
+}
+
+@media screen and (max-width: 768px) {
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
