@@ -275,12 +275,29 @@ export async function hostedImageToBase64(url: string): Promise<string> {
 export async function hostedImageToBuffer(
     url: string
 ): Promise<{ data: Buffer; contentType: string; extension: string }> {
-    const response = await fetch(url)
-    const blob = await response.blob()
-    return {
-        data: Buffer.from(await blob.arrayBuffer()),
-        contentType: blob.type,
-        extension: blob.type.split("/")[1],
+    try {
+        const response = await fetch(url)
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.statusText}`)
+        }
+        const blob = await response.blob()
+        const contentType = blob.type || "image/jpeg" // Default to jpeg if type is missing
+        const extension = contentType.split("/")[1] || "jpg"
+
+        return {
+            data: Buffer.from(await blob.arrayBuffer()),
+            contentType,
+            extension,
+        }
+    } catch (error) {
+        console.error(`Failed to process image from url: ${url}`, error)
+        // Fallback to a placeholder image
+        const base64Data = TINY_PLACEHOLDER_IMAGE.split(",")[1]
+        return {
+            data: Buffer.from(base64Data, "base64"),
+            contentType: "image/png",
+            extension: "png",
+        }
     }
 }
 

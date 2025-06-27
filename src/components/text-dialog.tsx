@@ -2,7 +2,13 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { ProgressModal } from "../app/first-recipe/progress-modal"
 import { usePostHog } from "posthog-js/react"
@@ -67,12 +73,15 @@ function TextForm({ onSubmit }: { onSubmit: (validFormData: { text: string }) =>
     )
 }
 
-export function TextDialog({ open, onOpenChange, onSubmit }: Readonly<TextDialogProps>) {
+export function TextDialog({ open, onOpenChange, onSubmit }: TextDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="top-[40%]">
                 <DialogHeader>
-                    <DialogTitle>Plak tekst uit notities of WhatsApp</DialogTitle>
+                    <DialogTitle>Importeer via tekst</DialogTitle>
+                    <DialogDescription>
+                        Plak de tekst van een recept en we proberen het automatisch te importeren.
+                    </DialogDescription>
                 </DialogHeader>
                 <TextForm onSubmit={onSubmit} />
             </DialogContent>

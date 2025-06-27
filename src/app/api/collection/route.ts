@@ -25,6 +25,9 @@ export async function GET() {
 
     data.forEach((recipe) => {
         recipe.like_count = recipe.recipe_likes?.[0]?.count || 0
+        if (recipe.thumbnail && recipe.thumbnail.includes("placekitten.com")) {
+            recipe.thumbnail = "/no-image_placeholder.png"
+        }
     })
     return NextResponse.json(data)
 }

@@ -5,12 +5,29 @@ const supabaseDomain = process.env.NEXT_PUBLIC_SUPABASE_URL?.split("//")[1]
 const nextConfig: NextConfig = {
     /* config options here */
     images: {
-        domains: [
-            "localhost",
-            "127.0.0.1",
-            supabaseDomain || "supabase.co",
-            "lh3.googleusercontent.com",
-            "ui-avatars.com",
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "**.supabase.co",
+            },
+            {
+                protocol: "https",
+                hostname: "lh3.googleusercontent.com",
+            },
+            {
+                protocol: "https",
+                hostname: "ui-avatars.com",
+            },
+            {
+                protocol: "http",
+                hostname: "127.0.0.1",
+                port: "54321",
+            },
+            {
+                protocol: "http",
+                hostname: "localhost",
+                port: "54321",
+            },
         ],
     },
     async headers() {
@@ -83,6 +100,11 @@ const nextConfig: NextConfig = {
     },
     // This is required to support PostHog trailing slash API requests
     skipTrailingSlashRedirect: true,
+    experimental: {
+        serverActions: {
+            bodySizeLimit: "4mb",
+        },
+    },
 }
 
 export default nextConfig

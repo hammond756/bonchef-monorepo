@@ -2,7 +2,13 @@
 
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { ProgressModal } from "../app/first-recipe/progress-modal"
 import { usePostHog } from "posthog-js/react"
@@ -126,6 +132,10 @@ export function UrlDialog({ open, onOpenChange, onSubmit }: UrlDialogProps) {
             <DialogContent className="top-[40%]">
                 <DialogHeader>
                     <DialogTitle>Voeg toe via blogpost link</DialogTitle>
+                    <DialogDescription>
+                        Plak een link naar een online recept en we proberen het automatisch te
+                        importeren.
+                    </DialogDescription>
                 </DialogHeader>
                 <UrlForm onSubmit={onSubmit} />
             </DialogContent>

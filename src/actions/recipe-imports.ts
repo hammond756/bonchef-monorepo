@@ -3,7 +3,7 @@
 import { v4 as uuidv4 } from "uuid"
 import { GeneratedRecipe } from "@/lib/types"
 import { createAdminClient, createClient } from "@/utils/supabase/server"
-import { formatRecipe, getRecipeContent } from "@/lib/services/web-service"
+import { formatRecipe, getRecipeContent, normalizeUrl } from "@/lib/services/web-service"
 import { RecipeService } from "@/lib/services/recipe-service"
 import { RecipeGenerationService } from "@/lib/services/recipe-generation-service"
 import { getHostnameFromUrl, hostedImageToBuffer } from "@/lib/utils"
@@ -11,6 +11,9 @@ import { withTempFileFromUrl } from "@/lib/temp-file-utils"
 import { detectText } from "@/lib/services/google-vision-ai-service"
 import { StorageService } from "@/lib/services/storage-service"
 import { unitTranslations } from "@/lib/translations"
+import sharp from "sharp"
+import fs from "fs"
+import path from "path"
 
 type GeneratedRecipeWithSource = GeneratedRecipe & {
     source_name?: string | null
@@ -37,20 +40,57 @@ function translateRecipeUnits<T extends GeneratedRecipe>(recipe: T): T {
 export async function scrapeRecipe(
     url: string
 ): Promise<GeneratedRecipeWithSource & { thumbnail: string }> {
-    const recipeData = await getRecipeContent(url)
-    const recipeInfo = await formatRecipe(recipeData)
-    const { data, contentType, extension } = await hostedImageToBuffer(recipeInfo.thumbnailUrl)
+    console.log(`[scrapeRecipe] Starting scraping for ${url}`)
+    const normalizedUrl = normalizeUrl(url)
+    const { textForLLM, bestImageUrl } = await getRecipeContent(normalizedUrl)
+
+    console.log(
+        `[scrapeRecipe] Scraped content length: ${textForLLM.length} characters. Found image URL: ${bestImageUrl}. Now formatting with AI...`
+    )
+    const recipeInfo = await formatRecipe(textForLLM)
+    console.log("[scrapeRecipe] AI formatting complete. Processing thumbnail...")
+
+    const finalThumbnailUrl = bestImageUrl || recipeInfo.thumbnailUrl
+
+    if (!finalThumbnailUrl) {
+        console.warn("[scrapeRecipe] No thumbnail URL found from any source. Using placeholder.")
+        const placeholderPath = path.join(process.cwd(), "public", "no-image_placeholder.png")
+        const placeholderBuffer = await fs.promises.readFile(placeholderPath)
+        const placeholderFile = new File([placeholderBuffer], "no-image_placeholder.png", {
+            type: "image/png",
+        })
+        const thumbnailUrl = await uploadImage(placeholderFile)
+        return {
+            ...recipeInfo.recipe,
+            thumbnail: thumbnailUrl,
+        }
+    }
+
+    let { data, contentType, extension } = await hostedImageToBuffer(finalThumbnailUrl)
+
+    // Convert webp to jpeg before uploading
+    if (contentType === "image/webp") {
+        data = await sharp(data).jpeg().toBuffer()
+        contentType = "image/jpeg"
+        extension = "jpg"
+    } else if (contentType === "image/svg+xml") {
+        // Convert svg to png before uploading
+        data = await sharp(data).png().toBuffer()
+        contentType = "image/png"
+        extension = "png"
+    }
+
     const thumbnail = await uploadImage(
         new File([data], `scraped-thumbnail.${extension}`, { type: contentType })
     )
 
-    const sourceName = recipeInfo.recipe.source_name || getHostnameFromUrl(url)
+    const sourceName = recipeInfo.recipe.source_name || getHostnameFromUrl(normalizedUrl)
     const translatedRecipe = translateRecipeUnits(recipeInfo.recipe)
 
     return {
         ...translatedRecipe,
         source_name: sourceName,
-        source_url: url,
+        source_url: normalizedUrl,
         thumbnail: thumbnail,
     }
 }
@@ -97,27 +137,34 @@ export async function getSignedUploadUrl(
 
 export async function uploadImage(file: File): Promise<string> {
     const supabaseAdmin = await createAdminClient()
+
+    const uploadOptions: { contentType: string; upsert: boolean } = {
+        contentType: file.type,
+        upsert: false,
+    }
+
+    // If the content type is webp, try to upload it as jpeg, as many clients can handle it.
+    if (file.type === "image/webp") {
+        uploadOptions.contentType = "image/jpeg"
+    }
+
     const { data, error } = await supabaseAdmin.storage
         .from("recipe-images")
-        .upload(`${uuidv4()}.${file.name.split(".").pop()}`, file, {
-            contentType: file.type,
-            upsert: false,
-        })
+        .upload(`${uuidv4()}.${file.name.split(".").pop()}`, file, uploadOptions)
 
     if (error) {
         throw new Error(error.message)
     }
 
-    const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
+    const { data: publicUrlData } = supabaseAdmin.storage
         .from("recipe-images")
-        .createSignedUrl(data.path, 3600)
+        .getPublicUrl(data.path)
 
-    if (signedUrlError) {
-        console.log("signedUrlError", signedUrlError)
-        throw new Error(signedUrlError.message)
+    if (!publicUrlData) {
+        throw new Error("Could not get public URL for uploaded image.")
     }
 
-    return signedUrlData.signedUrl
+    return publicUrlData.publicUrl
 }
 
 export async function extractTextFromImage(imageUrl: string): Promise<string> {

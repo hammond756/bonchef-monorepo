@@ -2,7 +2,13 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { getSignedUploadUrl } from "../actions/recipe-imports"
 import { ProgressModal } from "../app/first-recipe/progress-modal"
@@ -112,7 +118,11 @@ export function ImageDialog({ open, onOpenChange, onSubmit }: ImageDialogProps) 
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="top-[40%]">
                 <DialogHeader>
-                    <DialogTitle>Upload foto van kookboek</DialogTitle>
+                    <DialogTitle>Importeer via een foto</DialogTitle>
+                    <DialogDescription>
+                        Upload een foto van een recept en we proberen het automatisch te lezen en te
+                        importeren.
+                    </DialogDescription>
                 </DialogHeader>
                 <ImageForm onSubmit={onSubmit} />
             </DialogContent>

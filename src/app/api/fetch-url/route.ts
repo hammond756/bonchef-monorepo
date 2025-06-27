@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getRecipeContent } from "@/lib/services/web-service"
+import { getRecipeContent, normalizeUrl } from "@/lib/services/web-service"
 
 export async function POST(request: Request) {
     const { url } = await request.json()
@@ -12,7 +12,8 @@ export async function POST(request: Request) {
         return NextResponse.json({ content: "This is a fake response" })
     }
 
-    const recipeContent = await getRecipeContent(url)
+    const normalizedUrl = normalizeUrl(url)
+    const recipeContent = await getRecipeContent(normalizedUrl)
 
     return NextResponse.json({ content: recipeContent })
 }

@@ -1,0 +1,27 @@
+# Files and directories to be excluded from the final Heroku slug.
+
+# Git and other VCS
+.git
+.gitignore
+
+# Local development config
+.env
+.env.local
+.vscode/
+
+# Documentation, local scripts, and task files
+/docs/
+/script/
+/tasks/
+README.md
+
+# Supabase local development assets - THIS IS THE BIG ONE
+/supabase/
+
+# Tests and Playwright configuration
+/src/tests/
+/playwright.config.ts
+
+# Next.js build artifacts that are not needed at runtime
+*.js.map
+.next/cache/ 
