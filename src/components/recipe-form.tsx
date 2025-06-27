@@ -30,6 +30,7 @@ import { ImageGenerationModal } from "./image-generation-modal"
 import { RecipeVisibilityModal } from "./recipe-visibility-modal"
 import { useFileUpload } from "@/hooks/use-file-upload"
 import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning"
+import { useNavigationStore } from "@/lib/store/navigation-store"
 import { createClient } from "@/utils/supabase/client"
 import { StorageService } from "@/lib/services/storage-service"
 import { v4 as uuidv4 } from "uuid"
@@ -73,6 +74,7 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
     const [isImageModalOpen, setIsImageModalOpen] = useState(false)
     const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false)
     const router = useRouter()
+    const lastBrowsingPath = useNavigationStore((state) => state.lastBrowsingPath)
 
     useUnsavedChangesWarning(isDirty)
 
@@ -181,7 +183,10 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                 is_public: isPublic,
                 thumbnail: imageUrl || recipe.thumbnail,
             })
-            router.push(`/recipes/${recipeId || response.id}`)
+            const sourceUrl = lastBrowsingPath || "/ontdek"
+            router.push(
+                `/recipes/${recipeId || response.id}?from=edit&source=${encodeURIComponent(sourceUrl)}`
+            )
         } catch (error) {
             console.error("Failed to save recipe:", error)
             setSubmitError("Failed to save recipe. Please try again.")

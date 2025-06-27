@@ -15,13 +15,11 @@
 ## Tasks
 
 - [x] 1.0 Add Sticky Navigation Tabs to Collection Page
-
     - [x] 1.1 In `src/app/collection/page.tsx`, wrap the existing `Tabs` component in a `div`.
     - [x] 1.2 Apply Tailwind CSS classes to this `div` to make it sticky (e.g., `sticky top-0 z-10`) and give it a background color (e.g., `bg-surface`) to prevent content from showing through during scroll.
     - [x] 1.3 Verify that the tabs remain fixed at the top of the content area while the recipe list scrolls underneath.
 
 - [ ] 2.0 Implement Grid View with `RecipeCard`
-
     - [ ] 2.1 In `src/app/collection/page.tsx`, find the `TabsContent` for the grid view.
     - [ ] 2.2 Replace the current implementation inside with a map over the `ownRecipes` and `likedRecipes` state variables.
     - [ ] 2.3 For each recipe, render the `<RecipeCard recipe={recipe} />` component.
@@ -29,7 +27,6 @@
     - [ ] 2.5 Confirm the `LikeButton` within each `RecipeCard` is interactive and functions correctly.
 
 - [ ] 3.0 Implement Compact List View
-
     - [ ] 3.1 Create a new file for a new component: `src/app/collection/_components/compact-recipe-card.tsx`.
     - [ ] 3.2 The `CompactRecipeCard` component should accept a `recipe` object as a prop.
     - [ ] 3.3 The component layout should be a `Link` tag wrapping a `div` with a horizontal flex layout, containing a small thumbnail image, the recipe title, and the `LikeButton`.

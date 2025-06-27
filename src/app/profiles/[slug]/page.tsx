@@ -8,7 +8,7 @@ import { RecipeCard } from "@/components/recipe/recipe-card"
 import { ProfileHeader } from "@/components/profile/profile-header"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RecipeGridSkeleton } from "@/components/recipe/recipe-grid"
-import { BackButton } from "@/components/ui/back-button"
+import { ClientBackButton } from "@/components/ui/client-back-button"
 import { ShareButton } from "@/components/ui/share-button"
 import { EditButton } from "@/components/ui/edit-button"
 import { EditProfileDialog } from "@/components/profile/edit-profile-dialog"
@@ -69,7 +69,7 @@ export default async function ProfilePage({ params }: { params: Promise<ProfileP
 
     return (
         <div className="relative flex flex-1 flex-col space-y-4 pt-16">
-            <BackButton />
+            <ClientBackButton />
 
             <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
                 {isOwner && (

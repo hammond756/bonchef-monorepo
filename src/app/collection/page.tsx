@@ -2,7 +2,6 @@
 
 import { TopBar } from "@/components/layout/top-bar"
 import { TabBar } from "@/components/layout/tab-bar"
-import { useScrollDirection } from "@/hooks/use-scroll-direction"
 import { useState, useEffect, useRef, Suspense } from "react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -26,6 +25,7 @@ import {
 } from "@/components/ui/select"
 import React from "react"
 import { RecipeCard } from "@/components/recipe/recipe-card"
+import { NavigationTracker } from "@/components/util/navigation-tracker"
 
 function CompactRecipeCard({ recipe }: { recipe: RecipeRead }) {
     return (
@@ -62,8 +62,9 @@ function RecipeGrid({ recipes }: { recipes: RecipeRead[] }) {
     if (!recipes || recipes.length === 0) {
         return null
     }
+
     return (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {recipes.map((recipe) => (
                 <RecipeCard key={recipe.id} recipe={recipe} />
             ))}
@@ -72,9 +73,11 @@ function RecipeGrid({ recipes }: { recipes: RecipeRead[] }) {
 }
 
 function RecipeList({ recipes }: { recipes: RecipeRead[] }) {
-    if (!recipes || recipes.length === 0) return null
+    if (!recipes || recipes.length === 0) {
+        return null
+    }
     return (
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-4">
             {recipes.map((recipe) => (
                 <CompactRecipeCard key={recipe.id} recipe={recipe} />
             ))}
@@ -160,11 +163,10 @@ function RecipesSection({ isVisible }: { isVisible: boolean }) {
         if (sortedData.length === 0) {
             return emptyComponent
         }
-        return viewMode === "grid" ? (
-            <RecipeGrid recipes={sortedData} />
-        ) : (
-            <RecipeList recipes={sortedData} />
-        )
+        if (viewMode === "grid") {
+            return <RecipeGrid recipes={sortedData} />
+        }
+        return <RecipeList recipes={sortedData} />
     }
 
     const collectionTabs = [
@@ -231,72 +233,79 @@ function RecipesSection({ isVisible }: { isVisible: boolean }) {
     )
 }
 
+function RecipeGridSkeleton() {
+    return (
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+            {Array.from({ length: 6 }).map((_, index) => (
+                <Skeleton key={index} className="h-64 w-full" />
+            ))}
+        </div>
+    )
+}
+
 export default function CollectionPage() {
     const mainRef = useRef<HTMLElement>(null)
-    const scrollDirection = useScrollDirection(10, mainRef)
     const [isVisible, setIsVisible] = useState(true)
-    const [isAtTop, setIsAtTop] = useState(true)
 
     useEffect(() => {
-        const mainEl = mainRef.current
-        if (!mainEl) return
+        let lastScrollY = 0
         const handleScroll = () => {
-            setIsAtTop(mainEl.scrollTop <= 10)
-        }
-        mainEl.addEventListener("scroll", handleScroll, { passive: true })
-        handleScroll()
-        return () => mainEl.removeEventListener("scroll", handleScroll)
-    }, [])
-
-    useEffect(() => {
-        if (isAtTop) {
-            setIsVisible(true)
-        } else {
-            if (scrollDirection === "down") {
+            const currentScrollY = mainRef.current?.scrollTop ?? 0
+            if (currentScrollY > lastScrollY) {
                 setIsVisible(false)
-            } else if (scrollDirection === "up") {
+            } else {
                 setIsVisible(true)
             }
+            lastScrollY = currentScrollY
         }
-    }, [scrollDirection, isAtTop])
+
+        const mainElement = mainRef.current
+        mainElement?.addEventListener("scroll", handleScroll)
+        return () => {
+            mainElement?.removeEventListener("scroll", handleScroll)
+        }
+    }, [])
 
     return (
-        <div className="bg-surface relative flex h-screen flex-col">
-            <header
-                className={cn(
-                    "fixed top-0 right-0 left-0 z-20 transition-transform duration-300 ease-in-out",
-                    {
-                        "-translate-y-full": !isVisible,
-                        "translate-y-0": isVisible,
-                    }
-                )}
-            >
-                <TopBar />
-            </header>
+        <>
+            <NavigationTracker path="/collection" />
+            <div className="bg-surface relative flex h-screen flex-col">
+                <header
+                    className={cn(
+                        "fixed top-0 right-0 left-0 z-20 transition-transform duration-300 ease-in-out",
+                        {
+                            "-translate-y-full": !isVisible,
+                            "translate-y-0": isVisible,
+                        }
+                    )}
+                >
+                    <TopBar />
+                </header>
 
-            <main
-                ref={mainRef}
-                className="flex flex-1 flex-col overflow-y-auto"
-                style={{
-                    paddingTop: "56px",
-                }}
-            >
-                <Suspense fallback={<RecipePageSkeleton />}>
-                    <RecipesSection isVisible={isVisible} />
-                </Suspense>
-            </main>
+                <main
+                    ref={mainRef}
+                    className="flex flex-1 flex-col overflow-y-auto"
+                    style={{
+                        paddingTop: "56px",
+                    }}
+                >
+                    <Suspense fallback={<RecipeGridSkeleton />}>
+                        <RecipesSection isVisible={isVisible} />
+                    </Suspense>
+                </main>
 
-            <footer
-                className={cn(
-                    "fixed right-0 bottom-0 left-0 z-20 pt-8 transition-transform duration-300 ease-in-out",
-                    {
-                        "translate-y-full": !isVisible,
-                        "translate-y-0": isVisible,
-                    }
-                )}
-            >
-                <TabBar />
-            </footer>
-        </div>
+                <footer
+                    className={cn(
+                        "fixed right-0 bottom-0 left-0 z-20 pt-8 transition-transform duration-300 ease-in-out",
+                        {
+                            "translate-y-full": !isVisible,
+                            "translate-y-0": isVisible,
+                        }
+                    )}
+                >
+                    <TabBar />
+                </footer>
+            </div>
+        </>
     )
 }
