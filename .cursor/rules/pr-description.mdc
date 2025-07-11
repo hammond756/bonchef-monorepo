@@ -1,0 +1,85 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+# Writing an Effective Pull Request Description
+
+A well-written Pull Request (PR) description is essential for an efficient and effective code review process. It provides context for your changes, defends your implementation choices, and gives reviewers a clear path to validate your work. This document outlines the standard for PR descriptions in this project.
+
+---
+
+## What issue does this PR address?
+
+This is the **"Why"** of your PR. The goal is to give the reviewer all the necessary context to understand the problem you are solving without having to dig for information.
+
+**Best Practices:**
+-   **Link to the source:** Always link to the corresponding issue in your tracker (e.g., Jira, GitHub Issues, Linear). If no formal issue exists, briefly describe the observation or user feedback that motivated the change.
+-   **Summarize the problem:** Clearly and concisely describe the issue. What is the current behavior, and why is it problematic?
+-   **Show, don't just tell:** If the issue involves a UI bug or a visual change, include screenshots or a short video of the behavior *before* your changes. This is invaluable context for the reviewer.
+-   **Define the scope:** State clearly what is and is not included in this PR.
+
+**Example:**
+> This PR addresses [JIRA-123](https://your-jira-instance.com/browse/JIRA-123).
+>
+> **Problem:** On mobile viewports, the main application view does not allow the user to trigger the browser's native "pull-to-refresh" action. This is because the primary scrollable element is a `<div>` container, not the document `<body>`.
+>
+> **Current Behavior (Video):**
+> `[Link to a short screen recording of the broken behavior]`
+
+---
+
+## How does this PR address the issue?
+
+This is the **"How"** and **"Why this way"** of your PR. This section should anticipate questions from your reviewers and proactively defend your technical decisions.
+
+**Best Practices:**
+-   **High-level summary:** Start with a brief overview of your solution. What was the general approach?
+-   **Detail the changes:** Describe the specific changes you made. This could include new components, refactored hooks, updated API endpoints, etc.
+-   **Justify your decisions:** Explain why you chose this particular solution. Were there other approaches you considered? If so, why did you discard them? Mention any trade-offs you made (e.g., performance vs. readability).
+-   **Call out key areas:** Point the reviewer to the most important parts of the code. If a change is particularly complex or subtle, explain it here.
+-   **Mention breaking changes:** If your PR introduces any breaking changes, they must be clearly and prominently documented.
+
+**Example:**
+> To fix the "pull-to-refresh" issue, this PR refactors the main application layout to use the browser's native body scrolling instead of a container `<div>`.
+>
+> **Key Changes:**
+> 1.  **`src/app/layout.tsx`:** Removed the `h-full` class from the `<html>` and `<body>` tags to allow the document to scroll naturally.
+> 2.  **`src/components/layouts/tab-layout.tsx`:** Modified the layout to no longer be a fixed-height, internally-scrolling container. It now uses `min-h-full` and has padding to account for the fixed header and footer.
+> 3.  **`src/hooks/use-scroll-direction.ts`:** Simplified this hook to only track `window` scroll events, as element-specific tracking is no longer needed for the main layout.
+>
+> **Alternatives Considered:** We initially explored using a context provider to manage the scroll container, but this was deemed overly complex. The current approach is simpler and more aligned with native browser behavior.
+
+---
+
+## How can I validate that the code works as intended?
+
+This is the **"Prove it"** section. Provide clear, step-by-step instructions that allow a reviewer to confidently verify your changes. The easier you make it for them to test, the faster your PR will be approved.
+
+**Best Practices:**
+-   **Be specific and actionable:** Use a numbered or checklist format. Write commands that can be copied and pasted.
+-   **Provide setup instructions:** Don't assume the reviewer is starting from a clean state. Include steps like checking out the branch (`git checkout ...`), installing dependencies (`npm install`), or running database migrations.
+-   **Describe the steps:** Walk the reviewer through the UI or API interactions needed to test the change.
+-   **State the expected outcome:** For each step, clearly describe what the reviewer should see. "The page should refresh" is good. "You should see the browser's native refresh spinner at the top of the screen" is better.
+-   **Use visuals:** Provide "after" screenshots or GIFs that demonstrate the correct behavior. This gives the reviewer a clear reference point.
+
+**Example:**
+> 1.  **Check out this branch:**
+>     ```bash
+>     git checkout fix-scrolling-container
+>     ```
+> 2.  **Install dependencies and run the app:**
+>     ```bash
+>     npm install && npm run dev
+>     ```
+> 3.  **Open the app on a mobile device or in your browser's mobile emulator.**
+> 4.  **Navigate to any page that uses the main tab layout (e.g., the home page).**
+> 5.  **Scroll to the top of the page.**
+> 6.  **Attempt to scroll down again (the "pull-to-refresh" gesture).**
+>
+> **Expected Result:** The browser's native refresh indicator should appear, and the page should reload. The auto-hiding navigation bars should continue to function as before.
+>
+> **After (GIF):**
+> `[Link to a GIF demonstrating the successful test]`
+
