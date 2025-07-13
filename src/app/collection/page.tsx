@@ -1,9 +1,6 @@
 "use client"
 
-import { TopBar } from "@/components/layout/top-bar"
-import { TabBar } from "@/components/layout/tab-bar"
-import { useState, useEffect, useRef, Suspense } from "react"
-import { cn } from "@/lib/utils"
+import { useState, Suspense } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -26,6 +23,8 @@ import {
 import React from "react"
 import { RecipeCard } from "@/components/recipe/recipe-card"
 import { NavigationTracker } from "@/components/util/navigation-tracker"
+import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
+import { cn } from "@/lib/utils"
 
 function CompactRecipeCard({ recipe }: { recipe: RecipeRead }) {
     return (
@@ -127,7 +126,7 @@ function RecipePageSkeleton() {
     )
 }
 
-function RecipesSection({ isVisible }: { isVisible: boolean }) {
+function RecipesSection() {
     const { recipes: userRecipes, isLoading: userRecipesLoading } = useOwnRecipes()
     const { recipes: likedRecipes, isLoading: likedRecipesLoading } = useLikedRecipes()
     const [activeTab, setActiveTab] = useQueryState("tab", {
@@ -135,11 +134,7 @@ function RecipesSection({ isVisible }: { isVisible: boolean }) {
     })
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
     const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
-
-    const transitionStyle = {
-        transition: "transform 0.2s ease-in-out",
-        transform: isVisible ? "translateY(0px)" : "translateY(-58px)",
-    }
+    const { isVisible, scrollDirection } = useNavigationVisibility()
 
     const sortRecipes = (recipes: RecipeRead[], order: "newest" | "oldest"): RecipeRead[] => {
         const sorted = [...(recipes || [])]
@@ -176,8 +171,18 @@ function RecipesSection({ isVisible }: { isVisible: boolean }) {
 
     return (
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v)}>
-            <div className="sticky top-0 z-10" style={transitionStyle}>
-                <div className="bg-surface pt-6 pb-2">
+            <div
+                // this element should translate together with the main navigation for the best
+                // experience.
+                className={cn(
+                    "bg-surface sticky top-0 z-10 transition-transform duration-300 ease-in-out",
+                    {
+                        "translate-y-0": !isVisible || (isVisible && !scrollDirection),
+                        "translate-y-[56px]": isVisible && scrollDirection,
+                    }
+                )}
+            >
+                <div className="pt-6 pb-2">
                     <div className="container mx-auto flex max-w-4xl items-center justify-between px-4">
                         <AppTabsList tabs={collectionTabs} className="w-auto flex-grow" />
                     </div>
@@ -185,7 +190,7 @@ function RecipesSection({ isVisible }: { isVisible: boolean }) {
                 <div className="from-surface pointer-events-none h-2 bg-gradient-to-b to-transparent" />
             </div>
 
-            <div className="container mx-auto max-w-4xl px-4 pt-4 pb-10" style={transitionStyle}>
+            <div className="container mx-auto max-w-4xl px-4 pt-4 pb-10">
                 <div className="mb-4 flex items-center justify-between gap-2">
                     <Select
                         value={sortOrder}
@@ -244,68 +249,12 @@ function RecipeGridSkeleton() {
 }
 
 export default function CollectionPage() {
-    const mainRef = useRef<HTMLElement>(null)
-    const [isVisible, setIsVisible] = useState(true)
-
-    useEffect(() => {
-        let lastScrollY = 0
-        const handleScroll = () => {
-            const currentScrollY = mainRef.current?.scrollTop ?? 0
-            if (currentScrollY > lastScrollY) {
-                setIsVisible(false)
-            } else {
-                setIsVisible(true)
-            }
-            lastScrollY = currentScrollY
-        }
-
-        const mainElement = mainRef.current
-        mainElement?.addEventListener("scroll", handleScroll)
-        return () => {
-            mainElement?.removeEventListener("scroll", handleScroll)
-        }
-    }, [])
-
     return (
         <>
             <NavigationTracker path="/collection" />
-            <div className="bg-surface relative flex h-screen flex-col">
-                <header
-                    className={cn(
-                        "fixed top-0 right-0 left-0 z-20 transition-transform duration-300 ease-in-out",
-                        {
-                            "-translate-y-full": !isVisible,
-                            "translate-y-0": isVisible,
-                        }
-                    )}
-                >
-                    <TopBar />
-                </header>
-
-                <main
-                    ref={mainRef}
-                    className="flex flex-1 flex-col overflow-y-auto"
-                    style={{
-                        paddingTop: "56px",
-                    }}
-                >
-                    <Suspense fallback={<RecipeGridSkeleton />}>
-                        <RecipesSection isVisible={isVisible} />
-                    </Suspense>
-                </main>
-
-                <footer
-                    className={cn(
-                        "fixed right-0 bottom-0 left-0 z-20 pt-8 transition-transform duration-300 ease-in-out",
-                        {
-                            "translate-y-full": !isVisible,
-                            "translate-y-0": isVisible,
-                        }
-                    )}
-                >
-                    <TabBar />
-                </footer>
-            </div>
+            <Suspense fallback={<RecipeGridSkeleton />}>
+                <RecipesSection />
+            </Suspense>
         </>
     )
 }

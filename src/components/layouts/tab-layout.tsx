@@ -2,9 +2,8 @@
 
 import { TopBar } from "@/components/layout/top-bar"
 import { TabBar } from "@/components/layout/tab-bar"
-import { useScrollDirection } from "@/hooks/use-scroll-direction"
-import { useState, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
+import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 
 interface TabLayoutProps {
     children: React.ReactNode
@@ -13,39 +12,10 @@ interface TabLayoutProps {
 }
 
 export const TabLayout = ({ children, topBarContent, tabBarContent }: TabLayoutProps) => {
-    const mainRef = useRef<HTMLElement>(null)
-    const scrollDirection = useScrollDirection(10, mainRef)
-    const [isVisible, setIsVisible] = useState(true)
-    const [isAtTop, setIsAtTop] = useState(true)
-
-    useEffect(() => {
-        const mainEl = mainRef.current
-        if (!mainEl) return
-
-        const handleScroll = () => {
-            setIsAtTop(mainEl.scrollTop <= 10)
-        }
-
-        mainEl.addEventListener("scroll", handleScroll, { passive: true })
-        handleScroll() // Initial check
-
-        return () => mainEl.removeEventListener("scroll", handleScroll)
-    }, [])
-
-    useEffect(() => {
-        if (isAtTop) {
-            setIsVisible(true)
-        } else {
-            if (scrollDirection === "down") {
-                setIsVisible(false)
-            } else if (scrollDirection === "up") {
-                setIsVisible(true)
-            }
-        }
-    }, [scrollDirection, isAtTop])
+    const { isVisible } = useNavigationVisibility()
 
     return (
-        <div className="bg-surface relative flex h-screen flex-col">
+        <div className="bg-surface relative flex min-h-full flex-col">
             <header
                 className={cn(
                     "fixed top-0 right-0 left-0 z-50 transition-transform duration-300 ease-in-out",
@@ -59,11 +29,10 @@ export const TabLayout = ({ children, topBarContent, tabBarContent }: TabLayoutP
             </header>
 
             <main
-                ref={mainRef}
-                className="flex-1 overflow-y-auto"
+                className="flex-1"
                 style={{
-                    paddingTop: "56px", // Adjust as needed for TopBar height
-                    paddingBottom: "80px", // Adjust as needed for TabBar height
+                    paddingTop: "56px",
+                    paddingBottom: "80px",
                 }}
             >
                 {children}

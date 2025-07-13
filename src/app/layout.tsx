@@ -36,10 +36,8 @@ export const viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="en" className="h-full">
-            <body
-                className={`${montserrat.variable} ${lora.variable} bg-surface h-full overflow-x-hidden antialiased`}
-            >
+        <html lang="en">
+            <body className={`${montserrat.variable} ${lora.variable} bg-surface antialiased`}>
                 <PostHogProvider>
                     <NuqsAdapter>
                         {children}

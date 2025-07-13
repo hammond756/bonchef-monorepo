@@ -1,26 +1,53 @@
 "use client"
 
-import { useState, useEffect, useRef, RefObject } from "react"
+import { useState, useEffect, useRef } from "react"
 
-type ScrollDirection = "up" | "down"
+type ScrollDirection = "up" | "down" | null
 
-export function useScrollDirection(
-    threshold = 10,
-    targetRef?: RefObject<HTMLElement | null>
-): ScrollDirection | null {
-    const [scrollDirection, setScrollDirection] = useState<ScrollDirection | null>(null)
+/**
+ * A custom React hook to detect the vertical scroll direction ('up' | 'down').
+ *
+ * This hook is designed to work exclusively with window-level scroll events, making it ideal
+ * for implementing features like auto-hiding navigation bars that react to full-page scrolling.
+ *
+ * @param {number} [threshold=20] - The minimum scroll distance in pixels required to trigger a direction change. This prevents the hook from firing on minor scroll movements.
+ *
+ * @returns {'up' | 'down' | null} The current scroll direction. It returns `null` on the initial render and then updates to 'up' or 'down' based on user scrolling.
+ *
+ * @example
+ * ```tsx
+ * const MyComponent = () => {
+ *   const scrollDirection = useScrollDirection();
+ *
+ *   useEffect(() => {
+ *     if (scrollDirection === 'down') {
+ *       // Logic for scrolling down
+ *     } else if (scrollDirection === 'up') {
+ *       // Logic for scrolling up
+ *     }
+ *   }, [scrollDirection]);
+ *
+ *   return <div>...</div>;
+ * };
+ * ```
+ *
+ * @assumptions
+ * - It only tracks vertical scrolling on the global `window` object.
+ * - It must be used within a client-side component (marked with `"use client"`).
+ */
+export function useScrollDirection(threshold = 20): ScrollDirection {
+    const [scrollDirection, setScrollDirection] = useState<ScrollDirection>(null)
     const lastScrollY = useRef(0)
 
     useEffect(() => {
-        const targetElement = targetRef?.current || window
-        const getScrollY = () =>
-            targetElement instanceof Window ? targetElement.scrollY : targetElement.scrollTop
-
-        lastScrollY.current = getScrollY()
+        lastScrollY.current = window.scrollY
 
         const handleScroll = () => {
-            const currentScrollY = getScrollY()
-            if (Math.abs(currentScrollY - lastScrollY.current) < threshold) {
+            const currentScrollY = window.scrollY
+            const notScrolling = Math.abs(currentScrollY - lastScrollY.current) < threshold
+            const atTheTop = currentScrollY <= 0
+            if (notScrolling || atTheTop) {
+                setScrollDirection(null)
                 return
             }
             setScrollDirection(currentScrollY > lastScrollY.current ? "down" : "up")
@@ -31,12 +58,12 @@ export function useScrollDirection(
             window.requestAnimationFrame(handleScroll)
         }
 
-        targetElement.addEventListener("scroll", onScroll, { passive: true })
+        window.addEventListener("scroll", onScroll, { passive: true })
 
         return () => {
-            targetElement.removeEventListener("scroll", onScroll)
+            window.removeEventListener("scroll", onScroll)
         }
-    }, [threshold, targetRef])
+    }, [threshold])
 
     return scrollDirection
 }
