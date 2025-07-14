@@ -40,6 +40,7 @@ interface RecipeFormProps {
     recipe: Recipe
     recipeId: string
     isPublic?: boolean
+    isOnboardingFlow?: boolean
 }
 
 function autoResizeTextarea(element: HTMLTextAreaElement) {
@@ -63,7 +64,12 @@ function updateIngredientInGroup(
     return ingredients.map((group, idx) => (idx === groupIdx ? updateFn(group) : group))
 }
 
-export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }: RecipeFormProps) {
+export function RecipeForm({
+    recipe: initialRecipe,
+    recipeId,
+    isPublic = false,
+    isOnboardingFlow = false,
+}: RecipeFormProps) {
     const [recipe, setRecipe] = useState(initialRecipe)
     const [isDirty, setIsDirty] = useState(false)
     const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false)
@@ -183,6 +189,12 @@ export function RecipeForm({ recipe: initialRecipe, recipeId, isPublic = false }
                 is_public: isPublic,
                 thumbnail: imageUrl || recipe.thumbnail,
             })
+
+            if (isOnboardingFlow) {
+                router.push(`/recipes/preview/${recipeId || response.id}`)
+                return
+            }
+
             const sourceUrl = lastBrowsingPath || "/ontdek"
             router.push(
                 `/recipes/${recipeId || response.id}?from=edit&source=${encodeURIComponent(sourceUrl)}`

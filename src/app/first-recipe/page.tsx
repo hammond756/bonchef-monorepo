@@ -24,19 +24,19 @@ export default function FirstRecipePage() {
             { ...recipe, thumbnail: recipe.thumbnail },
             { isPublic: true }
         )
-        router.push(`/edit/${id}`)
+        router.push(`/edit/${id}?from=onboarding`)
     }
 
     const submitImage = async (validFormData: { imageUrl: string }) => {
         const recipe = await generateRecipeFromImage(validFormData.imageUrl)
         const { id } = await createDraftRecipe(recipe, { isPublic: true })
-        router.push(`/edit/${id}`)
+        router.push(`/edit/${id}?from=onboarding`)
     }
 
     const submitText = async (validFormData: { text: string }) => {
         const recipe = await generateRecipeFromSnippet(validFormData.text)
         const { id } = await createDraftRecipe(recipe, { isPublic: true })
-        router.push(`/edit/${id}`)
+        router.push(`/edit/${id}?from=onboarding`)
     }
 
     return (

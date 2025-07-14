@@ -4,8 +4,15 @@ import { createClient } from "@/utils/supabase/server"
 import { redirect } from "next/navigation"
 import { PageContentSpacer } from "@/components/layout/page-content-spacer"
 
-export default async function EditRecipePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditRecipePage({
+    params,
+    searchParams,
+}: {
+    params: Promise<{ id: string }>
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
     const { id } = await params
+    const isOnboardingFlow = (await searchParams)?.from === "onboarding"
 
     const recipe = await getRecipe(id)
     const supabase = await createClient()
@@ -42,7 +49,12 @@ export default async function EditRecipePage({ params }: { params: Promise<{ id:
             <PageContentSpacer />
             <main className="container mx-auto p-4">
                 <h1 className="mb-6 text-2xl font-bold">Recept bewerken</h1>
-                <RecipeForm recipe={recipe} recipeId={id} isPublic={recipe.is_public} />
+                <RecipeForm
+                    recipe={recipe}
+                    recipeId={id}
+                    isPublic={recipe.is_public}
+                    isOnboardingFlow={isOnboardingFlow}
+                />
             </main>
         </>
     )

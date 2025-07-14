@@ -40,4 +40,31 @@ test.describe("Anonymous Onboarding Flow", () => {
         // Verify the new title is on the page
         await expect(page.getByTestId("recipe-title")).toContainText(newTitle)
     })
+
+    test("allows anonymous users to create a private recipe and view the preview", async ({
+        page,
+        baseURL,
+    }) => {
+        // Start at the first-recipe page
+        await page.goto(`${baseURL}/first-recipe`)
+
+        const recipeId = await importRecipe({
+            page,
+            importMethod: "text",
+            importContent: "Een privé broodje",
+        })
+
+        // Edit the recipe title
+        const newTitle = "Mijn Geheime Privé Recept"
+        await page.locator("input[placeholder='Recept naam']").fill(newTitle)
+
+        // Save the recipe as private
+        await saveRecipe({ page, recipeId, visibility: "Privé" })
+
+        // Verify the redirect to the preview page
+        await expect(page).toHaveURL(new RegExp(`/recipes/preview/${recipeId}`))
+
+        // Verify the new title is on the preview page
+        await expect(page.getByTestId("recipe-title")).toContainText(newTitle)
+    })
 })

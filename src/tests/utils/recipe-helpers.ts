@@ -26,7 +26,8 @@ export async function importRecipe(options: ImportRecipeOptions): Promise<string
 
     await page.waitForURL(/\/edit\//, { timeout: 60000 })
     const url = page.url()
-    const recipeId = url.split("/").pop()!
+    // Extract the recipe ID from the URL, assumed to be the last path segment of the URL
+    const recipeId = url.split("/").pop()!.split("?")[0]
     expect(url).toContain(`/edit/${recipeId}`)
 
     return recipeId
@@ -49,5 +50,7 @@ export async function saveRecipe(options: SaveRecipeOptions): Promise<void> {
     await page.getByTestId("save-recipe").click()
     await page.getByText(visibility).click()
     await page.getByRole("button", { name: "Opslaan" }).click()
-    await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`), { timeout: 60000 })
+    await expect(page).toHaveURL(new RegExp(`/recipes(?:/preview)?/${recipeId}`), {
+        timeout: 60000,
+    })
 }
