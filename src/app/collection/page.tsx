@@ -1,16 +1,15 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState, Suspense, useMemo } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { RecipeRead } from "@/lib/types"
+import { RecipeRead, RecipeImportJob } from "@/lib/types"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { AppTabsList } from "@/components/ui/app-tabs"
-import { LikeButton } from "@/components/like-button"
 import { useLikedRecipes } from "@/hooks/use-liked-recipes"
 import { useOwnRecipes } from "@/hooks/use-own-recipes"
+import { useRecipeImportJobs } from "@/hooks/use-recipe-import-jobs"
 import { useQueryState } from "nuqs"
 import { LayoutGrid, List } from "lucide-react"
 import {
@@ -21,65 +20,48 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import React from "react"
-import { RecipeCard } from "@/components/recipe/recipe-card"
+import { RecipeCard, InProgressRecipeCard } from "@/components/recipe/recipe-card"
 import { NavigationTracker } from "@/components/util/navigation-tracker"
 import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 import { cn } from "@/lib/utils"
+import { InProgressRecipeListItem, RecipeListItem } from "@/components/recipe/recipe-list-item"
 
-function CompactRecipeCard({ recipe }: { recipe: RecipeRead }) {
-    return (
-        <div className="group border-border bg-surface relative flex items-center gap-4 rounded-xl border p-2 shadow-sm">
-            <Link href={`/recipes/${recipe.id}`} className="flex flex-1 items-center gap-4">
-                <div className="relative aspect-square h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                    <Image
-                        src={recipe.thumbnail}
-                        alt={recipe.title}
-                        fill
-                        className="object-cover"
-                        sizes="64px"
-                    />
-                </div>
-                <div className="flex-1">
-                    <h2 className="text-default line-clamp-2 font-semibold group-hover:underline">
-                        {recipe.title}
-                    </h2>
-                </div>
-            </Link>
-            <div className="pr-2">
-                <LikeButton
-                    recipeId={recipe.id}
-                    initialLiked={!!recipe.is_liked_by_current_user}
-                    initialLikeCount={recipe.like_count || 0}
-                    showCount={false}
-                />
-            </div>
-        </div>
-    )
-}
+// A union type for items that can be displayed in the collection grid/list
+type CollectionItem =
+    | (RecipeRead & { viewType: "RECIPE" })
+    | (RecipeImportJob & { viewType: "JOB" })
 
-function RecipeGrid({ recipes }: { recipes: RecipeRead[] }) {
-    if (!recipes || recipes.length === 0) {
+function RecipeGrid({ items }: { items: Readonly<CollectionItem>[] }) {
+    if (!items || items.length === 0) {
         return null
     }
 
     return (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            {recipes.map((recipe) => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
-            ))}
+            {items.map((item) =>
+                item.viewType === "RECIPE" ? (
+                    <RecipeCard key={item.id} recipe={item} />
+                ) : (
+                    <InProgressRecipeCard key={item.id} job={item} />
+                )
+            )}
         </div>
     )
 }
 
-function RecipeList({ recipes }: { recipes: RecipeRead[] }) {
-    if (!recipes || recipes.length === 0) {
+function RecipeList({ items }: { items: Readonly<CollectionItem>[] }) {
+    if (!items || items.length === 0) {
         return null
     }
     return (
         <div className="grid grid-cols-1 gap-4">
-            {recipes.map((recipe) => (
-                <CompactRecipeCard key={recipe.id} recipe={recipe} />
-            ))}
+            {items.map((item) =>
+                item.viewType === "RECIPE" ? (
+                    <RecipeListItem key={item.id} recipe={item} />
+                ) : (
+                    <InProgressRecipeListItem key={item.id} job={item} />
+                )
+            )}
         </div>
     )
 }
@@ -129,6 +111,8 @@ function RecipePageSkeleton() {
 function RecipesSection() {
     const { recipes: userRecipes, isLoading: userRecipesLoading } = useOwnRecipes()
     const { recipes: likedRecipes, isLoading: likedRecipesLoading } = useLikedRecipes()
+    const { jobs: importJobs, isLoading: importJobsLoading } = useRecipeImportJobs()
+
     const [activeTab, setActiveTab] = useQueryState("tab", {
         defaultValue: "my-recipes",
     })
@@ -136,32 +120,50 @@ function RecipesSection() {
     const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
     const { isVisible, scrollDirection } = useNavigationVisibility()
 
-    const sortRecipes = (recipes: RecipeRead[], order: "newest" | "oldest"): RecipeRead[] => {
-        const sorted = [...(recipes || [])]
+    const myRecipesAndJobs = useMemo(() => {
+        const pendingJobs = importJobs
+            .filter((job) => job.status === "pending")
+            .map((job) => ({ ...job, viewType: "JOB" as const }))
+
+        const recipes = userRecipes.map((recipe) => ({ ...recipe, viewType: "RECIPE" as const }))
+
+        const allItems: CollectionItem[] = [...pendingJobs, ...recipes]
+
+        // Sort all items based on their creation date
+        allItems.sort((a, b) => {
+            const dateA = new Date(a.created_at ?? 0).getTime()
+            const dateB = new Date(b.created_at ?? 0).getTime()
+            return sortOrder === "newest" ? dateB - dateA : dateA - dateB
+        })
+
+        return allItems
+    }, [importJobs, userRecipes, sortOrder])
+
+    const sortedLikedRecipes = useMemo(() => {
+        const sorted = [...(likedRecipes || [])]
         sorted.sort((a, b) => {
             const dateA = new Date(a.created_at ?? 0).getTime()
             const dateB = new Date(b.created_at ?? 0).getTime()
-            return order === "newest" ? dateB - dateA : dateA - dateB
+            return sortOrder === "newest" ? dateB - dateA : dateA - dateB
         })
-        return sorted
-    }
+        return sorted.map((r) => ({ ...r, viewType: "RECIPE" as const }))
+    }, [likedRecipes, sortOrder])
 
     const loadingLogic = (
         isLoading: boolean,
-        data: RecipeRead[],
+        data: Readonly<CollectionItem>[],
         emptyComponent: React.ReactNode
     ) => {
         if (isLoading) {
             return <RecipePageSkeleton />
         }
-        const sortedData = sortRecipes(data, sortOrder)
-        if (sortedData.length === 0) {
+        if (data.length === 0) {
             return emptyComponent
         }
         if (viewMode === "grid") {
-            return <RecipeGrid recipes={sortedData} />
+            return <RecipeGrid items={data} />
         }
-        return <RecipeList recipes={sortedData} />
+        return <RecipeList items={data} />
     }
 
     const collectionTabs = [
@@ -228,10 +230,14 @@ function RecipesSection() {
                     </div>
                 </div>
                 <TabsContent value="my-recipes" className="mt-0">
-                    {loadingLogic(userRecipesLoading, userRecipes, <WelcomeSection />)}
+                    {loadingLogic(
+                        userRecipesLoading || importJobsLoading,
+                        myRecipesAndJobs,
+                        <WelcomeSection />
+                    )}
                 </TabsContent>
                 <TabsContent value="favorieten" className="mt-0">
-                    {loadingLogic(likedRecipesLoading, likedRecipes, <FavoritesCTA />)}
+                    {loadingLogic(likedRecipesLoading, sortedLikedRecipes, <FavoritesCTA />)}
                 </TabsContent>
             </div>
         </Tabs>

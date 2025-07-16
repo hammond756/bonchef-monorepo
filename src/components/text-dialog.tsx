@@ -17,9 +17,16 @@ interface TextDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     onSubmit: (validFormData: { text: string }) => void
+    showProgressAnimation?: boolean
 }
 
-function TextForm({ onSubmit }: { onSubmit: (validFormData: { text: string }) => void }) {
+function TextForm({
+    onSubmit,
+    showProgressAnimation,
+}: {
+    onSubmit: (validFormData: { text: string }) => void
+    showProgressAnimation: boolean
+}) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const posthog = usePostHog()
@@ -64,26 +71,33 @@ function TextForm({ onSubmit }: { onSubmit: (validFormData: { text: string }) =>
                 {error && <div className="text-sm text-red-500">{error}</div>}
                 <div className="flex justify-end">
                     <Button type="submit" disabled={isLoading}>
-                        {isLoading ? "Toevoegen..." : "Toevoegen"}
+                        {isLoading ? "Verwerken..." : "Verwerk tekst"}
                     </Button>
                 </div>
             </form>
-            {isLoading && <ProgressModal progressSteps={progressSteps} loop={true} />}
+            {isLoading && showProgressAnimation && (
+                <ProgressModal progressSteps={progressSteps} loop={true} />
+            )}
         </>
     )
 }
 
-export function TextDialog({ open, onOpenChange, onSubmit }: TextDialogProps) {
+export function TextDialog({
+    open,
+    onOpenChange,
+    onSubmit,
+    showProgressAnimation = true,
+}: Readonly<TextDialogProps>) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="top-[40%]">
                 <DialogHeader>
-                    <DialogTitle>Importeer via tekst</DialogTitle>
+                    <DialogTitle>Kopieer je recept</DialogTitle>
                     <DialogDescription>
                         Plak de tekst van een recept en we proberen het automatisch te importeren.
                     </DialogDescription>
                 </DialogHeader>
-                <TextForm onSubmit={onSubmit} />
+                <TextForm onSubmit={onSubmit} showProgressAnimation={showProgressAnimation} />
             </DialogContent>
         </Dialog>
     )

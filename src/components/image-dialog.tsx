@@ -24,6 +24,7 @@ interface ImageDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     onSubmit: (validFormData: { imageUrl: string }) => void
+    showProgressAnimation?: boolean
 }
 
 async function uploadImageToSignedUrl(file: File): Promise<string> {
@@ -34,7 +35,13 @@ async function uploadImageToSignedUrl(file: File): Promise<string> {
     return await storageService.uploadToSignedUrl("recipe-images", path, file, token)
 }
 
-function ImageForm({ onSubmit }: { onSubmit: (validFormData: { imageUrl: string }) => void }) {
+function ImageForm({
+    onSubmit,
+    showProgressAnimation,
+}: {
+    onSubmit: (validFormData: { imageUrl: string }) => void
+    showProgressAnimation: boolean
+}) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const posthog = usePostHog()
@@ -108,12 +115,19 @@ function ImageForm({ onSubmit }: { onSubmit: (validFormData: { imageUrl: string 
                     </Button>
                 </div>
             </form>
-            {isLoading && <ProgressModal progressSteps={progressSteps} loop={true} />}
+            {isLoading && showProgressAnimation && (
+                <ProgressModal progressSteps={progressSteps} loop={true} />
+            )}
         </>
     )
 }
 
-export function ImageDialog({ open, onOpenChange, onSubmit }: ImageDialogProps) {
+export function ImageDialog({
+    open,
+    onOpenChange,
+    onSubmit,
+    showProgressAnimation = true,
+}: Readonly<ImageDialogProps>) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="top-[40%]">
@@ -124,7 +138,7 @@ export function ImageDialog({ open, onOpenChange, onSubmit }: ImageDialogProps) 
                         importeren.
                     </DialogDescription>
                 </DialogHeader>
-                <ImageForm onSubmit={onSubmit} />
+                <ImageForm onSubmit={onSubmit} showProgressAnimation={showProgressAnimation} />
             </DialogContent>
         </Dialog>
     )

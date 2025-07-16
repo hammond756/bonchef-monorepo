@@ -42,13 +42,13 @@ export const RecipeWriteSchema = BaseRecipeSchema.extend({
     is_public: z.boolean().optional().default(false),
     user_id: z.string().optional(),
     status: RecipeStatusEnum.optional(),
+    created_at: z.string().datetime({ offset: true }).optional(),
 })
 
 // Schema for database read operations (includes computed fields)
 export const RecipeReadSchema = RecipeWriteSchema.extend({
     id: z.string(),
     user_id: z.string(),
-    created_at: z.string().datetime({ offset: true }).optional(),
     is_liked_by_current_user: z.boolean().optional(),
     like_count: z.number().optional(),
     profiles: z.object({
@@ -202,3 +202,20 @@ export interface PublicProfile {
     total_likes?: number
     avatar?: string | null
 }
+
+export const RecipeImportStatusEnum = z.enum(["pending", "completed", "failed"])
+export const RecipeImportSourceTypeEnum = z.enum(["url", "image", "text"])
+
+export const RecipeImportJobSchema = z.object({
+    id: z.string(),
+    user_id: z.string(),
+    status: RecipeImportStatusEnum,
+    source_type: RecipeImportSourceTypeEnum,
+    source_data: z.string(),
+    recipe_id: z.string().nullable(),
+    error_message: z.string().nullable(),
+    created_at: z.string(),
+    updated_at: z.string(),
+})
+
+export type RecipeImportJob = z.infer<typeof RecipeImportJobSchema>

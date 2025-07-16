@@ -18,6 +18,7 @@ interface UrlDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     onSubmit: (validFormData: { url: string }) => void
+    showProgressAnimation?: boolean
 }
 
 // TODO: make a list of example urls, that can only be used once
@@ -64,7 +65,13 @@ function validateUrl(url: string) {
     }
 }
 
-function UrlForm({ onSubmit }: { onSubmit: (validFormData: { url: string }) => void }) {
+function UrlForm({
+    onSubmit,
+    showProgressAnimation,
+}: {
+    onSubmit: (validFormData: { url: string }) => void
+    showProgressAnimation: boolean
+}) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const formRef = useRef<HTMLFormElement>(null)
@@ -121,12 +128,19 @@ function UrlForm({ onSubmit }: { onSubmit: (validFormData: { url: string }) => v
                     </Button>
                 </div>
             </form>
-            {isLoading && <ProgressModal progressSteps={progressSteps} loop={true} />}
+            {isLoading && showProgressAnimation && (
+                <ProgressModal progressSteps={progressSteps} loop={true} />
+            )}
         </>
     )
 }
 
-export function UrlDialog({ open, onOpenChange, onSubmit }: UrlDialogProps) {
+export function UrlDialog({
+    open,
+    onOpenChange,
+    onSubmit,
+    showProgressAnimation = true,
+}: Readonly<UrlDialogProps>) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="top-[40%]">
@@ -137,7 +151,7 @@ export function UrlDialog({ open, onOpenChange, onSubmit }: UrlDialogProps) {
                         importeren.
                     </DialogDescription>
                 </DialogHeader>
-                <UrlForm onSubmit={onSubmit} />
+                <UrlForm onSubmit={onSubmit} showProgressAnimation={showProgressAnimation} />
             </DialogContent>
         </Dialog>
     )

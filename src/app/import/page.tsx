@@ -8,12 +8,7 @@ import { useEffect, useState } from "react"
 import { UrlDialog } from "@/components/url-dialog"
 import { ImageDialog } from "@/components/image-dialog"
 import { TextDialog } from "@/components/text-dialog"
-import {
-    generateRecipeFromImage,
-    generateRecipeFromSnippet,
-    createDraftRecipe,
-} from "@/actions/recipe-imports"
-import { scrapeRecipe } from "@/actions/recipe-imports"
+import { startRecipeImportJob } from "@/actions/recipe-imports"
 import { useChatStore } from "@/lib/store/chat-store"
 
 export default function ImportPage() {
@@ -36,21 +31,18 @@ export default function ImportPage() {
     }, [supabase])
 
     const submitUrl = async (validFormData: { url: string }) => {
-        const recipe = await scrapeRecipe(validFormData.url)
-        const { id } = await createDraftRecipe({ ...recipe, thumbnail: recipe.thumbnail })
-        router.push(`/edit/${id}`)
+        await startRecipeImportJob("url", validFormData.url)
+        router.push("/collection")
     }
 
     const submitImage = async (validFormData: { imageUrl: string }) => {
-        const recipe = await generateRecipeFromImage(validFormData.imageUrl)
-        const { id } = await createDraftRecipe(recipe)
-        router.push(`/edit/${id}`)
+        await startRecipeImportJob("image", validFormData.imageUrl)
+        router.push("/collection")
     }
 
     const submitText = async (validFormData: { text: string }) => {
-        const recipe = await generateRecipeFromSnippet(validFormData.text)
-        const { id } = await createDraftRecipe(recipe)
-        router.push(`/edit/${id}`)
+        await startRecipeImportJob("text", validFormData.text)
+        router.push("/collection")
     }
 
     const handleNewChat = () => {
@@ -100,16 +92,19 @@ export default function ImportPage() {
                     open={openDialog === "url"}
                     onOpenChange={() => setOpenDialog(null)}
                     onSubmit={submitUrl}
+                    showProgressAnimation={false}
                 />
                 <ImageDialog
                     open={openDialog === "image"}
                     onOpenChange={() => setOpenDialog(null)}
                     onSubmit={submitImage}
+                    showProgressAnimation={false}
                 />
                 <TextDialog
                     open={openDialog === "text"}
                     onOpenChange={() => setOpenDialog(null)}
                     onSubmit={submitText}
+                    showProgressAnimation={false}
                 />
             </div>
         </div>

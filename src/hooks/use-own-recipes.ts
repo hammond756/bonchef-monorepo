@@ -15,7 +15,7 @@ export function useOwnRecipes() {
     const { data, error, isLoading, mutate } = useSWR<RecipeRead[]>("own-recipes", fetcher, {
         revalidateOnFocus: true,
         revalidateOnReconnect: true,
-        refreshInterval: 0, // Don't poll, just revalidate on focus/reconnect
+        refreshInterval: 2000,
     })
 
     return {

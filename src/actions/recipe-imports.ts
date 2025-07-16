@@ -174,7 +174,7 @@ export async function extractTextFromImage(imageUrl: string): Promise<string> {
 }
 
 export async function createDraftRecipe(
-    recipe: GeneratedRecipeWithSource & { thumbnail: string },
+    recipe: GeneratedRecipeWithSource & { thumbnail: string; created_at?: string },
     { isPublic = false }: { isPublic?: boolean } = {}
 ): Promise<{ id: string }> {
     const supabase = await createClient()
@@ -197,12 +197,14 @@ export async function createDraftRecipe(
 
     const savedRecipe = await recipeService.createRecipe({
         ...recipe,
+        status: "DRAFT",
         is_public: isPublic,
         source_url: recipe.source_url || "https://app.bonchef.io",
         source_name: recipe.source_name || "BonChef",
         thumbnail: recipe.thumbnail,
         description: "",
         user_id: userId,
+        created_at: recipe.created_at,
     })
 
     if (!savedRecipe.success) {
@@ -210,4 +212,108 @@ export async function createDraftRecipe(
     }
 
     return savedRecipe.data
+}
+
+async function _processJobInBackground(job: {
+    id: string
+    source_type: string
+    source_data: string
+    created_at: string
+}) {
+    try {
+        let recipe: GeneratedRecipeWithSource & { thumbnail: string }
+
+        switch (job.source_type) {
+            case "url":
+                recipe = await scrapeRecipe(job.source_data)
+                break
+            case "image":
+                recipe = await generateRecipeFromImage(job.source_data)
+                break
+            case "text":
+                recipe = await generateRecipeFromSnippet(job.source_data)
+                break
+            default:
+                throw new Error(`Unsupported source type: ${job.source_type}`)
+        }
+
+        const savedRecipe = await createDraftRecipe({
+            ...recipe,
+            created_at: job.created_at,
+        })
+
+        const supabaseAdmin = await createAdminClient()
+        const { error: updateError } = await supabaseAdmin
+            .from("recipe_import_jobs")
+            .update({
+                status: "completed",
+                recipe_id: savedRecipe.id,
+            })
+            .eq("id", job.id)
+
+        if (updateError) {
+            console.error(
+                `CRITICAL: Job ${job.id} succeeded but failed to update status to 'completed'. Error: ${updateError.message}`
+            )
+        } else {
+            console.log(
+                `Job ${job.id} succeeded. Draft created with id ${savedRecipe.id} and job marked as completed.`
+            )
+        }
+    } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : "Unknown error"
+        const supabaseAdmin = await createAdminClient()
+        const { error: updateError } = await supabaseAdmin
+            .from("recipe_import_jobs")
+            .update({
+                status: "failed",
+                error_message: errorMessage,
+            })
+            .eq("id", job.id)
+
+        if (updateError) {
+            console.error(
+                `CRITICAL: Job ${job.id} failed but ALSO failed to update its status. Original Error: ${errorMessage}. Update Error: ${updateError.message}`
+            )
+        } else {
+            console.error(
+                `Job ${job.id} failed and status marked as failed. Error: ${errorMessage}`
+            )
+        }
+    }
+}
+
+export async function startRecipeImportJob(
+    sourceType: "url" | "image" | "text",
+    sourceData: string
+) {
+    const supabase = await createClient()
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+        throw new Error("User must be logged in to start a recipe import job.")
+    }
+
+    const { data: job, error } = await supabase
+        .from("recipe_import_jobs")
+        .insert({
+            user_id: user.id,
+            source_type: sourceType,
+            source_data: sourceData,
+            status: "pending",
+        })
+        .select()
+        .single()
+
+    if (error) {
+        console.error("Failed to create recipe import job:", error)
+        throw new Error("Could not create recipe import job.")
+    }
+
+    console.log(`[startRecipeImportJob] Created job ${job.id} for user ${user.id}`)
+
+    // Fire-and-forget the generation process.
+    _processJobInBackground(job)
 }
