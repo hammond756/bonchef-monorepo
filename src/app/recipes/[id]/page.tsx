@@ -4,7 +4,9 @@ import { ResolvingMetadata } from "next/dist/lib/metadata/types/metadata-interfa
 import { Metadata } from "next"
 import { RecipeDetail } from "@/components/recipe-detail"
 import { RecipeRead, RecipeReadSchema } from "@/lib/types"
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
+import { getServerBaseUrl } from "@/lib/utils"
+
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 export const dynamic = "auto"
 export const revalidate = 3600 // Revalidate every hour
@@ -15,13 +17,12 @@ export async function generateMetadata(
 ): Promise<Metadata> {
     const { id } = await params
 
-    const { recipe, error } = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/public/recipes/${id}`,
-        {
-            next: { revalidate: 60 },
-            headers: { Cookie: (await cookies()).toString() },
-        }
-    ).then((res) => res.json())
+    const baseUrl = getServerBaseUrl(await headers())
+
+    const { recipe, error } = await fetch(`${baseUrl}/api/public/recipes/${id}`, {
+        next: { revalidate: 60 },
+        headers: { Cookie: (await cookies()).toString() },
+    }).then((res) => res.json())
 
     if (error || !recipe) {
         return {
@@ -59,7 +60,10 @@ export async function generateStaticParams() {
 
 export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/api/public/recipes/${id}`
+
+    const baseUrl = getServerBaseUrl(await headers())
+
+    const url = `${baseUrl}/api/public/recipes/${id}`
 
     const response = await fetch(url, {
         cache: "no-store",

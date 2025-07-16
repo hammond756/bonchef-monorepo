@@ -327,3 +327,9 @@ export function getHostnameFromUrl(url: string): string {
         return ""
     }
 }
+
+export function getServerBaseUrl(headers: Headers): string {
+    const host = headers.get("host")
+    const protocol = host?.includes("localhost") ? "http" : "https"
+    return `${protocol}://${host}`
+}

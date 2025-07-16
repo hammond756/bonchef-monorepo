@@ -1,9 +1,12 @@
 "use server"
 
-import { cookies } from "next/headers"
+import { getServerBaseUrl } from "@/lib/utils"
+import { cookies, headers } from "next/headers"
 
 export async function getRecipe(id: string) {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/public/recipes/${id}`, {
+    const baseUrl = getServerBaseUrl(await headers())
+
+    const response = await fetch(`${baseUrl}/api/public/recipes/${id}`, {
         headers: {
             Cookie: (await cookies()).toString(),
         },

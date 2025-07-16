@@ -1,6 +1,8 @@
 "use server"
 
+import { getServerBaseUrl } from "@/lib/utils"
 import { createClient } from "@/utils/supabase/server"
+import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
 export async function login(email: string, password: string) {
@@ -54,10 +56,11 @@ export async function loginWithGoogle(): Promise<{
     error: string | null
 }> {
     const supabase = await createClient()
+    const baseUrl = getServerBaseUrl(await headers())
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_BONCHEF_FRONTEND_HOST}/api/0auth/exchange`,
+            redirectTo: `${baseUrl}/api/0auth/exchange`,
         },
     })
 
