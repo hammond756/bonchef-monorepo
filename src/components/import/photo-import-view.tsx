@@ -41,7 +41,7 @@ export function PhotoImportView({ isOpen, onClose }: PhotoImportViewProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const { startAnimationToCollection, finishAnimationToCollection, closeModal, increment } =
+    const { startAnimationToCollection, finishAnimationToCollection, closeModal } =
         useImportStatusStore()
 
     // Initialize camera when component opens
@@ -207,9 +207,8 @@ export function PhotoImportView({ isOpen, onClose }: PhotoImportViewProps) {
             // Start animation
             startAnimationToCollection()
 
-            // Update badge and close after animation (only increment once for the single recipe)
+            // Update badge and close after animation
             setTimeout(() => {
-                increment() // One recipe created from multiple photos
                 finishAnimationToCollection()
                 closeModal()
                 onClose()
