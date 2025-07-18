@@ -13,14 +13,14 @@ export async function getRecipe(id: string) {
     })
 
     if (!response.ok) {
-        console.error(response)
+        console.error(`Failed to fetch recipe ${id}: ${response.status} ${response.statusText}`)
         return null
     }
 
     const { recipe, error } = await response.json()
 
     if (error) {
-        console.error(error)
+        console.error(`Recipe API error for ${id}:`, error)
         return null
     }
 

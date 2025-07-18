@@ -1,7 +1,7 @@
 import { getRecipe } from "@/app/recipes/[id]/actions"
 import { RecipeForm } from "@/components/recipe-form"
 import { createClient } from "@/utils/supabase/server"
-import { redirect } from "next/navigation"
+import { redirect, notFound } from "next/navigation"
 import { PageContentSpacer } from "@/components/layout/page-content-spacer"
 
 export default async function EditRecipePage({
@@ -21,12 +21,8 @@ export default async function EditRecipePage({
     } = await supabase.auth.getUser()
 
     if (!recipe) {
-        return (
-            <div>
-                Er is iets misgegaan bij het laden van het recept.{" "}
-                <a href={`/recipes/${id}`}>Ga terug naar het recept</a>
-            </div>
-        )
+        console.log(`Recipe ${id} not found, redirecting to 404`)
+        notFound()
     }
 
     const marketingUserId = process.env.NEXT_PUBLIC_MARKETING_USER_ID

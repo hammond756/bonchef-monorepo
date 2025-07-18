@@ -60,9 +60,21 @@ function createTestModels(): ChatModelSet {
     }).withStructuredOutput(IntentResponseSchema)
 
     return {
-        smart: fakeGPT4,
-        fast: fakeGPT35,
-        intentModel: fakeIntentModel,
+        smart: fakeGPT4 as Runnable<
+            BaseLanguageModelInput,
+            LLMResponse,
+            RunnableConfig<Record<string, unknown>>
+        >,
+        fast: fakeGPT35 as Runnable<
+            BaseLanguageModelInput,
+            LLMResponse,
+            RunnableConfig<Record<string, unknown>>
+        >,
+        intentModel: fakeIntentModel as Runnable<
+            BaseLanguageModelInput,
+            IntentResponse,
+            RunnableConfig<Record<string, unknown>>
+        >,
     }
 }
 
@@ -100,9 +112,21 @@ function createProductionModels(): ChatModelSet {
     })
 
     return {
-        smart,
-        fast,
-        intentModel,
+        smart: smart as Runnable<
+            BaseLanguageModelInput,
+            LLMResponse,
+            RunnableConfig<Record<string, unknown>>
+        >,
+        fast: fast as Runnable<
+            BaseLanguageModelInput,
+            LLMResponse,
+            RunnableConfig<Record<string, unknown>>
+        >,
+        intentModel: intentModel as Runnable<
+            BaseLanguageModelInput,
+            IntentResponse,
+            RunnableConfig<Record<string, unknown>>
+        >,
     }
 }
 

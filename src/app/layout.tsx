@@ -4,6 +4,7 @@ import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import { NuqsAdapter } from "nuqs/adapters/next/app"
 import { PostHogProvider } from "@/components/PostHogProvider"
+import { ModalProvider } from "@/components/modal-provider"
 
 const montserrat = Montserrat({
     variable: "--font-montserrat",
@@ -40,10 +41,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <body className={`${montserrat.variable} ${lora.variable} bg-surface antialiased`}>
                 <PostHogProvider>
                     <NuqsAdapter>
+                        <ModalProvider />
                         {children}
                         <Toaster />
                     </NuqsAdapter>
                 </PostHogProvider>
+                <div id="modal-portal" />
             </body>
         </html>
     )

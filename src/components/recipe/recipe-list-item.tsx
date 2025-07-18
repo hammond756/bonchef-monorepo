@@ -4,10 +4,11 @@ import Image from "next/image"
 import { LikeButton } from "@/components/like-button"
 import { Badge } from "@/components/ui/badge"
 import { ImageIcon, LinkIcon, Loader2, TextIcon } from "lucide-react"
-import { getHostnameFromUrl } from "@/lib/utils"
+import { getHostnameFromUrl, cn } from "@/lib/utils"
 
 export function RecipeListItem({ recipe }: { readonly recipe: RecipeRead }) {
     const isDraft = recipe.status === "DRAFT"
+    const shouldBlur = isDraft
     const href = isDraft ? `/edit/${recipe.id}` : `/recipes/${recipe.id}`
 
     return (
@@ -18,15 +19,12 @@ export function RecipeListItem({ recipe }: { readonly recipe: RecipeRead }) {
                         src={recipe.thumbnail}
                         alt={recipe.title}
                         fill
-                        className="object-cover"
+                        className={cn("object-cover", shouldBlur && "blur-sm")}
                         sizes="64px"
                     />
                     {isDraft && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                            <Badge
-                                variant="secondary"
-                                className="bg-status-yellow-bg text-status-yellow-text"
-                            >
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40">
+                            <Badge variant="yellow" className="scale-75 px-2 py-0.5 text-xs">
                                 Concept
                             </Badge>
                         </div>

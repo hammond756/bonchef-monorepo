@@ -247,8 +247,8 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                 recipe.source_name !== "BonChef" &&
                 recipe.source_url &&
                 recipe.source_url !== "https://app.bonchef.io" && (
-                    <div className="text-muted py-8 text-center text-xs">
-                        <span>Bron: </span>
+                    <div className="py-8 text-center text-xs">
+                        <span className="text-text-default">Bron: </span>
                         <a
                             data-testid="recipe-source-link"
                             href={recipe.source_url}

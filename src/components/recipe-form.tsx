@@ -86,9 +86,17 @@ export function RecipeForm({
 
     async function proceedWithCancel() {
         if (recipe.status === RecipeStatusEnum.enum.DRAFT) {
-            await deleteRecipe(recipeId)
+            // Keep the draft status when canceling so it stays in collection
+            // No need to update status as it should remain DRAFT
         }
-        router.back()
+
+        // Use the same smart back navigation logic as BackButton
+        if (typeof window !== "undefined" && window.history.state && window.history.length > 2) {
+            router.back()
+        } else {
+            // Fallback to /discover page if no history
+            router.push("/ontdek")
+        }
     }
 
     async function handleCancel() {
@@ -195,10 +203,10 @@ export function RecipeForm({
                 return
             }
 
+            // TODO: consider mutating own-recipes and import-jobs
+
             const sourceUrl = lastBrowsingPath || "/ontdek"
-            router.push(
-                `/recipes/${recipeId || response.id}?from=edit&source=${encodeURIComponent(sourceUrl)}`
-            )
+            router.push(`/recipes/${response.id}?from=edit&source=${encodeURIComponent(sourceUrl)}`)
         } catch (error) {
             console.error("Failed to save recipe:", error)
             setSubmitError("Failed to save recipe. Please try again.")

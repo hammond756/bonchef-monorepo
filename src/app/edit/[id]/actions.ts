@@ -1,7 +1,7 @@
 "use server"
 
 import { RecipeService } from "@/lib/services/recipe-service"
-import { RecipeWrite } from "@/lib/types"
+import { RecipeStatusEnum, RecipeWrite } from "@/lib/types"
 import { createAdminClient, createClient } from "@/utils/supabase/server"
 import { redirect } from "next/navigation"
 
@@ -27,7 +27,10 @@ export async function updateRecipe(id: string, recipe: RecipeWrite) {
 
     const recipeService = new RecipeService(supabase)
 
-    const response = await recipeService.updateRecipe(id, recipe)
+    const response = await recipeService.updateRecipe(id, {
+        ...recipe,
+        status: RecipeStatusEnum.enum.PUBLISHED,
+    })
 
     if (!response.success) {
         throw new Error(response.error)

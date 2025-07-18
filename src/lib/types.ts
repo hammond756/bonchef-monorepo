@@ -1,6 +1,9 @@
 import { z } from "zod"
 import { unitTranslations } from "./translations"
 
+// Import modes for recipe creation
+export type ImportMode = "url" | "text" | "photo" | null
+
 export const IngredientSchema = z.object({
     quantity: z.object({
         type: z.literal("range"),

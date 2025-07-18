@@ -5,7 +5,7 @@ import Link from "next/link"
 import { LikeButton } from "@/components/like-button"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, LinkIcon, TextIcon } from "lucide-react"
-import { getHostnameFromUrl } from "@/lib/utils"
+import { getHostnameFromUrl, cn } from "@/lib/utils"
 import Image from "next/image"
 
 function RecipeCardTitle({ title, subTitle }: { title: string; subTitle?: string }) {
@@ -31,6 +31,7 @@ function RecipeCardContainer({ children, href }: { children: React.ReactNode; hr
 
 export function RecipeCard({ recipe }: { readonly recipe: Recipe }) {
     const isDraft = recipe.status === "DRAFT"
+    const shouldBlur = isDraft
     const href = isDraft ? `/edit/${recipe.id}` : `/recipes/${recipe.id}`
 
     return (
@@ -38,19 +39,17 @@ export function RecipeCard({ recipe }: { readonly recipe: Recipe }) {
             <RecipeCardTitle title={recipe.title} />
 
             {isDraft && (
-                <div className="absolute top-2 left-2">
-                    <Badge
-                        variant="secondary"
-                        className="bg-status-yellow-bg text-status-yellow-text"
-                    >
-                        Concept
-                    </Badge>
+                <div className="absolute top-2 left-2 z-10">
+                    <Badge variant="yellow">Concept</Badge>
                 </div>
             )}
 
             <div
                 style={{ backgroundImage: `url(${recipe.thumbnail})` }}
-                className="h-full w-full bg-cover bg-center transition-transform duration-300 [color-rendering:optimizeSpeed] group-hover:scale-105"
+                className={cn(
+                    "h-full w-full bg-cover bg-center transition-transform duration-300 [color-rendering:optimizeSpeed] group-hover:scale-105",
+                    shouldBlur && "blur-sm"
+                )}
             />
 
             <div className="absolute top-2 right-2">

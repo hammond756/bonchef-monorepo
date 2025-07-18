@@ -6,6 +6,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     const supabase = await createClient()
 
+    // Get current user
+    const {
+        data: { user: _user },
+    } = await supabase.auth.getUser()
+
     const { data: recipe, error: recipeError } = await supabase
         .from("recipe_creation_prototype")
         .select(
@@ -22,11 +27,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (recipeError) {
         console.log("recipeError", recipeError)
         if (recipeError.code === "PGRST116") {
-            console.log("Recipe not found")
+            console.log("Recipe not found or not accessible")
             return NextResponse.json({ error: "Recipe not found" }, { status: 404 })
-        } else if (recipeError.code === "PGRST117") {
-            console.log("Recipe is not public")
-            return NextResponse.json({ error: "Recipe is not public" }, { status: 403 })
         }
 
         return NextResponse.json({ error: "Failed to fetch recipe" }, { status: 500 })

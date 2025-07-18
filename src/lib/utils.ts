@@ -10,6 +10,16 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
 
+export function isValidUrl(string: string): boolean {
+    try {
+        // Also check if the protocol is http or https
+        const url = new URL(string)
+        return url.protocol === "http:" || url.protocol === "https:"
+    } catch (_) {
+        return false
+    }
+}
+
 export function truncateText(text: string, maxLength: number): string {
     if (text.length <= maxLength) {
         return text

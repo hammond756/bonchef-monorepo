@@ -198,7 +198,7 @@ function RecipesSection() {
                         value={sortOrder}
                         onValueChange={(value) => setSortOrder(value as "newest" | "oldest")}
                     >
-                        <SelectTrigger className="bg-status-yellow-bg text-status-yellow-text hover:bg-status-yellow-bg/80 border-status-yellow-bg w-[110px] border text-xs font-medium transition-colors focus:ring-0 focus:ring-offset-0">
+                        <SelectTrigger className="bg-status-green-bg text-status-green-text hover:bg-status-green-bg/80 border-status-green-bg w-[110px] border text-xs font-medium transition-colors focus:ring-0 focus:ring-offset-0">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
