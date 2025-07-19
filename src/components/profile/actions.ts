@@ -160,7 +160,6 @@ export async function getPublicRecipesByUserId(userId: string): Promise<RecipeRe
         )
         .eq("user_id", userId)
         .eq("is_public", true)
-        .eq("status", "published")
         .order("created_at", { ascending: false })
 
     if (error) {
@@ -171,7 +170,6 @@ export async function getPublicRecipesByUserId(userId: string): Promise<RecipeRe
     const validatedRecipes = z.array(RecipeReadSchema).parse(
         data.map((recipe) => ({
             ...recipe,
-            status: recipe.status?.toLowerCase(),
             like_count: recipe.recipe_likes?.[0]?.count || 0,
             recipe_likes: undefined,
         }))
