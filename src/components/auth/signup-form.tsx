@@ -10,13 +10,14 @@ import Link from "next/link"
 import { signup } from "@/app/signup/actions"
 import { createClient } from "@/utils/supabase/client"
 import { Separator } from "@/components/ui/separator"
-import { loginWithGoogle } from "@/app/login/actions"
+import { useThirdPartyLogin } from "@/hooks/use-third-party-login"
 
 export function SignUpForm() {
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
     const { toast } = useToast()
     const supabase = createClient()
+    const { login: thirdPartyLogin, isLoading: isThirdPartyLoading } = useThirdPartyLogin()
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
@@ -75,29 +76,14 @@ export function SignUpForm() {
         }
     }
 
-    async function handleGoogleSignup() {
-        setIsLoading(true)
-        try {
-            await loginWithGoogle()
-        } catch (error) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description:
-                    error instanceof Error ? error.message : "Failed to signup with Google",
-            })
-            setIsLoading(false)
-        }
-    }
-
     return (
         <form onSubmit={onSubmit} className="space-y-4">
             <Button
                 type="button"
                 variant="outline"
                 className="flex w-full items-center justify-center gap-2"
-                onClick={handleGoogleSignup}
-                disabled={isLoading}
+                onClick={() => thirdPartyLogin("google")}
+                disabled={isThirdPartyLoading}
             >
                 <svg
                     width="20"

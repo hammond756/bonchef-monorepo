@@ -7,47 +7,16 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
+import { useThirdPartyLogin } from "@/hooks/use-third-party-login"
 
 interface LoginFormProps {
-    onGoogleLogin: () => Promise<{ redirectUrl: string | null; error: string | null }>
     onLogin: (email: string, password: string) => Promise<{ error: string | null }>
 }
 
-export function LoginForm({ onGoogleLogin, onLogin }: LoginFormProps) {
+export function LoginForm({ onLogin }: LoginFormProps) {
     const [isLoading, setIsLoading] = useState(false)
     const { toast } = useToast()
-    const router = useRouter()
-
-    async function handleGoogleLogin() {
-        setIsLoading(true)
-        try {
-            const { redirectUrl, error } = await onGoogleLogin()
-
-            if (redirectUrl) {
-                setIsLoading(false)
-                router.push(redirectUrl)
-                return
-            }
-
-            if (error) {
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: error,
-                })
-            }
-
-            setIsLoading(false)
-        } catch (error) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: error instanceof Error ? error.message : "Failed to login with Google",
-            })
-            setIsLoading(false)
-        }
-    }
+    const { login: thirdPartyLogin, isLoading: isThirdPartyLoading } = useThirdPartyLogin()
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
@@ -76,8 +45,8 @@ export function LoginForm({ onGoogleLogin, onLogin }: LoginFormProps) {
                 type="button"
                 variant="outline"
                 className="flex w-full items-center justify-center gap-2"
-                onClick={handleGoogleLogin}
-                disabled={isLoading}
+                onClick={() => thirdPartyLogin("google")}
+                disabled={isThirdPartyLoading}
             >
                 <svg
                     width="20"

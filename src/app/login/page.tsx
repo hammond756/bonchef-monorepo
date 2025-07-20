@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card"
 import { LoginForm } from "@/components/auth/login-form"
 import Link from "next/link"
-import { loginWithGoogle, createTemporaryUser, login } from "@/app/login/actions"
+import { createTemporaryUser, login } from "@/app/login/actions"
 
 export default function LoginPage() {
     return (
@@ -22,7 +22,7 @@ export default function LoginPage() {
                         .
                     </p>
                 </div>
-                <LoginForm onGoogleLogin={loginWithGoogle} onLogin={login} />
+                <LoginForm onLogin={login} />
             </Card>
         </div>
     )
