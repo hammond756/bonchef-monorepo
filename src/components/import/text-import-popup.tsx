@@ -16,13 +16,15 @@ export function TextImportPopup({ isOpen, onClose }: Readonly<TextImportPopupPro
         onClose,
     })
 
-    const handleTextSubmit = () => {
+    const handleTextSubmit = async () => {
         const textToSubmit = text.trim()
         if (!textToSubmit) {
             setError("Voer wat tekst in.")
             return
         }
-        void handleSubmit("text", textToSubmit)
+
+        await handleSubmit("text", textToSubmit)
+        setText("")
     }
 
     return (
@@ -43,7 +45,6 @@ export function TextImportPopup({ isOpen, onClose }: Readonly<TextImportPopupPro
                     setText(e.target.value)
                     setError(null)
                 }}
-                disabled={isLoading}
             />
         </ImportPopupBase>
     )

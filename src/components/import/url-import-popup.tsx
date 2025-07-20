@@ -25,7 +25,7 @@ export function UrlImportPopup({ isOpen, onClose }: Readonly<UrlImportPopupProps
         onClose,
     })
 
-    const handleUrlSubmit = () => {
+    const handleUrlSubmit = async () => {
         setError(null)
 
         let urlToSubmit = url.trim()
@@ -43,14 +43,21 @@ export function UrlImportPopup({ isOpen, onClose }: Readonly<UrlImportPopupProps
             return
         }
 
-        void handleSubmit("url", urlToSubmit)
+        await handleSubmit("url", urlToSubmit)
+        setUrl("")
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            void handleUrlSubmit()
+        }
     }
 
     return (
         <ImportPopupBase
             isOpen={isOpen}
             onClose={onClose}
-            title="Importeer van Website"
+            title="Importeer van URL"
             description="Plak de URL van het recept dat je wilt importeren."
             isLoading={isLoading}
             onSubmit={handleUrlSubmit}
@@ -58,18 +65,14 @@ export function UrlImportPopup({ isOpen, onClose }: Readonly<UrlImportPopupProps
         >
             <Input
                 type="url"
-                placeholder="https://voorbeeld.com/recept"
+                placeholder="https://website.com/recept"
                 value={url}
                 onChange={(e) => {
                     setUrl(e.target.value)
                     setError(null)
                 }}
+                onKeyDown={handleKeyDown}
                 disabled={isLoading}
-                onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                        handleUrlSubmit()
-                    }
-                }}
             />
         </ImportPopupBase>
     )
