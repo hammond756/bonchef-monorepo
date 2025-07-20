@@ -25,7 +25,7 @@ import { NavigationTracker } from "@/components/util/navigation-tracker"
 import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 import { cn } from "@/lib/utils"
 import { InProgressRecipeListItem, RecipeListItem } from "@/components/recipe/recipe-list-item"
-import { useProfile } from "@/hooks/use-profile"
+import { useUser } from "@/hooks/use-user"
 
 // A union type for items that can be displayed in the collection grid/list
 type CollectionItem =
@@ -115,13 +115,13 @@ function MyRecipesTabContent({
     viewMode: "grid" | "list"
     sortOrder: "newest" | "oldest"
 }) {
-    const { profile } = useProfile()
+    const { user } = useUser()
 
     const { recipes: userRecipes, isLoading: userRecipesLoading } = useOwnRecipes({
-        enabled: !!profile,
+        enabled: !!user,
     })
     const { jobs: importJobs, isLoading: importJobsLoading } = useRecipeImportJobs({
-        enabled: !!profile,
+        enabled: !!user,
     })
 
     const myRecipesAndJobs = useMemo(() => {
@@ -165,9 +165,10 @@ function FavoritesTabContent({
     viewMode: "grid" | "list"
     sortOrder: "newest" | "oldest"
 }) {
-    const { profile } = useProfile()
+    const { user } = useUser()
+
     const { recipes: likedRecipes, isLoading: likedRecipesLoading } = useLikedRecipes({
-        enabled: !!profile,
+        enabled: !!user,
     })
 
     const sortedLikedRecipes = useMemo(() => {
@@ -287,7 +288,7 @@ function RecipeGridSkeleton() {
     )
 }
 
-export default function CollectionPage() {
+export default async function CollectionPage() {
     return (
         <>
             <NavigationTracker path="/collection" />

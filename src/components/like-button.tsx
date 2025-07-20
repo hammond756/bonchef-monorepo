@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useLikedRecipes } from "@/hooks/use-liked-recipes"
 import { cn } from "@/lib/utils"
 import { lightThemeClasses, darkThemeClasses } from "@/components/recipe/action-button-variants"
-import { useProfile } from "@/hooks/use-profile"
+import { useUser } from "@/hooks/use-user"
 
 const likeButtonVariants = cva(
     "group flex items-center justify-center rounded-full transition-all duration-200 ease-in-out",
@@ -68,13 +68,13 @@ export function LikeButton({
     className,
     theme,
 }: LikeButtonProps) {
-    const { profile } = useProfile()
+    const { user } = useUser()
     const [isLiked, setIsLiked] = useState(initialLiked)
     const [likeCount, setLikeCount] = useState(initialLikeCount)
     const [isLoading, setIsLoading] = useState(false)
     const { toast } = useToast()
 
-    const { mutate: mutateLikedRecipes } = useLikedRecipes({ enabled: !!profile })
+    const { mutate: mutateLikedRecipes } = useLikedRecipes({ enabled: !!user })
 
     const handleLike = async (e: React.MouseEvent) => {
         e.preventDefault()
