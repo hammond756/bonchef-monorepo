@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { z } from "zod"
 import { useImportStatusStore } from "@/lib/store/import-status-store"
+import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 import { startRecipeImportJob } from "@/actions/recipe-imports"
 import { RecipeImportSourceTypeEnum } from "@/lib/types"
 
@@ -14,6 +15,7 @@ export function useRecipeImport({ onClose }: UseRecipeImportProps) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const { startAnimationToCollection, finishAnimationToCollection } = useImportStatusStore()
+    const { setIsVisible } = useNavigationVisibility()
 
     const handleSubmit = async (type: z.infer<typeof RecipeImportSourceTypeEnum>, data: string) => {
         setError(null)
@@ -22,14 +24,17 @@ export function useRecipeImport({ onClose }: UseRecipeImportProps) {
         try {
             await startRecipeImportJob(type, data)
 
-            // Start animation first
+            // Immediately force navigation to be visible so user sees counter badge
+            setIsVisible(true)
+
+            // Start animation
             startAnimationToCollection()
 
-            // Update badge and close modal after animation completes
+            // Reset animation after 300ms
             setTimeout(() => {
                 finishAnimationToCollection()
                 onClose()
-            }, 300) // Animation duration
+            }, 300)
         } catch (error) {
             console.error(`Failed to start recipe import job for type ${type}`, error)
             setError("Kon de server niet bereiken. Controleer je internetverbinding.")

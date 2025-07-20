@@ -1,19 +1,21 @@
 "use client"
 
 import { useScrollDirection } from "@/hooks/use-scroll-direction"
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
+import { useUiVisibilityStore } from "@/lib/store/ui-visibility-store"
 
 export function useNavigationVisibility() {
     const scrollDirection = useScrollDirection()
-    const [isVisible, setIsVisible] = useState(true)
+    // Use local storage so that all components can access the same value
+    const { isVisible, setIsVisible: _setIsVisible } = useUiVisibilityStore()
 
     useEffect(() => {
         if (scrollDirection === "down") {
-            setIsVisible(false)
+            _setIsVisible(false)
         } else if (scrollDirection === "up") {
-            setIsVisible(true)
+            _setIsVisible(true)
         }
-    }, [scrollDirection])
+    }, [scrollDirection, _setIsVisible])
 
-    return { isVisible, scrollDirection }
+    return { isVisible, setIsVisible: _setIsVisible, scrollDirection }
 }

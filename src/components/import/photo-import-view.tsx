@@ -10,6 +10,7 @@ import { getSignedUploadUrl, startRecipeImportJob } from "@/actions/recipe-impor
 import { StorageService } from "@/lib/services/storage-service"
 import { createClient } from "@/utils/supabase/client"
 import { v4 as uuidv4 } from "uuid"
+import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 
 interface PhotoImportViewProps {
     isOpen: boolean
@@ -41,8 +42,15 @@ export function PhotoImportView({ isOpen, onClose }: PhotoImportViewProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const { startAnimationToCollection, finishAnimationToCollection, closeModal } =
-        useImportStatusStore()
+    const { setIsVisible } = useNavigationVisibility()
+    const { closeModal } = useImportStatusStore()
+
+    const cleanup = () => {
+        if (stream) {
+            stream.getTracks().forEach((track) => track.stop())
+            setStream(null)
+        }
+    }
 
     // Initialize camera when component opens
     useEffect(() => {
@@ -53,7 +61,7 @@ export function PhotoImportView({ isOpen, onClose }: PhotoImportViewProps) {
         }
 
         return cleanup
-    }, [isOpen])
+    }, [isOpen, cleanup])
 
     const initializeCamera = async () => {
         try {
@@ -94,13 +102,6 @@ export function PhotoImportView({ isOpen, onClose }: PhotoImportViewProps) {
             } else {
                 setError("Kon camera niet openen. Controleer je browser instellingen.")
             }
-        }
-    }
-
-    const cleanup = () => {
-        if (stream) {
-            stream.getTracks().forEach((track) => track.stop())
-            setStream(null)
         }
     }
 
@@ -204,12 +205,10 @@ export function PhotoImportView({ isOpen, onClose }: PhotoImportViewProps) {
 
             await startRecipeImportJob("image", imageUrl)
 
-            // Start animation
-            startAnimationToCollection()
+            // Immediately force navigation to be visible so user sees counter badge
+            setIsVisible(true)
 
-            // Update badge and close after animation
             setTimeout(() => {
-                finishAnimationToCollection()
                 closeModal()
                 onClose()
                 // Reset state
