@@ -12,12 +12,16 @@ async function fetcher(url: string): Promise<RecipeRead[]> {
     return Array.isArray(data) ? data : data.recipes || []
 }
 
-export function useOwnRecipes() {
-    const { data, error, isLoading, mutate } = useSWR<RecipeRead[]>("/api/collection", fetcher, {
-        revalidateOnFocus: true,
-        revalidateOnReconnect: true,
-        refreshInterval: 2000,
-    })
+export function useOwnRecipes({ enabled }: { enabled?: boolean } = { enabled: true }) {
+    const { data, error, isLoading, mutate } = useSWR<RecipeRead[]>(
+        enabled ? "/api/collection" : null,
+        fetcher,
+        {
+            revalidateOnFocus: true,
+            revalidateOnReconnect: true,
+            refreshInterval: 2000,
+        }
+    )
 
     return {
         recipes: data || [],

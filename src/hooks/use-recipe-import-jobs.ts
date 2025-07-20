@@ -11,9 +11,9 @@ const fetcher = async (): Promise<RecipeImportJob[]> => {
     return response.json()
 }
 
-export function useRecipeImportJobs() {
+export function useRecipeImportJobs({ enabled }: { enabled?: boolean } = { enabled: true }) {
     const { data, error, isLoading, mutate } = useSWR<RecipeImportJob[]>(
-        "recipe-import-jobs",
+        enabled ? "/api/collection/jobs" : null,
         fetcher,
         {
             revalidateOnFocus: true,

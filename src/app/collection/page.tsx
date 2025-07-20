@@ -11,7 +11,7 @@ import { useLikedRecipes } from "@/hooks/use-liked-recipes"
 import { useOwnRecipes } from "@/hooks/use-own-recipes"
 import { useRecipeImportJobs } from "@/hooks/use-recipe-import-jobs"
 import { useQueryState } from "nuqs"
-import { LayoutGrid, List } from "lucide-react"
+import { ArrowDown, LayoutGrid, List, PlusIcon } from "lucide-react"
 import {
     Select,
     SelectContent,
@@ -25,6 +25,7 @@ import { NavigationTracker } from "@/components/util/navigation-tracker"
 import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 import { cn } from "@/lib/utils"
 import { InProgressRecipeListItem, RecipeListItem } from "@/components/recipe/recipe-list-item"
+import { useProfile } from "@/hooks/use-profile"
 
 // A union type for items that can be displayed in the collection grid/list
 type CollectionItem =
@@ -71,11 +72,10 @@ function WelcomeSection() {
         <div className="py-10 text-center">
             <h2 className="mb-2 text-xl font-bold">Welkom bij jouw kookboek!</h2>
             <p className="text-muted-foreground mb-4">
-                Hier vind je al jouw recepten en favorieten op één plek.
+                Hier vind je al jouw recepten en favorieten op één plek. Klik op de{" "}
+                <PlusIcon className="inline-block" /> knop om je eerste recept toe te voegen.
             </p>
-            <Button asChild>
-                <Link href="/import">Voeg je eerste recept toe</Link>
-            </Button>
+            <ArrowDown className="mx-auto mt-[100px] h-20 w-20 animate-bounce" />
         </div>
     )
 }
@@ -108,17 +108,21 @@ function RecipePageSkeleton() {
     )
 }
 
-function RecipesSection() {
-    const { recipes: userRecipes, isLoading: userRecipesLoading } = useOwnRecipes()
-    const { recipes: likedRecipes, isLoading: likedRecipesLoading } = useLikedRecipes()
-    const { jobs: importJobs, isLoading: importJobsLoading } = useRecipeImportJobs()
+function MyRecipesTabContent({
+    viewMode,
+    sortOrder,
+}: {
+    viewMode: "grid" | "list"
+    sortOrder: "newest" | "oldest"
+}) {
+    const { profile } = useProfile()
 
-    const [activeTab, setActiveTab] = useQueryState("tab", {
-        defaultValue: "my-recipes",
+    const { recipes: userRecipes, isLoading: userRecipesLoading } = useOwnRecipes({
+        enabled: !!profile,
     })
-    const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-    const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
-    const { isVisible, scrollDirection } = useNavigationVisibility()
+    const { jobs: importJobs, isLoading: importJobsLoading } = useRecipeImportJobs({
+        enabled: !!profile,
+    })
 
     const myRecipesAndJobs = useMemo(() => {
         const pendingJobs = importJobs
@@ -139,6 +143,33 @@ function RecipesSection() {
         return allItems
     }, [importJobs, userRecipes, sortOrder])
 
+    if (userRecipesLoading || importJobsLoading) {
+        return <RecipePageSkeleton />
+    }
+
+    if (myRecipesAndJobs.length === 0) {
+        return <WelcomeSection />
+    }
+
+    if (viewMode === "grid") {
+        return <RecipeGrid items={myRecipesAndJobs} />
+    }
+
+    return <RecipeList items={myRecipesAndJobs} />
+}
+
+function FavoritesTabContent({
+    viewMode,
+    sortOrder,
+}: {
+    viewMode: "grid" | "list"
+    sortOrder: "newest" | "oldest"
+}) {
+    const { profile } = useProfile()
+    const { recipes: likedRecipes, isLoading: likedRecipesLoading } = useLikedRecipes({
+        enabled: !!profile,
+    })
+
     const sortedLikedRecipes = useMemo(() => {
         const sorted = [...(likedRecipes || [])]
         sorted.sort((a, b) => {
@@ -149,22 +180,28 @@ function RecipesSection() {
         return sorted.map((r) => ({ ...r, viewType: "RECIPE" as const }))
     }, [likedRecipes, sortOrder])
 
-    const loadingLogic = (
-        isLoading: boolean,
-        data: Readonly<CollectionItem>[],
-        emptyComponent: React.ReactNode
-    ) => {
-        if (isLoading) {
-            return <RecipePageSkeleton />
-        }
-        if (data.length === 0) {
-            return emptyComponent
-        }
-        if (viewMode === "grid") {
-            return <RecipeGrid items={data} />
-        }
-        return <RecipeList items={data} />
+    if (likedRecipesLoading) {
+        return <RecipePageSkeleton />
     }
+
+    if (sortedLikedRecipes.length === 0) {
+        return <FavoritesCTA />
+    }
+
+    if (viewMode === "grid") {
+        return <RecipeGrid items={sortedLikedRecipes} />
+    }
+
+    return <RecipeList items={sortedLikedRecipes} />
+}
+
+function RecipesSection() {
+    const [activeTab, setActiveTab] = useQueryState("tab", {
+        defaultValue: "my-recipes",
+    })
+    const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+    const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
+    const { isVisible, scrollDirection } = useNavigationVisibility()
 
     const collectionTabs = [
         { value: "my-recipes", label: "Mijn recepten" },
@@ -230,14 +267,10 @@ function RecipesSection() {
                     </div>
                 </div>
                 <TabsContent value="my-recipes" className="mt-0">
-                    {loadingLogic(
-                        userRecipesLoading || importJobsLoading,
-                        myRecipesAndJobs,
-                        <WelcomeSection />
-                    )}
+                    <MyRecipesTabContent viewMode={viewMode} sortOrder={sortOrder} />
                 </TabsContent>
                 <TabsContent value="favorieten" className="mt-0">
-                    {loadingLogic(likedRecipesLoading, sortedLikedRecipes, <FavoritesCTA />)}
+                    <FavoritesTabContent viewMode={viewMode} sortOrder={sortOrder} />
                 </TabsContent>
             </div>
         </Tabs>

@@ -4,13 +4,11 @@ import { Bookmark, Home, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { ImportOverlay } from "../import/import-overlay"
 import { useImportStatusStore } from "@/lib/store/import-status-store"
-import { motion, AnimatePresence } from "framer-motion"
 import { ImportMode } from "@/lib/types"
-import { useOwnRecipes } from "@/hooks/use-own-recipes"
-import { useRecipeImportJobs } from "@/hooks/use-recipe-import-jobs"
+import { PendingRecipeBadge } from "./pending-recipe-badge"
 
 interface TabBarProps {
     children?: React.ReactNode
@@ -20,22 +18,7 @@ interface TabBarProps {
 export function TabBar({ children, className }: TabBarProps) {
     const pathname = usePathname()
     const [isImportOverlayVisible, setIsImportOverlayVisible] = useState(false)
-    const [badgeKey, setBadgeKey] = useState(0) // For triggering animations
-    const { recipes } = useOwnRecipes()
-    const { jobs } = useRecipeImportJobs()
     const { openModal } = useImportStatusStore()
-
-    // Count recipes that need attention (drafts) + pending imports
-    const recipesNeedingAttention = recipes.filter((recipe) => recipe.status === "DRAFT").length
-    const pendingImports = jobs.filter((job) => job.status === "pending").length
-    const totalCount = recipesNeedingAttention + pendingImports
-
-    // Trigger badge animation when count changes
-    useEffect(() => {
-        if (totalCount > 0) {
-            setBadgeKey((prev) => prev + 1)
-        }
-    }, [totalCount])
 
     const handleOpenOverlay = () => {
         setIsImportOverlayVisible(true)
@@ -86,30 +69,7 @@ export function TabBar({ children, className }: TabBarProps) {
             >
                 <div className="relative">
                     <Bookmark className="mb-1 h-6 w-6" />
-                    <AnimatePresence mode="wait">
-                        {totalCount > 0 && (
-                            <motion.span
-                                key={badgeKey}
-                                initial={{ scale: 0.8, opacity: 0 }}
-                                animate={{
-                                    scale: [0.8, 1.3, 1],
-                                    opacity: 1,
-                                }}
-                                exit={{ scale: 0.8, opacity: 0 }}
-                                transition={{
-                                    duration: 0.4,
-                                    ease: "easeOut",
-                                    scale: {
-                                        times: [0, 0.6, 1],
-                                        duration: 0.4,
-                                    },
-                                }}
-                                className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white"
-                            >
-                                {totalCount}
-                            </motion.span>
-                        )}
-                    </AnimatePresence>
+                    <PendingRecipeBadge />
                 </div>
                 <span
                     className={cn(

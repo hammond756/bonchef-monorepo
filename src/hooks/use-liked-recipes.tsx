@@ -11,9 +11,9 @@ const fetcher = async (url: string): Promise<RecipeRead[]> => {
     return res.json()
 }
 
-export function useLikedRecipes() {
+export function useLikedRecipes({ enabled }: { enabled?: boolean } = { enabled: true }) {
     const { data, error, isLoading, mutate } = useSWR<RecipeRead[]>(
-        "/api/collection/favorites",
+        enabled ? "/api/collection/favorites" : null,
         fetcher,
         {
             revalidateOnFocus: true,
