@@ -52,8 +52,8 @@ export const RecipeWriteSchema = BaseRecipeSchema.extend({
 export const RecipeReadSchema = RecipeWriteSchema.extend({
     id: z.string(),
     user_id: z.string(),
-    is_liked_by_current_user: z.boolean().optional(),
-    like_count: z.number().optional(),
+    is_bookmarked_by_current_user: z.boolean().optional(),
+    bookmark_count: z.number().optional(),
     profiles: z.object({
         display_name: z.string().nullable(),
         id: z.string(),
@@ -202,7 +202,7 @@ export interface PublicProfile {
     display_name: string | null
     bio: string | null
     recipe_count?: number
-    total_likes?: number
+    total_bookmarks?: number
     avatar?: string | null
 }
 

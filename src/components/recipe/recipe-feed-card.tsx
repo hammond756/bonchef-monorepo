@@ -103,7 +103,7 @@ export function RecipeFeedCard({ recipe }: RecipeFeedCardProps) {
                         recipe={recipe}
                         theme="dark"
                         shareButtonSize="md"
-                        likeButtonSize="md"
+                        bookmarkButtonSize="md"
                         avatarSize="lg"
                     />
                 </div>

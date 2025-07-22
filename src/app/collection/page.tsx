@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { RecipeRead, RecipeImportJob } from "@/lib/types"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { AppTabsList } from "@/components/ui/app-tabs"
-import { useLikedRecipes } from "@/hooks/use-liked-recipes"
+import { useBookmarkedRecipes } from "@/hooks/use-bookmarked-recipes"
 import { useOwnRecipes } from "@/hooks/use-own-recipes"
 import { useRecipeImportJobs } from "@/hooks/use-recipe-import-jobs"
 import { useQueryState } from "nuqs"
@@ -167,21 +167,22 @@ function FavoritesTabContent({
 }) {
     const { user } = useUser()
 
-    const { recipes: likedRecipes, isLoading: likedRecipesLoading } = useLikedRecipes({
-        enabled: !!user,
-    })
+    const { recipes: bookmarkedRecipes, isLoading: bookmarkedRecipesLoading } =
+        useBookmarkedRecipes({
+            enabled: !!user,
+        })
 
     const sortedLikedRecipes = useMemo(() => {
-        const sorted = [...(likedRecipes || [])]
+        const sorted = [...(bookmarkedRecipes || [])]
         sorted.sort((a, b) => {
             const dateA = new Date(a.created_at ?? 0).getTime()
             const dateB = new Date(b.created_at ?? 0).getTime()
             return sortOrder === "newest" ? dateB - dateA : dateA - dateB
         })
         return sorted.map((r) => ({ ...r, viewType: "RECIPE" as const }))
-    }, [likedRecipes, sortOrder])
+    }, [bookmarkedRecipes, sortOrder])
 
-    if (likedRecipesLoading) {
+    if (bookmarkedRecipesLoading) {
         return <RecipePageSkeleton />
     }
 

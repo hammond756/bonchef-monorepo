@@ -12,13 +12,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     } = await supabase.auth.getUser()
 
     const { data: recipe, error: recipeError } = await supabase
-        .from("recipe_creation_prototype")
+        .from("recipes")
         .select(
             `
       *,
-      profiles!recipe_creation_prototype_user_id_fkey(display_name, id, avatar),
-      recipe_likes(count),
-      is_liked_by_current_user
+      profiles!recipes_user_id_fkey(display_name, id, avatar),
+      recipe_bookmarks(count),
+      is_bookmarked_by_current_user
     `
         )
         .eq("id", id)
@@ -35,10 +35,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     }
 
     // Add like count to recipe object
-    const recipeWithLikes = {
+    const recipeWithBookmarks = {
         ...recipe,
-        like_count: recipe.recipe_likes?.[0]?.count || 0,
+        bookmark_count: recipe.recipe_bookmarks?.[0]?.count || 0,
     }
 
-    return NextResponse.json({ recipe: recipeWithLikes })
+    return NextResponse.json({ recipe: recipeWithBookmarks })
 }

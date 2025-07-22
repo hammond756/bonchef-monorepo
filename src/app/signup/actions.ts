@@ -64,7 +64,7 @@ export async function claimRecipe(recipeId: string) {
 
     // First, verify the recipe belongs to the marketing user
     const { data: recipe, error: fetchError } = await supabase
-        .from("recipe_creation_prototype")
+        .from("recipes")
         .select("user_id")
         .eq("id", recipeId)
         .single()
@@ -83,7 +83,7 @@ export async function claimRecipe(recipeId: string) {
 
     // Transfer ownership to the new user
     const { data: updatedRecipe, error: updateError } = await supabaseAdmin
-        .from("recipe_creation_prototype")
+        .from("recipes")
         .update({ user_id: user.id })
         .eq("id", recipeId)
 

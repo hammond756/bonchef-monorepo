@@ -45,10 +45,7 @@ export async function generateStaticParams() {
     const supabase = await createAdminClient()
 
     // Only fetch public recipes for static generation
-    const { data } = await supabase
-        .from("recipe_creation_prototype")
-        .select("id")
-        .eq("is_public", true)
+    const { data } = await supabase.from("recipes").select("id").eq("is_public", true)
 
     // Return array of params for all public recipes
     return (

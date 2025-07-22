@@ -15,7 +15,7 @@ export async function deleteRecipe(recipeId: string) {
         redirect("/login")
     }
 
-    const { error } = await supabase.from("recipe_creation_prototype").delete().eq("id", recipeId)
+    const { error } = await supabase.from("recipes").delete().eq("id", recipeId)
 
     if (error) {
         throw error

@@ -2,27 +2,27 @@
 
 import { createClient } from "@/utils/supabase/server"
 
-export async function likeRecipe(recipeId: string) {
+export async function bookmarkRecipe(recipeId: string) {
     const supabase = await createClient()
-    const { error } = await supabase.from("recipe_likes").insert({ recipe_id: recipeId })
+    const { error } = await supabase.from("recipe_bookmarks").insert({ recipe_id: recipeId })
 
     if (error) {
         if (error.code === "42501") {
-            console.error("Error liking recipe:", error)
-            throw new Error("Log in om een recept te liken")
+            console.error("Error bookmarking recipe:", error)
+            throw new Error("Log in om een recept te bookmarken")
         } else {
-            console.error("Error liking recipe:", error)
+            console.error("Error bookmarking recipe:", error)
             throw error
         }
     }
 }
 
-export async function unlikeRecipe(recipeId: string) {
+export async function unbookmarkRecipe(recipeId: string) {
     const supabase = await createClient()
-    const { error } = await supabase.from("recipe_likes").delete().eq("recipe_id", recipeId)
+    const { error } = await supabase.from("recipe_bookmarks").delete().eq("recipe_id", recipeId)
 
     if (error) {
-        console.error("Error unliking recipe:", error)
+        console.error("Error unbookmarking recipe:", error)
         throw error
     }
 }

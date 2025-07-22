@@ -13,8 +13,8 @@ export async function getPreviewRecipe(recipeId: string): Promise<Recipe | null>
     }
 
     const { data, error } = await supabase
-        .from("recipe_creation_prototype")
-        .select("*, profiles!recipe_creation_prototype_user_id_fkey(display_name, id, avatar)")
+        .from("recipes")
+        .select("*, profiles!recipes_user_id_fkey(display_name, id, avatar)")
         .eq("id", recipeId)
         .eq("user_id", marketingUserId)
         .single()

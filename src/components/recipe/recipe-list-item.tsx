@@ -1,7 +1,7 @@
 import { RecipeImportJob, RecipeRead } from "@/lib/types"
 import Link from "next/link"
 import Image from "next/image"
-import { LikeButton } from "@/components/like-button"
+import { BookmarkButton } from "@/components/bookmark-button"
 import { Badge } from "@/components/ui/badge"
 import { ImageIcon, LinkIcon, Loader2, TextIcon } from "lucide-react"
 import { getHostnameFromUrl, cn } from "@/lib/utils"
@@ -37,10 +37,10 @@ export function RecipeListItem({ recipe }: { readonly recipe: RecipeRead }) {
                 </div>
             </Link>
             <div className="pr-2">
-                <LikeButton
+                <BookmarkButton
                     recipeId={recipe.id}
-                    initialLiked={!!recipe.is_liked_by_current_user}
-                    initialLikeCount={recipe.like_count || 0}
+                    initialBookmarked={!!recipe.is_bookmarked_by_current_user}
+                    initialBookmarkCount={recipe.bookmark_count || 0}
                     showCount={false}
                 />
             </div>

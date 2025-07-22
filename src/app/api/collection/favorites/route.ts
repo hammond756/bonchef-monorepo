@@ -4,9 +4,9 @@ import { NextResponse } from "next/server"
 export async function GET() {
     const supabase = await createClient()
     const { data, error } = await supabase
-        .from("recipe_creation_prototype")
-        .select("*, is_liked_by_current_user, recipe_likes(count), profiles(display_name)")
-        .eq("is_liked_by_current_user", true)
+        .from("recipes")
+        .select("*, is_bookmarked_by_current_user, recipe_bookmarks(count), profiles(display_name)")
+        .eq("is_bookmarked_by_current_user", true)
 
     if (error) {
         console.error(error)
@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     data.forEach((recipe) => {
-        recipe.like_count = recipe.recipe_likes?.[0]?.count || 0
+        recipe.bookmark_count = recipe.recipe_bookmarks?.[0]?.count || 0
     })
     return NextResponse.json(data)
 }

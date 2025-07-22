@@ -168,7 +168,7 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                                     recipe={recipe}
                                     theme="light"
                                     shareButtonSize="md"
-                                    likeButtonSize="md"
+                                    bookmarkButtonSize="md"
                                     avatarSize="lg"
                                 />
                             </div>

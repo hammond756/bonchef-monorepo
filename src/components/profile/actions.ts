@@ -7,7 +7,7 @@ import { SupabaseClient } from "@supabase/supabase-js"
 import { z } from "zod"
 
 interface OwnedRecipe {
-    recipe_likes: {
+    recipe_bookmarks: {
         count: number
     }[]
 }
@@ -17,17 +17,17 @@ interface ProfileData {
     display_name: string
     bio: string
     avatar: string
-    recipe_creation_prototype: OwnedRecipe[]
+    recipes: OwnedRecipe[]
 }
 
 function transformProfileData(data: ProfileData): PublicProfile {
-    const total_likes_received = data.recipe_creation_prototype?.reduce((acc, recipe) => {
-        // The query returns an array with a single object for recipes with likes: `[{ count: number }]`, or an empty array.
-        const likesForRecipe = recipe.recipe_likes[0]?.count || 0
-        return acc + likesForRecipe
+    const total_bookmarks_received = data.recipes?.reduce((acc, recipe) => {
+        // The query returns an array with a single object for recipes with bookmarks: `[{ count: number }]`, or an empty array.
+        const bookmarksForRecipe = recipe.recipe_bookmarks[0]?.count || 0
+        return acc + bookmarksForRecipe
     }, 0)
 
-    const recipe_count = data.recipe_creation_prototype?.length || 0
+    const recipe_count = data.recipes?.length || 0
 
     return {
         id: data.id,
@@ -35,7 +35,7 @@ function transformProfileData(data: ProfileData): PublicProfile {
         bio: data.bio,
         avatar: data.avatar,
         recipe_count,
-        total_likes: total_likes_received,
+        total_bookmarks: total_bookmarks_received,
     }
 }
 
@@ -45,9 +45,9 @@ function profileQuery(supabase: SupabaseClient) {
       display_name,
       bio,
       avatar,
-      recipe_likes (count),
-      recipe_creation_prototype!recipe_creation_prototype_user_id_fkey (
-        recipe_likes (
+      recipe_bookmarks (count),
+      recipes!recipes_user_id_fkey (
+        recipe_bookmarks (
           count
         )
       )
@@ -134,7 +134,7 @@ export async function getPublicRecipesByUserId(userId: string): Promise<RecipeRe
     const supabase = await createAnonymousClient()
 
     const { data, error } = await supabase
-        .from("recipe_creation_prototype")
+        .from("recipes")
         .select(
             `
       id,
@@ -149,9 +149,9 @@ export async function getPublicRecipesByUserId(userId: string): Promise<RecipeRe
       is_public,
       user_id,
       status,
-      profiles!recipe_creation_prototype_user_id_fkey(display_name, id, avatar),
-      is_liked_by_current_user,
-      recipe_likes (
+      profiles!recipes_user_id_fkey(display_name, id, avatar),
+      is_bookmarked_by_current_user,
+      recipe_bookmarks (
         count
       ),
       source_url,
@@ -170,8 +170,8 @@ export async function getPublicRecipesByUserId(userId: string): Promise<RecipeRe
     const validatedRecipes = z.array(RecipeReadSchema).parse(
         data.map((recipe) => ({
             ...recipe,
-            like_count: recipe.recipe_likes?.[0]?.count || 0,
-            recipe_likes: undefined,
+            bookmark_count: recipe.recipe_bookmarks?.[0]?.count || 0,
+            recipe_bookmarks: undefined,
         }))
     )
 

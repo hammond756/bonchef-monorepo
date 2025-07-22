@@ -46,7 +46,7 @@ export class RecipeService {
         }
 
         const { data, error, status, statusText } = await this.supabase
-            .from("recipe_creation_prototype")
+            .from("recipes")
             .insert(validatedRecipe.data)
             .select("*")
             .single()
@@ -67,7 +67,7 @@ export class RecipeService {
         }
 
         const { data, error, status, statusText } = await this.supabase
-            .from("recipe_creation_prototype")
+            .from("recipes")
             .update(validatedRecipe.data)
             .eq("id", id)
             .select("*")

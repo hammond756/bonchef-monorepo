@@ -14,8 +14,8 @@ export async function GET() {
     }
 
     const { data, error: recipeError } = await supabase
-        .from("recipe_creation_prototype")
-        .select("*, is_liked_by_current_user, recipe_likes(count)")
+        .from("recipes")
+        .select("*, is_bookmarked_by_current_user, recipe_bookmarks(count)")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
     if (recipeError) {
@@ -24,7 +24,7 @@ export async function GET() {
     }
 
     data.forEach((recipe) => {
-        recipe.like_count = recipe.recipe_likes?.[0]?.count || 0
+        recipe.bookmark_count = recipe.recipe_bookmarks?.[0]?.count || 0
         if (recipe.thumbnail && recipe.thumbnail.includes("placekitten.com")) {
             recipe.thumbnail = "/no-image_placeholder.png"
         }

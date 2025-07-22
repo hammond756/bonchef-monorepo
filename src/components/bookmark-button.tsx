@@ -2,15 +2,15 @@
 
 import { useState } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { Heart } from "lucide-react"
-import { likeRecipe, unlikeRecipe } from "@/app/ontdek/actions"
+import { BookmarkIcon } from "lucide-react"
+import { bookmarkRecipe, unbookmarkRecipe } from "@/app/ontdek/actions"
 import { useToast } from "@/hooks/use-toast"
-import { useLikedRecipes } from "@/hooks/use-liked-recipes"
 import { cn } from "@/lib/utils"
 import { lightThemeClasses, darkThemeClasses } from "@/components/recipe/action-button-variants"
 import { useUser } from "@/hooks/use-user"
+import { useBookmarkedRecipes } from "@/hooks/use-bookmarked-recipes"
 
-const likeButtonVariants = cva(
+const bookmarkButtonVariants = cva(
     "group flex items-center justify-center rounded-full transition-all duration-200 ease-in-out",
     {
         variants: {
@@ -46,12 +46,12 @@ const iconVariants = cva("transition-all duration-200 ease-in-out group-hover:sc
 
 const textVariants = cva("text-xs font-medium text-white drop-shadow-sm")
 
-export interface LikeButtonProps
-    extends VariantProps<typeof likeButtonVariants>,
+export interface BookmarkButtonProps
+    extends VariantProps<typeof bookmarkButtonVariants>,
         Omit<VariantProps<typeof textVariants>, "size"> {
     recipeId: string
-    initialLiked: boolean
-    initialLikeCount: number
+    initialBookmarked: boolean
+    initialBookmarkCount: number
     showCount?: boolean
     className?: string
     theme?: "light" | "dark"
@@ -59,47 +59,47 @@ export interface LikeButtonProps
     enabled?: boolean
 }
 
-export function LikeButton({
+export function BookmarkButton({
     size,
     recipeId,
-    initialLiked,
-    initialLikeCount,
+    initialBookmarked,
+    initialBookmarkCount,
     showCount = true,
     className,
     theme,
-}: LikeButtonProps) {
+}: BookmarkButtonProps) {
     const { user } = useUser()
-    const [isLiked, setIsLiked] = useState(initialLiked)
-    const [likeCount, setLikeCount] = useState(initialLikeCount)
+    const [isBookmarked, setIsBookmarked] = useState(initialBookmarked)
+    const [bookmarkCount, setBookmarkCount] = useState(initialBookmarkCount)
     const [isLoading, setIsLoading] = useState(false)
     const { toast } = useToast()
 
-    const { mutate: mutateLikedRecipes } = useLikedRecipes({ enabled: !!user })
+    const { mutate: mutateBookmarkedRecipes } = useBookmarkedRecipes({ enabled: !!user })
 
     const handleLike = async (e: React.MouseEvent) => {
         e.preventDefault()
         e.stopPropagation()
 
         setIsLoading(true)
-        const previousIsLiked = isLiked
-        const previousLikeCount = likeCount
+        const previousIsBookmarked = isBookmarked
+        const previousBookmarkCount = bookmarkCount
 
         // Optimistic update
-        setIsLiked(!isLiked)
-        setLikeCount(previousIsLiked ? likeCount - 1 : likeCount + 1)
+        setIsBookmarked(!isBookmarked)
+        setBookmarkCount(previousIsBookmarked ? bookmarkCount - 1 : bookmarkCount + 1)
 
         try {
-            if (previousIsLiked) {
-                await unlikeRecipe(recipeId)
+            if (previousIsBookmarked) {
+                await unbookmarkRecipe(recipeId)
             } else {
-                await likeRecipe(recipeId)
+                await bookmarkRecipe(recipeId)
             }
             // After successful action, revalidate the liked recipes list
-            mutateLikedRecipes()
+            mutateBookmarkedRecipes()
         } catch (error) {
             // Rollback on error
-            setIsLiked(previousIsLiked)
-            setLikeCount(previousLikeCount)
+            setIsBookmarked(previousIsBookmarked)
+            setBookmarkCount(previousBookmarkCount)
             toast({
                 title: "Er is iets misgegaan",
                 description: error instanceof Error ? error.message : "Probeer het later opnieuw",
@@ -115,17 +115,17 @@ export function LikeButton({
             <button
                 onClick={handleLike}
                 disabled={isLoading}
-                aria-label={isLiked ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"}
-                data-testid="like-recipe-button"
-                className={cn(likeButtonVariants({ size, theme }), className)}
+                aria-label={isBookmarked ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"}
+                data-testid="bookmark-recipe-button"
+                className={cn(bookmarkButtonVariants({ size, theme }), className)}
             >
-                <Heart
+                <BookmarkIcon
                     className={cn(
                         iconVariants({ size }),
-                        isLiked
-                            ? cn("fill-status-red-bg", {
-                                  "text-status-red-bg": theme === "dark",
-                                  "text-status-red": theme !== "dark",
+                        isBookmarked
+                            ? cn("fill-surface", {
+                                  "text-surface fill-surface": theme === "dark",
+                                  "text-foreground fill-foreground": theme !== "dark",
                               })
                             : cn("fill-none", {
                                   "text-surface": theme === "dark",
@@ -136,8 +136,8 @@ export function LikeButton({
             </button>
 
             {showCount && (
-                <span className={cn(textVariants())} data-testid="like-count">
-                    {likeCount}
+                <span className={cn(textVariants())} data-testid="bookmark-count">
+                    {bookmarkCount}
                 </span>
             )}
         </div>

@@ -14,13 +14,13 @@ export async function GET(request: Request) {
         const to = from + pageSize - 1
 
         let query = supabase
-            .from("recipe_creation_prototype")
+            .from("recipes")
             .select(
                 `
         *,
         profiles(display_name, id, avatar),
-        is_liked_by_current_user,
-        recipe_likes(count)
+        is_bookmarked_by_current_user,
+        recipe_bookmarks(count)
       `,
                 { count: "exact" }
             )
@@ -43,12 +43,12 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: error.message }, { status: 500 })
         }
 
-        const recipesWithLikes = data.map((recipe) => ({
+        const recipesWithBookmarks = data.map((recipe) => ({
             ...recipe,
-            like_count: recipe.recipe_likes?.[0]?.count || 0,
+            bookmark_count: recipe.recipe_bookmarks?.[0]?.count || 0,
         }))
 
-        return NextResponse.json({ data: recipesWithLikes, count })
+        return NextResponse.json({ data: recipesWithBookmarks, count })
     } catch (error) {
         console.error("Error in recipes API route:", error)
         return NextResponse.json({ error: (error as Error).message }, { status: 500 })

@@ -31,7 +31,7 @@ export function ProfileHeader({ profile, recipesCount }: ProfileHeaderProps) {
                 </span>
                 <span className="text-muted-foreground/50">|</span>
                 <span>
-                    <b>{profile.total_likes || 0}</b> likes
+                    <b>{profile.total_bookmarks || 0}</b> keer opgeslagen
                 </span>
             </div>
             {/* The EditProfileDialog is now triggered from the top-right button on the page itself */}

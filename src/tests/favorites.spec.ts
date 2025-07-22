@@ -1,12 +1,12 @@
 import { test, expect } from "./fixtures"
 
 test.describe("Favorites functionality", () => {
-    test("likes recipe, goes to collection page and unlikes recipe", async ({
+    test("saves recipe, goes to collection page and unsaves recipe", async ({
         authenticatedPage: page,
     }) => {
         // First like a recipe
         await page.goto("/ontdek")
-        const likeButton = page.locator("[data-testid='like-recipe-button']").first()
+        const likeButton = page.locator("[data-testid='bookmark-recipe-button']").first()
         await likeButton.click()
 
         await page.waitForTimeout(1000)
@@ -16,7 +16,7 @@ test.describe("Favorites functionality", () => {
         await page.getByText("Mijn favorieten").click()
 
         // Get the like button in favorites and unlike the recipe
-        const favoritesLikeButton = page.locator("[data-testid='like-recipe-button']").first()
+        const favoritesLikeButton = page.locator("[data-testid='bookmark-recipe-button']").first()
         await favoritesLikeButton.click()
 
         // Verify the recipe is no longer visible in favorites
