@@ -6,8 +6,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useImportStatusStore } from "@/lib/store/import-status-store"
 
 interface ImportPopupBaseProps {
-    isOpen: boolean
-    onClose: () => void
     title: string
     description: string
     isLoading: boolean
@@ -17,8 +15,6 @@ interface ImportPopupBaseProps {
 }
 
 export function ImportPopupBase({
-    isOpen,
-    onClose,
     title,
     description,
     isLoading,
@@ -26,7 +22,7 @@ export function ImportPopupBase({
     onSubmit,
     error,
 }: Readonly<ImportPopupBaseProps>) {
-    const { isAnimatingToCollection } = useImportStatusStore()
+    const { isAnimatingToCollection, closeModal } = useImportStatusStore()
 
     const getAnimationVariants = () => {
         if (!isAnimatingToCollection) {
@@ -56,51 +52,49 @@ export function ImportPopupBase({
 
     return (
         <AnimatePresence>
-            {isOpen && (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 grid h-screen place-items-center bg-black/30 px-6 backdrop-blur-sm"
+                onClick={closeModal}
+            >
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 grid h-screen place-items-center bg-black/30 px-6 backdrop-blur-sm"
-                    onClick={onClose}
+                    variants={getAnimationVariants()}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    transition={{
+                        duration: 0.3,
+                        ease: [0.25, 0.46, 0.45, 0.94],
+                        opacity: isAnimatingToCollection
+                            ? { delay: 0.2, duration: 0.1 }
+                            : undefined,
+                    }}
+                    className="bg-surface relative w-full max-w-md rounded-2xl p-6 shadow-lg"
+                    onClick={(e) => e.stopPropagation()}
                 >
-                    <motion.div
-                        variants={getAnimationVariants()}
-                        initial="initial"
-                        animate="animate"
-                        exit="exit"
-                        transition={{
-                            duration: 0.3,
-                            ease: [0.25, 0.46, 0.45, 0.94],
-                            opacity: isAnimatingToCollection
-                                ? { delay: 0.2, duration: 0.1 }
-                                : undefined,
-                        }}
-                        className="bg-surface relative w-full max-w-md rounded-2xl p-6 shadow-lg"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-lg font-semibold">{title}</h2>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={onClose}
-                                disabled={isLoading}
-                            >
-                                <X className="h-5 w-5" />
-                            </Button>
-                        </div>
-                        <p className="text-muted-foreground mb-4 text-sm">{description}</p>
-                        <div className="space-y-4">
-                            {children}
-                            {error && <p className="text-sm text-red-500">{error}</p>}
-                            <Button onClick={onSubmit} className="w-full" disabled={isLoading}>
-                                {isLoading ? "Bezig..." : "bonchef!"}
-                            </Button>
-                        </div>
-                    </motion.div>
+                    <div className="mb-4 flex items-center justify-between">
+                        <h2 className="text-lg font-semibold">{title}</h2>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={closeModal}
+                            disabled={isLoading}
+                        >
+                            <X className="h-5 w-5" />
+                        </Button>
+                    </div>
+                    <p className="text-muted-foreground mb-4 text-sm">{description}</p>
+                    <div className="space-y-4">
+                        {children}
+                        {error && <p className="text-sm text-red-500">{error}</p>}
+                        <Button onClick={onSubmit} className="w-full" disabled={isLoading}>
+                            {isLoading ? "Bezig..." : "bonchef!"}
+                        </Button>
+                    </div>
                 </motion.div>
-            )}
+            </motion.div>
         </AnimatePresence>
     )
 }

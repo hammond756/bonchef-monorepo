@@ -12,11 +12,6 @@ import { createClient } from "@/utils/supabase/client"
 import { v4 as uuidv4 } from "uuid"
 import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 
-interface PhotoImportViewProps {
-    isOpen: boolean
-    onClose: () => void
-}
-
 interface CapturedPhoto {
     id: string
     dataUrl: string
@@ -31,10 +26,9 @@ async function uploadImageToSignedUrl(file: File): Promise<string> {
     return await storageService.uploadToSignedUrl("recipe-images", path, file, token)
 }
 
-export function PhotoImportView({ isOpen, onClose }: PhotoImportViewProps) {
+export function PhotoImportView() {
     const [photos, setPhotos] = useState<CapturedPhoto[]>([])
     const [isLoading, setIsLoading] = useState(false)
-    const [stream, setStream] = useState<MediaStream | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [showFlash, setShowFlash] = useState(false)
 
@@ -45,65 +39,56 @@ export function PhotoImportView({ isOpen, onClose }: PhotoImportViewProps) {
     const { setIsVisible } = useNavigationVisibility()
     const { closeModal } = useImportStatusStore()
 
-    const cleanup = () => {
-        if (stream) {
-            stream.getTracks().forEach((track) => track.stop())
-            setStream(null)
-        }
-    }
-
-    // Initialize camera when component opens
     useEffect(() => {
-        if (isOpen) {
-            initializeCamera()
-        } else {
-            cleanup()
-        }
+        let mediaStream: MediaStream | null = null
 
-        return cleanup
-    }, [isOpen, cleanup])
-
-    const initializeCamera = async () => {
-        try {
-            // Check if camera is available
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                throw new Error(
-                    "Camera is niet beschikbaar in deze browser of context. Probeer HTTPS of een andere browser."
-                )
-            }
-
-            const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: "environment", // Use back camera by default
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 },
-                },
-            })
-
-            setStream(mediaStream)
-            setError(null)
-
-            if (videoRef.current) {
-                videoRef.current.srcObject = mediaStream
-                videoRef.current.play()
-            }
-        } catch (err) {
-            console.error("Failed to initialize camera:", err)
-            if (err instanceof Error) {
-                if (err.name === "NotAllowedError") {
-                    setError(
-                        "Camera toegang geweigerd. Sta camera toegang toe in je browser instellingen."
+        async function initializeCamera() {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error(
+                        "Camera is niet beschikbaar in deze browser of context. Probeer HTTPS of een andere browser."
                     )
-                } else if (err.name === "NotFoundError") {
-                    setError("Geen camera gevonden op dit apparaat.")
-                } else {
-                    setError(err.message)
                 }
-            } else {
-                setError("Kon camera niet openen. Controleer je browser instellingen.")
+
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "environment",
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                    },
+                })
+
+                setError(null)
+
+                if (videoRef.current) {
+                    videoRef.current.srcObject = mediaStream
+                    videoRef.current.play()
+                }
+            } catch (err) {
+                console.error("Failed to initialize camera:", err)
+                if (err instanceof Error) {
+                    if (err.name === "NotAllowedError") {
+                        setError(
+                            "Camera toegang geweigerd. Sta camera toegang toe in je browser instellingen."
+                        )
+                    } else if (err.name === "NotFoundError") {
+                        setError("Geen camera gevonden op dit apparaat.")
+                    } else {
+                        setError(err.message)
+                    }
+                } else {
+                    setError("Kon camera niet openen. Controleer je browser instellingen.")
+                }
             }
         }
-    }
+
+        initializeCamera()
+
+        return () => {
+            console.log("Stopping camera")
+            mediaStream?.getTracks().forEach((track: MediaStreamTrack) => track.stop())
+        }
+    }, [])
 
     const capturePhoto = useCallback(() => {
         if (!videoRef.current || !canvasRef.current) return
@@ -210,10 +195,8 @@ export function PhotoImportView({ isOpen, onClose }: PhotoImportViewProps) {
 
             setTimeout(() => {
                 closeModal()
-                onClose()
                 // Reset state
                 setPhotos([])
-                cleanup()
             }, 300)
         } catch (error) {
             console.error("Failed to submit photos:", error)
@@ -224,8 +207,6 @@ export function PhotoImportView({ isOpen, onClose }: PhotoImportViewProps) {
             setIsLoading(false)
         }
     }
-
-    if (!isOpen) return null
 
     const overlayContent = (
         <motion.div
@@ -251,7 +232,7 @@ export function PhotoImportView({ isOpen, onClose }: PhotoImportViewProps) {
             <Button
                 variant="ghost"
                 size="icon"
-                onClick={onClose}
+                onClick={closeModal}
                 className="absolute top-4 right-4 z-40 text-white hover:bg-white/20"
             >
                 <X className="h-6 w-6" />

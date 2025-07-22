@@ -7,14 +7,11 @@ import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 import { startRecipeImportJob } from "@/actions/recipe-imports"
 import { RecipeImportSourceTypeEnum } from "@/lib/types"
 
-interface UseRecipeImportProps {
-    onClose: () => void
-}
-
-export function useRecipeImport({ onClose }: UseRecipeImportProps) {
+export function useRecipeImport() {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const { startAnimationToCollection, finishAnimationToCollection } = useImportStatusStore()
+    const { startAnimationToCollection, finishAnimationToCollection, closeModal } =
+        useImportStatusStore()
     const { setIsVisible } = useNavigationVisibility()
 
     const handleSubmit = async (type: z.infer<typeof RecipeImportSourceTypeEnum>, data: string) => {
@@ -33,7 +30,7 @@ export function useRecipeImport({ onClose }: UseRecipeImportProps) {
             // Reset animation after 300ms
             setTimeout(() => {
                 finishAnimationToCollection()
-                onClose()
+                closeModal()
             }, 300)
         } catch (error) {
             console.error(`Failed to start recipe import job for type ${type}`, error)
