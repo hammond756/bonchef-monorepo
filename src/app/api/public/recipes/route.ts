@@ -20,7 +20,9 @@ export async function GET(request: Request) {
         *,
         profiles(display_name, id, avatar),
         is_bookmarked_by_current_user,
-        recipe_bookmarks(count)
+        is_liked_by_current_user,
+        recipe_bookmarks(count),
+        recipe_likes(count)
       `,
                 { count: "exact" }
             )
@@ -46,6 +48,7 @@ export async function GET(request: Request) {
         const recipesWithBookmarks = data.map((recipe) => ({
             ...recipe,
             bookmark_count: recipe.recipe_bookmarks?.[0]?.count || 0,
+            like_count: recipe.recipe_likes?.[0]?.count || 0,
         }))
 
         return NextResponse.json({ data: recipesWithBookmarks, count })

@@ -1,55 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { cva, type VariantProps } from "class-variance-authority"
 import { BookmarkIcon } from "lucide-react"
 import { bookmarkRecipe, unbookmarkRecipe } from "@/app/ontdek/actions"
-import { useToast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
-import { lightThemeClasses, darkThemeClasses } from "@/components/recipe/action-button-variants"
-import { useUser } from "@/hooks/use-user"
+import { ActionButton } from "@/components/recipe/action-button"
 import { useBookmarkedRecipes } from "@/hooks/use-bookmarked-recipes"
 import { redirect } from "next/navigation"
 
-const bookmarkButtonVariants = cva(
-    "group flex items-center justify-center rounded-full transition-all duration-200 ease-in-out",
-    {
-        variants: {
-            theme: {
-                light: lightThemeClasses,
-                dark: darkThemeClasses,
-            },
-            size: {
-                sm: "h-8 w-8",
-                md: "h-10 w-10",
-                lg: "h-12 w-12",
-            },
-        },
-        defaultVariants: {
-            theme: "light",
-            size: "md",
-        },
-    }
-)
-
-const iconVariants = cva("transition-all duration-200 ease-in-out group-hover:scale-110", {
-    variants: {
-        size: {
-            sm: "h-4 w-4",
-            md: "h-5 w-5",
-            lg: "h-6 w-6",
-        },
-    },
-    defaultVariants: {
-        size: "md",
-    },
-})
-
-const textVariants = cva("text-xs font-medium text-white drop-shadow-sm")
-
-export interface BookmarkButtonProps
-    extends VariantProps<typeof bookmarkButtonVariants>,
-        Omit<VariantProps<typeof textVariants>, "size"> {
+export interface BookmarkButtonProps {
     recipeId: string
     initialBookmarked: boolean
     initialBookmarkCount: number
@@ -57,11 +15,13 @@ export interface BookmarkButtonProps
     className?: string
     theme?: "light" | "dark"
     size?: "sm" | "md" | "lg"
+    iconSize?: "sm" | "md" | "lg" | "xl"
     enabled?: boolean
 }
 
 export function BookmarkButton({
     size,
+    iconSize,
     recipeId,
     initialBookmarked,
     initialBookmarkCount,
@@ -69,18 +29,13 @@ export function BookmarkButton({
     className,
     theme,
 }: BookmarkButtonProps) {
-    const { user } = useUser()
     const [isBookmarked, setIsBookmarked] = useState(initialBookmarked)
     const [bookmarkCount, setBookmarkCount] = useState(initialBookmarkCount)
     const [isLoading, setIsLoading] = useState(false)
-    const { toast } = useToast()
 
-    const { mutate: mutateBookmarkedRecipes } = useBookmarkedRecipes({ enabled: !!user })
+    const { mutate: mutateBookmarkedRecipes } = useBookmarkedRecipes({ enabled: true })
 
-    const handleBookmark = async (e: React.MouseEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-
+    const handleToggle = async () => {
         setIsLoading(true)
         const previousIsBookmarked = isBookmarked
         const previousBookmarkCount = bookmarkCount
@@ -88,16 +43,13 @@ export function BookmarkButton({
         // Optimistic update
         setIsBookmarked(!isBookmarked)
         setBookmarkCount(previousIsBookmarked ? bookmarkCount - 1 : bookmarkCount + 1)
+
         if (previousIsBookmarked) {
             const { success, error } = await unbookmarkRecipe(recipeId)
             if (!success) {
                 setIsBookmarked(previousIsBookmarked)
                 setBookmarkCount(previousBookmarkCount)
-                toast({
-                    title: "Er is iets misgegaan",
-                    description: error?.message || "Probeer het later opnieuw",
-                    variant: "destructive",
-                })
+                return { success: false, error }
             }
         } else {
             const { success, error } = await bookmarkRecipe(recipeId)
@@ -106,56 +58,56 @@ export function BookmarkButton({
                 setBookmarkCount(previousBookmarkCount)
 
                 if (error?.code == 401) {
-                    toast({
-                        title: "Welkom!",
-                        description: "Om recepten op te slaan kan je een gratis account aanmaken",
-                    })
-                    redirect("/signup")
-                } else {
-                    toast({
-                        title: "Er is iets misgegaan",
-                        description: error?.message || "Probeer het later opnieuw",
-                        variant: "destructive",
-                    })
+                    return {
+                        success: false,
+                        error: { message: "Authentication required", code: 401 },
+                    }
                 }
+                return { success: false, error }
             }
         }
-        // After successful action, revalidate the liked recipes list
-        mutateBookmarkedRecipes()
 
+        // After successful action, revalidate the bookmarked recipes list
+        mutateBookmarkedRecipes()
         setIsLoading(false)
+        return { success: true }
     }
 
-    return (
-        <div className="flex flex-col items-center">
-            <button
-                onClick={handleBookmark}
-                disabled={isLoading}
-                aria-label={isBookmarked ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"}
-                data-testid="bookmark-recipe-button"
-                className={cn(bookmarkButtonVariants({ size, theme }), className)}
-            >
-                <BookmarkIcon
-                    className={cn(
-                        iconVariants({ size }),
-                        isBookmarked
-                            ? cn("fill-surface", {
-                                  "text-surface fill-surface": theme === "dark",
-                                  "text-foreground fill-foreground": theme !== "dark",
-                              })
-                            : cn("fill-none", {
-                                  "text-surface": theme === "dark",
-                                  "text-foreground": theme !== "dark",
-                              })
-                    )}
-                />
-            </button>
+    const handleAuthRequired = () => {
+        redirect("/signup")
+    }
 
-            {showCount && (
-                <span className={cn(textVariants())} data-testid="bookmark-count">
-                    {bookmarkCount}
-                </span>
-            )}
-        </div>
+    // Bookmark Icon with proper styling
+    const bookmarkIcon = (
+        <BookmarkIcon
+            className={
+                isBookmarked
+                    ? theme === "dark"
+                        ? "fill-white text-white"
+                        : "fill-gray-800 text-gray-800"
+                    : theme === "dark"
+                      ? "fill-none text-white"
+                      : "fill-none text-gray-600"
+            }
+        />
+    )
+
+    return (
+        <ActionButton
+            size={size}
+            iconSize={iconSize}
+            isActive={isBookmarked}
+            count={bookmarkCount}
+            isLoading={isLoading}
+            onToggle={handleToggle}
+            onAuthRequired={handleAuthRequired}
+            icon={bookmarkIcon}
+            showCount={showCount}
+            className={className}
+            theme={theme}
+            activeLabel="Verwijder uit favorieten"
+            inactiveLabel="Voeg toe aan favorieten"
+            dataTestId="bookmark-recipe-button"
+        />
     )
 }

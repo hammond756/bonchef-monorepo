@@ -18,7 +18,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       *,
       profiles!recipes_user_id_fkey(display_name, id, avatar),
       recipe_bookmarks(count),
-      is_bookmarked_by_current_user
+      recipe_likes(count),
+      is_bookmarked_by_current_user,
+      is_liked_by_current_user
     `
         )
         .eq("id", id)
@@ -34,11 +36,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         return NextResponse.json({ error: "Failed to fetch recipe" }, { status: 500 })
     }
 
-    // Add like count to recipe object
-    const recipeWithBookmarks = {
+    // Add bookmark and like counts to recipe object
+    const recipeWithCounts = {
         ...recipe,
         bookmark_count: recipe.recipe_bookmarks?.[0]?.count || 0,
+        like_count: recipe.recipe_likes?.[0]?.count || 0,
     }
 
-    return NextResponse.json({ recipe: recipeWithBookmarks })
+    return NextResponse.json({ recipe: recipeWithCounts })
 }

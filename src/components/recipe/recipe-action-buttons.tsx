@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { Recipe } from "@/lib/types"
 import { BookmarkButton } from "@/components/bookmark-button"
+import { LikeButton } from "@/components/like-button"
 import { ProfileImage } from "@/components/ui/profile-image"
 import { ShareRecipeButton } from "@/components/share-recipe-button"
 import { cva } from "class-variance-authority"
@@ -35,6 +36,9 @@ interface RecipeActionButtonsProps {
     size?: "md" | "lg"
     shareButtonSize?: "md" | "lg"
     bookmarkButtonSize?: "sm" | "md" | "lg"
+    bookmarkButtonIconSize?: "sm" | "md" | "lg" | "xl"
+    likeButtonSize?: "sm" | "md" | "lg" | "xl"
+    likeButtonIconSize?: "sm" | "md" | "lg" | "xl"
     avatarSize?: "md" | "lg"
 }
 
@@ -44,10 +48,14 @@ export function RecipeActionButtons({
     size,
     shareButtonSize,
     bookmarkButtonSize,
+    bookmarkButtonIconSize,
+    likeButtonSize,
+    likeButtonIconSize,
     avatarSize,
 }: RecipeActionButtonsProps) {
     const finalShareSize = shareButtonSize || size || "lg"
     const finalBookmarkSize = bookmarkButtonSize || size || "lg"
+    const finalLikeSize = likeButtonSize || "md"
     const finalAvatarSize = avatarSize || size || "lg"
     const profileImageSize = finalAvatarSize === "lg" ? 48 : 40
 
@@ -59,8 +67,17 @@ export function RecipeActionButtons({
                 theme={theme ?? "light"}
                 size={finalShareSize}
             />
+            <LikeButton
+                size={finalLikeSize}
+                iconSize={likeButtonIconSize || "xl"}
+                theme={theme ?? "light"}
+                recipeId={recipe.id}
+                initialLiked={recipe.is_liked_by_current_user ?? false}
+                initialLikeCount={recipe.like_count || 0}
+            />
             <BookmarkButton
                 size={finalBookmarkSize}
+                iconSize={bookmarkButtonIconSize || "lg"}
                 theme={theme ?? "light"}
                 recipeId={recipe.id}
                 initialBookmarked={recipe.is_bookmarked_by_current_user ?? false}

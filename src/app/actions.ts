@@ -19,9 +19,19 @@ export async function getRecipes(userId: string) {
     const supabase = await createClient()
     const { data } = await supabase
         .from("recipes")
-        .select("*, is_bookmarked_by_current_user")
+        .select(
+            "*, is_bookmarked_by_current_user, is_liked_by_current_user, recipe_bookmarks(count), recipe_likes(count)"
+        )
         .eq("user_id", userId)
-    return data
+
+    // Transform the counts
+    const recipesWithCounts = data?.map((recipe) => ({
+        ...recipe,
+        bookmark_count: recipe.recipe_bookmarks?.[0]?.count || 0,
+        like_count: recipe.recipe_likes?.[0]?.count || 0,
+    }))
+
+    return recipesWithCounts
 }
 
 export async function getPublicRecipes(page = 1, pageSize = 10) {
@@ -34,9 +44,12 @@ export async function getPublicRecipes(page = 1, pageSize = 10) {
     // Fetch public recipes with profiles join
     const { data, error, count } = await supabase
         .from("recipes")
-        .select("*, profiles!recipes_user_id_fkey(display_name)", {
-            count: "exact",
-        })
+        .select(
+            "*, profiles!recipes_user_id_fkey(display_name), is_bookmarked_by_current_user, is_liked_by_current_user, recipe_bookmarks(count), recipe_likes(count)",
+            {
+                count: "exact",
+            }
+        )
         .eq("is_public", true)
         .order("created_at", { ascending: false })
         .range(from, to)
@@ -46,7 +59,14 @@ export async function getPublicRecipes(page = 1, pageSize = 10) {
         return { data: [], count: 0 }
     }
 
-    return { data, count }
+    // Transform the counts
+    const recipesWithCounts = data?.map((recipe) => ({
+        ...recipe,
+        bookmark_count: recipe.recipe_bookmarks?.[0]?.count || 0,
+        like_count: recipe.recipe_likes?.[0]?.count || 0,
+    }))
+
+    return { data: recipesWithCounts, count }
 }
 
 export async function fetchConversationHistory(conversationId: string): Promise<ChatMessageData[]> {

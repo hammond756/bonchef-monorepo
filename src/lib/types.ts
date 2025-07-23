@@ -54,6 +54,8 @@ export const RecipeReadSchema = RecipeWriteSchema.extend({
     user_id: z.string(),
     is_bookmarked_by_current_user: z.boolean().optional(),
     bookmark_count: z.number().optional(),
+    is_liked_by_current_user: z.boolean().optional(),
+    like_count: z.number().optional(),
     profiles: z.object({
         display_name: z.string().nullable(),
         id: z.string(),

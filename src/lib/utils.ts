@@ -343,3 +343,24 @@ export function getServerBaseUrl(headers: Headers): string {
     const protocol = host?.includes("localhost") ? "http" : "https"
     return `${protocol}://${host}`
 }
+
+/**
+ * Formats a number for display, showing large numbers in "k" format
+ * @param num The number to format
+ * @returns Formatted string (e.g. 1234 -> "1.2k", 999 -> "999", 1000 -> "1k")
+ */
+export function formatNumber(num: number): string {
+    if (num < 1000) {
+        return num.toString()
+    }
+
+    const thousands = num / 1000
+
+    // If it's a whole number of thousands, show without decimal
+    if (thousands % 1 === 0) {
+        return `${thousands}k`
+    }
+
+    // Otherwise show one decimal place
+    return `${thousands.toFixed(1)}k`
+}
