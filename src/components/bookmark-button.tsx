@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { lightThemeClasses, darkThemeClasses } from "@/components/recipe/action-button-variants"
 import { useUser } from "@/hooks/use-user"
 import { useBookmarkedRecipes } from "@/hooks/use-bookmarked-recipes"
+import { redirect } from "next/navigation"
 
 const bookmarkButtonVariants = cva(
     "group flex items-center justify-center rounded-full transition-all duration-200 ease-in-out",
@@ -76,7 +77,7 @@ export function BookmarkButton({
 
     const { mutate: mutateBookmarkedRecipes } = useBookmarkedRecipes({ enabled: !!user })
 
-    const handleLike = async (e: React.MouseEvent) => {
+    const handleBookmark = async (e: React.MouseEvent) => {
         e.preventDefault()
         e.stopPropagation()
 
@@ -87,33 +88,48 @@ export function BookmarkButton({
         // Optimistic update
         setIsBookmarked(!isBookmarked)
         setBookmarkCount(previousIsBookmarked ? bookmarkCount - 1 : bookmarkCount + 1)
-
-        try {
-            if (previousIsBookmarked) {
-                await unbookmarkRecipe(recipeId)
-            } else {
-                await bookmarkRecipe(recipeId)
+        if (previousIsBookmarked) {
+            const { success, error } = await unbookmarkRecipe(recipeId)
+            if (!success) {
+                setIsBookmarked(previousIsBookmarked)
+                setBookmarkCount(previousBookmarkCount)
+                toast({
+                    title: "Er is iets misgegaan",
+                    description: error?.message || "Probeer het later opnieuw",
+                    variant: "destructive",
+                })
             }
-            // After successful action, revalidate the liked recipes list
-            mutateBookmarkedRecipes()
-        } catch (error) {
-            // Rollback on error
-            setIsBookmarked(previousIsBookmarked)
-            setBookmarkCount(previousBookmarkCount)
-            toast({
-                title: "Er is iets misgegaan",
-                description: error instanceof Error ? error.message : "Probeer het later opnieuw",
-                variant: "destructive",
-            })
-        } finally {
-            setIsLoading(false)
+        } else {
+            const { success, error } = await bookmarkRecipe(recipeId)
+            if (!success) {
+                setIsBookmarked(previousIsBookmarked)
+                setBookmarkCount(previousBookmarkCount)
+
+                if (error?.code == 401) {
+                    toast({
+                        title: "Welkom!",
+                        description: "Om recepten op te slaan kan je een gratis account aanmaken",
+                    })
+                    redirect("/signup")
+                } else {
+                    toast({
+                        title: "Er is iets misgegaan",
+                        description: error?.message || "Probeer het later opnieuw",
+                        variant: "destructive",
+                    })
+                }
+            }
         }
+        // After successful action, revalidate the liked recipes list
+        mutateBookmarkedRecipes()
+
+        setIsLoading(false)
     }
 
     return (
         <div className="flex flex-col items-center">
             <button
-                onClick={handleLike}
+                onClick={handleBookmark}
                 disabled={isLoading}
                 aria-label={isBookmarked ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"}
                 data-testid="bookmark-recipe-button"
