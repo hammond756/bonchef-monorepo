@@ -9,6 +9,8 @@ import { ImportOverlay } from "../import/import-overlay"
 import { useImportStatusStore } from "@/lib/store/import-status-store"
 import { ImportMode } from "@/lib/types"
 import { PendingRecipeBadge } from "./pending-recipe-badge"
+import { useOnboarding } from "@/hooks/use-onboarding"
+import { useUser } from "@/hooks/use-user"
 
 interface TabBarProps {
     children?: React.ReactNode
@@ -18,10 +20,16 @@ interface TabBarProps {
 export function TabBar({ children, className }: TabBarProps) {
     const pathname = usePathname()
     const [isImportOverlayVisible, setIsImportOverlayVisible] = useState(false)
-    const { openModal } = useImportStatusStore()
+    const { openModal: openImportModal } = useImportStatusStore()
+    const { openModal: openOnboardingModal } = useOnboarding()
+    const { user } = useUser()
 
     const handleOpenOverlay = () => {
-        setIsImportOverlayVisible(true)
+        if (user) {
+            setIsImportOverlayVisible(true)
+        } else {
+            openOnboardingModal()
+        }
     }
 
     const handleCloseAll = () => {
@@ -30,7 +38,7 @@ export function TabBar({ children, className }: TabBarProps) {
 
     const handleSelectImportMode = (mode: ImportMode) => {
         setIsImportOverlayVisible(false)
-        openModal(mode)
+        openImportModal(mode)
     }
 
     const defaultContent = (

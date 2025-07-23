@@ -222,3 +222,14 @@ export const RecipeImportJobSchema = z.object({
 })
 
 export type RecipeImportJob = z.infer<typeof RecipeImportJobSchema>
+
+export type ServiceResponse<T> = Promise<
+    | {
+          success: false
+          error: string
+      }
+    | {
+          success: true
+          data: T
+      }
+>

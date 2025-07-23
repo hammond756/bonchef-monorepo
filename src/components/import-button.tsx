@@ -3,14 +3,12 @@ import { cn } from "@/lib/utils"
 export function ImportButton({
     onClick,
     icon,
-    backgroundColor,
     title,
     description,
     className,
 }: {
     onClick: () => void
     icon: React.ReactNode
-    backgroundColor: string
     title: string
     description: string
     className?: string
@@ -24,9 +22,7 @@ export function ImportButton({
             )}
         >
             <div className="flex items-center gap-4">
-                <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-full ${backgroundColor}`}
-                >
+                <div className={`flex h-12 w-12 items-center justify-center rounded-full`}>
                     {icon}
                 </div>
                 <div className="flex-1">

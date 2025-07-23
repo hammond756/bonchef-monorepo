@@ -31,6 +31,12 @@
     --color-status-red-bg: #fce7e7;
     --color-status-red-text: #8f1d1d;
     --color-status-red-border: #f5b5b5;
+    --color-status-orange-0: #f96a25;
+    --color-status-orange-bg: #fef7ee;
+    --color-status-orange-border: #fcf3e4;
+    --color-status-purple-0: #9d5def;
+    --color-status-purple-bg: #f9f5fe;
+    --color-status-purple-border: #f5effd;
 
     /* 3. Border Radius */
     --radius-lg: 8px;

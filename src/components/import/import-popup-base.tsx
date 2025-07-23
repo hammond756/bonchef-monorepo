@@ -12,6 +12,7 @@ interface ImportPopupBaseProps {
     children: React.ReactNode
     onSubmit: () => void
     error: string | null
+    onClose: () => void
 }
 
 export function ImportPopupBase({
@@ -21,8 +22,9 @@ export function ImportPopupBase({
     children,
     onSubmit,
     error,
+    onClose,
 }: Readonly<ImportPopupBaseProps>) {
-    const { isAnimatingToCollection, closeModal } = useImportStatusStore()
+    const { isAnimatingToCollection } = useImportStatusStore()
 
     const getAnimationVariants = () => {
         if (!isAnimatingToCollection) {
@@ -57,7 +59,7 @@ export function ImportPopupBase({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-50 grid h-screen place-items-center bg-black/30 px-6 backdrop-blur-sm"
-                onClick={closeModal}
+                onClick={onClose}
             >
                 <motion.div
                     variants={getAnimationVariants()}
@@ -76,12 +78,7 @@ export function ImportPopupBase({
                 >
                     <div className="mb-4 flex items-center justify-between">
                         <h2 className="text-lg font-semibold">{title}</h2>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={closeModal}
-                            disabled={isLoading}
-                        >
+                        <Button variant="ghost" size="icon" onClick={onClose} disabled={isLoading}>
                             <X className="h-5 w-5" />
                         </Button>
                     </div>

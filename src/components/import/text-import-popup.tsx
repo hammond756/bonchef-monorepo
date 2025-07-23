@@ -5,7 +5,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { useRecipeImport } from "@/hooks/use-recipe-import"
 import { ImportPopupBase } from "./import-popup-base"
 
-export function TextImportPopup() {
+interface TextImportPopupProps {
+    onDismiss: () => void
+    onSubmit: () => void
+}
+
+export function TextImportPopup({ onDismiss, onSubmit }: Readonly<TextImportPopupProps>) {
     const [text, setText] = useState("")
     const { isLoading, error, setError, handleSubmit } = useRecipeImport()
 
@@ -15,13 +20,13 @@ export function TextImportPopup() {
             setError("Voer wat tekst in.")
             return
         }
-
-        await handleSubmit("text", textToSubmit)
+        void handleSubmit("text", textToSubmit, onSubmit)
         setText("")
     }
 
     return (
         <ImportPopupBase
+            onClose={onDismiss}
             title="Importeer van Tekst"
             description="Plak de tekst van het recept dat je wilt importeren."
             isLoading={isLoading}

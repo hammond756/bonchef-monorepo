@@ -18,7 +18,7 @@ export const TabLayout = ({ children, topBarContent, tabBarContent }: TabLayoutP
         <div className="bg-surface relative flex min-h-full flex-col">
             <header
                 className={cn(
-                    "fixed top-0 right-0 left-0 z-50 transition-transform duration-300 ease-in-out",
+                    "fixed top-0 right-0 left-0 z-40 transition-transform duration-300 ease-in-out",
                     {
                         "-translate-y-full": !isVisible,
                         "translate-y-0": isVisible,
@@ -40,7 +40,7 @@ export const TabLayout = ({ children, topBarContent, tabBarContent }: TabLayoutP
 
             <footer
                 className={cn(
-                    "fixed right-0 bottom-0 left-0 z-50 pt-8 transition-transform duration-300 ease-in-out",
+                    "fixed right-0 bottom-0 left-0 z-20 pt-8 transition-transform duration-300 ease-in-out",
                     {
                         "translate-y-full": !isVisible,
                         "translate-y-0": isVisible,

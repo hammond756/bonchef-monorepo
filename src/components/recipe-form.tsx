@@ -80,7 +80,7 @@ export function RecipeForm({
     const [isImageModalOpen, setIsImageModalOpen] = useState(false)
     const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false)
     const router = useRouter()
-    const lastBrowsingPath = useNavigationStore((state) => state.lastBrowsingPath)
+    const lastBrowsingPath = useNavigationStore((state) => state.history.at(-1))
 
     useUnsavedChangesWarning(isDirty)
 

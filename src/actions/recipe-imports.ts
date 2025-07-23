@@ -14,6 +14,8 @@ import { unitTranslations } from "@/lib/translations"
 import sharp from "sharp"
 import fs from "fs"
 import path from "path"
+import { OnboardingService } from "@/lib/services/onboarding-service"
+import { RecipeImportJobService } from "@/lib/services/recipe-import-job-service"
 
 type GeneratedRecipeWithSource = GeneratedRecipe & {
     source_name?: string | null
@@ -214,12 +216,15 @@ export async function createDraftRecipe(
     return savedRecipe.data
 }
 
-async function _processJobInBackground(job: {
-    id: string
-    source_type: string
-    source_data: string
-    created_at: string
-}) {
+async function _processJobInBackground(
+    job: {
+        id: string
+        source_type: string
+        source_data: string
+        created_at: string
+    },
+    onboardingSessionId?: string
+) {
     try {
         let recipe: GeneratedRecipeWithSource & { thumbnail: string }
 
@@ -243,6 +248,12 @@ async function _processJobInBackground(job: {
         })
 
         const supabaseAdmin = await createAdminClient()
+
+        if (onboardingSessionId) {
+            const onboardingService = new OnboardingService(supabaseAdmin)
+            await onboardingService.createRecipeAssociation(onboardingSessionId, savedRecipe.id)
+        }
+
         const { error: updateError } = await supabaseAdmin
             .from("recipe_import_jobs")
             .update({
@@ -285,35 +296,61 @@ async function _processJobInBackground(job: {
 
 export async function startRecipeImportJob(
     sourceType: "url" | "image" | "text",
-    sourceData: string
+    sourceData: string,
+    onboardingSessionId?: string
 ) {
-    const supabase = await createClient()
+    const supabaseAuthClient = await createClient()
+    const supabaseAdminClient = await createAdminClient()
+
     const {
         data: { user },
-    } = await supabase.auth.getUser()
+    } = await supabaseAuthClient.auth.getUser()
 
-    if (!user) {
-        throw new Error("User must be logged in to start a recipe import job.")
+    if (!user && !onboardingSessionId) {
+        throw new Error("User must be logged in to import recipes.")
     }
 
-    const { data: job, error } = await supabase
-        .from("recipe_import_jobs")
-        .insert({
-            user_id: user.id,
+    const userId = user?.id || process.env.NEXT_PUBLIC_MARKETING_USER_ID
+
+    if (!userId) {
+        throw new Error("Could not determine user ID for import job.")
+    }
+
+    const jobService = new RecipeImportJobService(supabaseAdminClient)
+    const jobResponse = await jobService.createJob(sourceType, sourceData, userId)
+
+    if (!jobResponse.success) {
+        throw new Error(jobResponse.error)
+    }
+    const job = jobResponse.data
+
+    if (onboardingSessionId) {
+        const onboardingService = new OnboardingService(supabaseAdminClient)
+        const associationResponse = await onboardingService.createJobAssociation(
+            onboardingSessionId,
+            job.id
+        )
+
+        if (!associationResponse.success) {
+            // If this fails, we should ideally roll back the job creation,
+            // but for now, we'll log the error and continue.
+            console.error(
+                `Failed to associate job ${job.id} with onboarding session ${onboardingSessionId}:`,
+                associationResponse.error
+            )
+
+            throw new Error("Failed to associate job with onboarding session")
+        }
+    }
+
+    // Don't await this, let it run in the background
+    void _processJobInBackground(
+        {
+            id: job.id,
             source_type: sourceType,
             source_data: sourceData,
-            status: "pending",
-        })
-        .select()
-        .single()
-
-    if (error) {
-        console.error("Failed to create recipe import job:", error)
-        throw new Error("Could not create recipe import job.")
-    }
-
-    console.log(`[startRecipeImportJob] Created job ${job.id} for user ${user.id}`)
-
-    // Fire-and-forget the generation process.
-    _processJobInBackground(job)
+            created_at: new Date().toISOString(),
+        },
+        onboardingSessionId
+    )
 }

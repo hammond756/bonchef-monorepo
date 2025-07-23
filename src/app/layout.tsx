@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { NuqsAdapter } from "nuqs/adapters/next/app"
 import { PostHogProvider } from "@/components/PostHogProvider"
 import { ModalProvider } from "@/components/modal-provider"
+import { OnboardingModal } from "@/components/onboarding/onboarding-modal"
+import { OnboardingTrigger } from "@/components/onboarding/onboarding-trigger"
 
 const montserrat = Montserrat({
     variable: "--font-montserrat",
@@ -42,6 +44,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <PostHogProvider>
                     <NuqsAdapter>
                         <ModalProvider />
+                        <OnboardingModal />
+                        <OnboardingTrigger />
                         {children}
                         <Toaster />
                     </NuqsAdapter>

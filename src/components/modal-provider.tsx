@@ -9,7 +9,7 @@ import { PhotoImportView } from "./import/photo-import-view"
 
 export function ModalProvider() {
     const [isMounted, setIsMounted] = useState(false)
-    const { activeModal } = useImportStatusStore()
+    const { activeModal, closeModal } = useImportStatusStore()
 
     useEffect(() => {
         setIsMounted(true)
@@ -28,9 +28,15 @@ export function ModalProvider() {
 
     return createPortal(
         <>
-            {activeModal === "url" && <UrlImportPopup />}
-            {activeModal === "text" && <TextImportPopup />}
-            {activeModal === "photo" && <PhotoImportView />}
+            {activeModal === "url" && (
+                <UrlImportPopup onDismiss={closeModal} onSubmit={closeModal} />
+            )}
+            {activeModal === "text" && (
+                <TextImportPopup onDismiss={closeModal} onSubmit={closeModal} />
+            )}
+            {activeModal === "photo" && (
+                <PhotoImportView onDismiss={closeModal} onSubmit={closeModal} />
+            )}
         </>,
         portalRoot
     )

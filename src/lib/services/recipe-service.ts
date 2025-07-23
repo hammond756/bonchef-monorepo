@@ -1,16 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js"
-import { RecipeWrite, RecipeWriteSchema, RecipeRead } from "../types"
-
-type ServiceResponse<T> = Promise<
-    | {
-          success: false
-          error: string
-      }
-    | {
-          success: true
-          data: T
-      }
->
+import { type RecipeWrite, RecipeWriteSchema, type RecipeRead, ServiceResponse } from "@/lib/types"
 
 export class RecipeService {
     private supabase: SupabaseClient
@@ -79,5 +68,40 @@ export class RecipeService {
         }
 
         return { success: true, data }
+    }
+
+    async getRecipe(id: string): ServiceResponse<RecipeRead> {
+        const { data, error } = await this.supabase.from("recipes").select().eq("id", id).single()
+
+        if (error) {
+            console.error("Failed to get recipe:", error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true, data }
+    }
+
+    /**
+     * Updates the user ID for a list of recipes.
+     * @param recipeIds The IDs of the recipes to update.
+     * @param userId The ID of the new user to associate the recipes with.
+     * @returns A service response indicating success or failure.
+     */
+    async assignRecipesToUser(recipeIds: string[], userId: string): ServiceResponse<null> {
+        if (recipeIds.length === 0) {
+            return { success: true, data: null }
+        }
+
+        const { error } = await this.supabase
+            .from("recipes")
+            .update({ user_id: userId })
+            .in("id", recipeIds)
+
+        if (error) {
+            console.error("Failed to assign recipes to user:", error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true, data: null }
     }
 }

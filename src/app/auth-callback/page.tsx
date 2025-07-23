@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { claimRecipe } from "@/app/signup/actions"
 import { useToast } from "@/hooks/use-toast"
 import { usePostHog } from "posthog-js/react"
+import { associateOnboardingData } from "@/app/signup/actions"
 
 export default function AuthCallbackPage() {
     const [isLoading, setIsLoading] = useState(true)
@@ -15,7 +16,46 @@ export default function AuthCallbackPage() {
     const { toast } = useToast()
     const posthog = usePostHog()
 
+    async function handleClaimRecipe(): Promise<boolean> {
+        // Check localStorage for claimRecipeId
+        let claimRecipeId: string | null = null
+        if (typeof window !== "undefined") {
+            claimRecipeId = localStorage.getItem("claimRecipeId")
+        }
+        if (claimRecipeId) {
+            try {
+                const { success, error: claimError } = await claimRecipe(claimRecipeId)
+                if (typeof window !== "undefined") {
+                    localStorage.removeItem("claimRecipeId")
+                }
+                if (success) {
+                    router.push(`/collection`)
+                    return true
+                }
+                if (claimError) {
+                    console.error("Error claiming recipe:", claimError)
+                    toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: "Er ging iets mis bij het claimen van het recept.",
+                    })
+                }
+            } catch (claimErr) {
+                posthog?.captureException(claimErr)
+                console.error("Exception while claiming recipe:", claimErr)
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "Er is iets misgegaan bij het claimen van het recept.",
+                })
+            }
+        }
+        return false
+    }
+
     useEffect(() => {
+        let timeoutId: NodeJS.Timeout
+
         const processAuth = async () => {
             try {
                 // Get the supabase client
@@ -57,42 +97,25 @@ export default function AuthCallbackPage() {
                 }
 
                 // Wait a brief moment to ensure auth state is properly propagated
-                setTimeout(async () => {
-                    // Check localStorage for claimRecipeId
-                    let claimRecipeId: string | null = null
-                    if (typeof window !== "undefined") {
-                        claimRecipeId = localStorage.getItem("claimRecipeId")
-                    }
-                    if (claimRecipeId) {
-                        try {
-                            const { success, error: claimError } = await claimRecipe(claimRecipeId)
-                            if (typeof window !== "undefined") {
-                                localStorage.removeItem("claimRecipeId")
-                            }
-                            if (success) {
-                                router.push(`/collection`)
-                                return
-                            }
-                            if (claimError) {
-                                console.error("Error claiming recipe:", claimError)
-                                toast({
-                                    variant: "destructive",
-                                    title: "Error",
-                                    description: "Er ging iets mis bij het claimen van het recept.",
-                                })
-                            }
-                        } catch (claimErr) {
-                            posthog?.captureException(claimErr)
-                            console.error("Error claiming recipe:", claimErr)
+                timeoutId = setTimeout(async () => {
+                    const alternativeRedirect = await handleClaimRecipe()
+
+                    if (user) {
+                        const { success } = await associateOnboardingData(user.id)
+                        if (!success) {
+                            console.error("Error associating onboarding data")
                             toast({
                                 variant: "destructive",
                                 title: "Error",
-                                description: "Er is iets misgegaan bij het claimen van het recept.",
+                                description: "Er is iets misgegaan bij het koppelen van je data.",
                             })
                         }
                     }
+
                     // Redirect to home page after successful authentication
-                    router.push("/")
+                    if (!alternativeRedirect) {
+                        router.push("/")
+                    }
                 }, 800)
             } catch (err) {
                 posthog?.captureException(err)
@@ -104,6 +127,11 @@ export default function AuthCallbackPage() {
         }
 
         processAuth()
+
+        return () => {
+            console.log("Clearing timeout in auth callback", timeoutId)
+            clearTimeout(timeoutId)
+        }
     }, [router, toast, posthog])
 
     return (

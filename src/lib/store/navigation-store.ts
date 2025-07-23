@@ -1,11 +1,11 @@
 import { create } from "zustand"
 
 interface NavigationState {
-    lastBrowsingPath: string
-    setLastBrowsingPath: (path: string) => void
+    history: string[]
+    push: (path: string) => void
 }
 
 export const useNavigationStore = create<NavigationState>((set) => ({
-    lastBrowsingPath: "/ontdek", // Default to /ontdek
-    setLastBrowsingPath: (path) => set({ lastBrowsingPath: path }),
+    history: ["/ontdek"], // Start with a default path
+    push: (path) => set((state) => ({ history: [...state.history, path].slice(-10) })), // Keep last 10
 }))

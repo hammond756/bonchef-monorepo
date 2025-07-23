@@ -6,6 +6,7 @@ import { RecipeDetail } from "@/components/recipe-detail"
 import { RecipeRead, RecipeReadSchema } from "@/lib/types"
 import { cookies, headers } from "next/headers"
 import { getServerBaseUrl } from "@/lib/utils"
+import { NavigationTracker } from "@/components/util/navigation-tracker"
 
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 export const dynamic = "auto"
@@ -126,6 +127,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
     return (
         <div className="flex flex-1 flex-col">
+            <NavigationTracker path={`/recipe/${id}`} />
             <RecipeDetail variant="saved" recipe={parsedRecipe} user={user || undefined} />
         </div>
     )

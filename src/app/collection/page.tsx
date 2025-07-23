@@ -289,7 +289,7 @@ function RecipeGridSkeleton() {
     )
 }
 
-export default async function CollectionPage() {
+export default function CollectionPage() {
     return (
         <>
             <NavigationTracker path="/collection" />

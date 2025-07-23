@@ -4,13 +4,18 @@ import { useState, useRef, useCallback, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { X, Camera, Image as ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useImportStatusStore } from "@/lib/store/import-status-store"
 import { motion, AnimatePresence } from "framer-motion"
 import { getSignedUploadUrl, startRecipeImportJob } from "@/actions/recipe-imports"
 import { StorageService } from "@/lib/services/storage-service"
 import { createClient } from "@/utils/supabase/client"
 import { v4 as uuidv4 } from "uuid"
+import { useOnboarding } from "@/hooks/use-onboarding"
 import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
+
+interface PhotoImportViewProps {
+    onDismiss: () => void
+    onSubmit: () => void
+}
 
 interface CapturedPhoto {
     id: string
@@ -26,7 +31,7 @@ async function uploadImageToSignedUrl(file: File): Promise<string> {
     return await storageService.uploadToSignedUrl("recipe-images", path, file, token)
 }
 
-export function PhotoImportView() {
+export function PhotoImportView({ onDismiss, onSubmit }: PhotoImportViewProps) {
     const [photos, setPhotos] = useState<CapturedPhoto[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -36,8 +41,8 @@ export function PhotoImportView() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
+    const { onboardingSessionId } = useOnboarding()
     const { setIsVisible } = useNavigationVisibility()
-    const { closeModal } = useImportStatusStore()
 
     useEffect(() => {
         let mediaStream: MediaStream | null = null
@@ -188,13 +193,14 @@ export function PhotoImportView() {
             // TODO: add support for multiple photos
             const imageUrl = await uploadImageToSignedUrl(photos[0].file)
 
-            await startRecipeImportJob("image", imageUrl)
+            await startRecipeImportJob("image", imageUrl, onboardingSessionId ?? undefined)
 
             // Immediately force navigation to be visible so user sees counter badge
             setIsVisible(true)
 
             setTimeout(() => {
-                closeModal()
+                onSubmit()
+
                 // Reset state
                 setPhotos([])
             }, 300)
@@ -232,7 +238,7 @@ export function PhotoImportView() {
             <Button
                 variant="ghost"
                 size="icon"
-                onClick={closeModal}
+                onClick={onDismiss}
                 className="absolute top-4 right-4 z-40 text-white hover:bg-white/20"
             >
                 <X className="h-6 w-6" />

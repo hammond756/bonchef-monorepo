@@ -5,6 +5,11 @@ import { Input } from "@/components/ui/input"
 import { useRecipeImport } from "@/hooks/use-recipe-import"
 import { ImportPopupBase } from "./import-popup-base"
 
+interface UrlImportPopupProps {
+    onDismiss: () => void
+    onSubmit: () => void
+}
+
 function isValidUrl(string: string) {
     try {
         new URL(string)
@@ -14,7 +19,7 @@ function isValidUrl(string: string) {
     }
 }
 
-export function UrlImportPopup() {
+export function UrlImportPopup({ onDismiss, onSubmit }: Readonly<UrlImportPopupProps>) {
     const [url, setUrl] = useState("")
     const { isLoading, error, setError, handleSubmit } = useRecipeImport()
 
@@ -36,7 +41,7 @@ export function UrlImportPopup() {
             return
         }
 
-        await handleSubmit("url", urlToSubmit)
+        void handleSubmit("url", urlToSubmit, onSubmit)
         setUrl("")
     }
 
@@ -48,6 +53,7 @@ export function UrlImportPopup() {
 
     return (
         <ImportPopupBase
+            onClose={onDismiss}
             title="Importeer van URL"
             description="Plak de URL van het recept dat je wilt importeren."
             isLoading={isLoading}
