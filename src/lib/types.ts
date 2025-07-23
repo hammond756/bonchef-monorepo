@@ -125,9 +125,14 @@ export interface ImageData {
     size: number
 }
 
+export interface WebContent {
+    url: string
+    content: string
+}
+
 export interface UserInput {
     message: string
-    webContent: Array<{ url: string; content: string }>
+    webContent: WebContent[]
     image?: ImageData
 }
 

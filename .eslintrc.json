@@ -9,5 +9,6 @@
                 "caughtErrorsIgnorePattern": "^_"
             }
         ]
-    }
+    },
+    "ignorePatterns": ["src/tests/**/*"]
 }

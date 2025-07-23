@@ -1,0 +1,96 @@
+---
+description: When you create or update a component, follow these rules to ensure it is properly tested.
+alwaysApply: false
+---
+## 2. Tooling
+
+- **Test Runner:** [Vitest](https://vitest.dev/)
+- **Testing Framework:** [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- **DOM Assertions:** [`@testing-library/jest-dom`](https://github.com/testing-library/jest-dom)
+- **User Interactions:** [`@testing-library/user-event`](https://testing-library.com/docs/user-event/intro)
+
+---
+
+## 3. File Structure
+
+All component unit tests should reside in the `src/tests/unit/` directory. This keeps them separate from E2E tests and application source code.
+
+- **Example:** A test for `src/components/recipe/recipe-card.tsx` should be located at `src/tests/unit/RecipeCard.test.tsx`.
+- **Naming Convention:** Use PascalCase for the test file name, followed by `.test.tsx`.
+
+---
+
+## 4. Writing Tests
+
+### The AAA Pattern
+Structure every test using the **Arrange, Act, Assert** pattern:
+1.  **Arrange:** Set up the test. Render the component with the necessary props and mocks.
+2.  **Act:** Interact with the component. Simulate user events like clicks or typing.
+3.  **Assert:** Check the result. Verify that the component's output matches the expected outcome.
+
+Tests should focus on the behaviour of the component, and how users percieve and interact with it. 
+You should avoid testing and asserting on implementation details.
+
+### Querying Elements
+Always use the most semantic queries possible, following the recommended priority:
+1.  `getByRole`: For interactive elements (buttons, links, etc.).
+2.  `getByLabelText`: For form fields.
+3.  `getByPlaceholderText`
+4.  `getByText`
+5.  `getByDisplayValue`
+
+Avoid `getByTestId` unless no other semantic query is suitable.
+
+### Simulating User Events
+Always use `userEvent.setup()` to simulate user interactions. It provides a more realistic simulation of browser behavior than `fireEvent`.
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+test('should handle click', async () => {
+  const user = userEvent.setup();
+  const onClick = vi.fn();
+  render(<Button onClick={onClick}>Click Me</Button>);
+
+  const button = screen.getByRole('button', { name: /click me/i });
+  await user.click(button);
+
+  expect(onClick).toHaveBeenCalledTimes(1);
+});
+```
+
+---
+
+## 5. Mocking
+
+To keep tests fast and isolated, mock any external dependencies that are not directly related to the component's UI logic. This includes:
+
+-   API calls (e.g., Supabase client)
+-   Hooks that provide external context (e.g., `useUser`)
+-   Browser/Next.js modules (e.g., `next/navigation`)
+
+Use `vi.mock()` at the top of your test file.
+
+**Example (from our setup):**
+We mocked the `useUser` hook to prevent it from making a real network request to Supabase during the `RecipeCard` test.
+
+```ts
+// src/tests/unit/RecipeCard.test.tsx
+vi.mock('@/hooks/use-user', () => ({
+    useUser: () => ({
+        user: { id: '1', email: 'test@example.com' },
+        isLoading: false,
+    }),
+}));
+```
+
+If a mock is used in more than 2 test files, factor it out into a mock module. That way they stay maintainable when their API changes in the future.
+
+---
+
+## 6. Continuous Integration (CI)
+
+-   The CI workflow at `.github/workflows/ci.yml` automatically runs all unit tests on every pull request to the `main` branch.
+-   **Tests must pass** before a pull request can be merged.
+-   All new features or bug fixes should be accompanied by relevant tests.

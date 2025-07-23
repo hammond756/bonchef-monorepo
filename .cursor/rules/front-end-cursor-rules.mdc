@@ -114,6 +114,30 @@ All new UI implementations and modifications **must** use the central Bonchef De
 
 ---
 
+## How to Structure Components
+
+- **One Job, One Component:** Each component should have a single responsibility. If it grows complex, break it into smaller components.
+
+- **Separate Logic from Presentation:**
+    - **UI Components (`/ui`):** These are "dumb" components.
+        - They receive all data and functions exclusively through `props`.
+        - They do **not** fetch data or manage complex state.
+        - Their only purpose is to render UI.
+    - **Feature Components (`/components/feature-name`):** These are "smart" components.
+        - They manage state and fetch data, usually by calling hooks.
+        - They pass data and functions down to UI components as props.
+
+- **Extract All Logic to Hooks:**
+    - Any reusable logic, data fetching, or state management **must** be extracted into a custom hook in the `src/hooks` directory (e.g., `useUser`, `useRecipeData`).
+    - Components then consume these hooks.
+
+- **Callbacks Must Be Props:**
+    - A component should never call an analytics or API service directly.
+    - Instead, it must call a function passed in via its props (e.g., `<Button onClick={props.onSave}>`).
+    - This makes the component reusable and easy to test. 
+
+---
+
 ## ✅ Testing Requirements
 
 - Use **Playwright** for E2E tests
@@ -121,7 +145,7 @@ All new UI implementations and modifications **must** use the central Bonchef De
   - UI components **must** expose `data-testid` props as needed
 - Prioritize:
   - E2E and integration tests for user flows
-  - Unit tests for core business logic
+  - Unit tests for core business logic (using vitest, following @component-testing.mdc)
 - Ensure all new features include or extend tests
 
 ---
