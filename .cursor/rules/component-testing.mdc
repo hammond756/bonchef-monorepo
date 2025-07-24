@@ -13,9 +13,10 @@ alwaysApply: false
 
 ## 3. File Structure
 
-All component unit tests should reside in the `src/tests/unit/` directory. This keeps them separate from E2E tests and application source code.
+All component unit tests should reside next to the component they're testing. This way it's easy to see
+which components are missing tests and to find the test file to update when updating a component.
 
-- **Example:** A test for `src/components/recipe/recipe-card.tsx` should be located at `src/tests/unit/RecipeCard.test.tsx`.
+- **Example:** A test for `src/components/recipe/recipe-card.tsx` should be located at `src/components/recipe/recipe-card.test.tsx`.
 - **Naming Convention:** Use PascalCase for the test file name, followed by `.test.tsx`.
 
 ---

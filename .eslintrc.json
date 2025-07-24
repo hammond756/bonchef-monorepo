@@ -10,5 +10,5 @@
             }
         ]
     },
-    "ignorePatterns": ["src/tests/**/*"]
+    "ignorePatterns": ["**/*.test.tsx"]
 }
