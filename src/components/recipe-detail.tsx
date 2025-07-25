@@ -1,20 +1,24 @@
+"use client"
+
 import { RecipeRead, GeneratedRecipe } from "@/lib/types"
 import Image from "next/image"
 import { Clock } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { PencilIcon } from "lucide-react"
 import Link from "next/link"
-import { parseDescription } from "@/lib/utils"
+
 import { User } from "@supabase/supabase-js"
-import React from "react"
+import React, { useRef } from "react"
 import { ClaimRecipeButton } from "./claim-recipe-button"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { AppTabsList } from "@/components/ui/app-tabs"
-import { format } from "date-fns"
-import { nl } from "date-fns/locale"
+
 import { InteractiveIngredientsList } from "@/components/interactive-ingredients-list"
 import { RecipeInstructions, InstructionStep } from "./recipe-instructions"
 import { RecipeActionButtons } from "./recipe/recipe-action-buttons"
+import { CommentOverlay } from "@/components/comment-overlay"
+import { CommentButtonRef } from "@/components/comment-button"
+import { useState } from "react"
 
 interface RecipeMetadataProps {
     recipe: RecipeRead
@@ -23,35 +27,9 @@ interface RecipeMetadataProps {
 function RecipeMetadata({ recipe, user }: RecipeMetadataProps & { user?: User }) {
     return (
         <div className="space-y-2 py-1.5">
-            <div className="text-muted-foreground flex items-center justify-between text-sm">
-                <div className="flex items-center gap-1.5">
-                    <Clock className="h-5 w-5" />
-                    <span>{recipe.total_cook_time_minutes} min</span>
-                </div>
-
+            <div className="text-muted-foreground flex items-center justify-end text-sm">
                 <EditRecipeButton user={user} ownerId={recipe.user_id} recipeId={recipe.id} />
             </div>
-
-            {recipe.description && (
-                <div className="prose prose-sm text-muted-foreground max-w-none pt-1.5">
-                    {parseDescription(recipe.description).map((part, index) => {
-                        if (part.type === "url") {
-                            return (
-                                <a
-                                    key={index}
-                                    href={part.content}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-accent-new hover:text-primary underline"
-                                >
-                                    {part.content}
-                                </a>
-                            )
-                        }
-                        return <React.Fragment key={index}>{part.content}</React.Fragment>
-                    })}
-                </div>
-            )}
         </div>
     )
 }
@@ -94,6 +72,8 @@ interface SavedRecipeDetailProps extends BaseRecipeDetailProps {
 type RecipeDetailProps = GeneratedRecipeDetailProps | SavedRecipeDetailProps
 
 export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
+    const [isCommentOverlayOpen, setIsCommentOverlayOpen] = useState(false)
+    const commentButtonRef = useRef<CommentButtonRef>(null)
     // Log de profiel data om te debuggen
     if (variant === "saved" && recipe.profiles) {
         console.log(
@@ -137,30 +117,21 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                                     </h1>
                                 </Link>
                                 {recipe.profiles && (
-                                    <Link
-                                        href={`/profiles/~${recipe.profiles.id}`}
-                                        className="group/profile block text-xs"
-                                    >
-                                        <span className="font-medium group-hover/profile:underline">
-                                            {recipe.profiles.display_name || "Anonieme chef"}
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <Link
+                                            href={`/profiles/~${recipe.profiles.id}`}
+                                            className="group/profile"
+                                        >
+                                            <span className="font-medium group-hover/profile:underline">
+                                                {recipe.profiles.display_name || "Anonieme chef"}
+                                            </span>
+                                        </Link>
+                                        <span className="text-surface/70">|</span>
+                                        <span className="text-surface/70 flex items-center gap-1">
+                                            <Clock className="h-3 w-3" />
+                                            {recipe.total_cook_time_minutes} min
                                         </span>
-                                        {recipe.created_at && (
-                                            <>
-                                                <span className="group-hover/profile:text-primary text-surface/70 mx-2 text-xs transition-colors">
-                                                    |
-                                                </span>
-                                                <span className="group-hover/profile:text-primary text-surface/70 text-xs transition-colors">
-                                                    {format(
-                                                        new Date(
-                                                            (recipe as RecipeRead).created_at!
-                                                        ),
-                                                        "d MMM yyyy",
-                                                        { locale: nl }
-                                                    )}
-                                                </span>
-                                            </>
-                                        )}
-                                    </Link>
+                                    </div>
                                 )}
                             </div>
                             <div className="absolute right-6 bottom-1">
@@ -170,6 +141,8 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                                     shareButtonSize="md"
                                     bookmarkButtonSize="md"
                                     avatarSize="lg"
+                                    commentButtonRef={commentButtonRef}
+                                    onCommentClick={() => setIsCommentOverlayOpen(true)}
                                 />
                             </div>
                         </div>
@@ -260,6 +233,23 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                         </a>
                     </div>
                 )}
+
+            {variant === "saved" && (
+                <CommentOverlay
+                    isOpen={isCommentOverlayOpen}
+                    onClose={() => setIsCommentOverlayOpen(false)}
+                    recipe={recipe as RecipeRead}
+                    onCommentAdded={() => commentButtonRef.current?.incrementCount()}
+                    onCommentDeleted={() => commentButtonRef.current?.decrementCount()}
+                    onCommentCountChange={(increment) => {
+                        if (increment) {
+                            commentButtonRef.current?.incrementCount()
+                        } else {
+                            commentButtonRef.current?.decrementCount()
+                        }
+                    }}
+                />
+            )}
         </div>
     )
 }

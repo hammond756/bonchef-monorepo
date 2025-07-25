@@ -17,6 +17,19 @@ export function SlideInOverlay({ isOpen, onClose, children }: Readonly<SlideInOv
         setIsMounted(true)
     }, [])
 
+    // Prevent body scroll when overlay is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = "hidden"
+        } else {
+            document.body.style.overflow = "unset"
+        }
+
+        return () => {
+            document.body.style.overflow = "unset"
+        }
+    }, [isOpen])
+
     if (!isMounted) return null
 
     const handleBackgroundClick = () => {
@@ -44,7 +57,7 @@ export function SlideInOverlay({ isOpen, onClose, children }: Readonly<SlideInOv
                         animate={{ y: 0 }}
                         exit={{ y: "100%" }}
                         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                        className="bg-surface safe-area-bottom fixed right-0 bottom-0 left-0 z-50 transform rounded-t-2xl border border-gray-200 shadow-2xl"
+                        className="bg-surface safe-area-bottom fixed right-0 bottom-0 left-0 z-50 max-h-[65vh] transform rounded-t-2xl border border-gray-200 shadow-2xl"
                         onClick={handleContentClick}
                     >
                         {children}

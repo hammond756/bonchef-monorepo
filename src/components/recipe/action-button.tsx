@@ -29,19 +29,22 @@ const actionButtonVariants = cva(
     }
 )
 
-const iconVariants = cva("transition-all duration-200 ease-in-out group-hover:scale-110", {
-    variants: {
-        size: {
-            sm: "h-4 w-4",
-            md: "h-5 w-5",
-            lg: "h-6 w-6",
-            xl: "h-7 w-7",
+const iconVariants = cva(
+    "flex items-center justify-center transition-all duration-200 ease-in-out group-hover:scale-110",
+    {
+        variants: {
+            size: {
+                sm: "h-4 w-4",
+                md: "h-5 w-5",
+                lg: "h-6 w-6",
+                xl: "h-7 w-7",
+            },
         },
-    },
-    defaultVariants: {
-        size: "md",
-    },
-})
+        defaultVariants: {
+            size: "md",
+        },
+    }
+)
 
 const textVariants = cva("text-xs font-medium text-white drop-shadow-sm")
 
@@ -67,6 +70,7 @@ export interface ActionButtonProps
     theme?: "light" | "dark"
     size?: "sm" | "md" | "lg" | "xl"
     iconSize?: "sm" | "md" | "lg" | "xl"
+    zeroText?: string
 
     // Accessibility
     activeLabel: string
@@ -89,6 +93,7 @@ export function ActionButton({
     activeLabel,
     inactiveLabel,
     dataTestId,
+    zeroText,
 }: ActionButtonProps) {
     const { user } = useUser()
     const { toast } = useToast()
@@ -127,7 +132,7 @@ export function ActionButton({
 
             {showCount && (
                 <span className={cn(textVariants())} data-testid={`${dataTestId}-count`}>
-                    {formatNumber(count)}
+                    {count === 0 && zeroText ? zeroText : formatNumber(count)}
                 </span>
             )}
         </div>

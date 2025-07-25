@@ -56,6 +56,7 @@ export const RecipeReadSchema = RecipeWriteSchema.extend({
     bookmark_count: z.number().optional(),
     is_liked_by_current_user: z.boolean().optional(),
     like_count: z.number().optional(),
+    comment_count: z.number().optional(),
     profiles: z.object({
         display_name: z.string().nullable(),
         id: z.string(),
@@ -240,3 +241,27 @@ export type ServiceResponse<T> = Promise<
           data: T
       }
 >
+
+// Comment-related types
+export const CommentSchema = z.object({
+    id: z.string(),
+    recipe_id: z.string(),
+    user_id: z.string(),
+    text: z.string().max(500),
+    created_at: z.string().datetime({ offset: true }),
+    updated_at: z.string().datetime({ offset: true }),
+    profiles: z.object({
+        id: z.string(),
+        display_name: z.string().nullable(),
+        avatar: z.string().nullable().optional(),
+    }),
+})
+
+export type Comment = z.infer<typeof CommentSchema>
+
+export const CreateCommentSchema = z.object({
+    recipe_id: z.string(),
+    text: z.string().max(500),
+})
+
+export type CreateComment = z.infer<typeof CreateCommentSchema>

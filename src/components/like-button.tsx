@@ -129,6 +129,7 @@ export function LikeButton({
             showCount={showCount}
             className={className}
             theme={theme}
+            zeroText="Bonchef"
             activeLabel="Unlike dit recept"
             inactiveLabel="Like dit recept"
             dataTestId="like-recipe-button"

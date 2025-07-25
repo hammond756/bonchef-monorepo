@@ -105,6 +105,7 @@ export function BookmarkButton({
             showCount={showCount}
             className={className}
             theme={theme}
+            zeroText="Opslaan"
             activeLabel="Verwijder uit favorieten"
             inactiveLabel="Voeg toe aan favorieten"
             dataTestId="bookmark-recipe-button"

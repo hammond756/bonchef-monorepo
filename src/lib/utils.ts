@@ -5,6 +5,12 @@ import { Ingredient, RecipeWrite } from "./types"
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
 import { GeneratedRecipe } from "./types"
 import { SupabaseClient } from "@supabase/supabase-js"
+import TimeAgo from "javascript-time-ago"
+import nl from "javascript-time-ago/locale/nl"
+
+// Configure TimeAgo with Dutch locale
+TimeAgo.addLocale(nl)
+const timeAgo = new TimeAgo("nl-NL")
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
@@ -363,4 +369,23 @@ export function formatNumber(num: number): string {
 
     // Otherwise show one decimal place
     return `${thousands.toFixed(1)}k`
+}
+
+/**
+ * Formats a timestamp to relative time using javascript-time-ago library
+ * Provides consistent, localized time formatting with proper edge case handling
+ */
+export function formatRelativeTime(timestamp: string): string {
+    try {
+        return timeAgo.format(new Date(timestamp))
+    } catch (error) {
+        // Fallback to simple date formatting if TimeAgo fails
+        console.error("Error formatting time with TimeAgo:", error)
+        const date = new Date(timestamp)
+        return date.toLocaleDateString("nl-NL", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        })
+    }
 }
