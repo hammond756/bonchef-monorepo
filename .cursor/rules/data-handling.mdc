@@ -1,0 +1,168 @@
+---
+description: Writing features that involve fetching/updating data from the database and having users interact with that data.
+alwaysApply: false
+---
+
+# 🧱 Data Service Pattern for Supabase in Next.js 15
+
+This repo uses a structured pattern to separate data access from UI, keep environment-safe imports, and make data fetching feel fast and smooth in the browser.
+
+## ✅ Goals
+
+- Use Supabase safely in both client and server contexts
+- Keep query logic DRY and testable
+- Enable buttery-smooth UX with SWR and optimistic updates
+
+---
+
+## 📁 File Structure
+
+```
+/services/
+    comments/
+        shared.ts   ← shared query logic (no Supabase client here!)
+        client.ts   ← creates browser client, calls shared logic
+        server.ts   ← creates server client, calls shared logic
+```
+
+---
+
+## 🧠 Example Service (Shared + Env-Specific)
+
+### `comments/shared.ts`
+
+```ts
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+export async function listCommentsWithClient(client: SupabaseClient, recipeId: string) {
+  const { data, error } = await client
+    .from("comments")
+    .select("*")
+    .eq("recipe_id", recipeId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function addCommentWithClient(client: SupabaseClient, recipeId: string, content: string) {
+  const { data, error } = await client
+    .from("comments")
+    .insert([{ recipe_id: recipeId, content }])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+```
+
+### `comments/client.ts`
+
+```ts
+import { createClient } from "@/utils/supabase/client";
+import { listCommentsWithClient, addCommentWithClient } from "./shared";
+
+export const listComments = (userId: string, recipeId: string) => {
+    const supabase = createClient()
+    return listCommentsWithClient(supabase, userId, recipeId)
+}
+
+export const addComment = (id: string, content: string) => {
+    const supabase = createClient()
+    return addCommentWithClient(supabase, id, content);
+}
+```
+
+### `comments/server.ts`
+
+```ts
+import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
+import { listCommentsWithClient, addCommentWithClient } from "./shared";
+
+export const listComments = (userId: string, recipeId: string) => {
+    const supabase = createClient()
+    return listCommentsWithClient(supabase, userId, recipeId)
+}
+
+export const addComment = (id: string, content: string) => {
+    const supabase = createClient()
+    return addCommentWithClient(supabase, id, content);
+}
+```
+
+---
+
+## 🎣 SWR + Optimistic UI Hook
+
+```ts
+// hooks/useComments.ts
+import useSWR from "swr";
+import { fetchComments, addComment } from "@/services/comments/client";
+
+export function useComments(recipeId: string) {
+  const { data, error, mutate } = useSWR(
+    recipeId ? [`comments`, recipeId] : null,
+    () => fetchComments(recipeId)
+  );
+
+  const add = async (content: string) => {
+    const optimistic = {
+      id: crypto.randomUUID(),
+      content,
+      recipe_id: recipeId,
+      created_at: new Date().toISOString(),
+    };
+
+    await mutate(async (prev = []) => {
+      try {
+        const saved = await addComment(recipeId, content);
+        return [saved, ...prev];
+      } catch (err) {
+        console.error(err);
+        return prev; // rollback
+      }
+    }, {
+      optimisticData: (prev = []) => [optimistic, ...prev],
+      rollbackOnError: true,
+      revalidate: false,
+    });
+  };
+
+  return { comments: data, isLoading: !data && !error, add };
+}
+```
+
+---
+
+## ✅ Best Practices
+
+* Only import `client.ts` services in client components/hooks
+* Only import `server.ts` in server components or API routes
+* Shared logic goes in `shared.ts` and accepts the client as an argument
+* Use `mutate()` with `optimisticData` in SWR for fast UX
+
+---
+
+## 🧪 Minimal Test Setup
+
+### `shared.test.ts` (using Vitest)
+
+```ts
+import { describe, it, expect } from "vitest";
+import { fetchCommentsWithClient } from "./shared";
+
+it("fetches comments from mock client", async () => {
+  const mockClient = {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          order: async () => ({ data: [{ id: "1", content: "test" }], error: null }),
+        }),
+      }),
+    }),
+  };
+
+  const result = await fetchCommentsWithClient(mockClient as any, "abc");
+  expect(result).toEqual([{ id: "1", content: "test" }]);
+});
+```

@@ -49,6 +49,14 @@ The app is designed to scale across platforms (web, iOS, Android) and must remai
     - Never hardcode dependencies inside services
     - Services must be portable across runtime contexts
 
+Follow @data-handling.mdc for designing testable services
+
+---
+
+## User Experience
+
+User interactions need to be as smooth as possible. That means that when they perform an action, they get instant feedback. To achieve this, we use SWR hooks + mutation. Follow @data-handling.mdc to design components and hooks that allow for efficient revalidation and optimistic updates/
+
 ---
 
 ## 📦 Code Quality & Style

@@ -70,6 +70,7 @@ export function UrlImportPopup({ onDismiss, onSubmit }: Readonly<UrlImportPopupP
                 }}
                 onKeyDown={handleKeyDown}
                 disabled={isLoading}
+                aria-label="URL"
             />
         </ImportPopupBase>
     )

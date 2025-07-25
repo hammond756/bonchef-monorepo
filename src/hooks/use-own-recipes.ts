@@ -19,7 +19,7 @@ export function useOwnRecipes({ enabled }: { enabled?: boolean } = { enabled: tr
         {
             revalidateOnFocus: true,
             revalidateOnReconnect: true,
-            refreshInterval: 2000,
+            refreshInterval: 0,
         }
     )
 

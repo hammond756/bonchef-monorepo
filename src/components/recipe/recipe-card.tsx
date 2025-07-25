@@ -11,7 +11,12 @@ import Image from "next/image"
 function RecipeCardTitle({ title, subTitle }: { title: string; subTitle?: string }) {
     return (
         <div className="absolute bottom-0 left-0 z-10 p-4">
-            <h3 className="text-surface line-clamp-2 text-base font-bold">{title}</h3>
+            <h3
+                className="text-surface line-clamp-2 text-base font-bold"
+                aria-label={`Recept Naam: ${title}`}
+            >
+                {title}
+            </h3>
             {subTitle && <p className="text-xs text-slate-200">{subTitle}</p>}
         </div>
     )

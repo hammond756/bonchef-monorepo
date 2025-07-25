@@ -77,7 +77,7 @@ Use `vi.mock()` at the top of your test file.
 We mocked the `useUser` hook to prevent it from making a real network request to Supabase during the `RecipeCard` test.
 
 ```ts
-// src/tests/unit/RecipeCard.test.tsx
+// src/components/recipes/recipe-card.test.tsx
 vi.mock('@/hooks/use-user', () => ({
     useUser: () => ({
         user: { id: '1', email: 'test@example.com' },
@@ -87,6 +87,53 @@ vi.mock('@/hooks/use-user', () => ({
 ```
 
 If a mock is used in more than 2 test files, factor it out into a mock module. That way they stay maintainable when their API changes in the future.
+
+---
+
+## 6. Testing data-fetching hooks with SWR
+
+```tsx
+// src/hooks/use-comments.test.tsx
+import * as commentsClient from "@/lib/services/recipe-imports-job/client"
+
+const mockComments = [
+    { id: "1", text: "Hi! That's delicious" },
+    { id: "2", text: "Would love to eat this" },
+]
+
+// Mock out dependencies
+vi.mock("@/lib/services/comments/client")
+vi.mock("@/hooks/use-user", () => ({
+    useUser: () => ({ user: { id: "user-123" } }),
+}))
+
+const withSWRConfig = (hookFn: () => any) =>
+    renderHook(hookFn, {
+        wrapper: ({ children }: { children: React.ReactNode }) => (
+            <SWRConfig value={{ provider: () => new Map() }}>{children}</SWRConfig>
+        ),
+    })
+
+describe("useComments", () => {
+    beforeEach(() => {
+        vi.resetAllMocks()
+    })
+
+    it("should fetch and return comments", async () => {
+        // @ts-ignore
+        commentsClient.listComments.mockResolvedValue({
+            success: true,
+            data: mockComments,
+        })
+
+        const { result } = withSWRConfig(() => useComments())
+
+        await waitFor(() => {
+            expect(result.current.comments).toEqual(mockComments)
+            expect(result.current.isLoading).toBe(false)
+        })
+    })
+```
 
 ---
 

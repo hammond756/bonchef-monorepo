@@ -33,6 +33,7 @@ export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayPr
                     <button
                         onClick={() => onSelectMode("photo")}
                         className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-orange-100 p-4 text-center text-orange-800 transition-colors hover:bg-orange-200"
+                        aria-label="Foto"
                     >
                         <Camera className="h-8 w-8" />
                         <span className="text-sm font-medium">Foto</span>
@@ -40,6 +41,7 @@ export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayPr
                     <button
                         onClick={() => onSelectMode("url")}
                         className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-blue-100 p-4 text-center text-blue-800 transition-colors hover:bg-blue-200"
+                        aria-label="Website"
                     >
                         <LinkIcon className="h-8 w-8" />
                         <span className="text-sm font-medium">Website</span>
@@ -47,6 +49,7 @@ export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayPr
                     <button
                         onClick={() => onSelectMode("text")}
                         className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-purple-100 p-4 text-center text-purple-800 transition-colors hover:bg-purple-200"
+                        aria-label="Notitie"
                     >
                         <FileText className="h-8 w-8" />
                         <span className="text-sm font-medium">Notitie</span>

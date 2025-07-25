@@ -49,6 +49,7 @@ export function TabBar({ children, className }: TabBarProps) {
                     "text-muted-foreground hover:bg-surface/5 flex w-1/4 flex-col items-center justify-center rounded-lg pb-2 transition-colors",
                     pathname === "/ontdek" ? "bg-status-green-bg text-primary pt-2" : "pt-1"
                 )}
+                aria-label="Feed"
             >
                 <Home className="mb-1 h-6 w-6" />
                 <span
@@ -74,6 +75,7 @@ export function TabBar({ children, className }: TabBarProps) {
                     "text-muted-foreground hover:bg-surface/5 flex w-1/4 flex-col items-center justify-center rounded-lg pb-2 transition-colors",
                     pathname === "/collection" ? "bg-status-green-bg text-primary pt-2" : "pt-1"
                 )}
+                aria-label="Collectie"
             >
                 <div className="relative">
                     <Bookmark className="mb-1 h-6 w-6" />

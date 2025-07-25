@@ -4,8 +4,8 @@ import { cookies } from "next/headers"
 import { createAdminClient, createClient } from "@/utils/supabase/server"
 import { OnboardingService } from "@/lib/services/onboarding-service"
 import { RecipeService } from "@/lib/services/recipe-service"
-import { RecipeImportJobService } from "@/lib/services/recipe-import-job-service"
 import { revalidatePath } from "next/cache"
+import { assignJobsToUserWithClient } from "@/lib/services/recipe-imports-job/shared"
 
 export async function associateOnboardingData(userId: string) {
     const cookieStore = await cookies()
@@ -22,7 +22,6 @@ export async function associateOnboardingData(userId: string) {
     const supabaseAdmin = await createAdminClient()
     const onboardingService = new OnboardingService(supabaseAdmin)
     const recipeService = new RecipeService(supabaseAdmin)
-    const jobService = new RecipeImportJobService(supabaseAdmin)
 
     // 1. Get all associated data
     const associationsResponse =
@@ -42,7 +41,7 @@ export async function associateOnboardingData(userId: string) {
         return { success: false }
     }
 
-    const jobAssignResponse = await jobService.assignJobsToUser(jobIds, userId)
+    const jobAssignResponse = await assignJobsToUserWithClient(supabaseAdmin, jobIds, userId)
 
     if (!jobAssignResponse.success) {
         console.error("Error assigning jobs to user:", jobAssignResponse.error)

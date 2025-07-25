@@ -15,7 +15,7 @@ import sharp from "sharp"
 import fs from "fs"
 import path from "path"
 import { OnboardingService } from "@/lib/services/onboarding-service"
-import { RecipeImportJobService } from "@/lib/services/recipe-import-job-service"
+import { createJobWithClient } from "@/lib/services/recipe-imports-job/shared"
 
 type GeneratedRecipeWithSource = GeneratedRecipe & {
     source_name?: string | null
@@ -316,8 +316,12 @@ export async function startRecipeImportJob(
         throw new Error("Could not determine user ID for import job.")
     }
 
-    const jobService = new RecipeImportJobService(supabaseAdminClient)
-    const jobResponse = await jobService.createJob(sourceType, sourceData, userId)
+    const jobResponse = await createJobWithClient(
+        supabaseAdminClient,
+        sourceType,
+        sourceData,
+        userId
+    )
 
     if (!jobResponse.success) {
         throw new Error(jobResponse.error)
