@@ -78,7 +78,13 @@ export function ImportPopupBase({
                 >
                     <div className="mb-4 flex items-center justify-between">
                         <h2 className="text-lg font-semibold">{title}</h2>
-                        <Button variant="ghost" size="icon" onClick={onClose} disabled={isLoading}>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onClose}
+                            disabled={isLoading}
+                            aria-label="Sluiten"
+                        >
                             <X className="h-5 w-5" />
                         </Button>
                     </div>
@@ -86,7 +92,12 @@ export function ImportPopupBase({
                     <div className="space-y-4">
                         {children}
                         {error && <p className="text-sm text-red-500">{error}</p>}
-                        <Button onClick={onSubmit} className="w-full" disabled={isLoading}>
+                        <Button
+                            onClick={onSubmit}
+                            className="w-full"
+                            disabled={isLoading}
+                            aria-label="Importeren"
+                        >
                             {isLoading ? "Bezig..." : "bonchef!"}
                         </Button>
                     </div>

@@ -85,7 +85,7 @@ export function IntroductionScreen({ onNext }: Readonly<IntroductionScreenProps>
                 ))}
             </div>
             <div className="mt-6">
-                <Button onClick={onNext} className="w-full" size="lg">
+                <Button onClick={onNext} className="w-full" size="lg" aria-label="Volgende">
                     Start met mijn eerste recept! 🚀
                 </Button>
             </div>

@@ -25,7 +25,7 @@ export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayPr
             <div className="p-4">
                 <div className="flex items-center justify-between border-b pb-3">
                     <h2 className="text-lg font-semibold">Recept importeren</h2>
-                    <Button variant="ghost" size="icon" onClick={onClose}>
+                    <Button variant="ghost" size="icon" onClick={onClose} aria-label="Sluiten">
                         <X className="h-5 w-5" />
                     </Button>
                 </div>

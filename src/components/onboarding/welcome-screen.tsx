@@ -24,10 +24,15 @@ export function WelcomeScreen({ onNext, onSkip }: Readonly<WelcomeScreenProps>) 
             <h2 className="text-4xl font-bold">Welkom bij Bonchef!</h2>
             <p className="text-muted-foreground mt-2 text-lg">Je nieuwe sociale kookboek</p>
             <div className="mt-10 w-full max-w-sm">
-                <Button onClick={onNext} className="w-full" size="lg">
+                <Button onClick={onNext} className="w-full" size="lg" aria-label="Volgende">
                     Laat me zien wat Bonchef doet! 👀
                 </Button>
-                <Button onClick={onSkip} variant="link" className="text-primary mt-4 underline">
+                <Button
+                    onClick={onSkip}
+                    variant="link"
+                    className="text-primary mt-4 underline"
+                    aria-label="Annuleren"
+                >
                     Later misschien
                 </Button>
             </div>

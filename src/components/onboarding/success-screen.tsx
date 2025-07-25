@@ -26,7 +26,12 @@ export function SuccessScreen({ onAcknowledge }: Readonly<SuccessScreenProps>) {
                     </div>
                 </div>
 
-                <Button onClick={onAcknowledge} className="mt-8 w-full font-bold" size="lg">
+                <Button
+                    onClick={onAcknowledge}
+                    className="mt-8 w-full font-bold"
+                    size="lg"
+                    aria-label="Aanmelden"
+                >
                     ✨ Gratis account aanmaken
                 </Button>
                 <p className="text-muted-foreground mt-2 text-sm">30 sec · Geen creditcard nodig</p>

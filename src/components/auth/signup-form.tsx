@@ -134,6 +134,7 @@ export function SignUpForm() {
                     type="email"
                     placeholder="name@example.com"
                     required
+                    aria-label="Email"
                 />
             </div>
             <div className="space-y-2">
@@ -144,6 +145,7 @@ export function SignUpForm() {
                     type="text"
                     placeholder="John Doe"
                     required
+                    aria-label="Gebruikersnaam"
                 />
                 <p className="text-muted-foreground text-sm">
                     De naam waaronder je publieke recepten zichtbaar zijn
@@ -157,6 +159,7 @@ export function SignUpForm() {
                     type="password"
                     placeholder="••••••••"
                     required
+                    aria-label="Wachtwoord"
                 />
             </div>
             <div className="space-y-2">
@@ -167,9 +170,15 @@ export function SignUpForm() {
                     type="password"
                     placeholder="••••••••"
                     required
+                    aria-label="Bevestig wachtwoord"
                 />
             </div>
-            <Button className="w-full" type="submit" disabled={isLoading}>
+            <Button
+                className="w-full"
+                type="submit"
+                disabled={isLoading}
+                aria-label="Account aanmaken"
+            >
                 {isLoading ? "Account aanmaken..." : "Account aanmaken"}
             </Button>
             <div className="text-center text-sm">

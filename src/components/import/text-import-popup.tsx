@@ -37,6 +37,7 @@ export function TextImportPopup({ onDismiss, onSubmit }: Readonly<TextImportPopu
                 placeholder="Begin hier met het plakken van je recept..."
                 className="h-32"
                 value={text}
+                aria-label="Recepttekst"
                 onChange={(e) => {
                     setText(e.target.value)
                     setError(null)

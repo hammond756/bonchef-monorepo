@@ -20,6 +20,7 @@ export function ImportButton({
                 "flex w-full items-center gap-4 rounded-lg border border-slate-200 p-4 text-left transition-colors hover:bg-slate-50",
                 className
             )}
+            aria-label={title}
         >
             <div className="flex items-center gap-4">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-full`}>

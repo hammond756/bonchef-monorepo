@@ -3,13 +3,14 @@
 import { useCallback, useEffect } from "react"
 import { useOnboarding } from "@/hooks/use-onboarding"
 import { usePathname } from "next/navigation"
-import { useUser } from "@/hooks/use-user"
 import { useNavigationStore } from "@/lib/store/navigation-store"
+import { useSession } from "@/hooks/use-session"
 
 // This component will be a client-side component responsible for handling
 // the logic of when to trigger the onboarding modal.
 export function OnboardingTrigger() {
-    const { user, isLoading: isUserLoading } = useUser()
+    const { session } = useSession()
+
     const {
         openModal,
         onboardingSessionId,
@@ -47,16 +48,15 @@ export function OnboardingTrigger() {
     const setDirectRecipePageTrigger = useCallback(() => {
         if (
             pathname === "/ontdek" &&
-            history.at(-1)?.startsWith("/recipe/") &&
-            history.length === 2
+            history.at(-2)?.startsWith("/recipe/") &&
+            history.length === 3
         ) {
             return startOnboardingIn(1)
         }
     }, [pathname, history, startOnboardingIn])
 
     useEffect(() => {
-        console.log({ isUserLoading, isOnboardingLoading, user, onboardingSessionId })
-        if (isUserLoading || isOnboardingLoading || user || onboardingSessionId) return
+        if (isOnboardingLoading || session || onboardingSessionId) return
 
         const cleanupDuration = setDurationTrigger()
         const cleanupCollection = setCollectionPageTrigger()
@@ -68,9 +68,8 @@ export function OnboardingTrigger() {
             if (cleanupDirectRecipe) cleanupDirectRecipe()
         }
     }, [
-        user,
+        session,
         onboardingSessionId,
-        isUserLoading,
         isOnboardingLoading,
         setDurationTrigger,
         setCollectionPageTrigger,

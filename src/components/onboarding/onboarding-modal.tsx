@@ -67,7 +67,7 @@ export function OnboardingModal() {
                             <ArrowLeft className="h-6 w-6" />
                         </button>
                         <h2 className="text-lg font-semibold">Onboarding</h2>
-                        <button onClick={closeModal}>
+                        <button onClick={closeModal} aria-label="Sluiten">
                             <X className="h-6 w-6" />
                         </button>
                     </div>
