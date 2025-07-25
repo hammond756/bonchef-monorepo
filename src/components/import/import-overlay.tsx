@@ -36,7 +36,7 @@ export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayPr
                         aria-label="Foto"
                     >
                         <Camera className="h-8 w-8" />
-                        <span className="text-sm font-medium">Foto</span>
+                        <span className="text-sm font-medium">Scan</span>
                     </button>
                     <button
                         onClick={() => onSelectMode("url")}
