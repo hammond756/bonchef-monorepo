@@ -10,7 +10,7 @@ import { useImportStatusStore } from "@/lib/store/import-status-store"
 import { ImportMode } from "@/lib/types"
 import { PendingRecipeBadge } from "./pending-recipe-badge"
 import { useOnboarding } from "@/hooks/use-onboarding"
-import { useUser } from "@/hooks/use-user"
+import { useSession } from "@/hooks/use-session"
 
 interface TabBarProps {
     children?: React.ReactNode
@@ -22,10 +22,13 @@ export function TabBar({ children, className }: TabBarProps) {
     const [isImportOverlayVisible, setIsImportOverlayVisible] = useState(false)
     const { openModal: openImportModal } = useImportStatusStore()
     const { openModal: openOnboardingModal } = useOnboarding()
-    const { user } = useUser()
+    const { session } = useSession()
 
     const handleOpenOverlay = () => {
-        if (user) {
+        console.log("[trigger-bug] click on '+' button", {
+            session: !!session,
+        })
+        if (session) {
             setIsImportOverlayVisible(true)
         } else {
             openOnboardingModal()

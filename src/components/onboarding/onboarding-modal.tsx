@@ -10,6 +10,7 @@ import { ONBOARDING_STEPS, useOnboarding } from "@/hooks/use-onboarding"
 import { SlideInOverlay } from "@/components/ui/slide-in-overlay"
 import { usePostHog } from "posthog-js/react"
 import { Progress } from "@/components/ui/progress"
+import { useEffect } from "react"
 
 export function OnboardingModal() {
     const router = useRouter()
@@ -18,8 +19,22 @@ export function OnboardingModal() {
 
     const currentStep = ONBOARDING_STEPS[currentStepIndex]
 
+    useEffect(() => {
+        if (isOpen) {
+            posthog.capture("opened_onboarding", {
+                step_index: currentStepIndex,
+                total_steps: ONBOARDING_STEPS.length,
+            })
+        } else {
+            posthog.capture("closed_onboarding", {
+                step_index: currentStepIndex,
+                total_steps: ONBOARDING_STEPS.length,
+            })
+        }
+    }, [isOpen])
+
     const handleNextStep = () => {
-        posthog.capture("onboarding_step_completed", {
+        posthog.capture("completed_onboarding_step", {
             step_index: currentStepIndex,
             total_steps: ONBOARDING_STEPS.length,
         })
