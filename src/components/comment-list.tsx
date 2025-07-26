@@ -7,15 +7,26 @@ import { Loader2 } from "lucide-react"
 interface CommentListProps {
     recipeId: string
     onCommentCreated?: () => void
+    onCommentDeleted?: () => void
 }
 
-export function CommentList({ recipeId, onCommentCreated }: Readonly<CommentListProps>) {
+export function CommentList({
+    recipeId,
+    onCommentCreated,
+    onCommentDeleted,
+}: Readonly<CommentListProps>) {
     const { comments, isLoading, error, mutate } = useComments({ recipeId })
 
     // Trigger mutate when onCommentCreated is called
-    const handleCommentCreated = () => {
+    const _handleCommentCreated = () => {
         mutate() // Revalidate the data
         onCommentCreated?.()
+    }
+
+    // Trigger mutate when onCommentDeleted is called
+    const handleCommentDeleted = () => {
+        mutate() // Revalidate the data
+        onCommentDeleted?.()
     }
 
     if (isLoading) {
@@ -47,7 +58,7 @@ export function CommentList({ recipeId, onCommentCreated }: Readonly<CommentList
     return (
         <div className="space-y-4 p-4">
             {comments.map((comment) => (
-                <CommentItem key={comment.id} comment={comment} onDelete={handleCommentCreated} />
+                <CommentItem key={comment.id} comment={comment} onDelete={handleCommentDeleted} />
             ))}
         </div>
     )

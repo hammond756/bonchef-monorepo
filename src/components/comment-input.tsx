@@ -5,6 +5,7 @@ import { Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ProfileImage } from "@/components/ui/profile-image"
 import { useUser } from "@/hooks/use-user"
+import { useProfile } from "@/hooks/use-profile"
 import { useCommentActions } from "@/hooks/use-comment-actions"
 
 interface CommentInputProps {
@@ -19,6 +20,7 @@ export function CommentInput({
     onCommentAdded,
 }: Readonly<CommentInputProps>) {
     const { user } = useUser()
+    const { profile } = useProfile()
     const { createComment, isCreating } = useCommentActions()
     const [text, setText] = useState("")
 
@@ -56,11 +58,7 @@ export function CommentInput({
         <div className="flex items-end space-x-3">
             {/* User Avatar */}
             <div className="flex-shrink-0">
-                <ProfileImage
-                    src={user.user_metadata?.avatar_url}
-                    name={user.user_metadata?.full_name}
-                    size={32}
-                />
+                <ProfileImage src={profile?.avatar} name={profile?.display_name} size={32} />
             </div>
 
             {/* Input Field */}

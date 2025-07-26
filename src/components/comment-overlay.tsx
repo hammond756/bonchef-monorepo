@@ -73,9 +73,12 @@ export function CommentOverlay({
                     <CommentList
                         recipeId={recipe.id}
                         onCommentCreated={() => {
-                            // Notify parent about comment deletion
+                            // Trigger a refetch of comments after creating a new comment
+                            // This will be handled by the CommentList component
+                        }}
+                        onCommentDeleted={() => {
+                            // Notify parent about comment deletion and update count
                             onCommentDeleted?.()
-                            // Update comment count
                             onCommentCountChange?.(false)
                         }}
                     />
@@ -90,10 +93,8 @@ export function CommentOverlay({
                             // This will be handled by the CommentList component
                         }}
                         onCommentAdded={() => {
-                            // Notify parent about comment addition
+                            // Notify parent about comment addition and update count
                             onCommentAdded?.()
-                            // Update comment count
-                            onCommentCountChange?.(true)
                         }}
                     />
                 </div>
