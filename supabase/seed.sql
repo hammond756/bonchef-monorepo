@@ -1,5 +1,23 @@
 --
--- Data for Name: users; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 15.6
+-- Dumped by pg_dump version 15.13 (Homebrew)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: auth; Owner: -
 --
 
 INSERT INTO auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, invited_at, confirmation_token, confirmation_sent_at, recovery_token, recovery_sent_at, email_change_token_new, email_change, email_change_sent_at, last_sign_in_at, raw_app_meta_data, raw_user_meta_data, is_super_admin, created_at, updated_at, phone, phone_confirmed_at, phone_change, phone_change_token, phone_change_sent_at, email_change_token_current, email_change_confirm_status, banned_until, reauthentication_token, reauthentication_sent_at, is_sso_user, deleted_at, is_anonymous) VALUES ('00000000-0000-0000-0000-000000000000', '2a9be8a3-6a03-4819-8e9f-9d04b3a6ea2e', 'authenticated', 'authenticated', 'test2@localhost.nl', '$2a$10$OPuDnh/L1kJEZaVsYJ37eu3ZypEz5ltNOl8TjI1IqeM.sX1xM5EYO', '2025-06-02 19:52:13.15778+00', NULL, '', NULL, '', NULL, '', '', NULL, '2025-06-02 19:52:13.301185+00', '{"provider": "email", "providers": ["email"]}', '{"sub": "2a9be8a3-6a03-4819-8e9f-9d04b3a6ea2e", "email": "test2@localhost.nl", "display_name": "Another Test User (Localhost)", "email_verified": true, "phone_verified": false}', NULL, '2025-06-02 19:52:13.113316+00', '2025-06-05 21:14:43.378601+00', NULL, NULL, '', '', NULL, '', 0, NULL, '', NULL, false, NULL, false);
@@ -9,7 +27,7 @@ INSERT INTO auth.users (instance_id, id, aud, role, email, encrypted_password, e
 
 
 --
--- Data for Name: identities; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
+-- Data for Name: identities; Type: TABLE DATA; Schema: auth; Owner: -
 --
 
 INSERT INTO auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at, id) VALUES ('607d0c66-9281-420e-8beb-825bf5ef1aff', '607d0c66-9281-420e-8beb-825bf5ef1aff', '{"sub": "607d0c66-9281-420e-8beb-825bf5ef1aff", "email": "test@playwright.com", "display_name": "Test User (Playwright)", "email_verified": false, "phone_verified": false}', 'email', '2025-06-02 19:38:43.531777+00', '2025-06-02 19:38:43.532058+00', '2025-06-02 19:38:43.532058+00', '27184418-480a-4a73-ba7a-0e0d59f2405e');
@@ -17,8 +35,21 @@ INSERT INTO auth.identities (provider_id, user_id, identity_data, provider, last
 INSERT INTO auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at, id) VALUES ('2a9be8a3-6a03-4819-8e9f-9d04b3a6ea2e', '2a9be8a3-6a03-4819-8e9f-9d04b3a6ea2e', '{"sub": "2a9be8a3-6a03-4819-8e9f-9d04b3a6ea2e", "email": "test2@localhost.nl", "display_name": "Another Test User (Localhost)", "email_verified": false, "phone_verified": false}', 'email', '2025-06-02 19:52:13.150064+00', '2025-06-02 19:52:13.150742+00', '2025-06-02 19:52:13.150742+00', '1fd337dd-b0c6-464c-b222-20311e7a4f68');
 INSERT INTO auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at, id) VALUES ('0149f366-5b4f-4f10-be0d-3aacf1cdbd73', '0149f366-5b4f-4f10-be0d-3aacf1cdbd73', '{"sub": "0149f366-5b4f-4f10-be0d-3aacf1cdbd73", "email": "marketing@bonchef.io", "email_verified": false, "phone_verified": false}', 'email', '2025-06-07 21:46:02.244532+00', '2025-06-07 21:46:02.244598+00', '2025-06-07 21:46:02.244598+00', '2af65c21-0e2f-4d60-a6eb-e7d6faa17373');
 
+
 --
--- Data for Name: recipes; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: instances; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: one_time_tokens; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: recipes; Type: TABLE DATA; Schema: public; Owner: -
 --
 
 INSERT INTO public.recipes (id, title, total_cook_time_minutes, ingredients, instructions, description, n_portions, thumbnail, source_url, source_name, created_at, user_id, is_public, status) VALUES ('684af985-4a7d-44e8-94d0-bb2eb2714c42', 'Mini Caprese Spiesjes – Een Italiaanse Klassieker op een Prikker', 10, '[{"name": "Spiesjes", "ingredients": [{"unit": "whole", "quantity": {"low": 20, "high": 25, "type": "range"}, "description": "cherrytomaten, gehalveerd"}, {"unit": "whole", "quantity": {"low": 20, "high": 25, "type": "range"}, "description": "mini-mozzarellabolletjes (bocconcini)"}, {"unit": "whole", "quantity": {"low": 20, "high": 25, "type": "range"}, "description": "verse basilicumblaadjes, schoon en droog"}]}, {"name": "Dressing", "ingredients": [{"unit": "tablespoon", "quantity": {"low": 2, "high": 3, "type": "range"}, "description": "olijfolie, extra vierge"}, {"unit": "tablespoon", "quantity": {"low": 2, "high": 3, "type": "range"}, "description": "balsamico azijn"}, {"unit": "pinch", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "zout en peper naar smaak"}]}, {"name": "Optioneel", "ingredients": [{"unit": "whole", "quantity": {"low": 10, "high": 12, "type": "range"}, "description": "houten prikkers, voor het opspelden"}]}]', '{"Begin met het pakken van de cherrytomaten, mozzarella en verse basilicum. Zorg ervoor dat de tomaten gehalveerd zijn om makkelijker aan de prikker te blijven zitten.","Neem een houten prikker en rijg er voorzichtig een halve cherrytomaat aan, gevolgd door een blaadje basilicum en een mini-mozzarellabolletje. Herhaal dit tot de prikker vol is of alle ingrediënten op zijn.","Meng in een klein kommetje de olijfolie, balsamico azijn, en een snufje zout en peper. Deze combinatie maakt een heerlijk frisse dressing.","Druppel de dressing bovenop de spiesjes. Laat een beetje over elk spiesje vallen voor die authentieke Italiaanse smaak.","Serveer de caprese spiesjes direct op een mooie schaal, of bewaar ze in de koelkast als je ze later wilt serveren. Ze zien er niet alleen feestelijk uit, maar smaken ook nog eens geweldig!","Tip: Gebruik houten prikkers die iets vocht hebben opgenomen in water. Dit voorkomt dat ze versplinteren en zorgt dat de ingrediënten beter blijven zitten."}', '', 4, 'http://127.0.0.1:54321/storage/v1/object/public/recipe-images/9222ebb4-abee-44cd-a361-e9d4f6ae2633.png', 'https://app.bonchef.io', 'BonChef', '2025-06-02 19:43:41.466277+00', '30e849e7-9577-4e52-a148-ba6abbdc407b', false, 'PUBLISHED');
@@ -34,3 +65,59 @@ INSERT INTO public.recipes (id, title, total_cook_time_minutes, ingredients, ins
 INSERT INTO public.recipes (id, title, total_cook_time_minutes, ingredients, instructions, description, n_portions, thumbnail, source_url, source_name, created_at, user_id, is_public, status) VALUES ('e8b77524-da68-4e37-89dc-57d86a4ee334', 'Krokante Hummus Wrap Fiesta', 15, '[{"name": "Voor de wrap", "ingredients": [{"unit": "whole", "quantity": {"low": 4, "high": 4, "type": "range"}, "description": "volkoren wraps"}, {"unit": "gram", "quantity": {"low": 300, "high": 300, "type": "range"}, "description": "hummus, kies je favoriete smaak"}, {"unit": "whole", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "kleine komkommer"}, {"unit": "whole", "quantity": {"low": 2, "high": 2, "type": "range"}, "description": "wortelen"}, {"unit": "whole", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "rode paprika"}, {"unit": "handful", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "gemengde sla, gebruik restjes"}, {"unit": "handful", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "verse muntblaadjes, optioneel voor een frisse touch"}, {"unit": "tablespoon", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "citroensap, vers geperst"}]}]', '{"Begin met de voorbereidingen. Was de komkommer, wortelen en paprika grondig. Snijd de komkommer in dunne reepjes en rasp de wortelen fijn. Verwijder de zaadjes uit de paprika en snijd deze ook in smalle reepjes.","Nu komt het smeuïge deel! Spreid een royale hoeveelheid hummus over elke volkoren wrap. Vergeet niet de randjes vrij te laten; het bespaart je later geknoei.","Besprenkel de hummus dunnetjes met het versgeperste citroensap voor een frisse kick.","Nu is het tijd om te bouwen. Verdeel een handvol gemengde sla over de hummus en voeg vervolgens de komkommer, wortel en paprika toe. Wil je iets extra verfrissends? Strooi dan wat verse muntblaadjes over de groenten.","En rol maar! Begin aan de ene kant van de wrap en rol hem stevig op. Zorg ervoor dat de vulling netjes binnen blijft zodat je later niet morsen.","Je wraps zijn klaar om geserveerd te worden! Snijd ze eventueel schuin doormidden voor een feestelijke presentatie en hap erin."}', '', 4, 'http://127.0.0.1:54321/storage/v1/object/public/recipe-images/daf58feb-505c-4cc9-8cf0-6a706ea38fce.png', 'https://app.bonchef.io', 'BonChef', '2025-06-02 19:52:46.970186+00', '2a9be8a3-6a03-4819-8e9f-9d04b3a6ea2e', true, 'PUBLISHED');
 INSERT INTO public.recipes (id, title, total_cook_time_minutes, ingredients, instructions, description, n_portions, thumbnail, source_url, source_name, created_at, user_id, is_public, status) VALUES ('81a68121-a4a0-4993-a863-d48f07afbd63', 'Krokante Kikkererwtensnacks: Een Crispy Tussendoortje', 30, '[{"name": "Kikkererwten", "ingredients": [{"unit": "gram", "quantity": {"low": 400, "high": 400, "type": "range"}, "description": "een blik kikkererwten, uitgelekt en afgespoeld"}]}, {"name": "Kruidenmix", "ingredients": [{"unit": "tablespoon", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "olijfolie"}, {"unit": "teaspoon", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "paprikapoeder"}, {"unit": "teaspoon", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "knoflookpoeder"}, {"unit": "teaspoon", "quantity": {"low": 0.5, "high": 0.5, "type": "range"}, "description": "zout"}, {"unit": "teaspoon", "quantity": {"low": 0.5, "high": 0.5, "type": "range"}, "description": "gemalen zwarte peper"}]}]', '{"Verwarm de oven voor op 200 graden Celsius zodat deze lekker warm is als de kikkererwten erin gaan.","Spoel de kikkererwten goed af onder koud water en laat ze uitlekken in een vergiet. Dep ze daarna droog met een schone theedoek of keukenpapier. Hoe droger de kikkererwten, hoe krokanter ze worden.","Doe de droge kikkererwten in een kom en voeg de olijfolie, paprikapoeder, knoflookpoeder, zout en zwarte peper toe. Voor een pittige variant kun je een snufje cayennepeper toevoegen!","Meng de kikkererwten goed met de kruiden en zorg ervoor dat ze allemaal een mooi laagje hebben.","Verspreid de gekruide kikkererwten gelijkmatig over een bakplaat bekleed met bakpapier. Zorg ervoor dat ze niet overlappen, dit helpt ze knapperig te bakken.","Schuif de bakplaat in de oven en bak de kikkererwten in ongeveer 25 minuten knapperig. Schud ze halverwege de baktijd even goed door om gelijkmatig te bakken.","Haal de kikkererwten uit de oven als ze goudbruin en knapperig zijn naar wens. Laat ze even afkoelen voordat je aanvalt, want ze worden na het bakken nog iets krokanter."}', '', 4, 'http://127.0.0.1:54321/storage/v1/object/public/recipe-images/722a71df-a99d-4a6b-a99b-709a92d81af4.png', 'https://app.bonchef.io', 'BonChef', '2025-06-02 19:53:39.565835+00', '2a9be8a3-6a03-4819-8e9f-9d04b3a6ea2e', true, 'PUBLISHED');
 INSERT INTO public.recipes (id, title, total_cook_time_minutes, ingredients, instructions, description, n_portions, thumbnail, source_url, source_name, created_at, user_id, is_public, status) VALUES ('a8af6a96-47e0-49e0-863f-0ec55eb07008', 'Romige citroenrisotto: De smaak van frisheid en comfort in één', 35, '[{"name": "Basis Risotto", "ingredients": [{"unit": "gram", "quantity": {"low": 300, "high": 320, "type": "range"}, "description": "risotto rijst (zoals Arborio)"}, {"unit": "whole", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "ui gesnipperd"}, {"unit": "tablespoon", "quantity": {"low": 2, "high": 3, "type": "range"}, "description": "olijfolie"}, {"unit": "liter", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "groentebouillon (kan eventueel gemaakt worden van blokjes)"}, {"unit": "gram", "quantity": {"low": 50, "high": 60, "type": "range"}, "description": "boter"}]}, {"name": "Citroensmaken", "ingredients": [{"unit": "whole", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "citroen (zowel rasp als sap)"}, {"unit": "gram", "quantity": {"low": 100, "high": 120, "type": "range"}, "description": "geraspte Parmezaanse kaas"}, {"unit": "pinch", "quantity": {"low": 1, "high": 1, "type": "range"}, "description": "zout en peper naar smaak"}]}]', '{"Verhit de olijfolie in een ruime pan op middelhoog vuur. Voeg de gesnipperde ui toe en bak deze in ongeveer 2 tot 3 minuten glazig.","Roer de risottorijst door de glazige ui en bak tot de rijstkorrels licht beginnen te glanzen. Dit zou ongeveer een minuut moeten duren.","Fruit ondertussen de citroenrasp kort mee voor een extra geurige punch.","Voeg een soeplepel van de hete groentebouillon toe aan de rijst en roer goed. Wacht tot de bouillon bijna is opgenomen voordat je een nieuwe lepel toevoegt.","Herhaal dit proces totdat de rijst beetgaar is en een romige textuur heeft, dit duurt ongeveer 18 tot 20 minuten.","Haal de pan van het vuur en voeg de boter, de Parmezaanse kaas en het citroensap toe. Roer goed door zodat alles smelt en de risotto lekker romig wordt.","Breng op smaak met zout en peper. Verdeel de risotto over de borden en serveer direct voor een frisse en luxe eetervaring."}', '', 4, 'http://127.0.0.1:54321/storage/v1/object/public/recipe-images/a3c5b55f-2e1e-4093-970a-23d4160fc533.png', 'https://app.bonchef.io', 'BonChef', '2025-06-03 20:29:01.019505+00', '2a9be8a3-6a03-4819-8e9f-9d04b3a6ea2e', false, 'PUBLISHED');
+
+
+--
+-- Data for Name: comments; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: conversation_history; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: recipe_import_jobs; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: onboarding_associations; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: recipe_bookmarks; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: recipe_likes; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Name: refresh_tokens_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: -
+--
+
+SELECT pg_catalog.setval('auth.refresh_tokens_id_seq', 1, false);
+
+
+--
+-- Name: recipe_likes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.recipe_likes_id_seq', 1, false);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
