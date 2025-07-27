@@ -357,4 +357,6 @@ export async function startRecipeImportJob(
         },
         onboardingSessionId
     )
+
+    return job.id
 }

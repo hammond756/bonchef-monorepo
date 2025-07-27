@@ -46,6 +46,28 @@ export async function createJobWithClient(
     return { success: true, data }
 }
 
+export async function getJobByRecipeIdWithClient(
+    client: SupabaseClient,
+    recipeId: string
+): ServiceResponse<RecipeImportJob> {
+    const { data, error } = await client
+        .from("recipe_import_jobs")
+        .select("*")
+        .eq("recipe_id", recipeId)
+        .single()
+
+    if (error) {
+        if (error.code === "PGRST116") {
+            // No job found for this recipe (not an error in this context)
+            return { success: false, error: "No job found for this recipe" }
+        }
+        console.error("Failed to get job ID by recipe ID:", error)
+        return { success: false, error: error.message }
+    }
+
+    return { success: true, data }
+}
+
 export async function assignJobsToUserWithClient(
     client: SupabaseClient,
     jobIds: string[],

@@ -127,7 +127,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
     return (
         <div className="flex flex-1 flex-col">
-            <NavigationTracker path={`/recipe/${id}`} />
+            <NavigationTracker path={`/recipes/${id}`} />
             <RecipeDetail variant="saved" recipe={parsedRecipe} user={user || undefined} />
         </div>
     )

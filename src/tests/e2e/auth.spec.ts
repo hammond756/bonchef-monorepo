@@ -124,7 +124,7 @@ test.describe("Signup flows", () => {
         await testSignupScenario(page, baseURL!)
     })
 
-    test("homepage shows user email after signup", async ({
+    test("homepage shows profile link after signup", async ({
         unauthenticatedPage: page,
         baseURL,
     }) => {

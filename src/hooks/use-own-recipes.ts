@@ -26,10 +26,19 @@ export function useOwnRecipes() {
         }
     )
 
+    const count = () => {
+        if (!session?.user.id) {
+            return 0
+        }
+
+        return data?.length || 0
+    }
+
     return {
         recipes: data || [],
         isLoading,
         error,
         mutate,
+        count,
     }
 }

@@ -35,6 +35,9 @@ import { createClient } from "@/utils/supabase/client"
 import { StorageService } from "@/lib/services/storage-service"
 import { v4 as uuidv4 } from "uuid"
 import Image from "next/image"
+import { trackEvent } from "@/lib/analytics/track"
+import { getJobByRecipeId } from "@/lib/services/recipe-imports-job/client"
+import { useOwnRecipes } from "@/hooks/use-own-recipes"
 
 interface RecipeFormProps {
     recipe: Recipe
@@ -81,6 +84,8 @@ export function RecipeForm({
     const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false)
     const router = useRouter()
     const lastBrowsingPath = useNavigationStore((state) => state.history.at(-1))
+
+    const { count: countOwnRecipes } = useOwnRecipes()
 
     useUnsavedChangesWarning(isDirty)
 
@@ -192,11 +197,25 @@ export function RecipeForm({
         }
 
         try {
+            const wasDraft = recipe.status === RecipeStatusEnum.enum.DRAFT
+
             const response = await updateRecipe(recipeId, {
                 ...recipe,
                 is_public: isPublic,
                 thumbnail: imageUrl || recipe.thumbnail,
             })
+
+            const job = await getJobByRecipeId(recipeId)
+
+            if (wasDraft && response.status === RecipeStatusEnum.enum.PUBLISHED && job.success) {
+                trackEvent("added_recipe", {
+                    recipe_id: response.id,
+                    recipe_count: countOwnRecipes(),
+                    job_id: job.data.id,
+                    method: job.data.source_type,
+                    stage: "published",
+                })
+            }
 
             if (isOnboardingFlow) {
                 router.push(`/recipes/preview/${recipeId || response.id}`)
@@ -311,6 +330,7 @@ export function RecipeForm({
                                     disabled={isGenerating}
                                     onClick={() => setIsImageModalOpen(true)}
                                     data-testid="generate-image-button"
+                                    aria-label="Afbeelding genereren"
                                 >
                                     {isGenerating ? (
                                         <>
@@ -328,6 +348,7 @@ export function RecipeForm({
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isGenerating}
                                     data-testid="upload-image-button"
+                                    aria-label="Afbeelding uploaden"
                                 >
                                     <ImageIcon className="mr-2 h-4 w-4" />
                                     Upload afbeelding

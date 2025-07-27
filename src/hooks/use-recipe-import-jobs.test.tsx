@@ -5,6 +5,7 @@ import * as recipeImportsActions from "@/actions/recipe-imports"
 import * as recipeImportsJobClient from "@/lib/services/recipe-imports-job/client"
 import { SWRConfig } from "swr"
 import * as useOwnRecipesHook from "@/hooks/use-own-recipes"
+import { v4 as uuidv4 } from "uuid"
 
 const mockJobs = [
     { id: "1", status: "pending", source_data: "url1" },
@@ -52,7 +53,7 @@ describe("useRecipeImportJobs", () => {
             data: [],
         })
         // @ts-ignore
-        recipeImportsActions.startRecipeImportJob.mockResolvedValue({})
+        recipeImportsActions.startRecipeImportJob.mockResolvedValue(uuidv4())
 
         const { result } = withSWRConfig(() => useRecipeImportJobs())
 
@@ -109,6 +110,7 @@ describe("useRecipeImportJobs", () => {
             isLoading: false,
             error: null,
             mutate: mutateOwnRecipesSpy,
+            count: () => 0,
         })
 
         // @ts-ignore

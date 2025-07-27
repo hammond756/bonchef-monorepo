@@ -8,6 +8,7 @@ import { z } from "zod"
 import { listJobs } from "@/lib/services/recipe-imports-job/client"
 import { useSession } from "@/hooks/use-session"
 import { useOwnRecipes } from "./use-own-recipes"
+import { trackEvent } from "@/lib/analytics/track"
 
 export function useRecipeImportJobs() {
     const { session } = useSession()
@@ -61,7 +62,13 @@ export function useRecipeImportJobs() {
         mutate((currentJobs = []) => [optimisticJob, ...currentJobs], false)
 
         try {
-            await startRecipeImportJob(type, sourceData, onboardingSessionId)
+            // Start the job and get the actual job ID
+            const jobId = await startRecipeImportJob(type, sourceData, onboardingSessionId)
+
+            trackEvent("started_recipe_import", {
+                job_id: jobId,
+                method: type,
+            })
         } catch (e) {
             mutate((currentJobs = []) => {
                 return currentJobs.filter((job) => job.id !== optimisticJob.id)
