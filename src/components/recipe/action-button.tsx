@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { useToast } from "@/hooks/use-toast"
 import { cn, formatNumber } from "@/lib/utils"
 import { lightThemeClasses, darkThemeClasses } from "@/components/recipe/action-button-variants"
-import { useUser } from "@/hooks/use-user"
+import { useSession } from "@/hooks/use-session"
 
 const actionButtonVariants = cva(
     "group flex items-center justify-center rounded-full transition-all duration-200 ease-in-out",
@@ -95,14 +95,14 @@ export function ActionButton({
     dataTestId,
     zeroText,
 }: ActionButtonProps) {
-    const { user } = useUser()
+    const { session } = useSession()
     const { toast } = useToast()
 
     const handleClick = async (e: React.MouseEvent) => {
         e.preventDefault()
         e.stopPropagation()
 
-        if (!user) {
+        if (!session) {
             onAuthRequired?.()
             return
         }

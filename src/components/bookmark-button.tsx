@@ -33,7 +33,7 @@ export function BookmarkButton({
     const [bookmarkCount, setBookmarkCount] = useState(initialBookmarkCount)
     const [isLoading, setIsLoading] = useState(false)
 
-    const { mutate: mutateBookmarkedRecipes } = useBookmarkedRecipes({ enabled: true })
+    const { mutate: mutateBookmarkedRecipes } = useBookmarkedRecipes()
 
     const handleToggle = async () => {
         setIsLoading(true)

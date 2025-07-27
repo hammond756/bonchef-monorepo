@@ -6,8 +6,8 @@ import { cn, createProfileSlug } from "@/lib/utils"
 import Image from "next/image"
 import { ProfileImage } from "../ui/profile-image"
 import { useProfile } from "@/hooks/use-profile"
-import { logout } from "@/app/actions"
 import Link from "next/link"
+import { createClient } from "@/utils/supabase/client"
 
 interface TopBarProps {
     children?: React.ReactNode
@@ -38,6 +38,7 @@ export function TopBar({ children, className }: TopBarProps) {
                                 profile.id
                             )}`}
                             className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-slate-300 bg-slate-200 shadow-xs"
+                            aria-label="Ga naar jouw profiel"
                         >
                             <ProfileImage
                                 src={profile.avatar}
@@ -45,13 +46,19 @@ export function TopBar({ children, className }: TopBarProps) {
                                 size={40}
                             />
                         </Link>
-                        <form action={logout}>
+                        <form
+                            onSubmit={() => {
+                                const supabase = createClient()
+                                supabase.auth.signOut()
+                            }}
+                        >
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 type="submit"
                                 className="text-primary hover:bg-primary/10 rounded-full transition-colors"
                                 data-testid="logout-button"
+                                aria-label="Uitloggen"
                             >
                                 <LogOut className="h-5 w-5" strokeWidth={2.5} />
                             </Button>

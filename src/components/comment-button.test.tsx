@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { CommentButton } from "./comment-button"
 import { useToast } from "@/hooks/use-toast"
-import { useUser } from "@/hooks/use-user"
+import { useSession } from "@/hooks/use-session"
 
 // Mock the hooks
 vi.mock("@/hooks/use-toast")
-vi.mock("@/hooks/use-user")
+vi.mock("@/hooks/use-session")
 vi.mock("next/navigation", () => ({
     redirect: vi.fn(),
 }))
@@ -18,8 +18,9 @@ describe("CommentButton", () => {
     beforeEach(() => {
         vi.clearAllMocks()
         ;(useToast as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ toast: mockToast })
-        ;(useUser as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-            user: { id: "user-1" },
+        ;(useSession as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+            session: { user: { id: "user-1" } },
+            isLoading: false,
         })
     })
 
@@ -50,7 +51,10 @@ describe("CommentButton", () => {
     })
 
     it("shows auth toast when user is not logged in", async () => {
-        ;(useUser as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ user: null })
+        ;(useSession as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+            session: null,
+            isLoading: false,
+        })
 
         render(
             <CommentButton

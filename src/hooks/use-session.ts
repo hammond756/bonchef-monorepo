@@ -4,15 +4,16 @@ import { useEffect, useState } from "react"
 
 export function useSession() {
     const [session, setSession] = useState<Session | null>(null)
-
-    const supabase = createClient()
+    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
+        const supabase = createClient()
         const fetchSession = async () => {
             const {
                 data: { session },
             } = await supabase.auth.getSession()
             setSession(session)
+            setIsLoading(false)
         }
 
         fetchSession()
@@ -25,5 +26,5 @@ export function useSession() {
         return () => subscription.unsubscribe()
     }, [])
 
-    return { session }
+    return { session, isLoading }
 }

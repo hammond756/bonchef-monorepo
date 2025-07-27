@@ -11,11 +11,13 @@ vi.mock("next/navigation", () => ({
     useSearchParams: () => new URLSearchParams(),
 }))
 
-vi.mock("@/hooks/use-user", () => ({
-    useUser: () => ({
-        user: {
-            id: "1",
-            email: "test@example.com",
+vi.mock("@/hooks/use-session", () => ({
+    useSession: () => ({
+        session: {
+            user: {
+                id: "1",
+                email: "test@example.com",
+            },
         },
         isLoading: false,
     }),

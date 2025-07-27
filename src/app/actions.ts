@@ -6,14 +6,6 @@ import { ChatMessageData, GeneratedRecipe, UserInput } from "@/lib/types"
 import { createClient } from "@/utils/supabase/server"
 import { Langfuse } from "langfuse"
 import { CallbackHandler } from "langfuse-langchain"
-import { redirect } from "next/navigation"
-
-export async function logout() {
-    const supabase = await createClient()
-
-    await supabase.auth.signOut()
-    redirect("/login")
-}
 
 export async function getRecipes(userId: string) {
     const supabase = await createClient()

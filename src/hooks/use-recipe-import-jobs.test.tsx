@@ -13,8 +13,8 @@ const mockJobs = [
 
 vi.mock("@/actions/recipe-imports")
 vi.mock("@/lib/services/recipe-imports-job/client")
-vi.mock("@/hooks/use-user", () => ({
-    useUser: () => ({ user: { id: "user-123" } }),
+vi.mock("@/hooks/use-session", () => ({
+    useSession: () => ({ session: { user: { id: "user-123" } }, isLoading: false }),
 }))
 
 // helper to wrap hooks with isolated SWR cache

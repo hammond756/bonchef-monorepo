@@ -6,18 +6,18 @@ import useSWR from "swr"
 import { startRecipeImportJob } from "@/actions/recipe-imports"
 import { z } from "zod"
 import { listJobs } from "@/lib/services/recipe-imports-job/client"
-import { useUser } from "@/hooks/use-user"
+import { useSession } from "@/hooks/use-session"
 import { useOwnRecipes } from "./use-own-recipes"
 
-export function useRecipeImportJobs({ enabled }: { enabled?: boolean } = { enabled: true }) {
-    const { user } = useUser()
+export function useRecipeImportJobs() {
+    const { session } = useSession()
     const { mutate: mutateOwnRecipes } = useOwnRecipes()
     const previousJobsRef = useRef<RecipeImportJob[]>([])
 
     const { data, error, isLoading, mutate } = useSWR<RecipeImportJob[]>(
-        enabled && user ? ["jobs", user.id] : null,
+        session ? ["jobs", session.user.id] : null,
         async () => {
-            const response = await listJobs(user!.id)
+            const response = await listJobs(session!.user.id)
             if (!response.success) {
                 throw new Error(response.error)
             }
@@ -52,7 +52,7 @@ export function useRecipeImportJobs({ enabled }: { enabled?: boolean } = { enabl
             source_type: type,
             source_data: sourceData,
             created_at: new Date().toISOString(),
-            user_id: user?.id || "placeholder-user-id",
+            user_id: session?.user.id || "placeholder-user-id",
             recipe_id: null,
             error_message: null,
             updated_at: new Date().toISOString(),

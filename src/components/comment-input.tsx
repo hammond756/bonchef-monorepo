@@ -4,9 +4,9 @@ import { useState } from "react"
 import { Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ProfileImage } from "@/components/ui/profile-image"
-import { useUser } from "@/hooks/use-user"
 import { useProfile } from "@/hooks/use-profile"
 import { useCommentActions } from "@/hooks/use-comment-actions"
+import { useSession } from "@/hooks/use-session"
 
 interface CommentInputProps {
     recipeId: string
@@ -19,7 +19,7 @@ export function CommentInput({
     onCommentCreated,
     onCommentAdded,
 }: Readonly<CommentInputProps>) {
-    const { user } = useUser()
+    const { session } = useSession()
     const { profile } = useProfile()
     const { createComment, isCreating } = useCommentActions()
     const [text, setText] = useState("")
@@ -29,7 +29,7 @@ export function CommentInput({
     const canSubmit = text.trim().length > 0 && text.length <= maxLength && !isCreating
 
     const handleSubmit = async () => {
-        if (!canSubmit || !user) return
+        if (!canSubmit || !session) return
 
         const comment = await createComment(recipeId, text.trim())
         if (comment) {
@@ -46,7 +46,7 @@ export function CommentInput({
         }
     }
 
-    if (!user) {
+    if (!session) {
         return (
             <div className="py-4 text-center">
                 <p className="text-sm text-gray-500">Je moet ingelogd zijn om te kunnen reageren</p>

@@ -1,13 +1,14 @@
-import { test, expect } from "./fixtures"
+import { test, expect } from "../fixtures"
 import { Page } from "@playwright/test"
 
 test.describe("Authentication flows", () => {
-    test("redirects to login when not authenticated", async ({
+    test("redirects to sign up when trying like a recipe", async ({
         unauthenticatedPage: page,
         baseURL,
     }) => {
-        await page.goto(baseURL!)
-        await expect(page).toHaveURL("/login")
+        await page.goto(baseURL! + "/ontdek")
+        await page.getByRole("button", { name: "Like" }).first().click()
+        await expect(page).toHaveURL("/signup")
     })
 
     test("logs in successfully and redirects to homepage", async ({
@@ -28,15 +29,19 @@ test.describe("Signed in user flows", () => {
     test("Opens homepage when logged in", async ({ authenticatedPage: page, baseURL }) => {
         await page.goto(baseURL!)
         await expect(page).toHaveURL("/ontdek")
+        await expect(page.getByRole("link", { name: "Ga naar jouw profiel" })).toBeVisible()
     })
 
     test("Logs out successfully", async ({ authenticatedPage: page, baseURL }) => {
         await page.goto(baseURL!)
         await expect(page).toHaveURL("/ontdek")
-        await page.getByTestId("side-bar-hamburger-menu").click()
-        await expect(page.getByText(process.env.TEST_USER_EMAIL!)).toBeVisible()
-        await page.getByTestId("logout-button").click()
-        await expect(page).toHaveURL("/login")
+
+        await page.getByRole("button", { name: "Uitloggen" }).click()
+
+        // Check the browser session cookie is cleared
+        const cookies = await page.context().cookies()
+        const authCookie = cookies.find((c) => c.name === "sb-127-auth-token")
+        expect(authCookie).toBeUndefined()
     })
 })
 
@@ -125,8 +130,7 @@ test.describe("Signup flows", () => {
     }) => {
         await testSignupScenario(page, baseURL!, {
             afterHomepageAssertions: async (page) => {
-                await page.getByTestId("side-bar-hamburger-menu").click()
-                await expect(page.getByText(testUserEmail!)).toBeVisible()
+                await expect(page.getByRole("link", { name: "Ga naar jouw profiel" })).toBeVisible()
             },
         })
     })

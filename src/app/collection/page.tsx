@@ -25,7 +25,6 @@ import { NavigationTracker } from "@/components/util/navigation-tracker"
 import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 import { cn } from "@/lib/utils"
 import { InProgressRecipeListItem, RecipeListItem } from "@/components/recipe/recipe-list-item"
-import { useUser } from "@/hooks/use-user"
 
 // A union type for items that can be displayed in the collection grid/list
 type CollectionItem =
@@ -115,14 +114,8 @@ function MyRecipesTabContent({
     viewMode: "grid" | "list"
     sortOrder: "newest" | "oldest"
 }) {
-    const { user } = useUser()
-
-    const { recipes: userRecipes, isLoading: userRecipesLoading } = useOwnRecipes({
-        enabled: !!user,
-    })
-    const { jobs: importJobs, isLoading: importJobsLoading } = useRecipeImportJobs({
-        enabled: !!user,
-    })
+    const { recipes: userRecipes, isLoading: userRecipesLoading } = useOwnRecipes()
+    const { jobs: importJobs, isLoading: importJobsLoading } = useRecipeImportJobs()
 
     const myRecipesAndJobs = useMemo(() => {
         const pendingJobs = importJobs
@@ -165,12 +158,8 @@ function FavoritesTabContent({
     viewMode: "grid" | "list"
     sortOrder: "newest" | "oldest"
 }) {
-    const { user } = useUser()
-
     const { recipes: bookmarkedRecipes, isLoading: bookmarkedRecipesLoading } =
-        useBookmarkedRecipes({
-            enabled: !!user,
-        })
+        useBookmarkedRecipes()
 
     const sortedLikedRecipes = useMemo(() => {
         const sorted = [...(bookmarkedRecipes || [])]

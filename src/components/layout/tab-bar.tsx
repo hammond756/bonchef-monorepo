@@ -22,13 +22,17 @@ export function TabBar({ children, className }: TabBarProps) {
     const [isImportOverlayVisible, setIsImportOverlayVisible] = useState(false)
     const { openModal: openImportModal } = useImportStatusStore()
     const { openModal: openOnboardingModal } = useOnboarding()
-    const { session } = useSession()
+    const { session, isLoading } = useSession()
 
     const handleOpenOverlay = () => {
         console.log("[trigger-bug] click on '+' button", {
             session: !!session,
+            isLoading,
         })
-        if (session) {
+        if (session || isLoading) {
+            if (isLoading) {
+                console.log("[trigger-bug] session is loading")
+            }
             setIsImportOverlayVisible(true)
         } else {
             openOnboardingModal()

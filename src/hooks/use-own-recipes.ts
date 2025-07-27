@@ -2,6 +2,7 @@
 
 import useSWR from "swr"
 import { RecipeRead } from "@/lib/types"
+import { useSession } from "@/hooks/use-session"
 
 async function fetcher(url: string): Promise<RecipeRead[]> {
     const response = await fetch(url)
@@ -12,9 +13,11 @@ async function fetcher(url: string): Promise<RecipeRead[]> {
     return Array.isArray(data) ? data : data.recipes || []
 }
 
-export function useOwnRecipes({ enabled }: { enabled?: boolean } = { enabled: true }) {
+export function useOwnRecipes() {
+    const { session } = useSession()
+
     const { data, error, isLoading, mutate } = useSWR<RecipeRead[]>(
-        enabled ? "/api/collection" : null,
+        session ? "/api/collection" : null,
         fetcher,
         {
             revalidateOnFocus: true,
