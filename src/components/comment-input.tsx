@@ -5,38 +5,28 @@ import { Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ProfileImage } from "@/components/ui/profile-image"
 import { useProfile } from "@/hooks/use-profile"
-import { useCommentActions } from "@/hooks/use-comment-actions"
 import { useSession } from "@/hooks/use-session"
 
 interface CommentInputProps {
-    recipeId: string
-    onCommentCreated?: () => void
-    onCommentAdded?: () => void
+    onAddComment: (text: string) => Promise<void>
 }
 
-export function CommentInput({
-    recipeId,
-    onCommentCreated,
-    onCommentAdded,
-}: Readonly<CommentInputProps>) {
+export function CommentInput({ onAddComment }: Readonly<CommentInputProps>) {
     const { session } = useSession()
     const { profile } = useProfile()
-    const { createComment, isCreating } = useCommentActions()
     const [text, setText] = useState("")
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const maxLength = 500
     const remainingChars = maxLength - text.length
-    const canSubmit = text.trim().length > 0 && text.length <= maxLength && !isCreating
+    const canSubmit = text.trim().length > 0 && text.length <= maxLength && !isSubmitting
 
     const handleSubmit = async () => {
-        if (!canSubmit || !session) return
-
-        const comment = await createComment(recipeId, text.trim())
-        if (comment) {
-            setText("")
-            onCommentCreated?.()
-            onCommentAdded?.()
-        }
+        if (!canSubmit) return
+        setIsSubmitting(true)
+        await onAddComment(text.trim())
+        setText("")
+        setIsSubmitting(false)
     }
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -72,7 +62,7 @@ export function CommentInput({
                         className="focus:border-primary focus:ring-primary w-full resize-none rounded-lg border border-gray-300 p-3 pr-12 text-sm focus:ring-1 focus:outline-none"
                         rows={1}
                         maxLength={maxLength}
-                        disabled={isCreating}
+                        disabled={isSubmitting}
                         aria-label="Schrijf een reactie"
                         aria-describedby="comment-char-count"
                     />
@@ -84,6 +74,7 @@ export function CommentInput({
                             className={`text-xs ${
                                 remainingChars < 50 ? "text-red-500" : "text-gray-400"
                             }`}
+                            aria-label={`${remainingChars} karakters over`}
                             aria-live="polite"
                         >
                             {remainingChars}

@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils"
 
 import { RecipeActionButtons } from "./recipe-action-buttons"
 import { CommentOverlay } from "@/components/comment-overlay"
-import { CommentButtonRef } from "@/components/comment-button"
 
 interface RecipeFeedCardProps {
     recipe: Recipe
@@ -21,7 +20,6 @@ export function RecipeFeedCard({ recipe }: RecipeFeedCardProps) {
     const [overlayHeight, setOverlayHeight] = useState("29%")
     const [isCommentOverlayOpen, setIsCommentOverlayOpen] = useState(false)
     const contentRef = useRef<HTMLDivElement>(null)
-    const commentButtonRef = useRef<CommentButtonRef>(null)
 
     const caption = recipe.description || ""
     // A rough approximation. We can refine this if we have a better way to check if text will clamp.
@@ -109,7 +107,6 @@ export function RecipeFeedCard({ recipe }: RecipeFeedCardProps) {
                         shareButtonSize="md"
                         bookmarkButtonSize="md"
                         avatarSize="lg"
-                        commentButtonRef={commentButtonRef}
                         onCommentClick={() => setIsCommentOverlayOpen(true)}
                     />
                 </div>
@@ -119,15 +116,6 @@ export function RecipeFeedCard({ recipe }: RecipeFeedCardProps) {
                 isOpen={isCommentOverlayOpen}
                 onClose={() => setIsCommentOverlayOpen(false)}
                 recipe={recipe}
-                onCommentAdded={() => commentButtonRef.current?.incrementCount()}
-                onCommentDeleted={() => commentButtonRef.current?.decrementCount()}
-                onCommentCountChange={(increment) => {
-                    if (increment) {
-                        commentButtonRef.current?.incrementCount()
-                    } else {
-                        commentButtonRef.current?.decrementCount()
-                    }
-                }}
             />
         </div>
     )

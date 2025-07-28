@@ -250,7 +250,7 @@ export const CommentSchema = z.object({
     text: z.string().max(500),
     created_at: z.string().datetime({ offset: true }),
     updated_at: z.string().datetime({ offset: true }),
-    profiles: z.object({
+    profile: z.object({
         id: z.string(),
         display_name: z.string().nullable(),
         avatar: z.string().nullable().optional(),

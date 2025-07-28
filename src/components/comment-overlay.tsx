@@ -7,37 +7,28 @@ import { SlideInOverlay } from "@/components/ui/slide-in-overlay"
 import { CommentList } from "@/components/comment-list"
 import { CommentInput } from "@/components/comment-input"
 import { Recipe } from "@/lib/types"
+import { useComments } from "@/hooks/use-comments"
+import { toast } from "@/hooks/use-toast"
 
 interface CommentOverlayProps {
     isOpen: boolean
     onClose: () => void
     recipe: Recipe
-    onCommentAdded?: () => void
-    onCommentDeleted?: () => void
-    onCommentCountChange?: (increment: boolean) => void
 }
 
-export function CommentOverlay({
-    isOpen,
-    onClose,
-    recipe,
-    onCommentAdded,
-    onCommentDeleted,
-    onCommentCountChange,
-}: Readonly<CommentOverlayProps>) {
+export function CommentOverlay({ isOpen, onClose, recipe }: Readonly<CommentOverlayProps>) {
+    const { comments, add, remove, isLoading, error } = useComments(recipe.id)
     const commentsContainerRef = useRef<HTMLDivElement>(null)
 
-    // Scroll to top when new comment is added (since newest comments are at top)
     useEffect(() => {
         if (commentsContainerRef.current && isOpen) {
-            // Use requestAnimationFrame to ensure DOM is updated
             requestAnimationFrame(() => {
                 if (commentsContainerRef.current) {
                     commentsContainerRef.current.scrollTop = 0
                 }
             })
         }
-    }, [isOpen])
+    }, [isOpen, comments])
 
     return (
         <SlideInOverlay isOpen={isOpen} onClose={onClose}>
@@ -71,32 +62,22 @@ export function CommentOverlay({
                     style={{ overscrollBehavior: "contain" }}
                 >
                     <CommentList
-                        recipeId={recipe.id}
-                        onCommentCreated={() => {
-                            // Trigger a refetch of comments after creating a new comment
-                            // This will be handled by the CommentList component
-                        }}
-                        onCommentDeleted={() => {
-                            // Notify parent about comment deletion and update count
-                            onCommentDeleted?.()
-                            onCommentCountChange?.(false)
+                        comments={comments}
+                        isLoading={isLoading}
+                        error={error}
+                        onDeleteComment={(commentId) => {
+                            remove(commentId)
+                            toast({
+                                title: "Reactie verwijderd",
+                                description: "Je reactie is succesvol verwijderd",
+                            })
                         }}
                     />
                 </div>
 
                 {/* Comment Input */}
                 <div className="border-t p-4">
-                    <CommentInput
-                        recipeId={recipe.id}
-                        onCommentCreated={() => {
-                            // Trigger a refetch of comments after creating a new comment
-                            // This will be handled by the CommentList component
-                        }}
-                        onCommentAdded={() => {
-                            // Notify parent about comment addition and update count
-                            onCommentAdded?.()
-                        }}
-                    />
+                    <CommentInput onAddComment={add} />
                 </div>
             </div>
         </SlideInOverlay>

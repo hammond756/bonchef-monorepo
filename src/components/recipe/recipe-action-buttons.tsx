@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Recipe } from "@/lib/types"
 import { BookmarkButton } from "@/components/bookmark-button"
 import { LikeButton } from "@/components/like-button"
-import { CommentButton, CommentButtonRef } from "@/components/comment-button"
+import { CommentButton } from "@/components/comment-button"
 import { ProfileImage } from "@/components/ui/profile-image"
 import { ShareRecipeButton } from "@/components/share-recipe-button"
 import { cva } from "class-variance-authority"
@@ -45,7 +45,6 @@ interface RecipeActionButtonsProps {
     commentButtonIconSize?: "sm" | "md" | "lg" | "xl"
     avatarSize?: "md" | "lg"
     onCommentClick?: () => void
-    commentButtonRef?: React.RefObject<CommentButtonRef | null>
 }
 
 export const RecipeActionButtons = forwardRef<HTMLDivElement, RecipeActionButtonsProps>(
@@ -63,7 +62,6 @@ export const RecipeActionButtons = forwardRef<HTMLDivElement, RecipeActionButton
             commentButtonIconSize,
             avatarSize,
             onCommentClick,
-            commentButtonRef,
         },
         ref
     ) => {
@@ -91,12 +89,10 @@ export const RecipeActionButtons = forwardRef<HTMLDivElement, RecipeActionButton
                     initialLikeCount={recipe.like_count || 0}
                 />
                 <CommentButton
-                    ref={commentButtonRef}
                     size={finalCommentSize}
                     iconSize={commentButtonIconSize || "xl"}
                     theme={theme ?? "light"}
                     recipeId={recipe.id}
-                    initialCommentCount={recipe.comment_count || 0}
                     onCommentClick={onCommentClick}
                 />
                 <BookmarkButton

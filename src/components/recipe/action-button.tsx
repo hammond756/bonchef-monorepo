@@ -95,7 +95,7 @@ export function ActionButton({
     dataTestId,
     zeroText,
 }: ActionButtonProps) {
-    const { session } = useSession()
+    const { session, isLoading: isSessionLoading } = useSession()
     const { toast } = useToast()
 
     const handleClick = async (e: React.MouseEvent) => {
@@ -122,7 +122,7 @@ export function ActionButton({
         <div className="flex flex-col items-center">
             <button
                 onClick={handleClick}
-                disabled={isLoading}
+                disabled={isLoading || isSessionLoading}
                 aria-label={isActive ? activeLabel : inactiveLabel}
                 data-testid={dataTestId}
                 className={cn(actionButtonVariants({ size, theme }), className)}

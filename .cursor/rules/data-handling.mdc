@@ -35,58 +35,61 @@ This repo uses a structured pattern to separate data access from UI, keep enviro
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export async function listCommentsWithClient(client: SupabaseClient, recipeId: string) {
-  const { data, error } = await client
-    .from("comments")
-    .select("*")
-    .eq("recipe_id", recipeId)
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return data;
+    const { data, error } = await client
+        .from("comments")
+        .select("*")
+        .eq("recipe_id", recipeId)
+        .order("created_at", { ascending: false })
+    if (error) throw new Error(error.message)
+    return data
 }
 
-export async function addCommentWithClient(client: SupabaseClient, recipeId: string, content: string) {
-  const { data, error } = await client
-    .from("comments")
-    .insert([{ recipe_id: recipeId, content }])
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+export async function addCommentWithClient(
+    client: SupabaseClient,
+    recipeId: string,
+    content: string
+) {
+    const { data, error } = await client
+        .from("comments")
+        .insert([{ recipe_id: recipeId, content }])
+        .select()
+        .single()
+    if (error) throw new Error(error.message)
+    return data
 }
 ```
 
 ### `comments/client.ts`
 
 ```ts
-import { createClient } from "@/utils/supabase/client";
-import { listCommentsWithClient, addCommentWithClient } from "./shared";
+import { createClient } from "@/utils/supabase/client"
+import { listCommentsWithClient, addCommentWithClient } from "./shared"
 
-export const listComments = (userId: string, recipeId: string) => {
+export const listComments = (recipeId: string) => {
     const supabase = createClient()
-    return listCommentsWithClient(supabase, userId, recipeId)
+    return listCommentsWithClient(supabase, recipeId)
 }
 
 export const addComment = (id: string, content: string) => {
     const supabase = createClient()
-    return addCommentWithClient(supabase, id, content);
+    return addCommentWithClient(supabase, id, content)
 }
 ```
 
 ### `comments/server.ts`
 
 ```ts
-import { cookies } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
-import { listCommentsWithClient, addCommentWithClient } from "./shared";
+import { createClient } from "@/utils/supabase/server"
+import { listCommentsWithClient, addCommentWithClient } from "./shared"
 
-export const listComments = (userId: string, recipeId: string) => {
+export const listComments = (recipeId: string) => {
     const supabase = createClient()
-    return listCommentsWithClient(supabase, userId, recipeId)
+    return listCommentsWithClient(supabase, recipeId)
 }
 
 export const addComment = (id: string, content: string) => {
     const supabase = createClient()
-    return addCommentWithClient(supabase, id, content);
+    return addCommentWithClient(supabase, id, content)
 }
 ```
 
@@ -96,39 +99,31 @@ export const addComment = (id: string, content: string) => {
 
 ```ts
 // hooks/useComments.ts
-import useSWR from "swr";
-import { fetchComments, addComment } from "@/services/comments/client";
+import useSWR from "swr"
+import { fetchComments, addComment } from "@/services/comments/client"
 
 export function useComments(recipeId: string) {
-  const { data, error, mutate } = useSWR(
-    recipeId ? [`comments`, recipeId] : null,
-    () => fetchComments(recipeId)
-  );
+    const { data, error, mutate } = useSWR(
+        recipeId ? [`comments`, recipeId] : null,
+        () => fetchComments(recipeId)
+    )
 
-  const add = async (content: string) => {
-    const optimistic = {
-      id: crypto.randomUUID(),
-      content,
-      recipe_id: recipeId,
-      created_at: new Date().toISOString(),
-    };
+    const add = async (content: string) => {
+        const optimistic = {
+            id: crypto.randomUUID(),
+            content,
+            recipe_id: recipeId,
+            created_at: new Date().toISOString(),
+        }
 
-    await mutate(async (prev = []) => {
-      try {
-        const saved = await addComment(recipeId, content);
-        return [saved, ...prev];
-      } catch (err) {
-        console.error(err);
-        return prev; // rollback
-      }
-    }, {
-      optimisticData: (prev = []) => [optimistic, ...prev],
-      rollbackOnError: true,
-      revalidate: false,
-    });
-  };
+        await mutate(addComment(recipeId, content), {
+            optimisticData: (currentData = []) => [optimistic, ...currentData],
+            rollbackOnError: true,
+            revalidate: false,
+        })
+    }
 
-  return { comments: data, isLoading: !data && !error, add };
+    return { comments: data, isLoading: !data && !error, add }
 }
 ```
 
@@ -136,10 +131,11 @@ export function useComments(recipeId: string) {
 
 ## ✅ Best Practices
 
-* Only import `client.ts` services in client components/hooks
-* Only import `server.ts` in server components or API routes
-* Shared logic goes in `shared.ts` and accepts the client as an argument
-* Use `mutate()` with `optimisticData` in SWR for fast UX
+-   Only import `client.ts` services in client components/hooks
+-   Only import `server.ts` in server components or API routes
+-   Shared logic goes in `shared.ts` and accepts the client as an argument
+-   **Service methods used by SWR must `throw` on error** and return the data directly on success. This is SWR's expected convention.
+-   Use `mutate()` with `optimisticData` in SWR for fast UX
 
 ---
 
@@ -148,21 +144,43 @@ export function useComments(recipeId: string) {
 ### `shared.test.ts` (using Vitest)
 
 ```ts
-import { describe, it, expect } from "vitest";
-import { fetchCommentsWithClient } from "./shared";
+import { describe, it, expect } from "vitest"
+import { fetchCommentsWithClient } from "./shared"
 
 it("fetches comments from mock client", async () => {
-  const mockClient = {
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          order: async () => ({ data: [{ id: "1", content: "test" }], error: null }),
+    const mockClient = {
+        from: () => ({
+            select: () => ({
+                eq: () => ({
+                    order: async () => ({
+                        data: [{ id: "1", content: "test" }],
+                        error: null,
+                    }),
+                }),
+            }),
         }),
-      }),
-    }),
-  };
+    }
 
-  const result = await fetchCommentsWithClient(mockClient as any, "abc");
-  expect(result).toEqual([{ id: "1", content: "test" }]);
-});
+    const result = await fetchCommentsWithClient(mockClient as any, "abc")
+    expect(result).toEqual([{ id: "1", content: "test" }])
+})
+
+it("throws on database error", async () => {
+    const mockClient = {
+        from: () => ({
+            select: () => ({
+                eq: () => ({
+                    order: async () => ({
+                        data: null,
+                        error: { message: "DB Error" },
+                    }),
+                }),
+            }),
+        }),
+    }
+
+    await expect(fetchCommentsWithClient(mockClient as any, "abc")).rejects.toThrow(
+        "DB Error"
+    )
+})
 ```

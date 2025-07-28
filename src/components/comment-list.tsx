@@ -1,34 +1,22 @@
 "use client"
 
-import { useComments } from "@/hooks/use-comments"
 import { CommentItem } from "@/components/comment-item"
 import { Loader2 } from "lucide-react"
+import { Comment } from "@/lib/types"
 
 interface CommentListProps {
-    recipeId: string
-    onCommentCreated?: () => void
-    onCommentDeleted?: () => void
+    comments: Comment[]
+    isLoading: boolean
+    error: unknown
+    onDeleteComment: (commentId: string) => void
 }
 
 export function CommentList({
-    recipeId,
-    onCommentCreated,
-    onCommentDeleted,
+    comments,
+    isLoading,
+    error,
+    onDeleteComment,
 }: Readonly<CommentListProps>) {
-    const { comments, isLoading, error, mutate } = useComments({ recipeId })
-
-    // Trigger mutate when onCommentCreated is called
-    const _handleCommentCreated = () => {
-        mutate() // Revalidate the data
-        onCommentCreated?.()
-    }
-
-    // Trigger mutate when onCommentDeleted is called
-    const handleCommentDeleted = () => {
-        mutate() // Revalidate the data
-        onCommentDeleted?.()
-    }
-
     if (isLoading) {
         return (
             <div className="flex items-center justify-center p-8">
@@ -58,7 +46,11 @@ export function CommentList({
     return (
         <div className="space-y-4 p-4">
             {comments.map((comment) => (
-                <CommentItem key={comment.id} comment={comment} onDelete={handleCommentDeleted} />
+                <CommentItem
+                    key={comment.id}
+                    comment={comment}
+                    onDelete={() => onDeleteComment(comment.id)}
+                />
             ))}
         </div>
     )

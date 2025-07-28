@@ -8,7 +8,7 @@ import { PencilIcon } from "lucide-react"
 import Link from "next/link"
 
 import { User } from "@supabase/supabase-js"
-import React, { useRef } from "react"
+import React from "react"
 import { ClaimRecipeButton } from "./claim-recipe-button"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { AppTabsList } from "@/components/ui/app-tabs"
@@ -17,7 +17,6 @@ import { InteractiveIngredientsList } from "@/components/interactive-ingredients
 import { RecipeInstructions, InstructionStep } from "./recipe-instructions"
 import { RecipeActionButtons } from "./recipe/recipe-action-buttons"
 import { CommentOverlay } from "@/components/comment-overlay"
-import { CommentButtonRef } from "@/components/comment-button"
 import { useState } from "react"
 
 interface RecipeMetadataProps {
@@ -73,7 +72,6 @@ type RecipeDetailProps = GeneratedRecipeDetailProps | SavedRecipeDetailProps
 
 export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
     const [isCommentOverlayOpen, setIsCommentOverlayOpen] = useState(false)
-    const commentButtonRef = useRef<CommentButtonRef>(null)
     // Log de profiel data om te debuggen
     if (variant === "saved" && recipe.profiles) {
         console.log(
@@ -141,7 +139,6 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                                     shareButtonSize="md"
                                     bookmarkButtonSize="md"
                                     avatarSize="lg"
-                                    commentButtonRef={commentButtonRef}
                                     onCommentClick={() => setIsCommentOverlayOpen(true)}
                                 />
                             </div>
@@ -239,15 +236,6 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                     isOpen={isCommentOverlayOpen}
                     onClose={() => setIsCommentOverlayOpen(false)}
                     recipe={recipe as RecipeRead}
-                    onCommentAdded={() => commentButtonRef.current?.incrementCount()}
-                    onCommentDeleted={() => commentButtonRef.current?.decrementCount()}
-                    onCommentCountChange={(increment) => {
-                        if (increment) {
-                            commentButtonRef.current?.incrementCount()
-                        } else {
-                            commentButtonRef.current?.decrementCount()
-                        }
-                    }}
                 />
             )}
         </div>

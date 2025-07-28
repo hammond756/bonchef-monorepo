@@ -1,49 +1,71 @@
 import useSWR from "swr"
+import { getCommentsForRecipe, createComment, deleteComment } from "@/lib/services/comments/client"
 import { Comment } from "@/lib/types"
+import { useUser } from "./use-user"
+import { useCommentCount } from "./use-comment-count"
 
-interface UseCommentsOptions {
-    recipeId: string
-    enabled?: boolean
-}
-
-interface UseCommentsReturn {
-    comments: Comment[]
-    isLoading: boolean
-    error: string | null
-    mutate: (data?: Comment[], options?: { revalidate?: boolean }) => Promise<Comment[] | undefined>
-}
-
-/**
- * Fetcher function for SWR
- */
-const fetcher = async (url: string): Promise<Comment[]> => {
-    const response = await fetch(url)
-    if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to fetch comments")
-    }
-    return response.json()
-}
-
-/**
- * Hook for fetching and managing comments for a recipe using SWR
- */
-export function useComments({ recipeId, enabled = true }: UseCommentsOptions): UseCommentsReturn {
+export function useComments(recipeId: string) {
+    const { user } = useUser()
+    const { count, mutate: mutateCommentCount } = useCommentCount(recipeId)
     const {
-        data: comments = [],
+        data: comments,
         error,
-        isLoading,
         mutate,
-    } = useSWR(enabled && recipeId ? `/api/recipes/${recipeId}/comments` : null, fetcher, {
-        refreshInterval: 1500, // Poll every 1.5 seconds
-        revalidateOnFocus: false, // Don't revalidate when window gains focus
-        revalidateOnReconnect: true, // Revalidate when reconnecting
+    } = useSWR(recipeId ? ["comments", recipeId] : null, () => getCommentsForRecipe(recipeId), {
+        revalidateOnFocus: false,
     })
 
+    const add = async (text: string) => {
+        if (!user) return
+
+        const optimisticComment: Comment = {
+            id: crypto.randomUUID(),
+            recipe_id: recipeId,
+            user_id: user.id,
+            text,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            profile: {
+                id: user.id,
+                display_name: user.user_metadata.display_name,
+                avatar: user.user_metadata.avatar,
+            },
+        }
+
+        const mutation = async (currentData: Comment[] = []) => {
+            const newComment = await createComment({ recipe_id: recipeId, text })
+            console.log("[use-comments] add", newComment)
+            mutateCommentCount(count + 1)
+            return [newComment, ...currentData]
+        }
+
+        await mutate(mutation, {
+            optimisticData: (currentData: Comment[] = []) => [optimisticComment, ...currentData],
+            rollbackOnError: true,
+            revalidate: false,
+        })
+    }
+
+    const remove = async (commentId: string) => {
+        const mutation = async (currentData: Comment[] = []) => {
+            await deleteComment(commentId)
+            mutateCommentCount(count - 1)
+            return currentData.filter((c) => c.id !== commentId)
+        }
+
+        await mutate(mutation, {
+            optimisticData: (currentData: Comment[] = []) =>
+                currentData.filter((c) => c.id !== commentId),
+            rollbackOnError: true,
+            revalidate: false,
+        })
+    }
+
     return {
-        comments,
-        isLoading,
-        error: error?.message || null,
-        mutate,
+        comments: comments || [],
+        isLoading: !comments && !error,
+        error,
+        add,
+        remove,
     }
 }
