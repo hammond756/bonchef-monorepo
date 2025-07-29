@@ -2,6 +2,7 @@
     "name": "create-recipe",
     "version": "0.1.0",
     "private": true,
+    "type": "module",
     "engines": {
         "node": "22.x",
         "npm": "11.x"
@@ -18,7 +19,9 @@
         "test:e2e:debug": "playwright test --debug",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "prepare": "husky"
+        "prepare": "husky",
+        "notify": "tsx notification-job/notify.ts",
+        "notify:dev": "NODE_ENV=development tsx notification-job/notify.ts"
     },
     "dependencies": {
         "@google-cloud/vision": "^5.1.0",
@@ -41,6 +44,7 @@
         "@sentry/nextjs": "^9.32.0",
         "@supabase/ssr": "^0.5.2",
         "@supabase/supabase-js": "^2.48.1",
+        "@types/nodemailer": "^6.4.17",
         "autoprefixer": "^10.4.21",
         "boring-avatars": "^1.11.2",
         "class-variance-authority": "^0.7.1",
@@ -59,11 +63,13 @@
         "lucide-react": "^0.475.0",
         "next": "^15.3.3",
         "node-html-parser": "^7.0.1",
+        "nodemailer": "^7.0.5",
         "nuqs": "^2.4.0",
         "openai": "^4.85.3",
         "partial-json": "^0.1.7",
         "posthog-js": "^1.236.2",
         "posthog-node": "^4.12.0",
+        "postmark": "^4.0.5",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "react-intersection-observer": "^9.16.0",
@@ -74,6 +80,7 @@
         "swr": "^2.3.4",
         "tailwind-merge": "^3.0.1",
         "tailwindcss-animate": "^1.0.7",
+        "tsx": "^4.20.3",
         "use-debounce": "^10.0.4",
         "uuid": "^9.0.1",
         "zod": "^3.23.8",
@@ -100,7 +107,6 @@
         "eslint-config-prettier": "^10.1.5",
         "husky": "^9.1.7",
         "jsdom": "^26.1.0",
-        "lint-staged": "^16.1.0",
         "postcss": "^8.5.6",
         "prettier": "^3.5.3",
         "prettier-plugin-tailwindcss": "^0.6.12",

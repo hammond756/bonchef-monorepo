@@ -3,7 +3,8 @@
 # Dump auth.users, auth.identities, and everything from public schema
 # Use exclusions to avoid unwanted auth tables while keeping the ones we want
 #
-# Profiles are created via a trigger, so we don't need to seed them
+# Some public tables are excluded because they are created via triggers, so we don't need to seed them
+# manually
 pg_dump postgresql://postgres:postgres@localhost:54322/postgres \
     --data-only --inserts --column-inserts \
     --no-owner --no-privileges \
@@ -23,4 +24,6 @@ pg_dump postgresql://postgres:postgres@localhost:54322/postgres \
     --exclude-table=auth.saml_providers \
     --exclude-table=auth.saml_relay_states \
     --exclude-table=public.profiles \
+    --exclude-table=public.notification_queue \
+    --exclude-table=public.notification_preferences \
     > supabase/seed.sql

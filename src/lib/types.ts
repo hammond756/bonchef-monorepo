@@ -265,3 +265,29 @@ export const CreateCommentSchema = z.object({
 })
 
 export type CreateComment = z.infer<typeof CreateCommentSchema>
+
+// Notification-related types
+export const NotificationQueueSchema = z.object({
+    id: z.string(),
+    comment_id: z.string(),
+    recipe_id: z.string(),
+    recipient_id: z.string(),
+    created_at: z.string().datetime({ offset: true }),
+    sent: z.boolean(),
+})
+
+export type NotificationQueue = z.infer<typeof NotificationQueueSchema>
+
+export const NotificationPreferencesSchema = z.object({
+    user_id: z.string(),
+    recipe_comment_notifications: z.boolean(),
+    updated_at: z.string().datetime({ offset: true }),
+})
+
+export type NotificationPreferences = z.infer<typeof NotificationPreferencesSchema>
+
+export const UpdateNotificationPreferencesSchema = z.object({
+    recipe_comment_notifications: z.boolean(),
+})
+
+export type UpdateNotificationPreferences = z.infer<typeof UpdateNotificationPreferencesSchema>
