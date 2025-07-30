@@ -8,6 +8,7 @@ import { ProfileImage } from "../ui/profile-image"
 import { useProfile } from "@/hooks/use-profile"
 import Link from "next/link"
 import { createClient } from "@/utils/supabase/client"
+import { usePostHog } from "posthog-js/react"
 
 interface TopBarProps {
     children?: React.ReactNode
@@ -16,6 +17,7 @@ interface TopBarProps {
 
 export function TopBar({ children, className }: TopBarProps) {
     const { profile } = useProfile()
+    const posthog = usePostHog()
 
     const defaultContent = (
         <>
@@ -48,6 +50,7 @@ export function TopBar({ children, className }: TopBarProps) {
                         </Link>
                         <form
                             onSubmit={() => {
+                                posthog.reset()
                                 const supabase = createClient()
                                 supabase.auth.signOut()
                             }}

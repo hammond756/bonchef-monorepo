@@ -37,7 +37,6 @@ Description: User added a recipe to their bookmarks.
 */
 export const AddedBookmarkSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
-    is_own_recipe: z.boolean().nullable(),
 })
 
 /*
@@ -47,7 +46,6 @@ Description: User removed a recipe from their bookmarks.
 */
 export const RemovedBookmarkSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
-    is_own_recipe: z.boolean().nullable(),
 })
 
 /*
@@ -57,7 +55,6 @@ Description: User liked a recipe.
 */
 export const LikedRecipeSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
-    is_own_recipe: z.boolean().nullable(),
 })
 
 /*
@@ -67,7 +64,6 @@ Description: User unliked a recipe.
 */
 export const UnlikedRecipeSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
-    is_own_recipe: z.boolean().nullable(),
 })
 
 /*
@@ -77,8 +73,6 @@ Description: User added a comment to a recipe.
 */
 export const AddedCommentSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
-    is_own_recipe: z.boolean().nullable(),
-    comment_length: z.number(),
 })
 
 /*
@@ -88,7 +82,6 @@ Description: User removed a comment from a recipe.
 */
 export const RemovedCommentSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
-    is_own_recipe: z.boolean().nullable(),
 })
 
 // Define a more specific type for the analytics events

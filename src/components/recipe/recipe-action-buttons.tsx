@@ -100,8 +100,6 @@ export const RecipeActionButtons = forwardRef<HTMLDivElement, RecipeActionButton
                     iconSize={bookmarkButtonIconSize || "lg"}
                     theme={theme ?? "light"}
                     recipeId={recipe.id}
-                    initialBookmarked={recipe.is_bookmarked_by_current_user ?? false}
-                    initialBookmarkCount={recipe.bookmark_count || 0}
                 />
                 {recipe.profiles && (
                     <div className="flex flex-col items-center">

@@ -119,22 +119,22 @@ export function ActionButton({
     }
 
     return (
-        <div className="flex flex-col items-center">
-            <button
-                onClick={handleClick}
-                disabled={isLoading || isSessionLoading}
-                aria-label={isActive ? activeLabel : inactiveLabel}
-                data-testid={dataTestId}
-                className={cn(actionButtonVariants({ size, theme }), className)}
-            >
+        <button
+            className="flex flex-col items-center"
+            role="button"
+            aria-label={isActive ? activeLabel : inactiveLabel}
+            onClick={handleClick}
+            disabled={isLoading || isSessionLoading}
+        >
+            <div className={cn(actionButtonVariants({ size, theme }), className)}>
                 <div className={cn(iconVariants({ size: iconSize || size }))}>{icon}</div>
-            </button>
+            </div>
 
             {showCount && (
                 <span className={cn(textVariants())} data-testid={`${dataTestId}-count`}>
                     {count === 0 && zeroText ? zeroText : formatNumber(count)}
                 </span>
             )}
-        </div>
+        </button>
     )
 }

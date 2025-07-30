@@ -1,16 +1,13 @@
 "use client"
 
-import { useState } from "react"
 import { BookmarkIcon } from "lucide-react"
-import { bookmarkRecipe, unbookmarkRecipe } from "@/app/ontdek/actions"
 import { ActionButton } from "@/components/recipe/action-button"
-import { useBookmarkedRecipes } from "@/hooks/use-bookmarked-recipes"
+import { useBookmarkStatus } from "@/hooks/use-bookmark-status"
 import { redirect } from "next/navigation"
+import { useBookmarkCount } from "@/hooks/use-bookmark-count"
 
 export interface BookmarkButtonProps {
     recipeId: string
-    initialBookmarked: boolean
-    initialBookmarkCount: number
     showCount?: boolean
     className?: string
     theme?: "light" | "dark"
@@ -23,54 +20,30 @@ export function BookmarkButton({
     size,
     iconSize,
     recipeId,
-    initialBookmarked,
-    initialBookmarkCount,
     showCount = true,
     className,
     theme,
 }: BookmarkButtonProps) {
-    const [isBookmarked, setIsBookmarked] = useState(initialBookmarked)
-    const [bookmarkCount, setBookmarkCount] = useState(initialBookmarkCount)
-    const [isLoading, setIsLoading] = useState(false)
-
-    const { mutate: mutateBookmarkedRecipes } = useBookmarkedRecipes()
+    const { isBookmarked, toggle, isLoading } = useBookmarkStatus(recipeId)
+    const { bookmarkCount, mutate: mutateBookmarkCount } = useBookmarkCount(recipeId)
 
     const handleToggle = async () => {
-        setIsLoading(true)
-        const previousIsBookmarked = isBookmarked
-        const previousBookmarkCount = bookmarkCount
-
-        // Optimistic update
-        setIsBookmarked(!isBookmarked)
-        setBookmarkCount(previousIsBookmarked ? bookmarkCount - 1 : bookmarkCount + 1)
-
-        if (previousIsBookmarked) {
-            const { success, error } = await unbookmarkRecipe(recipeId)
-            if (!success) {
-                setIsBookmarked(previousIsBookmarked)
-                setBookmarkCount(previousBookmarkCount)
-                return { success: false, error }
-            }
-        } else {
-            const { success, error } = await bookmarkRecipe(recipeId)
-            if (!success) {
-                setIsBookmarked(previousIsBookmarked)
-                setBookmarkCount(previousBookmarkCount)
-
-                if (error?.code == 401) {
-                    return {
-                        success: false,
-                        error: { message: "Authentication required", code: 401 },
-                    }
-                }
-                return { success: false, error }
+        try {
+            await toggle()
+            await mutateBookmarkCount()
+            return { success: true }
+        } catch (error) {
+            return {
+                success: false,
+                error: {
+                    message: error instanceof Error ? error.message : "Er is iets misgegaan",
+                    code:
+                        error instanceof Error && error.message === "Authentication required"
+                            ? 401
+                            : 500,
+                },
             }
         }
-
-        // After successful action, revalidate the bookmarked recipes list
-        mutateBookmarkedRecipes()
-        setIsLoading(false)
-        return { success: true }
     }
 
     const handleAuthRequired = () => {
@@ -97,7 +70,7 @@ export function BookmarkButton({
             size={size}
             iconSize={iconSize}
             isActive={isBookmarked}
-            count={bookmarkCount}
+            count={bookmarkCount || 0}
             isLoading={isLoading}
             onToggle={handleToggle}
             onAuthRequired={handleAuthRequired}
