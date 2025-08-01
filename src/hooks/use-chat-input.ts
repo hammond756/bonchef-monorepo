@@ -14,6 +14,7 @@ interface UrlStatus {
     url: string
     status: "loading" | "success" | "error"
     content?: string
+    errorMessage?: string
 }
 
 function extractUrls(text: string): string[] {
@@ -29,7 +30,9 @@ async function fetchUrlContent(url: string): Promise<string> {
     })
 
     if (!response.ok) {
-        throw new Error("Failed to fetch URL content")
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.error || "Failed to fetch URL content"
+        throw new Error(errorMessage)
     }
 
     const data = await response.json()
@@ -91,8 +94,10 @@ export function useChatInput({ onSend, isLoading }: UseChatInputProps) {
             try {
                 const content = await fetchUrlContent(url)
                 updateUrlStatus(url, { status: "success", content })
-            } catch {
-                updateUrlStatus(url, { status: "error" })
+            } catch (error) {
+                const errorMessage =
+                    error instanceof Error ? error.message : "Failed to fetch URL content"
+                updateUrlStatus(url, { status: "error", errorMessage })
             }
         },
         [updateUrlStatus]

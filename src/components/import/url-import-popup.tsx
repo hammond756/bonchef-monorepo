@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { useRecipeImport } from "@/hooks/use-recipe-import"
 import { ImportPopupBase } from "./import-popup-base"
+import { validateUrlForImport } from "@/lib/services/url-validation-service"
 
 interface UrlImportPopupProps {
     onDismiss: () => void
@@ -38,6 +39,13 @@ export function UrlImportPopup({ onDismiss, onSubmit }: Readonly<UrlImportPopupP
 
         if (!isValidUrl(urlToSubmit)) {
             setError("De ingevoerde URL is ongeldig.")
+            return
+        }
+
+        // Validate URL against unsupported sources
+        const validationResult = validateUrlForImport(urlToSubmit)
+        if (!validationResult.isValid) {
+            setError(validationResult.errorMessage || "Deze URL wordt niet ondersteund.")
             return
         }
 

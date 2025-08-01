@@ -7,6 +7,7 @@ interface UrlStatus {
     url: string
     status: "loading" | "success" | "error"
     content?: string
+    errorMessage?: string
 }
 
 interface UrlStatusListProps {
@@ -22,24 +23,37 @@ export function UrlStatusList({ urls, className }: UrlStatusListProps) {
             {urls.map((url) => (
                 <div
                     key={url.url}
-                    className="text-muted-foreground flex items-center gap-2 text-sm"
+                    className="text-muted-foreground flex items-start gap-2 text-sm"
                     data-testid="url-preview"
                 >
                     {url.status === "loading" && (
                         <Loader2
-                            className="h-4 w-4 animate-spin"
+                            className="mt-0.5 h-4 w-4 animate-spin"
                             data-testid="url-loading-spinner"
                         />
                     )}
                     {url.status === "success" && (
-                        <Check className="h-4 w-4 text-green-500" data-testid="url-checkmark" />
+                        <Check
+                            className="mt-0.5 h-4 w-4 text-green-500"
+                            data-testid="url-checkmark"
+                        />
                     )}
                     {url.status === "error" && (
-                        <X className="h-4 w-4 text-red-500" data-testid="url-error" />
+                        <X className="mt-0.5 h-4 w-4 text-red-500" data-testid="url-error" />
                     )}
-                    <span className="truncate" data-testid="url-preview-text">
-                        {url.url}
-                    </span>
+                    <div className="min-w-0 flex-1">
+                        <span className="block truncate" data-testid="url-preview-text">
+                            {url.url}
+                        </span>
+                        {url.status === "error" && url.errorMessage && (
+                            <span
+                                className="mt-1 block text-xs whitespace-pre-line text-red-500"
+                                data-testid="url-error-message"
+                            >
+                                {url.errorMessage}
+                            </span>
+                        )}
+                    </div>
                 </div>
             ))}
         </div>

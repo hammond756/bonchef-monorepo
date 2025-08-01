@@ -91,7 +91,9 @@ export function ImportPopupBase({
                     <p className="text-muted-foreground mb-4 text-sm">{description}</p>
                     <div className="space-y-4">
                         {children}
-                        {error && <p className="text-sm text-red-500">{error}</p>}
+                        {error && (
+                            <p className="text-sm whitespace-pre-line text-red-500">{error}</p>
+                        )}
                         <Button
                             onClick={onSubmit}
                             className="w-full"

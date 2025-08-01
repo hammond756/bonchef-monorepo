@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server"
 import { getRecipeContent, normalizeUrl } from "@/lib/services/web-service"
+import { validateUrlForImport } from "@/lib/services/url-validation-service"
 
 export async function POST(request: Request) {
     const { url } = await request.json()
+
+    // Validate URL before processing
+    const validationResult = validateUrlForImport(url)
+    if (!validationResult.isValid) {
+        return NextResponse.json(
+            { error: validationResult.errorMessage || "Deze URL wordt niet ondersteund." },
+            { status: 400 }
+        )
+    }
 
     if (
         process.env.NODE_ENV !== "production" &&
