@@ -5,6 +5,7 @@ import { createAdminClient, createClient } from "@/utils/supabase/server"
 import { OnboardingService } from "@/lib/services/onboarding-service"
 import { RecipeService } from "@/lib/services/recipe-service"
 import { revalidatePath } from "next/cache"
+import { createRecipeSlug } from "@/lib/utils"
 import { assignJobsToUserWithClient } from "@/lib/services/recipe-imports-job/shared"
 
 export async function associateOnboardingData(userId: string) {
@@ -151,7 +152,7 @@ export async function claimRecipe(recipeId: string) {
     }
 
     // Revalidate the recipe page
-    revalidatePath(`/recipes/${recipeId}`)
+    revalidatePath(`/recipes/${createRecipeSlug(updatedRecipe[0].title, recipeId)}`)
 
     console.log("Recipe claimed successfully", recipeId, user.id)
 

@@ -1,7 +1,8 @@
-import { getRecipe } from "@/app/recipes/[id]/actions"
+import { getRecipe } from "@/app/recipes/[slug]/actions"
 import { RecipeForm } from "@/components/recipe-form"
 import { createClient } from "@/utils/supabase/server"
 import { redirect, notFound } from "next/navigation"
+import { createRecipeSlug } from "@/lib/utils"
 import { PageContentSpacer } from "@/components/layout/page-content-spacer"
 
 export default async function EditRecipePage({
@@ -31,7 +32,7 @@ export default async function EditRecipePage({
     if (user) {
         // Logged-in user can only edit their own recipes.
         if (recipe.user_id !== user.id) {
-            redirect("/recipes/" + id)
+            redirect("/recipes/" + createRecipeSlug(recipe.title, id))
         }
     } else {
         // Anonymous user can only edit a marketing recipe.

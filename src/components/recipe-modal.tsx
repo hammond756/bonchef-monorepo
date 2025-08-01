@@ -10,7 +10,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog"
 import { GeneratedRecipe } from "@/lib/types"
-import { generatedRecipeToRecipe } from "@/lib/utils"
+import { generatedRecipeToRecipe, createRecipeSlug } from "@/lib/utils"
 import { RecipeDetail } from "./recipe-detail"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
@@ -48,7 +48,7 @@ export function RecipeModal({ recipe, isOpen, onClose, onRecipeSaved, canSave }:
             }
 
             const data = await response.json()
-            const recipeUrl = `/recipes/${data.recipe.id}`
+            const recipeUrl = `/recipes/${createRecipeSlug(data.recipe.title, data.recipe.id)}`
             setSavedRecipeUrl(recipeUrl)
 
             // Notify parent component that recipe was saved

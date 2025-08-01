@@ -5,7 +5,7 @@ import Link from "next/link"
 import { BookmarkButton } from "@/components/bookmark-button"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, LinkIcon, TextIcon } from "lucide-react"
-import { getHostnameFromUrl, cn } from "@/lib/utils"
+import { getHostnameFromUrl, cn, createRecipeSlug } from "@/lib/utils"
 import Image from "next/image"
 
 function RecipeCardTitle({ title, subTitle }: { title: string; subTitle?: string }) {
@@ -37,7 +37,9 @@ function RecipeCardContainer({ children, href }: { children: React.ReactNode; hr
 export function RecipeCard({ recipe }: { readonly recipe: Recipe }) {
     const isDraft = recipe.status === "DRAFT"
     const shouldBlur = isDraft
-    const href = isDraft ? `/edit/${recipe.id}` : `/recipes/${recipe.id}`
+    const href = isDraft
+        ? `/edit/${recipe.id}`
+        : `/recipes/${createRecipeSlug(recipe.title, recipe.id)}`
 
     return (
         <RecipeCardContainer href={href}>

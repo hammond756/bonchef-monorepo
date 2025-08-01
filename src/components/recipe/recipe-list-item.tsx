@@ -4,12 +4,14 @@ import Image from "next/image"
 import { BookmarkButton } from "@/components/bookmark-button"
 import { Badge } from "@/components/ui/badge"
 import { ImageIcon, LinkIcon, Loader2, TextIcon } from "lucide-react"
-import { getHostnameFromUrl, cn } from "@/lib/utils"
+import { getHostnameFromUrl, cn, createRecipeSlug } from "@/lib/utils"
 
 export function RecipeListItem({ recipe }: { readonly recipe: RecipeRead }) {
     const isDraft = recipe.status === "DRAFT"
     const shouldBlur = isDraft
-    const href = isDraft ? `/edit/${recipe.id}` : `/recipes/${recipe.id}`
+    const href = isDraft
+        ? `/edit/${recipe.id}`
+        : `/recipes/${createRecipeSlug(recipe.title, recipe.id)}`
 
     return (
         <div className="group border-border bg-surface relative flex items-center gap-4 rounded-xl border p-2 shadow-sm">

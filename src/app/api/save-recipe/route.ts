@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createAdminClient, createClient } from "@/utils/supabase/server"
 import { revalidatePath } from "next/cache"
+import { createRecipeSlug } from "@/lib/utils"
 import {
     uploadImageFromBase64Server,
     imageUrlToBase64Server,
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
         }
 
         // Revalidate the recipe page
-        revalidatePath(`/recipes/${id}`)
+        revalidatePath(`/recipes/${createRecipeSlug(response.data.title, id)}`)
 
         // Revalidate paths when recipe is updated
         if (response.data.is_public) {
@@ -108,7 +109,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: response.error }, { status: 500 })
         }
 
-        revalidatePath(`/recipes/${response.data.id}`)
+        revalidatePath(`/recipes/${createRecipeSlug(response.data.title, response.data.id)}`)
 
         // Revalidate paths when new recipe is created
         if (response.data.is_public) {

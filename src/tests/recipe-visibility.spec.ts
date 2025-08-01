@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures"
+import { createRecipeSlug } from "./utils/recipe-helpers"
 
 // Test suite for recipe visibility features
 test.describe("Recipe visibility features", () => {
@@ -72,7 +73,9 @@ test.describe("Recipe visibility features", () => {
     test.describe("First user (owner) recipe visibility", () => {
         test("can view own public recipe", async ({ authenticatedPage: page, baseURL }) => {
             // Access public recipe
-            await page.goto(`${baseURL}/recipes/${publicRecipeId}`)
+            await page.goto(
+                `${baseURL}/recipes/${createRecipeSlug("Public Test Recipe", publicRecipeId)}`
+            )
 
             // Verify recipe is visible
             await expect(page.getByText("Public Test Recipe")).toBeVisible()
@@ -84,7 +87,9 @@ test.describe("Recipe visibility features", () => {
 
         test("can view own private recipe", async ({ authenticatedPage: page, baseURL }) => {
             // Access private recipe
-            await page.goto(`${baseURL}/recipes/${privateRecipeId}`)
+            await page.goto(
+                `${baseURL}/recipes/${createRecipeSlug("Private Test Recipe", privateRecipeId)}`
+            )
 
             // Verify recipe is visible
             await expect(page.getByText("Private Test Recipe")).toBeVisible()
@@ -99,7 +104,9 @@ test.describe("Recipe visibility features", () => {
     test.describe("Second user (non-owner) recipe visibility", () => {
         test("can view first user's public recipe", async ({ secondUserPage: page, baseURL }) => {
             // Access first user's public recipe
-            await page.goto(`${baseURL}/recipes/${publicRecipeId}`)
+            await page.goto(
+                `${baseURL}/recipes/${createRecipeSlug("Public Test Recipe", publicRecipeId)}`
+            )
 
             // Verify recipe is visible
             await expect(page.getByText("Public Test Recipe")).toBeVisible()
@@ -114,7 +121,9 @@ test.describe("Recipe visibility features", () => {
             baseURL,
         }) => {
             // Try to access first user's private recipe
-            await page.goto(`${baseURL}/recipes/${privateRecipeId}`)
+            await page.goto(
+                `${baseURL}/recipes/${createRecipeSlug("Private Test Recipe", privateRecipeId)}`
+            )
 
             // Verify recipe not found message
             await expect(page.getByText("Recept niet gevonden")).toBeVisible()
@@ -125,7 +134,9 @@ test.describe("Recipe visibility features", () => {
     test.describe("Anonymous user recipe visibility", () => {
         test("can view public recipe", async ({ unauthenticatedPage: page, baseURL }) => {
             // Try to access public recipe
-            await page.goto(`${baseURL}/recipes/${publicRecipeId}`)
+            await page.goto(
+                `${baseURL}/recipes/${createRecipeSlug("Public Test Recipe", publicRecipeId)}`
+            )
 
             // Verify recipe is visible
             await expect(page.getByText("Public Test Recipe")).toBeVisible()
@@ -137,7 +148,9 @@ test.describe("Recipe visibility features", () => {
             baseURL,
         }) => {
             // Try to access private recipe
-            await page.goto(`${baseURL}/recipes/${privateRecipeId}`)
+            await page.goto(
+                `${baseURL}/recipes/${createRecipeSlug("Private Test Recipe", privateRecipeId)}`
+            )
 
             // Verify recipe not found message
             await expect(page.getByText("Recept niet gevonden")).toBeVisible()

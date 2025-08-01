@@ -32,6 +32,7 @@ import { useFileUpload } from "@/hooks/use-file-upload"
 import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning"
 import { useNavigationStore } from "@/lib/store/navigation-store"
 import { createClient } from "@/utils/supabase/client"
+import { createRecipeSlug } from "@/lib/utils"
 import { StorageService } from "@/lib/services/storage-service"
 import { v4 as uuidv4 } from "uuid"
 import Image from "next/image"
@@ -218,14 +219,18 @@ export function RecipeForm({
             }
 
             if (isOnboardingFlow) {
-                router.push(`/recipes/preview/${recipeId || response.id}`)
+                router.push(
+                    `/recipes/preview/${createRecipeSlug(response.title, recipeId || response.id)}`
+                )
                 return
             }
 
             // TODO: consider mutating own-recipes and import-jobs
 
             const sourceUrl = lastBrowsingPath || "/ontdek"
-            router.push(`/recipes/${response.id}?from=edit&source=${encodeURIComponent(sourceUrl)}`)
+            router.push(
+                `/recipes/${createRecipeSlug(response.title, response.id)}?from=edit&source=${encodeURIComponent(sourceUrl)}`
+            )
         } catch (error) {
             console.error("Failed to save recipe:", error)
             setSubmitError("Failed to save recipe. Please try again.")

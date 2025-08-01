@@ -6,7 +6,7 @@ import { Recipe } from "@/lib/types"
 import { Card } from "@/components/ui/card"
 import Image from "next/image"
 
-import { cn } from "@/lib/utils"
+import { cn, createRecipeSlug } from "@/lib/utils"
 
 import { RecipeActionButtons } from "./recipe-action-buttons"
 import { CommentOverlay } from "@/components/comment-overlay"
@@ -47,7 +47,10 @@ export function RecipeFeedCard({ recipe }: RecipeFeedCardProps) {
     return (
         <div className="w-full snap-center px-4">
             <Card className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl">
-                <Link href={`/recipes/${recipe.id}`} className="absolute inset-0">
+                <Link
+                    href={`/recipes/${createRecipeSlug(recipe.title, recipe.id)}`}
+                    className="absolute inset-0"
+                >
                     <Image
                         src={recipe.thumbnail || "https://placekitten.com/900/1200"}
                         alt={recipe.title}

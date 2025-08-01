@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test"
 import { test, expect } from "./fixtures"
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
-import { importRecipe, saveRecipe } from "./utils/recipe-helpers"
+import { importRecipe, saveRecipe, createRecipeSlug } from "./utils/recipe-helpers"
 
 async function createRecipe(page: Page, baseURL: string) {
     const response = await page.request.post(`${baseURL}/api/save-recipe`, {
@@ -61,7 +61,7 @@ test.describe("Recipe editing flows", () => {
         await page.getByRole("button", { name: "Opslaan" }).click()
 
         // Verify changes on detail page
-        await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`))
+        await expect(page).toHaveURL(new RegExp(`/recipes/${createRecipeSlug(".*", recipeId)}`))
         await expect(page.getByTestId("recipe-title")).toContainText("Verbeterde Pasta Carbonara")
         await expect(page.getByText("Een luxe versie van pasta carbonara")).toBeVisible()
     })
@@ -76,7 +76,7 @@ test.describe("Recipe editing flows", () => {
         await page.getByRole("button", { name: "Opslaan" }).click()
 
         // Verify on detail page
-        await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`))
+        await expect(page).toHaveURL(new RegExp(`/recipes/${createRecipeSlug(".*", recipeId)}`))
         await expect(page.getByText("4 porties")).toBeVisible()
     })
 
@@ -102,7 +102,7 @@ test.describe("Recipe editing flows", () => {
         await page.getByRole("button", { name: "Opslaan" }).click()
 
         // Verify changes
-        await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`))
+        await expect(page).toHaveURL(new RegExp(`/recipes/${createRecipeSlug(".*", recipeId)}`))
         await expect(page.getByText("50 milliliter witte wijn")).toBeVisible()
         await expect(page.getByText("400 gram spaghetti")).toBeVisible()
     })
@@ -123,7 +123,7 @@ test.describe("Recipe editing flows", () => {
         await page.getByRole("button", { name: "Opslaan" }).click()
 
         // Verify changes
-        await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`))
+        await expect(page).toHaveURL(new RegExp(`/recipes/${createRecipeSlug(".*", recipeId)}`))
         await expect(page.getByText("Kook de pasta volgens de verpakking al dente")).toBeVisible()
         await expect(page.getByText("Schenk een glas witte wijn in voor de kok")).toBeVisible()
     })
@@ -139,7 +139,7 @@ test.describe("Recipe editing flows", () => {
         await page.getByRole("button", { name: "Opslaan" }).click()
 
         // Verify image is displayed
-        await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`))
+        await expect(page).toHaveURL(new RegExp(`/recipes/${createRecipeSlug(".*", recipeId)}`))
         await expect(page.getByTestId("recipe-image")).toBeVisible()
     })
 
@@ -169,7 +169,7 @@ test.describe("Recipe editing flows", () => {
         await page.getByRole("button", { name: "Opslaan" }).click()
 
         // Verify image persists after save
-        await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}`))
+        await expect(page).toHaveURL(new RegExp(`/recipes/${createRecipeSlug(".*", recipeId)}`))
         await expect(page.getByTestId("recipe-image")).toBeVisible()
     })
 
@@ -193,7 +193,7 @@ test.describe("Recipe editing flows", () => {
         await page.getByText("Openbaar").click()
         await page.getByRole("button", { name: "Opslaan" }).click()
 
-        await page.waitForURL(new RegExp(`/recipes/${recipeId}`))
+        await page.waitForURL(new RegExp(`/recipes/${createRecipeSlug(".*", recipeId)}`))
 
         // Verify public badge is visible
         await expect(page.getByText("Openbaar")).toBeVisible()
@@ -210,7 +210,7 @@ test("deletes recipe", async ({ authenticatedPage: page, baseURL }) => {
     await expect(page).toHaveURL(baseURL!)
 
     // Verify recipe no longer exists
-    await page.goto(`${baseURL}/recipes/${recipeForDeletion}`)
+    await page.goto(`${baseURL}/recipes/${createRecipeSlug(".*", recipeForDeletion)}`)
     await expect(page.getByText("Recept niet gevonden")).toBeVisible()
     await expect(page.getByText("Terug naar homepage")).toBeVisible()
 })

@@ -18,6 +18,7 @@ import { RecipeInstructions, InstructionStep } from "./recipe-instructions"
 import { RecipeActionButtons } from "./recipe/recipe-action-buttons"
 import { CommentOverlay } from "@/components/comment-overlay"
 import { useState } from "react"
+import { createRecipeSlug } from "@/lib/utils"
 
 interface RecipeMetadataProps {
     recipe: RecipeRead
@@ -106,7 +107,10 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
 
                         <div className="text-surface absolute right-0 bottom-0 left-0 flex items-end justify-between p-4">
                             <div className="flex flex-col pr-16">
-                                <Link href={`/recipes/${recipe.id}`} className="mb-1 block">
+                                <Link
+                                    href={`/recipes/${createRecipeSlug(recipe.title, recipe.id)}`}
+                                    className="mb-1 block"
+                                >
                                     <h1
                                         className="line-clamp-2 text-2xl font-extrabold drop-shadow-lg md:text-4xl"
                                         data-testid="recipe-title"

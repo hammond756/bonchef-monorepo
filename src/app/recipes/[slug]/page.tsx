@@ -7,20 +7,34 @@ import { RecipeRead, RecipeReadSchema } from "@/lib/types"
 import { cookies, headers } from "next/headers"
 import { getServerBaseUrl } from "@/lib/utils"
 import { NavigationTracker } from "@/components/util/navigation-tracker"
+import { notFound } from "next/navigation"
 
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 export const dynamic = "auto"
 export const revalidate = 3600 // Revalidate every hour
 
+interface RecipePageProps {
+    slug: string
+}
+
 export async function generateMetadata(
-    { params }: { params: Promise<{ id: string }> },
+    { params }: { params: Promise<RecipePageProps> },
     _parent: ResolvingMetadata
 ): Promise<Metadata> {
-    const { id } = await params
+    const { slug } = await params
+
+    // Extract recipe ID from slug (format: title~id)
+    const recipeId = slug.split("~")[1]
+
+    if (!recipeId) {
+        return {
+            title: `Bonchef - Recept niet gevonden`,
+        }
+    }
 
     const baseUrl = getServerBaseUrl(await headers())
 
-    const { recipe, error } = await fetch(`${baseUrl}/api/public/recipes/${id}`, {
+    const { recipe, error } = await fetch(`${baseUrl}/api/public/recipes/${recipeId}`, {
         next: { revalidate: 60 },
         headers: { Cookie: (await cookies()).toString() },
     }).then((res) => res.json())
@@ -46,22 +60,29 @@ export async function generateStaticParams() {
     const supabase = await createAdminClient()
 
     // Only fetch public recipes for static generation
-    const { data } = await supabase.from("recipes").select("id").eq("is_public", true)
+    const { data } = await supabase.from("recipes").select("id, title").eq("is_public", true)
 
     // Return array of params for all public recipes
     return (
         data?.map((recipe) => ({
-            id: recipe.id,
+            slug: `${recipe.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}~${recipe.id}`,
         })) || []
     )
 }
 
-export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params
+export default async function RecipePage({ params }: { params: Promise<RecipePageProps> }) {
+    const { slug } = await params
+
+    // Extract recipe ID from slug (format: title~id)
+    const recipeId = slug.split("~")[1]
+
+    if (!recipeId) {
+        notFound()
+    }
 
     const baseUrl = getServerBaseUrl(await headers())
 
-    const url = `${baseUrl}/api/public/recipes/${id}`
+    const url = `${baseUrl}/api/public/recipes/${recipeId}`
 
     const response = await fetch(url, {
         cache: "no-store",
@@ -127,7 +148,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
     return (
         <div className="flex flex-1 flex-col">
-            <NavigationTracker path={`/recipes/${id}`} />
+            <NavigationTracker path={`/recipes/${slug}`} />
             <RecipeDetail variant="saved" recipe={parsedRecipe} user={user || undefined} />
         </div>
     )

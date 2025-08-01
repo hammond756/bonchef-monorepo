@@ -1,5 +1,13 @@
 import { Page, expect } from "@playwright/test"
 
+/**
+ * Creates a recipe slug from title and ID, matching the format used in the app
+ */
+export function createRecipeSlug(title: string, recipeId: string): string {
+    const titlePart = title.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+    return `${titlePart}~${recipeId}`
+}
+
 interface ImportRecipeOptions {
     page: Page
     importMethod: "url" | "text"
@@ -50,7 +58,10 @@ export async function saveRecipe(options: SaveRecipeOptions): Promise<void> {
     await page.getByTestId("save-recipe").click()
     await page.getByText(visibility).click()
     await page.getByRole("button", { name: "Opslaan" }).click()
-    await expect(page).toHaveURL(new RegExp(`/recipes(?:/preview)?/${recipeId}`), {
-        timeout: 60000,
-    })
+    await expect(page).toHaveURL(
+        new RegExp(`/recipes(?:/preview)?/${createRecipeSlug(".*", recipeId)}`),
+        {
+            timeout: 60000,
+        }
+    )
 }

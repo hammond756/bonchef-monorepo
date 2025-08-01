@@ -1,4 +1,5 @@
 import { test, expect } from "../fixtures"
+import { createRecipeSlug } from "../utils/recipe-helpers"
 
 test.describe("Onboarding triggers", () => {
     test("should show onboarding to anonymous user once on the collection page", async ({
@@ -66,7 +67,7 @@ test.describe("Onboarding triggers", () => {
         test("should show onboarding to anonymous users when they navigate back from the recipe page", async ({
             unauthenticatedPage: page,
         }) => {
-            await page.goto(`/recipes/${recipeId}`)
+            await page.goto(`/recipes/${createRecipeSlug(".*", recipeId)}`)
             await page.getByRole("button", { name: "Ga terug" }).click()
 
             await expect(page.getByText("Onboarding")).toBeVisible()

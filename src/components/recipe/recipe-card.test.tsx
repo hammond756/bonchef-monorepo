@@ -64,7 +64,7 @@ describe("RecipeCard", () => {
         expect(screen.getByText("Test Recipe")).toBeInTheDocument()
         expect(screen.queryByText("Concept")).not.toBeInTheDocument()
         const link = screen.getByRole("link")
-        expect(link).toHaveAttribute("href", "/recipes/1")
+        expect(link).toHaveAttribute("href", "/recipes/test-recipe~1")
     })
 
     test("renders draft recipe card correctly", () => {

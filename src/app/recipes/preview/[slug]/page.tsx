@@ -3,12 +3,20 @@ import { RecipeDetail } from "@/components/recipe-detail"
 import { notFound } from "next/navigation"
 
 interface RecipePreviewPageProps {
-    params: Promise<{ id: string }>
+    params: Promise<{ slug: string }>
 }
 
 export default async function RecipePreviewPage({ params }: RecipePreviewPageProps) {
-    const { id } = await params
-    const recipe = await getPreviewRecipe(id)
+    const { slug } = await params
+
+    // Extract recipe ID from slug (format: title~id)
+    const recipeId = slug.split("~")[1]
+
+    if (!recipeId) {
+        notFound()
+    }
+
+    const recipe = await getPreviewRecipe(recipeId)
 
     if (!recipe) {
         notFound()

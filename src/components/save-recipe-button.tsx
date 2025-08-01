@@ -4,7 +4,7 @@ import { useState } from "react"
 import { formatRecipe } from "@/app/actions"
 import { Loader2 } from "lucide-react"
 import { GeneratedRecipe } from "@/lib/types"
-import { generatedRecipeToRecipe, cn } from "@/lib/utils"
+import { generatedRecipeToRecipe, cn, createRecipeSlug } from "@/lib/utils"
 
 interface SaveRecipeButtonProps {
     message: string
@@ -34,7 +34,7 @@ export function SaveRecipeButton({ message, onSaved }: SaveRecipeButtonProps) {
             }
 
             const data = await response.json()
-            const savedRecipeUrl = `/recipes/${data.recipe.id}`
+            const savedRecipeUrl = `/recipes/${createRecipeSlug(data.recipe.title, data.recipe.id)}`
             setRecipeUrl(savedRecipeUrl)
             onSaved(savedRecipeUrl)
         } catch (error) {

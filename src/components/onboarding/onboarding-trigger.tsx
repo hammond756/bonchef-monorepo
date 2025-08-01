@@ -49,7 +49,7 @@ export function OnboardingTrigger() {
     const setDirectRecipePageTrigger = useCallback(() => {
         if (
             pathname === "/ontdek" &&
-            history.at(-2)?.startsWith("/recipe/") &&
+            history.at(-2)?.startsWith("/recipes/") &&
             history.length === 3
         ) {
             return startOnboardingIn(1, "direct-recipe-page")
