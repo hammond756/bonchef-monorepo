@@ -37,7 +37,7 @@ function RecipeGrid({ items }: { items: Readonly<CollectionItem>[] }) {
     }
 
     return (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
             {items.map((item) =>
                 item.viewType === "RECIPE" ? (
                     <RecipeCard key={item.id} recipe={item} />
@@ -213,14 +213,14 @@ function RecipesSection() {
                 )}
             >
                 <div className="pt-6 pb-2">
-                    <div className="container mx-auto flex max-w-4xl items-center justify-between px-4">
+                    <div className="flex items-center justify-between px-4">
                         <AppTabsList tabs={collectionTabs} className="w-auto flex-grow" />
                     </div>
                 </div>
                 <div className="from-surface pointer-events-none h-2 bg-gradient-to-b to-transparent" />
             </div>
 
-            <div className="container mx-auto max-w-4xl px-4 pt-4 pb-10">
+            <div className="px-4 pt-4 pb-10">
                 <div className="mb-4 flex items-center justify-between gap-2">
                     <Select
                         value={sortOrder}
