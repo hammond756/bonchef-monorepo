@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from "uuid"
 import Cookies from "js-cookie"
 
 export const ONBOARDING_STEPS = ["welcome", "introduction", "add-recipe", "success"] as const
-export type OnboardingStep = (typeof ONBOARDING_STEPS)[number]
 
 const ONBOARDING_SESSION_COOKIE = "onboarding_session_id"
 

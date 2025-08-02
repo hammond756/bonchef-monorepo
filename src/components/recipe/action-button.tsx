@@ -48,7 +48,7 @@ const iconVariants = cva(
 
 const textVariants = cva("text-xs font-medium text-white drop-shadow-sm")
 
-export interface ActionButtonProps
+interface ActionButtonProps
     extends VariantProps<typeof actionButtonVariants>,
         Omit<VariantProps<typeof textVariants>, "size"> {
     // State props

@@ -145,7 +145,7 @@ export function createChatModels(): ChatModelSet {
     }
 }
 
-export function createTestRecipeModel(
+function createTestRecipeModel(
     recipe?: GeneratedRecipe
 ): Runnable<BaseLanguageModelInput, GeneratedRecipe, RunnableConfig<Record<string, unknown>>> {
     const DEV_RECIPE: GeneratedRecipe = {

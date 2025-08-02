@@ -2,7 +2,7 @@
  * Service for validating URLs before import
  */
 
-export interface UrlValidationResult {
+interface UrlValidationResult {
     isValid: boolean
     errorMessage?: string
 }

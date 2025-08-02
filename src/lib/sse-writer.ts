@@ -1,6 +1,6 @@
 import { extractContentFromChunk, processAccumulatedContent } from "./stream-parsers"
 
-export interface StreamCallbacks<T> {
+interface StreamCallbacks<T> {
     onData?: (data: T | null) => void
     onComplete?: (finalData: T) => void
     onError?: (error: Error) => void

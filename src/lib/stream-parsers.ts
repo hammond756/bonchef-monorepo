@@ -49,7 +49,7 @@ export function processAccumulatedContent<T>(accumulatedJson: string): T | null 
  * @param callbacks Callbacks for handling different stream events
  * @returns A promise that resolves when the stream completes
  */
-export interface StreamCallbacks<T> {
+interface StreamCallbacks<T> {
     onLoading?: (isLoading: boolean) => void
     onChunkReceived?: (parsedResponse: T | null, accumulatedJson: string) => void
     onStreamComplete?: (finalResponse: T) => void

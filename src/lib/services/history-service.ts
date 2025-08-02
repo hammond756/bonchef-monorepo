@@ -3,7 +3,7 @@ import { HumanMessage, AIMessage, MessageContentComplex } from "@langchain/core/
 import { GeneratedRecipe } from "../types"
 import { hostedImageToBase64, resignImageUrl } from "../utils"
 
-export interface BaseConversationMessage {
+interface BaseConversationMessage {
     message_id: string
     conversation_id: string
     user_id: string
@@ -14,14 +14,14 @@ export interface BaseConversationMessage {
     created_at: string
 }
 
-export interface BotRecipeConverstationMessage extends BaseConversationMessage {
+interface BotRecipeConverstationMessage extends BaseConversationMessage {
     type: "bot"
     payload: {
         type: "recipe"
     }
 }
 
-export interface BotTeaserConversationMessage extends BaseConversationMessage {
+interface BotTeaserConversationMessage extends BaseConversationMessage {
     type: "bot"
     payload: {
         type: "teaser"
@@ -29,14 +29,14 @@ export interface BotTeaserConversationMessage extends BaseConversationMessage {
     }
 }
 
-export interface BotTextConversationMessage extends BaseConversationMessage {
+interface BotTextConversationMessage extends BaseConversationMessage {
     type: "bot"
     payload: {
         type: "text"
     }
 }
 
-export interface UserWebContentConversationMessage extends BaseConversationMessage {
+interface UserWebContentConversationMessage extends BaseConversationMessage {
     type: "user"
     payload: {
         webContent: {
@@ -46,7 +46,7 @@ export interface UserWebContentConversationMessage extends BaseConversationMessa
     }
 }
 
-export interface UserImageConversationMessage extends BaseConversationMessage {
+interface UserImageConversationMessage extends BaseConversationMessage {
     type: "user"
     payload: {
         image: {
@@ -57,7 +57,7 @@ export interface UserImageConversationMessage extends BaseConversationMessage {
     }
 }
 
-export type ConversationMessage =
+type ConversationMessage =
     | BotRecipeConverstationMessage
     | BotTeaserConversationMessage
     | BotTextConversationMessage

@@ -6,7 +6,7 @@ import { useBookmarkStatus } from "@/hooks/use-bookmark-status"
 import { redirect } from "next/navigation"
 import { useBookmarkCount } from "@/hooks/use-bookmark-count"
 
-export interface BookmarkButtonProps {
+interface BookmarkButtonProps {
     recipeId: string
     showCount?: boolean
     className?: string

@@ -1,6 +1,5 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import crypto from "crypto"
 import { Ingredient, RecipeWrite } from "./types"
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
 import { GeneratedRecipe } from "./types"
@@ -14,27 +13,6 @@ const timeAgo = new TimeAgo("nl-NL")
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
-}
-
-export function isValidUrl(string: string): boolean {
-    try {
-        // Also check if the protocol is http or https
-        const url = new URL(string)
-        return url.protocol === "http:" || url.protocol === "https:"
-    } catch (_) {
-        return false
-    }
-}
-
-export function truncateText(text: string, maxLength: number): string {
-    if (text.length <= maxLength) {
-        return text
-    }
-    return text.substring(0, maxLength - 3) + "..."
-}
-
-export function computeMD5(text: string): string {
-    return crypto.createHash("md5").update(text).digest("hex")
 }
 
 export function generatedRecipeToRecipe(generatedRecipe: GeneratedRecipe): RecipeWrite {
@@ -104,112 +82,6 @@ function numberToFraction(num: number): string {
     return result
 }
 
-export const unitMap: Record<
-    string,
-    { nl: { singular: string; plural: string }; en: { singular: string; plural: string } }
-> = {
-    gram: {
-        nl: { singular: "g", plural: "g" },
-        en: { singular: "g", plural: "g" },
-    },
-    kilogram: {
-        nl: { singular: "kg", plural: "kg" },
-        en: { singular: "kilogram", plural: "kilograms" },
-    },
-    milligram: {
-        nl: { singular: "mg", plural: "mg" },
-        en: { singular: "mg", plural: "mg" },
-    },
-    milliliter: {
-        nl: { singular: "ml", plural: "ml" },
-        en: { singular: "ml", plural: "ml" },
-    },
-    liter: {
-        nl: { singular: "l", plural: "l" },
-        en: { singular: "l", plural: "l" },
-    },
-    teaspoon: {
-        nl: { singular: "tl", plural: "tl" },
-        en: { singular: "tsp", plural: "tsp" },
-    },
-    tablespoon: {
-        nl: { singular: "el", plural: "el" },
-        en: { singular: "tbsp", plural: "tbsp" },
-    },
-    piece: {
-        nl: { singular: "stuk", plural: "stukken" },
-        en: { singular: "piece", plural: "pieces" },
-    },
-    slice: {
-        nl: { singular: "plak", plural: "plakken" },
-        en: { singular: "slice", plural: "slices" },
-    },
-    whole: {
-        nl: { singular: "", plural: "" },
-        en: { singular: "", plural: "" },
-    },
-    clove: {
-        nl: { singular: "teentje", plural: "teentjes" },
-        en: { singular: "clove", plural: "cloves" },
-    },
-    bunch: {
-        nl: { singular: "bos", plural: "bossen" },
-        en: { singular: "bunch", plural: "bunches" },
-    },
-    centimeter: {
-        nl: { singular: "cm", plural: "cm" },
-        en: { singular: "cm", plural: "cm" },
-    },
-    pinch: {
-        nl: { singular: "snufje", plural: "snufjes" },
-        en: { singular: "pinch", plural: "pinches" },
-    },
-    dash: {
-        nl: { singular: "scheutje", plural: "scheutjes" },
-        en: { singular: "dash", plural: "dashes" },
-    },
-    handful: {
-        nl: { singular: "handjevol", plural: "handjevol" },
-        en: { singular: "handful", plural: "handfuls" },
-    },
-    can: {
-        nl: { singular: "blik", plural: "blikken" },
-        en: { singular: "can", plural: "cans" },
-    },
-    jar: {
-        nl: { singular: "pot", plural: "potten" },
-        en: { singular: "jar", plural: "jars" },
-    },
-    pack: {
-        nl: { singular: "pak", plural: "pakken" },
-        en: { singular: "pack", plural: "packs" },
-    },
-    sheet: {
-        nl: { singular: "vel", plural: "vellen" },
-        en: { singular: "sheet", plural: "sheets" },
-    },
-    block: {
-        nl: { singular: "blok", plural: "blokken" },
-        en: { singular: "block", plural: "blocks" },
-    },
-    sprig: {
-        nl: { singular: "takje", plural: "takjes" },
-        en: { singular: "sprig", plural: "sprigs" },
-    },
-    scoop: {
-        nl: { singular: "schep", plural: "scheppen" },
-        en: { singular: "scoop", plural: "scoops" },
-    },
-    cup: {
-        nl: { singular: "cup", plural: "cups" },
-        en: { singular: "cup", plural: "cups" },
-    },
-    none: {
-        nl: { singular: "", plural: "" },
-        en: { singular: "", plural: "" },
-    },
-}
-
 export function formatIngredientLine(
     ingredient: Ingredient,
     multiplier: number
@@ -252,18 +124,6 @@ export function formatIngredientLine(
     }
 }
 
-export function parseDescription(text: string): Array<{ type: "text" | "url"; content: string }> {
-    const urlRegex = /(https?:\/\/[^\s]+)/g
-    const parts = text.split(urlRegex)
-
-    return parts.map((part) => {
-        if (part.match(urlRegex)) {
-            return { type: "url", content: part }
-        }
-        return { type: "text", content: part }
-    })
-}
-
 export function createProfileSlug(displayName: string | null, userId: string): string {
     const namePart = (displayName || "user").toLowerCase().replace(/[^a-z0-9]+/g, "-")
     return `${namePart}~${userId}`
@@ -272,15 +132,6 @@ export function createProfileSlug(displayName: string | null, userId: string): s
 export function createRecipeSlug(title: string, recipeId: string): string {
     const titlePart = title.toLowerCase().replace(/[^a-z0-9]+/g, "-")
     return `${titlePart}~${recipeId}`
-}
-
-export function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.readAsDataURL(file)
-        reader.onload = () => resolve(reader.result as string)
-        reader.onerror = (error) => reject(error)
-    })
 }
 
 export async function hostedImageToBase64(url: string): Promise<string> {

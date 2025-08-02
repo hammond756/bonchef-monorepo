@@ -11,7 +11,7 @@ export interface InstructionStep {
     time?: number
 }
 
-export interface RecipeInstructionsProps {
+interface RecipeInstructionsProps {
     instructions: InstructionStep[]
 }
 

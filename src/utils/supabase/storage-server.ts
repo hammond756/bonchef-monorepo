@@ -2,7 +2,7 @@ import { createClient } from "@/utils/supabase/server"
 import { v4 as uuidv4 } from "uuid"
 
 // Bucket name for storing recipe images
-export const RECIPE_IMAGES_BUCKET = "recipe-images"
+const RECIPE_IMAGES_BUCKET = "recipe-images"
 
 /**
  * Upload an image to Supabase Storage from a base64 string (server-side)
@@ -50,55 +50,6 @@ export async function uploadImageFromBase64Server(
         .getPublicUrl(`${finalFileName}`)
 
     return publicUrlData.publicUrl
-}
-
-/**
- * Retrieve the Supabase public image URL from a file path (server-side)
- * @param path - The file path in Supabase storage
- * @returns The public URL
- */
-export async function getImagePublicUrlServer(path: string): Promise<string> {
-    const supabase = await createClient()
-
-    // If it's already a full URL, return it
-    if (path.startsWith("http")) {
-        return path
-    }
-
-    // Otherwise, get the public URL from Supabase
-    const { data } = supabase.storage
-        .from(RECIPE_IMAGES_BUCKET)
-        .getPublicUrl(path.startsWith("public/") ? path : `public/${path}`)
-
-    return data.publicUrl
-}
-
-/**
- * Delete an image from Supabase Storage (server-side)
- * @param path - The file path in Supabase storage
- * @returns Whether deletion was successful
- */
-export async function deleteImageServer(path: string): Promise<boolean> {
-    const supabase = await createClient()
-
-    // Extract the file path if it's a full URL
-    let filePath = path
-
-    if (path.includes("/storage/v1/object/public/")) {
-        // Extract path from URL: https://xxx.supabase.co/storage/v1/object/public/recipe-images/public/filename.jpg
-        const parts = path.split("/storage/v1/object/public/")[1].split("/")
-        parts.shift() // Remove bucket name
-        filePath = parts.join("/")
-    }
-
-    // Ensure path starts with public/
-    if (!filePath.startsWith("public/")) {
-        filePath = `public/${filePath}`
-    }
-
-    const { error } = await supabase.storage.from(RECIPE_IMAGES_BUCKET).remove([filePath])
-
-    return !error
 }
 
 /**

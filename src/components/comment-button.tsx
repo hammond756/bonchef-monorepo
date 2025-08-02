@@ -7,7 +7,7 @@ import { redirect } from "next/navigation"
 import { MessageCircle } from "lucide-react"
 import { useCommentCount } from "@/hooks/use-comment-count"
 
-export interface CommentButtonProps {
+interface CommentButtonProps {
     recipeId: string
     showCount?: boolean
     className?: string

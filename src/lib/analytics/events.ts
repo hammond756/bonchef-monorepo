@@ -6,7 +6,7 @@ started_recipe_import
 
 Description: User started a recipe import job.
 */
-export const StartedRecipeImportSchemaV1 = z.object({
+const StartedRecipeImportSchemaV1 = z.object({
     job_id: z.string().uuid(),
     method: RecipeImportSourceTypeEnum,
 })
@@ -22,7 +22,7 @@ However, there could be scenario's where a draft is actually
 created by a user. In this case, the event should be triggered
 with stage "draft".
 */
-export const AddedRecipeSchemaV1 = z.object({
+const AddedRecipeSchemaV1 = z.object({
     method: RecipeImportSourceTypeEnum,
     recipe_count: z.number().nullable(),
     recipe_id: z.string().uuid(),
@@ -35,7 +35,7 @@ added_bookmark
 
 Description: User added a recipe to their bookmarks.
 */
-export const AddedBookmarkSchemaV1 = z.object({
+const AddedBookmarkSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
 })
 
@@ -44,7 +44,7 @@ removed_bookmark
 
 Description: User removed a recipe from their bookmarks.
 */
-export const RemovedBookmarkSchemaV1 = z.object({
+const RemovedBookmarkSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
 })
 
@@ -53,7 +53,7 @@ liked_recipe
 
 Description: User liked a recipe.
 */
-export const LikedRecipeSchemaV1 = z.object({
+const LikedRecipeSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
 })
 
@@ -62,7 +62,7 @@ unliked_recipe
 
 Description: User unliked a recipe.
 */
-export const UnlikedRecipeSchemaV1 = z.object({
+const UnlikedRecipeSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
 })
 
@@ -71,7 +71,7 @@ added_comment
 
 Description: User added a comment to a recipe.
 */
-export const AddedCommentSchemaV1 = z.object({
+const AddedCommentSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
 })
 
@@ -80,7 +80,7 @@ removed_comment
 
 Description: User removed a comment from a recipe.
 */
-export const RemovedCommentSchemaV1 = z.object({
+const RemovedCommentSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
 })
 

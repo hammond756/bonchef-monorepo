@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast"
 import { redirect } from "next/navigation"
 import { OkHandIcon } from "@/components/ui/ok-hand-icon"
 
-export interface LikeButtonProps {
+interface LikeButtonProps {
     recipeId: string
     initialLiked: boolean
     initialLikeCount: number

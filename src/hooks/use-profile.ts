@@ -6,7 +6,7 @@ import { useEffect } from "react"
 import { getOwnProfile } from "@/components/profile/actions"
 import { createClient } from "@/utils/supabase/client"
 
-export async function fetchProfile(): Promise<PublicProfile | null> {
+async function fetchProfile(): Promise<PublicProfile | null> {
     return getOwnProfile()
 }
 

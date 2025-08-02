@@ -37,7 +37,7 @@ const iconVariants = cva("", {
 
 const textVariants = cva("text-xs font-medium text-white drop-shadow-sm")
 
-export interface ShareRecipeButtonProps extends VariantProps<typeof buttonVariants> {
+interface ShareRecipeButtonProps extends VariantProps<typeof buttonVariants> {
     title: string
     text: string
     className?: string
