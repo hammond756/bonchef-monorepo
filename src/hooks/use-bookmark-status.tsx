@@ -1,6 +1,6 @@
 "use client"
 
-import useSWR from "swr"
+import useSWR, { mutate as globalMutate } from "swr"
 import { useSession } from "@/hooks/use-session"
 import {
     bookmarkRecipe,
@@ -45,6 +45,8 @@ export function useBookmarkStatus(recipeId: string) {
             rollbackOnError: true,
             revalidate: false,
         })
+
+        await globalMutate(["bookmarked-recipes"])
     }
 
     return {

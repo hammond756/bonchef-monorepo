@@ -20,7 +20,6 @@ export async function getBookmarkedRecipesWithClient(
                 thumbnail,
                 is_public,
                 created_at,
-                updated_at,
                 profiles:user_id (
                     id,
                     display_name,

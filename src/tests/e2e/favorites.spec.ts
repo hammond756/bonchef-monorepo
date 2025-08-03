@@ -12,9 +12,14 @@ test.describe("Favorites functionality", () => {
         await page.getByRole("link", { name: "Collectie" }).click()
         await page.getByText("Mijn favorieten").click()
 
+        // Wait for the collection page to load
+        await page.waitForLoadState("networkidle")
+
         // Remove bookmarks from all recipes
-        const buttons = await page.getByRole("button", { name: "Verwijder uit favorieten" })
-        for (const button of await buttons.all()) {
+        const buttons = await page.getByRole("button", { name: "Verwijder uit favorieten" }).all()
+        expect(buttons.length).toBeGreaterThan(0)
+
+        for (const button of buttons) {
             await button.click()
         }
 
