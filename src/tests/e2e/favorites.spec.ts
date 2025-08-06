@@ -29,3 +29,23 @@ test.describe("Favorites functionality", () => {
         ).toBeVisible()
     })
 })
+
+test.describe("Liking recipes", () => {
+    test("likes a recipe", async ({ authenticatedPage: page }) => {
+        await page.goto("/ontdek")
+        const likeButton = await page.getByRole("button", { name: "Like dit recept" }).first()
+        await likeButton.click()
+        await expect(likeButton).toHaveAttribute("aria-label", "Unlike dit recept")
+        await likeButton.click()
+        await expect(likeButton).toHaveAttribute("aria-label", "Like dit recept")
+    })
+
+    test("is redirected to signup page when liking a recipe without being logged in", async ({
+        unauthenticatedPage: page,
+    }) => {
+        await page.goto("/ontdek")
+        const likeButton = await page.getByRole("button", { name: "Like dit recept" }).first()
+        await likeButton.click()
+        await page.waitForURL(/signup/)
+    })
+})

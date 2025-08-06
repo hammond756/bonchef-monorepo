@@ -1,52 +1,22 @@
 "use client"
 
-import { useState } from "react"
 import { ActionButton } from "@/components/recipe/action-button"
 import { useToast } from "@/hooks/use-toast"
 import { redirect } from "next/navigation"
 import { OkHandIcon } from "@/components/ui/ok-hand-icon"
+import { useLikeStatus } from "@/hooks/use-like-status"
+import { useLikeCount } from "@/hooks/use-like-count"
 
 interface LikeButtonProps {
     recipeId: string
-    initialLiked: boolean
-    initialLikeCount: number
+    initialLiked?: boolean
+    initialLikeCount?: number
     showCount?: boolean
     className?: string
     theme?: "light" | "dark"
     size?: "sm" | "md" | "lg" | "xl"
     iconSize?: "sm" | "md" | "lg" | "xl"
     enabled?: boolean
-}
-
-async function toggleLike(recipeId: string) {
-    try {
-        const response = await fetch(`/api/recipes/${recipeId}/like`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-
-        const data = await response.json()
-
-        if (!response.ok) {
-            throw new Error(data.error || "Failed to toggle like")
-        }
-
-        return {
-            success: true,
-            isLiked: data.isLiked,
-            likeCount: data.likeCount,
-        }
-    } catch (error) {
-        return {
-            success: false,
-            error: {
-                message: error instanceof Error ? error.message : "Unknown error",
-                code: error instanceof Error && "cause" in error ? error.cause : undefined,
-            },
-        }
-    }
 }
 
 export function LikeButton({
@@ -59,44 +29,27 @@ export function LikeButton({
     className,
     theme,
 }: LikeButtonProps) {
-    const [isLiked, setIsLiked] = useState(initialLiked)
-    const [likeCount, setLikeCount] = useState(initialLikeCount)
-    const [isLoading, setIsLoading] = useState(false)
+    const { isLiked, toggle, isLoading } = useLikeStatus(recipeId, initialLiked)
+    const { likeCount, mutate: mutateLikeCount } = useLikeCount(recipeId, initialLikeCount)
     const { toast } = useToast()
 
     const handleToggle = async () => {
-        setIsLoading(true)
-        const previousIsLiked = isLiked
-        const previousLikeCount = likeCount
-
-        // Optimistic update
-        setIsLiked(!isLiked)
-        setLikeCount(previousIsLiked ? likeCount - 1 : likeCount + 1)
-
-        const result = await toggleLike(recipeId)
-
-        if (!result.success) {
-            // Revert optimistic update on error
-            setIsLiked(previousIsLiked)
-            setLikeCount(previousLikeCount)
-
-            if (result.error?.code === 401) {
-                toast({
-                    title: "Welkom!",
-                    description: "Om recepten te liken kan je een gratis account aanmaken",
-                })
-                redirect("/signup")
+        try {
+            await toggle()
+            await mutateLikeCount()
+            return { success: true }
+        } catch (error) {
+            return {
+                success: false,
+                error: {
+                    message: error instanceof Error ? error.message : "Er is iets misgegaan",
+                    code:
+                        error instanceof Error && error.message === "Authentication required"
+                            ? 401
+                            : 500,
+                },
             }
-
-            return result
-        } else {
-            // Update with actual values from server
-            setIsLiked(result.isLiked)
-            setLikeCount(result.likeCount)
         }
-
-        setIsLoading(false)
-        return { success: true }
     }
 
     const handleAuthRequired = () => {
@@ -121,7 +74,7 @@ export function LikeButton({
             size={size}
             iconSize={iconSize}
             isActive={isLiked}
-            count={likeCount}
+            count={likeCount || 0}
             isLoading={isLoading}
             onToggle={handleToggle}
             onAuthRequired={handleAuthRequired}
