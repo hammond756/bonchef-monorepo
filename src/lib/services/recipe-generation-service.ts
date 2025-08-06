@@ -137,17 +137,25 @@ export class RecipeGenerationService {
 
         const langfuse = new Langfuse()
 
-        const textToImagePromptClient = await langfuse.getPrompt("WriteImagePrompt", undefined, {
-            type: "chat",
-        })
+        const n = Number(process.env.PROMPT_VERSION_WRITE_IMAGE_PROMPT)
+        const specificVersion = Number.isNaN(n) ? undefined : n
+        const textToImagePromptClient = await langfuse.getPrompt(
+            "WriteImagePrompt",
+            specificVersion,
+            {
+                type: "chat",
+            }
+        )
         const negativeImagePrompt = (
             await langfuse.getPrompt("NegativeImage", undefined, { type: "text" })
         ).compile()
 
         const config = textToImagePromptClient.config as LangFusePromptConfig
 
-        const finalPromptVariables =
-            promptVariables || this.sampleRandomValues(config.random_values)
+        const finalPromptVariables = {
+            ...this.sampleRandomValues(config.random_values),
+            ...promptVariables,
+        }
 
         const textToImagePrompt = await textToImagePromptClient.compile({
             ...finalPromptVariables,
@@ -178,7 +186,7 @@ export class RecipeGenerationService {
         })
 
         const response = await ai.models.generateImages({
-            model: "imagen-3.0-generate-002",
+            model: "imagen-4.0-fast-generate-preview-06-06",
             prompt: positivePrompt,
             config: {
                 outputMimeType: "image/png",
