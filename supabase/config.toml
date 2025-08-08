@@ -116,7 +116,7 @@ objects_path = "./chat-images"
 [storage.buckets.email-assets]
 public = true
 file_size_limit = "10MiB"
-allowed_mime_types = ["image/png", "image/jpeg", "image/svg+xml"]
+allowed_mime_types = ["image/png", "image/jpeg", "image/svg+xml", "image/gif"]
 objects_path = "./email-assets"
 
 [auth]
