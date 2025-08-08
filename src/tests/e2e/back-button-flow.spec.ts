@@ -26,7 +26,7 @@ test.describe("Back button navigation flow", () => {
         }
 
         // 3. Verify the URL is now /recipes/[id]?from=edit
-        await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}\\?from=edit`))
+        await expect(page).toHaveURL(new RegExp(`/recipes/*~${recipeId}\\?from=edit`))
 
         // 4. Click the back button
         await page.getByLabel("Ga terug").click()

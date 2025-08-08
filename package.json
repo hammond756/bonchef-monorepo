@@ -24,6 +24,9 @@
         "notify:dev": "NODE_ENV=development tsx notification-job/notify.ts"
     },
     "dependencies": {
+        "@dnd-kit/core": "^6.3.1",
+        "@dnd-kit/sortable": "^10.0.0",
+        "@dnd-kit/utilities": "^3.2.2",
         "@google-cloud/vision": "^5.1.0",
         "@google/genai": "^1.0.0",
         "@langchain/core": "^0.3.40",

@@ -20,7 +20,7 @@ The app is designed to scale across platforms (web, iOS, Android) and must remai
 - **Database:** Supabase (PostgreSQL)
 - **Authentication & Storage:** Supabase
 - **Deployment:** Heroku
-- **E2E Testing:** Playwright (using `data-testid` selectors)
+- **E2E Testing:** Playwright (using sematic .getByRole() selectors)
 
 ---
 
@@ -150,8 +150,7 @@ All new UI implementations and modifications **must** use the central Bonchef De
 ## ✅ Testing Requirements
 
 - Use **Playwright** for E2E tests
-  - Target elements via `data-testid` attributes
-  - UI components **must** expose `data-testid` props as needed
+  - Target elements by role (aria-label, semantic elements)
 - Prioritize:
   - E2E and integration tests for user flows
   - Unit tests for core business logic (using vitest, following @component-testing.mdc)
@@ -175,7 +174,7 @@ All new UI implementations and modifications **must** use the central Bonchef De
 - [ ] Avoid edge/database functions  
 - [ ] Use services with injected dependencies  
 - [ ] Reuse and refactor before duplicating code  
-- [ ] Add `data-testid` in UI components  
+- [ ] Add `aria-label` in UI components  
 - [ ] Provide docstrings for all functions  
 - [ ] Comment *why*, not what  
 - [ ] Include tests or extend existing ones

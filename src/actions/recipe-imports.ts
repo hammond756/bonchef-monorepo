@@ -99,7 +99,7 @@ export async function scrapeRecipe(
 
 export async function generateRecipeFromSnippet(
     text: string
-): Promise<GeneratedRecipe & { thumbnail: string }> {
+): Promise<GeneratedRecipeWithSource & { thumbnail: string }> {
     const recipeGenerationService = new RecipeGenerationService()
 
     const [recipe, thumbnail] = await Promise.all([
@@ -110,18 +110,22 @@ export async function generateRecipeFromSnippet(
     return {
         ...translatedRecipe,
         thumbnail: thumbnail,
+        source_name: "",
+        source_url: "",
     }
 }
 
 export async function generateRecipeFromImage(
     imageUrl: string
-): Promise<GeneratedRecipe & { thumbnail: string }> {
+): Promise<GeneratedRecipeWithSource & { thumbnail: string }> {
     const text = await extractTextFromImage(imageUrl)
     const recipeInfo = await formatRecipe(text)
     const translatedRecipe = translateRecipeUnits(recipeInfo.recipe)
     return {
         ...translatedRecipe,
         thumbnail: imageUrl,
+        source_name: "",
+        source_url: "",
     }
 }
 
@@ -201,8 +205,8 @@ export async function createDraftRecipe(
         ...recipe,
         status: "DRAFT",
         is_public: isPublic,
-        source_url: recipe.source_url || "https://app.bonchef.io",
-        source_name: recipe.source_name || "BonChef",
+        source_url: recipe.source_url || "",
+        source_name: recipe.source_name || "",
         thumbnail: recipe.thumbnail,
         description: "",
         user_id: userId,

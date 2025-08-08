@@ -90,6 +90,15 @@ export function formatIngredientLine(
         return null
     }
 
+    // Check if ingredient has quantity data
+    if (!ingredient.quantity || !ingredient.quantity.low) {
+        // No quantity - just return the description
+        return {
+            quantity: "",
+            description: ingredient.description,
+        }
+    }
+
     // Per user request, always display the lowest number of the range.
     // The long-term fix is to adjust the LLM prompt to only generate ranges for specific terms.
     const low = ingredient.quantity.low * multiplier
@@ -115,8 +124,8 @@ export function formatIngredientLine(
         }
     }
 
-    // Don't display the unit if it is 'none'
-    const unitStr = unit && unit.toLowerCase() !== "none" ? unit : ""
+    // Don't display the unit if it is 'none' or empty
+    const unitStr = unit && unit.trim() && unit.toLowerCase() !== "none" ? unit : ""
 
     return {
         quantity: `${quantityStr} ${unitStr}`.trim().replace(/ +/g, " "), // Combine, trim, and collapse multiple spaces

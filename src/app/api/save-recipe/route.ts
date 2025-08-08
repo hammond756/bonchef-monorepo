@@ -24,10 +24,7 @@ async function processThumbnail(
 ): Promise<{ success: true; data: string } | { success: false; error: string }> {
     try {
         // If it's already a Supabase Storage URL, return it as is
-        if (
-            thumbnail.includes(process.env.NEXT_PUBLIC_SUPABASE_URL as string) &&
-            thumbnail.includes("/storage/v1/object/public/")
-        ) {
+        if (thumbnail.includes("/storage/v1/object/public/")) {
             return { success: true, data: thumbnail }
         }
 
