@@ -75,8 +75,9 @@ export const RecipeActionButtons = forwardRef<HTMLDivElement, RecipeActionButton
         return (
             <div ref={ref} className="grid justify-items-center gap-y-2">
                 <ShareRecipeButton
+                    recipeId={recipe.id}
                     title={recipe.title}
-                    text={`Bekijk dit recept: ${recipe.title}`}
+                    shareText={`Bekijk dit recept: ${recipe.title}`}
                     theme={theme ?? "light"}
                     size={finalShareSize}
                 />

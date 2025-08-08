@@ -3,6 +3,7 @@ import { getCommentsForRecipe, createComment, deleteComment } from "@/lib/servic
 import { Comment } from "@/lib/types"
 import { useUser } from "./use-user"
 import { useCommentCount } from "./use-comment-count"
+import { trackEvent } from "@/lib/analytics/track"
 
 export function useComments(recipeId: string) {
     const { user } = useUser()
@@ -35,6 +36,13 @@ export function useComments(recipeId: string) {
         const mutation = async (currentData: Comment[] = []) => {
             const newComment = await createComment({ recipe_id: recipeId, text })
             console.log("[use-comments] add", newComment)
+            
+            // Track the added_comment event after successful creation
+            trackEvent("added_comment", {
+                recipe_id: recipeId,
+                comment_id: newComment.id,
+            })
+            
             mutateCommentCount(count + 1)
             return [newComment, ...currentData]
         }
@@ -49,6 +57,13 @@ export function useComments(recipeId: string) {
     const remove = async (commentId: string) => {
         const mutation = async (currentData: Comment[] = []) => {
             await deleteComment(commentId)
+            
+            // Track the removed_comment event after successful deletion
+            trackEvent("removed_comment", {
+                recipe_id: recipeId,
+                comment_id: commentId,
+            })
+
             mutateCommentCount(count - 1)
             return currentData.filter((c) => c.id !== commentId)
         }

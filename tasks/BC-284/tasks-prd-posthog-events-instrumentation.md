@@ -26,6 +26,8 @@
 
 - Unit tests should typically be placed alongside the code files they are testing (e.g., `MyComponent.tsx` and `MyComponent.test.tsx` in the same directory).
 - Use `npx vitest run [optional/path/to/test/file]` to run tests. Running without a path executes all tests found by the Jest configuration.
+- Ownership information (`is_own_recipe`) has been removed from events as it can be joined later in the data lake.
+- For `added_comment` events, we wait for the comment to be created to get the `comment_id` before tracking the event.
 
 ## Tasks
 
@@ -43,24 +45,20 @@
     - [x] 2.5 Handle different input methods (url, photo, note, chat)
     - [ ] 2.6 Add unit tests for recipe added event functionality
 
-- [ ] 3.0 Implement Recipe Bookmark Events (`added_bookmark`, `removed_bookmark`)
-    - [ ] 3.1 Integrate event triggers into `useBookmarkedRecipes` hook
-    - [ ] 3.2 Add database query for `is_own_recipe` property with null fallback on network failure
-    - [ ] 3.3 Update bookmark button components to fire events
-    - [ ] 3.4 Add event firing to bookmark toggle functionality
+- [x] 3.0 Implement Recipe Bookmark Events (`added_bookmark`, `removed_bookmark`)
+    - [x] 3.1 Integrate event triggers into `useBookmarkedRecipes` hook
+    - [x] 3.3 Update bookmark button components to fire events
+    - [x] 3.4 Add event firing to bookmark toggle functionality
     - [ ] 3.5 Add unit tests for bookmark event functionality
 
-- [ ] 4.0 Implement Recipe Like Events (`liked_recipe`, `unliked_recipe`)
-    - [ ] 4.1 Integrate event triggers into `useRecipeLikes` hook
-    - [ ] 4.2 Add database query for `is_own_recipe` property with null fallback on network failure
-    - [ ] 4.3 Update like button components to fire events
-    - [ ] 4.4 Add event firing to like toggle functionality
+- [x] 4.0 Implement Recipe Like Events (`liked_recipe`, `unliked_recipe`)
+    - [x] 4.1 Integrate event triggers into `useRecipeLikes` hook
+    - [x] 4.3 Update like button components to fire events
+    - [x] 4.4 Add event firing to like toggle functionality
     - [ ] 4.5 Add unit tests for like event functionality
 
-- [ ] 5.0 Implement Recipe Comment Events (`added_comment`, `removed_comment`)
-    - [ ] 5.1 Integrate event triggers into `useComments` hook
-    - [ ] 5.2 Add database query for `is_own_recipe` property with null fallback on network failure
-    - [ ] 5.3 Implement `comment_length` calculation
-    - [ ] 5.4 Update comment components to fire events
-    - [ ] 5.5 Add event firing to comment submission and removal
+- [x] 5.0 Implement Recipe Comment Events (`added_comment`, `removed_comment`)
+    - [x] 5.1 Integrate event triggers into `useComments` hook
+    - [x] 5.4 Update comment components to fire events
+    - [x] 5.5 Add event firing to comment submission and removal
     - [ ] 5.6 Add unit tests for comment event functionality

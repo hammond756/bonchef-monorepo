@@ -73,6 +73,7 @@ Description: User added a comment to a recipe.
 */
 const AddedCommentSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
+    comment_id: z.string().uuid(),
 })
 
 /*
@@ -82,6 +83,38 @@ Description: User removed a comment from a recipe.
 */
 const RemovedCommentSchemaV1 = z.object({
     recipe_id: z.string().uuid(),
+    comment_id: z.string().uuid().optional(),
+})
+
+/*
+shared_recipe
+
+Description: User triggered a share action.
+*/
+const SharedRecipeSchemaV1 = z.object({
+    method: z.enum(["clipboard", "native"]),
+    recipe_id: z.string().uuid(),
+    url: z.string(),    
+})
+
+/*
+shared_profile
+
+Description: User triggered a share action.
+*/
+const SharedProfileSchemaV1 = z.object({
+    method: z.enum(["clipboard", "native"]),
+    profile_id: z.string().uuid(),
+    url: z.string(),
+})
+
+/*
+created_account
+
+Description: User created an account.
+*/
+const CreatedAccountSchemaV1 = z.object({
+    provider: z.string(),
 })
 
 // Define a more specific type for the analytics events
@@ -122,6 +155,18 @@ export const AnalyticsEvents = {
     },
     removed_comment: {
         versions: [null, RemovedCommentSchemaV1],
+        current: 1,
+    },
+    shared_recipe: {
+        versions: [null, SharedRecipeSchemaV1],
+        current: 1,
+    },
+    shared_profile: {
+        versions: [null, SharedProfileSchemaV1],
+        current: 1,
+    },
+    created_account: {
+        versions: [null, CreatedAccountSchemaV1],
         current: 1,
     },
 } as const satisfies Record<string, AnalyticsEventDefinition>

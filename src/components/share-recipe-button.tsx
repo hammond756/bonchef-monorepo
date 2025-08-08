@@ -1,99 +1,49 @@
 "use client"
 
-import { Share2Icon } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
-import { cva, type VariantProps } from "class-variance-authority"
-import { lightThemeClasses, darkThemeClasses } from "@/components/recipe/action-button-variants"
+import { useNativeShare } from "@/hooks/use-native-share"
+import { ShareButton } from "@/components/ui/share-button"
+import { trackEvent } from "@/lib/analytics/track"
+import { createRecipeSlug } from "@/lib/utils"
 
-const buttonVariants = cva("flex items-center justify-center rounded-full transition-colors", {
-    variants: {
-        theme: {
-            light: lightThemeClasses,
-            dark: darkThemeClasses,
-        },
-        size: {
-            md: "h-10 w-10",
-            lg: "h-12 w-12",
-        },
-    },
-    defaultVariants: {
-        theme: "light",
-        size: "lg",
-    },
-})
-
-const iconVariants = cva("", {
-    variants: {
-        size: {
-            md: "h-5 w-5",
-            lg: "h-6 w-6",
-        },
-    },
-    defaultVariants: {
-        size: "lg",
-    },
-})
-
-const textVariants = cva("text-xs font-medium text-white drop-shadow-sm")
-
-interface ShareRecipeButtonProps extends VariantProps<typeof buttonVariants> {
-    title: string
-    text: string
+interface ShareRecipeButtonProps {
     className?: string
+    theme?: "light" | "dark"
+    size?: "md" | "lg"
+    recipeId: string
+    title: string
+    shareText: string
 }
 
-export function ShareRecipeButton({ title, text, className, theme, size }: ShareRecipeButtonProps) {
-    const { toast } = useToast()
+export function ShareRecipeButton({ className, theme, size, recipeId, title, shareText }: ShareRecipeButtonProps) {
+    const fullUrl = `${window.location.origin}/recipes/${createRecipeSlug(title, recipeId)}?utm_medium=share`
+    const finalShareData = {
+        title,
+        text: shareText,
+        url: fullUrl,
+    }
 
-    const handleShare = async () => {
-        const shareData = {
-            title: title,
-            text: text,
-            url: window.location.href,
-        }
+    const handleShare = useNativeShare(finalShareData)
 
-        if (navigator.share) {
-            try {
-                await navigator.share(shareData)
-            } catch (error) {
-                if ((error as Error).name !== "AbortError") {
-                    console.error("Fout bij delen:", error)
-                    toast({
-                        title: "Fout bij delen",
-                        description: "Kon het recept niet delen. Probeer het later opnieuw.",
-                        variant: "destructive",
-                    })
-                }
-            }
-        } else {
-            try {
-                await navigator.clipboard.writeText(window.location.href)
-                toast({
-                    title: "Link gekopieerd!",
-                    description: "De link naar het recept is naar je klembord gekopieerd.",
-                })
-            } catch {
-                toast({
-                    title: "Delen niet ondersteund",
-                    description:
-                        "Je browser ondersteunt deze deelfunctie niet en de link kon niet worden gekopieerd.",
-                    variant: "destructive",
-                })
-            }
+    const handleShareClick = async () => {
+        const method = await handleShare()
+        if (method) {
+            trackEvent("shared_recipe", {
+                method,
+                url: fullUrl,
+                recipe_id: recipeId,
+            })
         }
     }
 
     return (
-        <div className="flex flex-col items-center">
-            <button
-                className={cn(buttonVariants({ theme, size }), className)}
-                onClick={handleShare}
-                aria-label="Deel recept"
-            >
-                <Share2Icon className={cn(iconVariants({ size }))} />
-            </button>
-            <span className={cn(textVariants())}>Delen</span>
-        </div>
+        <ShareButton
+            onClick={handleShareClick}
+            className={className}
+            aria-label="Deel recept"
+            showText={true}
+            text="Delen"
+            theme={theme}
+            size={size}
+        />
     )
 }

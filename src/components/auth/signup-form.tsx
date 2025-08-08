@@ -11,6 +11,7 @@ import { signup } from "@/app/signup/actions"
 import { createClient } from "@/utils/supabase/client"
 import { Separator } from "@/components/ui/separator"
 import { useThirdPartyLogin } from "@/hooks/use-third-party-login"
+import { trackEvent } from "@/lib/analytics/track"
 
 export function SignUpForm() {
     const [isLoading, setIsLoading] = useState(false)
@@ -18,6 +19,13 @@ export function SignUpForm() {
     const { toast } = useToast()
     const supabase = createClient()
     const { login: thirdPartyLogin, isLoading: isThirdPartyLoading } = useThirdPartyLogin()
+
+    const handleThirdPartyLogin = async (provider: "google") => {
+        await thirdPartyLogin(provider)
+        trackEvent("created_account", {
+            provider: provider,
+        })
+    }
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
@@ -46,6 +54,10 @@ export function SignUpForm() {
                 toast({
                     title: "Account is succesvol aangemaakt",
                     description: success,
+                })
+
+                trackEvent("created_account", {
+                    provider: "email",
                 })
 
                 const {
@@ -82,7 +94,7 @@ export function SignUpForm() {
                 type="button"
                 variant="outline"
                 className="flex w-full items-center justify-center gap-2"
-                onClick={() => thirdPartyLogin("google")}
+                onClick={() => handleThirdPartyLogin("google")}
                 disabled={isThirdPartyLoading}
             >
                 <svg

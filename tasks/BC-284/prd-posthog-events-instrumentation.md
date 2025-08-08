@@ -43,7 +43,6 @@ The goal is to establish a robust analytics foundation that enables data-driven 
 1. **Event Trigger:** Fire when bookmark button is clicked and action is successfully processed
 2. **Properties Required:**
     - `recipe_id` (string): Unique recipe identifier
-    - `is_own_recipe` (boolean): True if user's own recipe
 3. **Implementation:** Separate events for add/remove actions (no status property)
 
 ### 4.3 Recipe Like Events (`liked_recipe`, `unliked_recipe`)
@@ -51,7 +50,6 @@ The goal is to establish a robust analytics foundation that enables data-driven 
 1. **Event Trigger:** Fire when like button is clicked and action is successfully processed
 2. **Properties Required:**
     - `recipe_id` (string): Unique recipe identifier
-    - `is_own_recipe` (boolean): True if user's own recipe
 3. **Implementation:** Separate events for like/unlike actions (no status property)
 
 ### 4.4 Recipe Comment Events (`added_comment`, `removed_comment`)
@@ -59,8 +57,7 @@ The goal is to establish a robust analytics foundation that enables data-driven 
 1. **Event Trigger:** Fire immediately after successful comment submission or removal
 2. **Properties Required:**
     - `recipe_id` (string): Unique recipe identifier
-    - `is_own_recipe` (boolean): True if commenting on own recipe
-    - `comment_length` (number): Number of characters in comment
+    - `comment_id` (string): Unique comment identifier (for added_comment only)
 3. **Implementation:** Separate events for add/remove actions (no status property)
 
 ### 4.5 Technical Implementation Requirements
@@ -111,9 +108,9 @@ The goal is to establish a robust analytics foundation that enables data-driven 
 ### 7.2 Database Queries
 
 - Query user recipe count before sending `added_recipe` event
-- Query database for `is_own_recipe` properties as well
 - Handle database connection failures gracefully
 - Use existing Supabase client for queries
+- Note: Ownership information can be joined later in the data lake
 
 ### 7.3 Performance Considerations
 
