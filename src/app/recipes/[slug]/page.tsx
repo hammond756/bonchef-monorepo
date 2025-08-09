@@ -5,7 +5,7 @@ import { Metadata } from "next"
 import { RecipeDetail } from "@/components/recipe-detail"
 import { RecipeRead, RecipeReadSchema } from "@/lib/types"
 import { cookies, headers } from "next/headers"
-import { getServerBaseUrl } from "@/lib/utils"
+import { createRecipeSlug, getServerBaseUrl } from "@/lib/utils"
 import { NavigationTracker } from "@/components/util/navigation-tracker"
 import { notFound } from "next/navigation"
 
@@ -15,6 +15,30 @@ export const revalidate = 3600 // Revalidate every hour
 
 interface RecipePageProps {
     slug: string
+}
+
+async function getSmallThumbnail(thumbnail: string) {
+    if (!thumbnail.includes("/storage/v1/object/")) {
+        return thumbnail
+    }
+
+    const supabase = await createClient()
+    const bucket = "recipe-images"
+    const path = thumbnail.split("/").pop()
+
+    if (!path) {
+        return thumbnail
+    }
+
+    const { data } = await supabase.storage.from(bucket).getPublicUrl(path, {
+        transform: {
+            width: 1200,
+            height: 630,
+            resize: "contain",
+        },
+    })
+
+    return data.publicUrl
 }
 
 export async function generateMetadata(
@@ -47,10 +71,27 @@ export async function generateMetadata(
 
     return {
         title: `Bonchef - ${recipe.title}`,
+        description: recipe.description || "Wat eten we vandaag?",
         openGraph: {
-            images: [recipe.thumbnail],
-            description: recipe.description,
+            title: `Bonchef - ${recipe.title}`,
+            description: recipe.description || "Wat eten we vandaag?",
+            url: `${baseUrl}/recipes/${createRecipeSlug(recipe.title, recipe.id)}`,
             siteName: "Bonchef",
+            type: "website",
+            images: [
+                {
+                    url: await getSmallThumbnail(recipe.thumbnail),
+                    width: 1200,
+                    height: 630,
+                    alt: recipe.title,
+                },
+            ],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: `Bonchef - ${recipe.title}`,
+            description: recipe.description || "Wat eten we vandaag?",
+            images: [recipe.thumbnail],
         },
     }
 }
