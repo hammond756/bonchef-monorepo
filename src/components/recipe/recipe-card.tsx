@@ -28,7 +28,7 @@ function RecipeCardContainer({ children, href }: { children: React.ReactNode; hr
             href={href || "#"}
             className="group relative block aspect-[3/4] w-full overflow-hidden rounded-lg"
         >
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 z-10 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
             {children}
         </Link>
     )
@@ -51,12 +51,15 @@ export function RecipeCard({ recipe }: { readonly recipe: Recipe }) {
                 </div>
             )}
 
-            <div
-                style={{ backgroundImage: `url(${recipe.thumbnail})` }}
+            <Image
+                src={recipe.thumbnail}
+                alt={`Afbeelding van ${recipe.title}`}
                 className={cn(
-                    "h-full w-full bg-cover bg-center transition-transform duration-300 [color-rendering:optimizeSpeed] group-hover:scale-105",
+                    "z-5 object-cover transition-transform duration-300 [color-rendering:optimizeSpeed] group-hover:scale-105",
                     shouldBlur && "blur-sm"
                 )}
+                fill
+                priority={false}
             />
 
             <div className="absolute top-2 right-2">

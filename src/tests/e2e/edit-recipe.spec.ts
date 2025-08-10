@@ -213,6 +213,34 @@ test.describe("Recipe Edit Page", () => {
     })
 
     test.describe("Recipe Information Section", () => {
+        test("should allow changing the recipe image", async ({ authenticatedPage: page }) => {
+            // Requirement 5: Recipe Image
+
+            const imageInput = page.getByRole("button", { name: "Foto wijzigen" })
+            await imageInput.click()
+
+            const uploadPromise = page.waitForEvent("filechooser")
+            await page.getByRole("button", { name: "Galerij" }).click()
+
+            // At this point, a system image picker should be openend. Select the test image.
+            const fileChooser = await uploadPromise
+            await fileChooser.setFiles("playwright/test-fixtures/recipe-image.png")
+
+            await page.getByRole("button", { name: "Opslaan" }).click()
+
+            // Handle visibility modal - select private
+            await page.getByText("Privé").click()
+            await page.getByRole("button", { name: "Bevestig zichtbaarheid" }).click()
+
+            await page.waitForURL(new RegExp(`/recipes`))
+
+            // Verify the updated image is displayed
+            await expect(page.getByLabel("Recept afbeelding")).toHaveAttribute(
+                "src",
+                new RegExp(`/storage/`)
+            )
+        })
+
         test("should allow inline editing of recipe title", async ({ authenticatedPage: page }) => {
             // Requirement 6: Recipe Title
 

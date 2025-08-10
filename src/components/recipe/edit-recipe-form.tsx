@@ -17,6 +17,7 @@ import { CameraModal } from "./camera-modal"
 import { createRecipeSlug } from "@/lib/utils"
 import { useIngredientGroups } from "@/hooks/use-ingredient-groups"
 import { usePreparationSteps } from "@/hooks/use-preparation-steps"
+import { uploadRecipeImage } from "@/lib/services/storage/client"
 
 interface EditRecipeFormProps {
     isPublic?: boolean
@@ -64,8 +65,8 @@ export function EditRecipeForm({
     const handleImageChange = useCallback(
         async (file: File) => {
             try {
-                const previewUrl = URL.createObjectURL(file)
-                setImageUrl(previewUrl)
+                const { url } = await uploadRecipeImage(file)
+                setImageUrl(url)
             } catch (_error) {
                 console.error("Error uploading image:", _error)
             }

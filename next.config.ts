@@ -5,6 +5,8 @@ const supabaseDomain = process.env.NEXT_PUBLIC_SUPABASE_URL?.split("//")[1]
 const nextConfig: NextConfig = {
     /* config options here */
     images: {
+        loader: "custom",
+        loaderFile: "./supabase-image-loader.ts",
         remotePatterns: [
             {
                 protocol: "https",

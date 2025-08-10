@@ -100,6 +100,7 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                                 fill
                                 className="object-cover"
                                 sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 600px"
+                                aria-label="Recept afbeelding"
                             />
                         )}
                         <div className="from-overlay-dark absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />

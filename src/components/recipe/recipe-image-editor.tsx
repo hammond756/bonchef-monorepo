@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Camera, Image as ImageIcon, Sparkles, Edit3 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -26,6 +26,7 @@ export function RecipeImageEditor({
     className,
 }: RecipeImageEditorProps) {
     const [isHovered, setIsHovered] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]
@@ -38,34 +39,13 @@ export function RecipeImageEditor({
         if (onTakePhoto) {
             onTakePhoto()
         } else {
-            // Fallback to file input
-            const input = document.createElement("input")
-            input.type = "file"
-            input.accept = "image/*"
-            input.capture = "environment"
-            input.onchange = (e) => {
-                const file = (e.target as HTMLInputElement).files?.[0]
-                if (file && onImageChange) {
-                    onImageChange(file)
-                }
-            }
-            input.click()
+            // Fallback to file input. Also allows camera on mobile.
+            fileInputRef.current?.click()
         }
     }
 
     const handleGalleryClick = () => {
-        // additional function not changed
-        // Trigger gallery selection
-        const input = document.createElement("input")
-        input.type = "file"
-        input.accept = "image/*"
-        input.onchange = (e) => {
-            const file = (e.target as HTMLInputElement).files?.[0]
-            if (file && onImageChange) {
-                onImageChange(file)
-            }
-        }
-        input.click()
+        fileInputRef.current?.click()
     }
 
     return (
@@ -203,8 +183,10 @@ export function RecipeImageEditor({
 
             {/* Hidden file input for programmatic access */}
             <input
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                capture="environment"
                 onChange={handleFileChange}
                 className="hidden"
                 id="recipe-image-input"
