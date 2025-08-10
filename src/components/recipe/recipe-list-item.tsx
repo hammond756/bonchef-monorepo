@@ -39,7 +39,11 @@ export function RecipeListItem({ recipe }: { readonly recipe: RecipeRead }) {
                 </div>
             </Link>
             <div className="pr-2">
-                <BookmarkButton recipeId={recipe.id} />
+                <BookmarkButton
+                    recipeId={recipe.id}
+                    initialBookmarked={recipe.is_bookmarked_by_current_user ?? false}
+                    initialBookmarkCount={recipe.bookmark_count || 0}
+                />
             </div>
         </div>
     )

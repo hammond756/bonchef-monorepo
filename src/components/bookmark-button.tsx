@@ -8,6 +8,8 @@ import { useBookmarkCount } from "@/hooks/use-bookmark-count"
 
 interface BookmarkButtonProps {
     recipeId: string
+    initialBookmarked?: boolean
+    initialBookmarkCount?: number
     showCount?: boolean
     className?: string
     theme?: "light" | "dark"
@@ -20,12 +22,17 @@ export function BookmarkButton({
     size,
     iconSize,
     recipeId,
+    initialBookmarked,
+    initialBookmarkCount,
     showCount = true,
     className,
     theme,
 }: BookmarkButtonProps) {
-    const { isBookmarked, toggle, isLoading } = useBookmarkStatus(recipeId)
-    const { bookmarkCount, mutate: mutateBookmarkCount } = useBookmarkCount(recipeId)
+    const { isBookmarked, toggle, isLoading } = useBookmarkStatus(recipeId, initialBookmarked)
+    const { bookmarkCount, mutate: mutateBookmarkCount } = useBookmarkCount(
+        recipeId,
+        initialBookmarkCount
+    )
 
     const handleToggle = async () => {
         try {

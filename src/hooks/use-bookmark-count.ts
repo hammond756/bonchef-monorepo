@@ -3,7 +3,7 @@ import { getRecipeBookmarkCount } from "@/lib/services/bookmarks/client"
 
 import useSWR from "swr"
 
-export function useBookmarkCount(recipeId: string) {
+export function useBookmarkCount(recipeId: string, initialBookmarkCount?: number) {
     const { session } = useSession()
 
     const {
@@ -16,6 +16,7 @@ export function useBookmarkCount(recipeId: string) {
         {
             revalidateOnFocus: false,
             revalidateOnReconnect: true,
+            fallbackData: initialBookmarkCount,
         }
     )
 

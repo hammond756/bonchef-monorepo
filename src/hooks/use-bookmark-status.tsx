@@ -9,7 +9,7 @@ import {
 } from "@/lib/services/bookmarks/client"
 import { trackEvent } from "@/lib/analytics/track"
 
-export function useBookmarkStatus(recipeId: string) {
+export function useBookmarkStatus(recipeId: string, initialIsBookmarked?: boolean) {
     const { session } = useSession()
 
     const {
@@ -20,6 +20,7 @@ export function useBookmarkStatus(recipeId: string) {
     } = useSWR(session ? ["bookmark-status", recipeId] : null, () => isRecipeBookmarked(recipeId), {
         revalidateOnFocus: false,
         revalidateOnReconnect: true,
+        fallbackData: initialIsBookmarked,
     })
 
     const toggle = async () => {

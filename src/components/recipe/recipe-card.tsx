@@ -60,7 +60,13 @@ export function RecipeCard({ recipe }: { readonly recipe: Recipe }) {
             />
 
             <div className="absolute top-2 right-2">
-                <BookmarkButton recipeId={recipe.id} showCount={false} theme="dark" />
+                <BookmarkButton
+                    recipeId={recipe.id}
+                    showCount={false}
+                    theme="dark"
+                    initialBookmarked={recipe.is_bookmarked_by_current_user ?? false}
+                    initialBookmarkCount={recipe.bookmark_count || 0}
+                />
             </div>
         </RecipeCardContainer>
     )

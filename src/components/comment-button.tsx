@@ -9,6 +9,7 @@ import { useCommentCount } from "@/hooks/use-comment-count"
 
 interface CommentButtonProps {
     recipeId: string
+    initialCommentCount?: number
     showCount?: boolean
     className?: string
     theme?: "light" | "dark"
@@ -22,12 +23,13 @@ export function CommentButton({
     size,
     iconSize,
     recipeId,
+    initialCommentCount,
     showCount = true,
     className,
     theme,
     onCommentClick,
 }: CommentButtonProps) {
-    const { count: commentCount } = useCommentCount(recipeId)
+    const { count: commentCount } = useCommentCount(recipeId, initialCommentCount)
     const { toast } = useToast()
     const [isLoading, setIsLoading] = useState(false)
 
