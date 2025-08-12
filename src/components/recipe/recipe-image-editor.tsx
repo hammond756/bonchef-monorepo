@@ -186,7 +186,6 @@ export function RecipeImageEditor({
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
                 onChange={handleFileChange}
                 className="hidden"
                 id="recipe-image-input"
