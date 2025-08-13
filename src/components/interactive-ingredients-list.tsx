@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useMemo } from "react"
 import { Minus, Plus } from "lucide-react"
 import { Button } from "./ui/button"
 import { Card } from "./ui/card"
@@ -9,6 +9,7 @@ import type { Ingredient } from "@/lib/types"
 import { formatIngredientLine } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { CheckIcon } from "lucide-react"
+import { useRecipeState } from "@/hooks/use-recipe-state"
 
 interface IngredientGroup {
     name: string
@@ -24,25 +25,22 @@ export function InteractiveIngredientsList({
     ingredientGroups,
     initialServings,
 }: InteractiveIngredientsListProps) {
-    const [currentServings, setCurrentServings] = useState(initialServings || 1)
-    const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set())
+    const {
+        portions,
+        setPortions,
+        checkedIngredients: checkedRefs,
+        toggleIngredient,
+    } = useRecipeState()
 
     const servingsMultiplier = useMemo(() => {
         if (!initialServings || initialServings === 0) return 1 // Voorkom delen door nul
-        return currentServings / initialServings
-    }, [currentServings, initialServings])
+        return portions / initialServings
+    }, [portions, initialServings])
 
-    const toggleIngredient = (ingredientId: string) => {
-        setCheckedIngredients((prevChecked) => {
-            const newChecked = new Set(prevChecked)
-            if (newChecked.has(ingredientId)) {
-                newChecked.delete(ingredientId)
-            } else {
-                newChecked.add(ingredientId)
-            }
-            return newChecked
-        })
-    }
+    const isCheckedByRef = (groupIndex: number, ingredientIndex: number) =>
+        checkedRefs.some(
+            (r) => r.groupIndex === groupIndex && r.ingredientIndex === ingredientIndex
+        )
 
     // Fallback ID generatie voor ingrediënten zonder expliciete ID
     const getIngredientKey = (groupIndex: number, ingredientIndex: number): string => {
@@ -68,19 +66,23 @@ export function InteractiveIngredientsList({
                             variant="outline"
                             size="icon"
                             className="border-border bg-surface hover:bg-accent h-8 w-8"
-                            onClick={() => setCurrentServings(Math.max(1, currentServings - 1))}
+                            onClick={() => {
+                                setPortions(Math.max(1, portions - 1))
+                            }}
                             aria-label="Verminder aantal personen"
                         >
                             <Minus size={16} />
                         </Button>
                         <span className="text-default w-8 text-center font-semibold">
-                            {currentServings}
+                            {portions}
                         </span>
                         <Button
                             variant="outline"
                             size="icon"
                             className="border-border bg-surface hover:bg-accent h-8 w-8"
-                            onClick={() => setCurrentServings(currentServings + 1)}
+                            onClick={() => {
+                                setPortions(portions + 1)
+                            }}
                             aria-label="Verhoog aantal personen"
                         >
                             <Plus size={16} />
@@ -99,7 +101,7 @@ export function InteractiveIngredientsList({
                         {group.ingredients &&
                             group.ingredients.map((ingredient, ingredientIndex) => {
                                 const ingredientKey = getIngredientKey(groupIndex, ingredientIndex)
-                                const isChecked = checkedIngredients.has(ingredientKey)
+                                const isChecked = isCheckedByRef(groupIndex, ingredientIndex)
                                 const formattedParts = formatIngredientLine(
                                     ingredient,
                                     servingsMultiplier
@@ -114,7 +116,9 @@ export function InteractiveIngredientsList({
                                             "flex cursor-pointer items-center justify-between p-3 transition-all",
                                             isChecked && "text-foreground rounded-lg"
                                         )}
-                                        onClick={() => toggleIngredient(ingredientKey)}
+                                        onClick={() =>
+                                            toggleIngredient({ groupIndex, ingredientIndex })
+                                        }
                                     >
                                         <div className="flex items-center gap-3">
                                             <div

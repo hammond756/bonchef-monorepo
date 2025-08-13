@@ -20,10 +20,13 @@ interface UseNativeShareOptions {
 export function useNativeShare(shareData: ShareData, options: UseNativeShareOptions = {}) {
     const { toast } = useToast()
 
-    const handleShare = async (): Promise<"native" | "clipboard" | null> => {
+    const handleShare = async (
+        override?: Partial<ShareData>
+    ): Promise<"native" | "clipboard" | null> => {
+        const data = override ? { ...shareData, ...override } : shareData
         if (navigator.share) {
             try {
-                await navigator.share(shareData)
+                await navigator.share(data)
                 options.onSuccess?.()
                 return "native"
             } catch (error) {
@@ -40,7 +43,7 @@ export function useNativeShare(shareData: ShareData, options: UseNativeShareOpti
             }
         } else {
             try {
-                await navigator.clipboard.writeText(shareData.url)
+                await navigator.clipboard.writeText(data.url)
                 toast({
                     title: "Gekopieerd!",
                     description: "De link is naar je klembord gekopieerd.",

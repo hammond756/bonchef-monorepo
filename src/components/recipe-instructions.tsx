@@ -1,9 +1,10 @@
 "use client"
 
-import React, { useState } from "react"
+import React from "react"
 import { Card } from "./ui/card"
 import { ClockIcon, CheckIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useRecipeState } from "@/hooks/use-recipe-state"
 
 export interface InstructionStep {
     id: string
@@ -16,19 +17,7 @@ interface RecipeInstructionsProps {
 }
 
 export function RecipeInstructions({ instructions }: RecipeInstructionsProps) {
-    const [checkedSteps, setCheckedSteps] = useState<Set<string>>(new Set())
-
-    const toggleStep = (stepId: string) => {
-        setCheckedSteps((prev) => {
-            const newChecked = new Set(prev)
-            if (newChecked.has(stepId)) {
-                newChecked.delete(stepId)
-            } else {
-                newChecked.add(stepId)
-            }
-            return newChecked
-        })
-    }
+    const { toggleStep, checkedSteps } = useRecipeState()
 
     if (!instructions || instructions.length === 0) {
         return (
@@ -42,7 +31,7 @@ export function RecipeInstructions({ instructions }: RecipeInstructionsProps) {
         <div className="space-y-4">
             <ol className="m-0 list-none space-y-4 p-0">
                 {instructions.map((step, index) => {
-                    const isChecked = checkedSteps.has(step.id)
+                    const isChecked = checkedSteps.includes(index)
                     return (
                         <li
                             key={step.id}
@@ -51,14 +40,14 @@ export function RecipeInstructions({ instructions }: RecipeInstructionsProps) {
                                 isChecked &&
                                     "bg-green-0 text-muted-foreground decoration-status-green-text border-green-200 line-through"
                             )}
-                            onClick={() => toggleStep(step.id)}
+                            onClick={() => toggleStep(index)}
                             role="checkbox"
                             aria-checked={isChecked}
                             tabIndex={0}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" || e.key === " ") {
                                     e.preventDefault()
-                                    toggleStep(step.id)
+                                    toggleStep(index)
                                 }
                             }}
                         >
