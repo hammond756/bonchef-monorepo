@@ -10,6 +10,7 @@ import { cn, createRecipeSlug } from "@/lib/utils"
 
 import { RecipeActionButtons } from "./recipe-action-buttons"
 import { CommentOverlay } from "@/components/comment-overlay"
+import { RecipeSourceDisplay } from "./recipe-source-display"
 
 interface RecipeFeedCardProps {
     recipe: Recipe
@@ -99,7 +100,7 @@ export function RecipeFeedCard({ recipe }: RecipeFeedCardProps) {
                         {recipe.title}
                     </h2>
                     <p className="mt-1 text-xs">
-                        door {recipe.profiles?.display_name || "een anonieme chef"}
+                        <RecipeSourceDisplay recipe={recipe} />
                     </p>
                 </div>
 
