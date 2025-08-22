@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
-import { RecipeCard, InProgressRecipeCard } from "@/components/recipe/recipe-card"
-import { Recipe, RecipeImportJob } from "@/lib/types"
+import { RecipeCard } from "@/components/recipe/recipe-card"
+import { Recipe } from "@/lib/types"
 import { vi } from "vitest"
 
 vi.mock("next/navigation", () => ({
@@ -20,6 +20,13 @@ vi.mock("@/hooks/use-session", () => ({
             },
         },
         isLoading: false,
+    }),
+}))
+
+vi.mock("@/hooks/use-recipe-import-jobs", () => ({
+    useRecipeImportJobs: () => ({
+        isDeleting: null,
+        removeJob: vi.fn(),
     }),
 }))
 
@@ -46,18 +53,6 @@ const mockRecipe: Recipe = {
     is_public: true,
 }
 
-const mockImportJob: RecipeImportJob = {
-    id: "job1",
-    user_id: "user1",
-    source_type: "url",
-    source_data: "https://example.com/recipe",
-    status: "pending",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    recipe_id: null,
-    error_message: null,
-}
-
 describe("RecipeCard", () => {
     test("renders published recipe card correctly", () => {
         render(<RecipeCard recipe={mockRecipe} />)
@@ -74,13 +69,5 @@ describe("RecipeCard", () => {
         expect(screen.getByText("Concept")).toBeInTheDocument()
         const link = screen.getByRole("link")
         expect(link).toHaveAttribute("href", "/edit/1")
-    })
-})
-
-describe("InProgressRecipeCard", () => {
-    test("renders importing recipe card correctly", () => {
-        render(<InProgressRecipeCard job={mockImportJob} />)
-        expect(screen.getByText("Recept wordt gemaakt...")).toBeInTheDocument()
-        expect(screen.getByText("example.com")).toBeInTheDocument()
     })
 })

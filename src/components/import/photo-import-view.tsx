@@ -282,6 +282,7 @@ export function PhotoImportView({ onDismiss, onSubmit }: PhotoImportViewProps) {
                                 onClick={openGallery}
                                 variant="outline"
                                 className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+                                aria-label="Kies uit galerij"
                             >
                                 <ImageIcon className="mr-2 h-4 w-4" />
                                 Kies uit galerij
@@ -359,6 +360,7 @@ export function PhotoImportView({ onDismiss, onSubmit }: PhotoImportViewProps) {
                                 onClick={submitPhotos}
                                 disabled={photos.length === 0 || isLoading}
                                 className="h-12 border border-green-200 bg-green-100 px-4 text-sm font-semibold text-green-800 shadow-sm hover:bg-green-200 disabled:cursor-not-allowed disabled:opacity-50"
+                                aria-label="Importeren"
                             >
                                 {isLoading ? (
                                     <div className="flex items-center">

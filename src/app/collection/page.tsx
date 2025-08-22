@@ -20,7 +20,9 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import React from "react"
-import { RecipeCard, InProgressRecipeCard } from "@/components/recipe/recipe-card"
+import { RecipeCard } from "@/components/recipe/recipe-card"
+import { PendingJob } from "@/components/recipe/pending-job"
+import { FailedJob } from "@/components/recipe/failed-job"
 import { NavigationTracker } from "@/components/util/navigation-tracker"
 import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 import { cn } from "@/lib/utils"
@@ -41,8 +43,10 @@ function RecipeGrid({ items }: { items: Readonly<CollectionItem>[] }) {
             {items.map((item) =>
                 item.viewType === "RECIPE" ? (
                     <RecipeCard key={item.id} recipe={item} />
+                ) : item.status === "failed" ? (
+                    <FailedJob key={item.id} job={item} />
                 ) : (
-                    <InProgressRecipeCard key={item.id} job={item} />
+                    <PendingJob key={item.id} job={item} />
                 )
             )}
         </div>
@@ -118,22 +122,37 @@ function MyRecipesTabContent({
     const { jobs: importJobs, isLoading: importJobsLoading } = useRecipeImportJobs()
 
     const myRecipesAndJobs = useMemo(() => {
+        // Failed jobs first, then pending jobs, then recipes
+        const failedJobs = importJobs
+            .filter((job) => job.status === "failed")
+            .map((job) => ({ ...job, viewType: "JOB" as const }))
+
         const pendingJobs = importJobs
             .filter((job) => job.status === "pending")
             .map((job) => ({ ...job, viewType: "JOB" as const }))
 
         const recipes = userRecipes.map((recipe) => ({ ...recipe, viewType: "RECIPE" as const }))
 
-        const allItems: CollectionItem[] = [...pendingJobs, ...recipes]
-
-        // Sort all items based on their creation date
-        allItems.sort((a, b) => {
+        // Sort items within their groups, but keep failed jobs at the top
+        const sortedFailedJobs = failedJobs.sort((a, b) => {
             const dateA = new Date(a.created_at ?? 0).getTime()
             const dateB = new Date(b.created_at ?? 0).getTime()
             return sortOrder === "newest" ? dateB - dateA : dateA - dateB
         })
 
-        return allItems
+        const sortedPendingJobs = pendingJobs.sort((a, b) => {
+            const dateA = new Date(a.created_at ?? 0).getTime()
+            const dateB = new Date(b.created_at ?? 0).getTime()
+            return sortOrder === "newest" ? dateB - dateA : dateA - dateB
+        })
+
+        const sortedRecipes = recipes.sort((a, b) => {
+            const dateA = new Date(a.created_at ?? 0).getTime()
+            const dateB = new Date(b.created_at ?? 0).getTime()
+            return sortOrder === "newest" ? dateB - dateA : dateA - dateB
+        })
+
+        return [...sortedFailedJobs, ...sortedPendingJobs, ...sortedRecipes]
     }, [importJobs, userRecipes, sortOrder])
 
     if (userRecipesLoading || importJobsLoading) {

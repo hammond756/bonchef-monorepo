@@ -3,10 +3,17 @@
 import { v4 as uuidv4 } from "uuid"
 import { GeneratedRecipe } from "@/lib/types"
 import { createAdminClient, createClient } from "@/utils/supabase/server"
-import { formatRecipe, getRecipeContent, normalizeUrl } from "@/lib/services/web-service"
+import {
+    formatRecipe,
+    getRecipeContent,
+    GeneratedRecipeWithSourceAndThumbnail,
+    normalizeUrl,
+    RecipeGenerationMetadata,
+} from "@/lib/services/web-service"
 import { RecipeService } from "@/lib/services/recipe-service"
 import { RecipeGenerationService } from "@/lib/services/recipe-generation-service"
 import { getHostnameFromUrl, hostedImageToBuffer } from "@/lib/utils"
+import { validateRecipeContent } from "@/lib/utils/recipe-validation"
 import { withTempFileFromUrl } from "@/lib/temp-file-utils"
 import { detectText } from "@/lib/services/google-vision-ai-service"
 import { StorageService } from "@/lib/services/storage-service"
@@ -16,11 +23,7 @@ import fs from "fs"
 import path from "path"
 import { OnboardingService } from "@/lib/services/onboarding-service"
 import { createJobWithClient } from "@/lib/services/recipe-imports-job/shared"
-
-type GeneratedRecipeWithSource = GeneratedRecipe & {
-    source_name?: string | null
-    source_url?: string | null
-}
+import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
 
 function translateRecipeUnits<T extends GeneratedRecipe>(recipe: T): T {
     return {
@@ -41,7 +44,7 @@ function translateRecipeUnits<T extends GeneratedRecipe>(recipe: T): T {
 
 export async function scrapeRecipe(
     url: string
-): Promise<GeneratedRecipeWithSource & { thumbnail: string }> {
+): Promise<{ recipe: GeneratedRecipeWithSourceAndThumbnail; metadata: RecipeGenerationMetadata }> {
     console.log(`[scrapeRecipe] Starting scraping for ${url}`)
     const normalizedUrl = normalizeUrl(url)
     const { textForLLM, bestImageUrl } = await getRecipeContent(normalizedUrl)
@@ -52,7 +55,7 @@ export async function scrapeRecipe(
     const recipeInfo = await formatRecipe(textForLLM)
     console.log("[scrapeRecipe] AI formatting complete. Processing thumbnail...")
 
-    const finalThumbnailUrl = bestImageUrl || recipeInfo.thumbnailUrl
+    const finalThumbnailUrl = bestImageUrl || recipeInfo.recipe.thumbnail
 
     if (!finalThumbnailUrl) {
         console.warn("[scrapeRecipe] No thumbnail URL found from any source. Using placeholder.")
@@ -63,8 +66,11 @@ export async function scrapeRecipe(
         })
         const thumbnailUrl = await uploadImage(placeholderFile)
         return {
-            ...recipeInfo.recipe,
-            thumbnail: thumbnailUrl,
+            recipe: {
+                ...recipeInfo.recipe,
+                thumbnail: thumbnailUrl,
+            },
+            metadata: recipeInfo.metadata,
         }
     }
 
@@ -90,42 +96,54 @@ export async function scrapeRecipe(
     const translatedRecipe = translateRecipeUnits(recipeInfo.recipe)
 
     return {
-        ...translatedRecipe,
-        source_name: sourceName,
-        source_url: normalizedUrl,
-        thumbnail: thumbnail,
+        recipe: {
+            ...translatedRecipe,
+            thumbnail: thumbnail,
+            source_name: sourceName,
+            source_url: normalizedUrl,
+        },
+        metadata: recipeInfo.metadata,
     }
 }
 
 export async function generateRecipeFromSnippet(
     text: string
-): Promise<GeneratedRecipeWithSource & { thumbnail: string }> {
+): Promise<{ recipe: GeneratedRecipeWithSourceAndThumbnail; metadata: RecipeGenerationMetadata }> {
     const recipeGenerationService = new RecipeGenerationService()
 
-    const [recipe, thumbnail] = await Promise.all([
-        recipeGenerationService.generateBlocking(text, null),
+    const [{ recipe, metadata }, thumbnail] = await Promise.all([
+        formatRecipe(text),
         recipeGenerationService.generateThumbnail(text),
-    ] as [Promise<GeneratedRecipe>, Promise<string>])
+    ] as [
+        Promise<{ recipe: GeneratedRecipe; metadata: RecipeGenerationMetadata }>,
+        Promise<string>,
+    ])
     const translatedRecipe = translateRecipeUnits(recipe)
     return {
-        ...translatedRecipe,
-        thumbnail: thumbnail,
-        source_name: "",
-        source_url: "",
+        recipe: {
+            ...translatedRecipe,
+            thumbnail: thumbnail,
+            source_name: "",
+            source_url: "",
+        },
+        metadata,
     }
 }
 
 export async function generateRecipeFromImage(
     imageUrl: string
-): Promise<GeneratedRecipeWithSource & { thumbnail: string }> {
+): Promise<{ recipe: GeneratedRecipeWithSourceAndThumbnail; metadata: RecipeGenerationMetadata }> {
     const text = await extractTextFromImage(imageUrl)
     const recipeInfo = await formatRecipe(text)
     const translatedRecipe = translateRecipeUnits(recipeInfo.recipe)
     return {
-        ...translatedRecipe,
-        thumbnail: imageUrl,
-        source_name: "",
-        source_url: "",
+        recipe: {
+            ...translatedRecipe,
+            thumbnail: imageUrl,
+            source_name: "",
+            source_url: "",
+        },
+        metadata: recipeInfo.metadata,
     }
 }
 
@@ -180,7 +198,7 @@ export async function extractTextFromImage(imageUrl: string): Promise<string> {
 }
 
 export async function createDraftRecipe(
-    recipe: GeneratedRecipeWithSource & { thumbnail: string; created_at?: string },
+    recipe: GeneratedRecipeWithSourceAndThumbnail & { created_at?: string },
     { isPublic = false }: { isPublic?: boolean } = {}
 ): Promise<{ id: string }> {
     const supabase = await createClient()
@@ -207,7 +225,7 @@ export async function createDraftRecipe(
         is_public: isPublic,
         source_url: recipe.source_url || "",
         source_name: recipe.source_name || "",
-        thumbnail: recipe.thumbnail,
+        thumbnail: recipe.thumbnail || TINY_PLACEHOLDER_IMAGE,
         description: "",
         user_id: userId,
         created_at: recipe.created_at,
@@ -230,20 +248,32 @@ async function _processJobInBackground(
     onboardingSessionId?: string
 ) {
     try {
-        let recipe: GeneratedRecipeWithSource & { thumbnail: string }
+        let recipe: GeneratedRecipeWithSourceAndThumbnail
+        let metadata: RecipeGenerationMetadata
 
         switch (job.source_type) {
             case "url":
-                recipe = await scrapeRecipe(job.source_data)
+                ;({ recipe, metadata } = await scrapeRecipe(job.source_data))
                 break
             case "image":
-                recipe = await generateRecipeFromImage(job.source_data)
+                ;({ recipe, metadata } = await generateRecipeFromImage(job.source_data))
                 break
             case "text":
-                recipe = await generateRecipeFromSnippet(job.source_data)
+                ;({ recipe, metadata } = await generateRecipeFromSnippet(job.source_data))
                 break
             default:
                 throw new Error(`Unsupported source type: ${job.source_type}`)
+        }
+
+        // Smart validation based on content quality checks
+        const validationResult = validateRecipeContent(metadata, job.source_type)
+        if (validationResult.isError) {
+            throw new Error(validationResult.message)
+        }
+
+        // If there's a warning (enoughContext: false for text/URLs), log it but continue
+        if (validationResult.warning) {
+            console.warn(`Job ${job.id}: ${validationResult.warning}`)
         }
 
         const savedRecipe = await createDraftRecipe({
@@ -277,6 +307,15 @@ async function _processJobInBackground(
         }
     } catch (e: unknown) {
         const errorMessage = e instanceof Error ? e.message : "Unknown error"
+
+        // Determine if this is a content quality error (user-friendly) or technical error
+        const isContentQualityError = [
+            "Het lijkt erop dat deze afbeelding niet over eten ging",
+            "We konden niet genoeg informatie uit de afbeelding halen om een recept te maken",
+            "Deze tekst leek niet over eten te gaan",
+            "We konden niet genoeg informatie vinden om een goed recept te maken",
+        ].some((msg) => errorMessage.includes(msg))
+
         const supabaseAdmin = await createAdminClient()
         const { error: updateError } = await supabaseAdmin
             .from("recipe_import_jobs")
@@ -291,9 +330,11 @@ async function _processJobInBackground(
                 `CRITICAL: Job ${job.id} failed but ALSO failed to update its status. Original Error: ${errorMessage}. Update Error: ${updateError.message}`
             )
         } else {
-            console.error(
-                `Job ${job.id} failed and status marked as failed. Error: ${errorMessage}`
-            )
+            if (isContentQualityError) {
+                console.log(`Job ${job.id} failed due to content quality issues: ${errorMessage}`)
+            } else {
+                console.error(`Job ${job.id} failed due to technical issues: ${errorMessage}`)
+            }
         }
     }
 }

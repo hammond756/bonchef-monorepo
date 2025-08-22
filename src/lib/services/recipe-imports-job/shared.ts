@@ -89,3 +89,14 @@ export async function assignJobsToUserWithClient(
 
     return { success: true, data: null }
 }
+
+export async function deleteRecipeImportJobWithClient(client: SupabaseClient, jobId: string) {
+    const { error } = await client.from("recipe_import_jobs").delete().eq("id", jobId)
+
+    if (error) {
+        console.error("Error deleting recipe import job in shared service:", error)
+        throw new Error(error.message)
+    }
+
+    return { success: true }
+}
