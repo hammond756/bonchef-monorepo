@@ -1,6 +1,6 @@
 "use client"
 
-import { Camera, FileText, Link as LinkIcon, X, MessageCircle } from "lucide-react"
+import { Camera, FileText, Link as LinkIcon, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { ImportMode } from "@/lib/types"
@@ -15,9 +15,9 @@ interface ImportOverlayProps {
 export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayProps) {
     const router = useRouter()
 
-    const handleChatClick = () => {
+    const handleDishcoveryClick = () => {
         onClose()
-        router.push("/chat")
+        router.push("/dishcovery")
     }
 
     return (
@@ -60,11 +60,24 @@ export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayPr
                     <div className="absolute top-1/2 left-0 w-full -translate-y-1/2 border-t"></div>
                 </div>
                 <button
-                    onClick={handleChatClick}
+                    onClick={handleDishcoveryClick}
                     className="flex w-full items-center justify-center space-x-2 rounded-lg bg-green-100 p-4 text-center text-green-800 transition-colors hover:bg-green-200"
                 >
-                    <MessageCircle className="h-5 w-5" />
-                    <span className="text-sm font-medium">Chat</span>
+                    <svg
+                        className="h-5 w-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
+                        <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+                        <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+                        <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+                        <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+                    </svg>
+                    <span className="text-sm font-medium">Dishcovery</span>
                 </button>
 
                 {/* Extra whitespace for better spacing */}

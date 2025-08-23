@@ -179,6 +179,52 @@ export async function extractTextFromImage(imageUrl: string): Promise<string> {
     })
 }
 
+export async function generateRecipeFromDishcovery(
+    dishcoveryData: string
+): Promise<GeneratedRecipeWithSource & { thumbnail: string }> {
+    console.log(
+        `[generateRecipeFromDishcovery] Starting generation for dishcovery data: ${dishcoveryData.substring(0, 100)}...`
+    )
+
+    // Parse the dishcovery data (photo + description)
+    const data = JSON.parse(dishcoveryData)
+    const { photoUrl, description } = data
+
+    if (!photoUrl || !description) {
+        throw new Error("Invalid dishcovery data: missing photoUrl or description")
+    }
+
+    // Extract text from the photo using OCR
+    console.log("[generateRecipeFromDishcovery] Extracting text from photo...")
+    const photoText = await extractTextFromImage(photoUrl)
+
+    // Combine photo text and user description for a richer input
+    const combinedInput = `PHOTO TEXT (extracted from image):
+${photoText}
+
+USER DESCRIPTION:
+${description}
+
+CONTEXT: This is a dishcovery request where a user took a photo of a dish and provided additional description. Please create a recipe based on both the visual information from the photo and the user's description.`
+
+    // Use the existing ExtractRecipeFromWebcontent prompt via formatRecipe
+    console.log("[generateRecipeFromDishcovery] Generating recipe with AI...")
+    const recipeInfo = await formatRecipe(combinedInput)
+    console.log("[generateRecipeFromDishcovery] AI formatting complete. Processing photo...")
+
+    // The photo is already uploaded to Supabase storage, use it directly as thumbnail
+    const thumbnail = photoUrl
+
+    const translatedRecipe = translateRecipeUnits(recipeInfo.recipe)
+
+    return {
+        ...translatedRecipe,
+        thumbnail: thumbnail,
+        source_name: "Dishcovery",
+        source_url: "",
+    }
+}
+
 export async function createDraftRecipe(
     recipe: GeneratedRecipeWithSource & { thumbnail: string; created_at?: string },
     { isPublic = false }: { isPublic?: boolean } = {}
@@ -242,6 +288,9 @@ async function _processJobInBackground(
             case "text":
                 recipe = await generateRecipeFromSnippet(job.source_data)
                 break
+            case "dishcovery":
+                recipe = await generateRecipeFromDishcovery(job.source_data)
+                break
             default:
                 throw new Error(`Unsupported source type: ${job.source_type}`)
         }
@@ -299,7 +348,7 @@ async function _processJobInBackground(
 }
 
 export async function startRecipeImportJob(
-    sourceType: "url" | "image" | "text",
+    sourceType: "url" | "image" | "text" | "dishcovery",
     sourceData: string,
     onboardingSessionId?: string
 ) {
