@@ -85,16 +85,23 @@ export function DishcoveryDescription({
     const recognitionRef = useRef<SpeechRecognition | null>(null)
 
     // Use the dishcovery hook for state management
-    const dishcovery = useDishcovery()
+    const {
+        state: dishcoveryState,
+        setPhoto: setDishcoveryPhoto,
+        setInput: setDishcoveryInput,
+        setProcessing: setDishcoveryProcessing,
+        setError: setDishcoveryError,
+        canProceed: dishcoveryCanProceed,
+    } = useDishcovery()
 
     // Set photo in dishcovery hook on mount
     useEffect(() => {
-        dishcovery.setPhoto({
+        setDishcoveryPhoto({
             id: photo.id,
             dataUrl: photo.dataUrl,
             file: photo.file,
         })
-    }, [photo.id, photo.dataUrl, photo.file, dishcovery])
+    }, [photo.id, photo.dataUrl, photo.file, setDishcoveryPhoto])
 
     // Initialize speech recognition and auto-start listening
     useEffect(() => {
@@ -130,15 +137,15 @@ export function DishcoveryDescription({
                 const totalContent = (voiceState.transcript + finalTranscript).trim()
                 if (totalContent.length > 0) {
                     const isValid = totalContent.length >= 3
-                    dishcovery.setInput({
+                    setDishcoveryInput({
                         type: "voice",
                         content: totalContent,
                         isValid,
                     })
 
                     // Clear any previous errors when valid voice input is received
-                    if (isValid && dishcovery.state.error) {
-                        dishcovery.setError(null)
+                    if (isValid && dishcoveryState.error) {
+                        setDishcoveryError(null)
                     }
                 }
             }
@@ -150,13 +157,13 @@ export function DishcoveryDescription({
 
                 // Set error message based on error type
                 if (event.error === "not-allowed") {
-                    dishcovery.setError(
+                    setDishcoveryError(
                         "Microfoon toegang geweigerd. Geef toestemming om je microfoon te gebruiken."
                     )
                 } else if (event.error === "no-speech") {
-                    dishcovery.setError("Geen spraak gedetecteerd. Probeer het opnieuw.")
+                    setDishcoveryError("Geen spraak gedetecteerd. Probeer het opnieuw.")
                 } else {
-                    dishcovery.setError(
+                    setDishcoveryError(
                         "Er ging iets mis met de spraakherkenning. Probeer het opnieuw."
                     )
                 }
@@ -197,20 +204,27 @@ export function DishcoveryDescription({
                 clearTimeout(autoStartTimer)
             }
         }
-    }, [inputMode, voiceState.isListening]) // Include isListening to avoid stale closure
+    }, [inputMode]) // Remove voiceState.isListening dependency to prevent conflicts
 
     const startListening = useCallback(() => {
         if (recognitionRef.current && !voiceState.isListening) {
             try {
-                recognitionRef.current.start()
-                setVoiceState((prev) => ({ ...prev, isListening: true, isPaused: false }))
+                // First stop any existing recognition to prevent conflicts
+                recognitionRef.current.stop()
+                // Small delay to ensure clean state
+                setTimeout(() => {
+                    if (recognitionRef.current) {
+                        recognitionRef.current.start()
+                        setVoiceState((prev) => ({ ...prev, isListening: true, isPaused: false }))
+                    }
+                }, 100)
             } catch (error) {
                 console.error("Failed to start speech recognition:", error)
                 // If start fails, reset state
                 setVoiceState((prev) => ({ ...prev, isListening: false, isPaused: false }))
             }
         }
-    }, [])
+    }, [voiceState.isListening])
 
     const pauseListening = useCallback(() => {
         if (recognitionRef.current && voiceState.isListening) {
@@ -223,7 +237,7 @@ export function DishcoveryDescription({
                 setVoiceState((prev) => ({ ...prev, isListening: false, isPaused: false }))
             }
         }
-    }, [])
+    }, [voiceState.isListening])
 
     const toggleVoiceInput = useCallback(() => {
         if (voiceState.isListening) {
@@ -232,19 +246,40 @@ export function DishcoveryDescription({
             // Either start fresh or resume from pause
             startListening()
         }
-    }, [])
+    }, [voiceState.isListening, startListening, pauseListening])
 
     const switchToTextMode = useCallback(() => {
         setInputMode("text")
         if (voiceState.isListening) {
             pauseListening()
         }
-    }, [])
+        // Copy transcript to text input if available
+        if (voiceState.transcript.trim()) {
+            const transcriptText = voiceState.transcript.trim()
+            setTextInput(transcriptText)
+            // Update dishcovery input with the transcript
+            const isValid = transcriptText.length >= 3
+            setDishcoveryInput({
+                type: "text",
+                content: transcriptText,
+                isValid,
+            })
+        }
+    }, [voiceState.isListening, voiceState.transcript, pauseListening, setDishcoveryInput])
 
     const switchToVoiceMode = useCallback(() => {
         setInputMode("voice")
-        setTextInput("")
-    }, [])
+        // Don't clear text input, keep it for potential fallback
+        // Update dishcovery input with current text if available
+        if (textInput.trim()) {
+            const isValid = textInput.trim().length >= 3
+            setDishcoveryInput({
+                type: "text",
+                content: textInput.trim(),
+                isValid,
+            })
+        }
+    }, [textInput, setDishcoveryInput])
 
     const handleContinue = useCallback(async () => {
         const description = inputMode === "voice" ? voiceState.transcript : textInput
@@ -252,7 +287,7 @@ export function DishcoveryDescription({
 
         if (trimmedDescription.length >= 3) {
             try {
-                dishcovery.setProcessing(true)
+                setDishcoveryProcessing(true)
 
                 // Upload the photo to storage first to get a permanent URL
                 const { uploadImage } = await import("@/actions/recipe-imports")
@@ -272,22 +307,30 @@ export function DishcoveryDescription({
                 onContinue(trimmedDescription)
             } catch (error) {
                 console.error("[DishcoveryDescription] Failed to start recipe import job:", error)
-                dishcovery.setError(
+                setDishcoveryError(
                     "Er ging iets mis bij het starten van de recept generatie. Probeer het opnieuw."
                 )
-                dishcovery.setProcessing(false)
+                setDishcoveryProcessing(false)
             }
         } else {
             const errorMessage =
                 inputMode === "voice"
                     ? "Voeg minimaal 3 karakters toe via spraak om door te gaan."
                     : "Voeg minimaal 3 karakters toe via tekst om door te gaan."
-            dishcovery.setError(errorMessage)
+            setDishcoveryError(errorMessage)
         }
-    }, [inputMode, voiceState.transcript, textInput, onContinue, dishcovery, photo.file])
+    }, [
+        inputMode,
+        voiceState.transcript,
+        textInput,
+        onContinue,
+        setDishcoveryProcessing,
+        setDishcoveryError,
+        photo.file,
+    ])
 
     // Use dishcovery hook for complete validation (photo + input)
-    const hasValidInput = dishcovery.canProceed
+    const hasValidInput = dishcoveryCanProceed
 
     return (
         <div className="flex min-h-screen flex-col bg-gray-50">
@@ -570,9 +613,11 @@ export function DishcoveryDescription({
 
                                 {voiceState.transcript && (
                                     <div className="mt-4 rounded-lg bg-gray-100 p-3 text-left">
-                                        <p className="text-sm text-gray-800">
-                                            {voiceState.transcript}
-                                        </p>
+                                        <div className="max-h-[4.5rem] overflow-y-auto">
+                                            <p className="text-sm leading-relaxed text-gray-800">
+                                                {voiceState.transcript}
+                                            </p>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -591,15 +636,15 @@ export function DishcoveryDescription({
                                         const trimmedValue = value.trim()
                                         const isValid = trimmedValue.length >= 3
 
-                                        dishcovery.setInput({
+                                        setDishcoveryInput({
                                             type: "text",
                                             content: trimmedValue,
                                             isValid,
                                         })
 
                                         // Clear any previous errors when user types
-                                        if (isValid && dishcovery.state.error) {
-                                            dishcovery.setError(null)
+                                        if (isValid && dishcoveryState.error) {
+                                            setDishcoveryError(null)
                                         }
                                     }}
                                     placeholder="Beschrijf de ingrediënten, smaken, kruiden, en bereidingswijze die je ziet of weet..."
@@ -632,7 +677,7 @@ export function DishcoveryDescription({
 
                         {/* Error message */}
                         <AnimatePresence>
-                            {dishcovery.state.error && (
+                            {dishcoveryState.error && (
                                 <motion.div
                                     initial={{ opacity: 0, y: -10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -642,7 +687,7 @@ export function DishcoveryDescription({
                                     aria-live="polite"
                                 >
                                     <p className="text-status-red-text text-sm">
-                                        {dishcovery.state.error}
+                                        {dishcoveryState.error}
                                     </p>
                                 </motion.div>
                             )}
@@ -652,15 +697,15 @@ export function DishcoveryDescription({
                         <div className="text-center">
                             <Button
                                 onClick={handleContinue}
-                                disabled={!hasValidInput || dishcovery.state.isProcessing}
+                                disabled={!hasValidInput || dishcoveryState.isProcessing}
                                 className="bg-accent-new hover:bg-status-green-text disabled:bg-text-muted w-full text-white shadow-lg disabled:cursor-not-allowed"
                                 size="lg"
                                 aria-describedby={
-                                    dishcovery.state.isProcessing ? "button-status" : undefined
+                                    dishcoveryState.isProcessing ? "button-status" : undefined
                                 }
                             >
                                 <AnimatePresence mode="wait">
-                                    {dishcovery.state.isProcessing ? (
+                                    {dishcoveryState.isProcessing ? (
                                         <motion.div
                                             key="loading"
                                             initial={{ opacity: 0, scale: 0.9 }}

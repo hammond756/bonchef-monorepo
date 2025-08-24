@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import { useState, useCallback, useMemo } from "react"
 
 export interface DishcoveryPhoto {
     id: string
@@ -88,20 +88,29 @@ export function useDishcovery(): UseDishcoveryReturn {
     }, [])
 
     // Validation logic: photo must be present and input must be valid
-    const isValid = Boolean(state.photo && state.input?.isValid)
+    const isValid = useMemo(
+        () => Boolean(state.photo && state.input?.isValid),
+        [state.photo, state.input?.isValid]
+    )
 
     // Can proceed when valid and not currently processing
-    const canProceed = isValid && !state.isProcessing
+    const canProceed = useMemo(() => isValid && !state.isProcessing, [isValid, state.isProcessing])
 
-    return {
-        state,
-        setPhoto,
-        setInput,
-        clearInput,
-        setProcessing,
-        setError,
-        reset,
-        isValid,
-        canProceed,
-    }
+    // Memoize the return object to prevent infinite re-renders
+    const returnValue = useMemo(
+        () => ({
+            state,
+            setPhoto,
+            setInput,
+            clearInput,
+            setProcessing,
+            setError,
+            reset,
+            isValid,
+            canProceed,
+        }),
+        [state, setPhoto, setInput, clearInput, setProcessing, setError, reset, isValid, canProceed]
+    )
+
+    return returnValue
 }
