@@ -118,7 +118,7 @@ describe("DishcoveryDescription", () => {
     it("disables continue button when no input is provided", () => {
         render(<DishcoveryDescription {...defaultProps} />)
 
-        const continueButton = screen.getByRole("button", { name: /recept genereren/i })
+        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
         expect(continueButton).toBeDisabled()
     })
 
@@ -126,7 +126,7 @@ describe("DishcoveryDescription", () => {
         render(<DishcoveryDescription {...defaultProps} />)
 
         // Voice mode is default, but without transcript the button should be disabled
-        const continueButton = screen.getByRole("button", { name: /recept genereren/i })
+        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
         expect(continueButton).toBeDisabled()
     })
 
@@ -140,7 +140,7 @@ describe("DishcoveryDescription", () => {
         fireEvent.change(textarea, { target: { value: "Test description" } })
 
         // With new validation logic, button becomes enabled when we have photo + valid input
-        const continueButton = screen.getByRole("button", { name: /recept genereren/i })
+        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
         expect(continueButton).toBeEnabled() // Button is enabled with photo + valid text input
     })
 
@@ -153,7 +153,7 @@ describe("DishcoveryDescription", () => {
         fireEvent.change(textarea, { target: { value: "Test description" } })
 
         // With new validation logic, button is enabled and can be clicked
-        const continueButton = screen.getByRole("button", { name: /recept genereren/i })
+        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
         expect(continueButton).toBeEnabled()
         fireEvent.click(continueButton)
 
@@ -172,7 +172,7 @@ describe("DishcoveryDescription", () => {
         fireEvent.change(textarea, { target: { value: "Test description" } })
 
         // With new validation logic, button is enabled and can be clicked
-        const continueButton = screen.getByRole("button", { name: /recept genereren/i })
+        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
         expect(continueButton).toBeEnabled()
         fireEvent.click(continueButton)
 
@@ -192,7 +192,7 @@ describe("DishcoveryDescription", () => {
 
         // Test with 2 characters (invalid)
         fireEvent.change(textarea, { target: { value: "ab" } })
-        const continueButton = screen.getByRole("button", { name: /recept genereren/i })
+        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
         expect(continueButton).toBeDisabled()
 
         // Test with 3 characters (valid)
@@ -215,7 +215,7 @@ describe("DishcoveryDescription", () => {
         expect(screen.getByText("500/500")).toBeInTheDocument()
 
         // Button should still be enabled with valid length
-        const continueButton = screen.getByRole("button", { name: /recept genereren/i })
+        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
         expect(continueButton).toBeEnabled()
     })
 
@@ -228,7 +228,7 @@ describe("DishcoveryDescription", () => {
 
         // Test with empty string
         fireEvent.change(textarea, { target: { value: "" } })
-        const continueButton = screen.getByRole("button", { name: /recept genereren/i })
+        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
         expect(continueButton).toBeDisabled()
 
         // Test with only whitespace

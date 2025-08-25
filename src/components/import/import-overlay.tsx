@@ -1,6 +1,6 @@
 "use client"
 
-import { Camera, FileText, HandPlatter, Link as LinkIcon, X } from "lucide-react"
+import { FileText, HandPlatter, Link as LinkIcon, ScanText, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { ImportMode } from "@/lib/types"
@@ -35,7 +35,7 @@ export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayPr
                         className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-orange-100 p-4 text-center text-orange-800 transition-colors hover:bg-orange-200"
                         aria-label="Foto"
                     >
-                        <Camera className="h-8 w-8" />
+                        <ScanText className="h-8 w-8" />
                         <span className="text-sm font-medium">Scan</span>
                     </button>
                     <button
@@ -63,7 +63,7 @@ export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayPr
                     onClick={handleDishcoveryClick}
                     className="flex w-full items-center justify-center space-x-2 rounded-lg bg-green-100 p-4 text-center text-green-800 transition-colors hover:bg-green-200"
                 >
-                    <HandPlatter className="h-5 w-5" />
+                    <HandPlatter className="h-8 w-8" />
                     <span className="text-sm font-medium">Dishcovery</span>
                 </button>
 
