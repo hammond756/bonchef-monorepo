@@ -1,12 +1,10 @@
 "use client"
 
-import { useState, useRef, useCallback, useEffect } from "react"
-import { ArrowLeft, Mic, Type, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { ArrowLeft, Mic, Type } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useDishcovery } from "@/hooks/use-dishcovery"
-import { startRecipeImportJob } from "@/actions/recipe-imports"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 interface DishcoveryDescriptionProps {
     photo: {
@@ -19,54 +17,8 @@ interface DishcoveryDescriptionProps {
 }
 
 interface VoiceState {
-    isListening: boolean
-    isPaused: boolean
-    transcript: string
-}
-
-// Speech Recognition types
-interface SpeechRecognitionEvent extends Event {
-    resultIndex: number
-    results: SpeechRecognitionResultList
-}
-
-interface SpeechRecognitionResultList {
-    length: number
-    [index: number]: SpeechRecognitionResult
-}
-
-interface SpeechRecognitionResult {
-    length: number
-    [index: number]: SpeechRecognitionAlternative
-    isFinal: boolean
-}
-
-interface SpeechRecognitionAlternative {
-    transcript: string
-    confidence: number
-}
-
-interface SpeechRecognition extends EventTarget {
-    continuous: boolean
-    interimResults: boolean
-    lang: string
-    onresult: ((event: SpeechRecognitionEvent) => void) | null
-    onerror: ((event: SpeechRecognitionErrorEvent) => void) | null
-    onend: ((event: Event) => void) | null
-    start(): void
-    stop(): void
-    abort(): void
-}
-
-interface SpeechRecognitionErrorEvent extends Event {
-    error: string
-}
-
-declare global {
-    interface Window {
-        webkitSpeechRecognition: new () => SpeechRecognition
-        SpeechRecognition: new () => SpeechRecognition
-    }
+    isRecording: boolean
+    audioBlob: Blob | null
 }
 
 export function DishcoveryDescription({
@@ -76,289 +28,191 @@ export function DishcoveryDescription({
 }: Readonly<DishcoveryDescriptionProps>) {
     const [inputMode, setInputMode] = useState<"voice" | "text">("voice")
     const [voiceState, setVoiceState] = useState<VoiceState>({
-        isListening: false,
-        isPaused: false,
-        transcript: "",
+        isRecording: false,
+        audioBlob: null,
     })
     const [textInput, setTextInput] = useState("")
+    const [isProcessing, setIsProcessing] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
-    const recognitionRef = useRef<SpeechRecognition | null>(null)
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+    const audioChunksRef = useRef<Blob[]>([])
+    const hasStartedRecordingRef = useRef(false)
 
-    // Use the dishcovery hook for state management
-    const {
-        state: dishcoveryState,
-        setPhoto: setDishcoveryPhoto,
-        setInput: setDishcoveryInput,
-        setProcessing: setDishcoveryProcessing,
-        setError: setDishcoveryError,
-        canProceed: dishcoveryCanProceed,
-    } = useDishcovery()
+    // Simple validation logic
+    const hasValidInput =
+        inputMode === "voice" ? voiceState.audioBlob : textInput.trim().length >= 3
+    const canProceed = hasValidInput && !isProcessing
 
-    // Set photo in dishcovery hook on mount
-    useEffect(() => {
-        setDishcoveryPhoto({
-            id: photo.id,
-            dataUrl: photo.dataUrl,
-            file: photo.file,
-        })
-    }, [photo.id, photo.dataUrl, photo.file, setDishcoveryPhoto])
+    const startRecording = useCallback(async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
 
-    // Initialize speech recognition and auto-start listening
-    useEffect(() => {
-        if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
-            const SpeechRecognitionClass =
-                window.webkitSpeechRecognition || window.SpeechRecognition
-            recognitionRef.current = new SpeechRecognitionClass()
-
-            const recognition = recognitionRef.current
-
-            // Optimized settings for mobile devices
-            recognition.continuous = true // Keep listening until manually stopped
-            recognition.interimResults = false // Only final results for better accuracy
-            recognition.lang = "nl-NL" // Dutch language
-
-            // Mobile-specific optimizations
-            if (
-                /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-            ) {
-                recognition.continuous = true // Keep listening on mobile too
-                recognition.interimResults = false
+            // Try to use a more widely supported audio format
+            let mimeType = "audio/webm;codecs=opus"
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = "audio/mp4"
+            }
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = "audio/wav"
             }
 
-            recognition.onresult = (event: SpeechRecognitionEvent) => {
-                let finalTranscript = ""
-                let confidence = 0
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType,
+            })
 
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const result = event.results[i]
-                    if (result.isFinal) {
-                        const transcript = result[0].transcript
-                        confidence = result[0].confidence
-                        finalTranscript += transcript
-                    }
-                }
+            mediaRecorderRef.current = mediaRecorder
+            audioChunksRef.current = []
 
-                // Only update if we have actual content with good confidence
-                if (finalTranscript.trim().length > 0 && confidence > 0.3) {
-                    setVoiceState((prev) => ({
-                        ...prev,
-                        transcript: prev.transcript + " " + finalTranscript.trim(),
-                    }))
-
-                    // Update the dishcovery hook with voice input
-                    const totalContent = (
-                        voiceState.transcript +
-                        " " +
-                        finalTranscript.trim()
-                    ).trim()
-                    if (totalContent.length > 0) {
-                        const isValid = totalContent.length >= 3
-                        setDishcoveryInput({
-                            type: "voice",
-                            content: totalContent,
-                            isValid,
-                        })
-
-                        // Clear any previous errors when valid voice input is received
-                        if (isValid && dishcoveryState.error) {
-                            setDishcoveryError(null)
-                        }
-                    }
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data)
                 }
             }
 
-            recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-                console.error("Speech recognition error:", {
-                    error: event.error,
-                    userAgent: navigator.userAgent,
-                })
-
-                // Reset state on any error
-                setVoiceState((prev) => ({ ...prev, isListening: false, isPaused: false }))
-
-                // Set error message based on error type
-                if (event.error === "not-allowed") {
-                    setDishcoveryError(
-                        "Microfoon toegang geweigerd. Geef toestemming om je microfoon te gebruiken."
-                    )
-                } else if (event.error === "no-speech") {
-                    setDishcoveryError("Geen spraak gedetecteerd. Probeer het opnieuw.")
-                } else if (event.error === "audio-capture") {
-                    setDishcoveryError("Microfoon probleem. Controleer je microfoon instellingen.")
-                } else if (event.error === "network") {
-                    setDishcoveryError("Netwerk probleem. Controleer je internetverbinding.")
-                } else {
-                    setDishcoveryError(
-                        "Er ging iets mis met de spraakherkenning. Probeer het opnieuw."
-                    )
-                }
-            }
-
-            recognition.onend = () => {
-                // Only reset state if user manually stopped listening
-                // Don't auto-restart - let user control when to stop/start
-                if (!voiceState.isListening) {
-                    setVoiceState((prev) => ({ ...prev, isListening: false }))
-                }
-            }
-        }
-
-        return () => {
-            if (recognitionRef.current) {
+            mediaRecorder.onstop = () => {
                 try {
-                    recognitionRef.current.stop()
+                    const audioBlob = new Blob(audioChunksRef.current, { type: mimeType })
+                    setVoiceState((prev) => ({ ...prev, audioBlob, isRecording: false }))
+                    // Clean up stream tracks
+                    stream.getTracks().forEach((track) => track.stop())
                 } catch (error) {
-                    console.error("Error stopping speech recognition on cleanup:", error)
+                    console.error("Error creating audio blob:", error)
+                    setError("Er ging iets mis bij het verwerken van de opname.")
                 }
             }
-        }
-    }, [])
 
-    // Auto-start listening when component mounts in voice mode
+            mediaRecorder.start()
+            setVoiceState((prev) => ({ ...prev, isRecording: true }))
+        } catch (error) {
+            console.error("Failed to start recording:", error)
+            setError("Kon microfoon niet starten. Controleer je permissies.")
+        }
+    }, [setError])
+
+    // Auto-start microphone when component mounts (only once)
     useEffect(() => {
-        if (recognitionRef.current && inputMode === "voice") {
-            const autoStartTimer = setTimeout(() => {
-                if (!voiceState.isListening) {
-                    try {
-                        recognitionRef.current!.start()
-                        setVoiceState((prev) => ({ ...prev, isListening: true, isPaused: false }))
-                    } catch (error) {
-                        console.error("Failed to auto-start speech recognition:", error)
-                    }
-                }
-            }, 1000) // Delay to ensure recognition is fully initialized
-
-            return () => {
-                clearTimeout(autoStartTimer)
-            }
+        if (inputMode === "voice" && !hasStartedRecordingRef.current) {
+            hasStartedRecordingRef.current = true
+            startRecording()
         }
-    }, [inputMode]) // Remove voiceState.isListening dependency to prevent conflicts
+    }, [inputMode]) // Remove startRecording from dependencies
 
-    const startListening = useCallback(() => {
-        if (recognitionRef.current && !voiceState.isListening) {
-            try {
-                // First stop any existing recognition to prevent conflicts
-                recognitionRef.current.stop()
-                // Small delay to ensure clean state
-                setTimeout(() => {
-                    if (recognitionRef.current) {
-                        recognitionRef.current.start()
-                        setVoiceState((prev) => ({ ...prev, isListening: true, isPaused: false }))
-                    }
-                }, 100)
-            } catch (error) {
-                console.error("Failed to start speech recognition:", error)
-                // If start fails, reset state
-                setVoiceState((prev) => ({ ...prev, isListening: false, isPaused: false }))
-            }
-        }
-    }, [voiceState.isListening])
+    // Reset recording state when inputMode changes
+    useEffect(() => {
+        hasStartedRecordingRef.current = false
+    }, [inputMode])
 
-    const pauseListening = useCallback(() => {
-        if (recognitionRef.current && voiceState.isListening) {
-            try {
-                recognitionRef.current.stop()
-                setVoiceState((prev) => ({ ...prev, isListening: false, isPaused: false }))
-            } catch (error) {
-                console.error("Failed to stop speech recognition:", error)
-                // If stop fails, reset state
-                setVoiceState((prev) => ({ ...prev, isListening: false, isPaused: false }))
-            }
+    const stopRecording = useCallback(() => {
+        if (mediaRecorderRef.current && voiceState.isRecording) {
+            mediaRecorderRef.current.stop()
+            setVoiceState((prev) => ({ ...prev, isRecording: false }))
         }
-    }, [voiceState.isListening])
-
-    const toggleVoiceInput = useCallback(() => {
-        if (voiceState.isListening) {
-            pauseListening()
-        } else {
-            // Either start fresh or resume from pause
-            startListening()
-        }
-    }, [voiceState.isListening, startListening, pauseListening])
+    }, [voiceState.isRecording])
 
     const switchToTextMode = useCallback(() => {
         setInputMode("text")
-        if (voiceState.isListening) {
-            pauseListening()
+        if (voiceState.isRecording) {
+            stopRecording()
         }
         // Copy transcript to text input if available
-        if (voiceState.transcript.trim()) {
-            const transcriptText = voiceState.transcript.trim()
-            setTextInput(transcriptText)
-            // Update dishcovery input with the transcript
-            const isValid = transcriptText.length >= 3
-            setDishcoveryInput({
-                type: "text",
-                content: transcriptText,
-                isValid,
-            })
+        if (voiceState.audioBlob) {
+            // For now, we'll just clear the audio when switching to text
+            setVoiceState((prev) => ({ ...prev, audioBlob: null }))
         }
-    }, [voiceState.isListening, voiceState.transcript, pauseListening, setDishcoveryInput])
+        // Reset recording state to allow starting again when switching back
+        hasStartedRecordingRef.current = false
+    }, [voiceState.isRecording, voiceState.audioBlob, stopRecording])
 
     const switchToVoiceMode = useCallback(() => {
         setInputMode("voice")
-        // Don't clear text input, keep it for potential fallback
-        // Update dishcovery input with current text if available
-        if (textInput.trim()) {
-            const isValid = textInput.trim().length >= 3
-            setDishcoveryInput({
-                type: "text",
-                content: textInput.trim(),
-                isValid,
-            })
-        }
-    }, [textInput, setDishcoveryInput])
+        setTextInput("")
+        setVoiceState((prev) => ({ ...prev, audioBlob: null }))
+        // Reset recording state to allow starting again
+        hasStartedRecordingRef.current = false
+    }, [])
 
     const handleContinue = useCallback(async () => {
-        const description = inputMode === "voice" ? voiceState.transcript : textInput
-        const trimmedDescription = description.trim()
+        try {
+            setIsProcessing(true)
 
-        if (trimmedDescription.length >= 3) {
-            try {
-                setDishcoveryProcessing(true)
+            let description = ""
+            let audioBase64 = ""
+            let mimeType = ""
 
+            if (inputMode === "voice" && voiceState.audioBlob) {
+                // Convert audio to base64 but don't transcribe here
+                // Transcription will happen in the background as part of the recipe import job
+                audioBase64 = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader()
+                    reader.onload = () => {
+                        if (typeof reader.result === "string") {
+                            // Remove the data URL prefix (e.g., "data:audio/webm;basecs=opus,")
+                            const base64 = reader.result.split(",")[1]
+                            resolve(base64)
+                        } else {
+                            reject(new Error("Failed to convert audio to base64"))
+                        }
+                    }
+                    reader.onerror = () => reject(new Error("Failed to read audio file"))
+                    reader.readAsDataURL(voiceState.audioBlob!)
+                })
+
+                mimeType = voiceState.audioBlob.type
+                description = "" // Will be filled in by the background job
+            } else {
+                description = textInput
+            }
+
+            const trimmedDescription = description.trim()
+
+            if (trimmedDescription.length >= 3 || (inputMode === "voice" && audioBase64)) {
                 // Upload the photo to storage first to get a permanent URL
                 const { uploadImage } = await import("@/actions/recipe-imports")
                 const uploadedPhotoUrl = await uploadImage(photo.file)
 
-                // Create dishcovery data with uploaded photo URL and description
+                // Start the recipe import job
+                const { startRecipeImportJob } = await import("@/actions/recipe-imports")
                 const dishcoveryData = JSON.stringify({
                     photoUrl: uploadedPhotoUrl,
-                    description: trimmedDescription,
+                    description: inputMode === "voice" ? "" : trimmedDescription, // Empty for voice, actual text for text mode
+                    ...(inputMode === "voice" && audioBase64
+                        ? {
+                              audioBase64,
+                              mimeType,
+                          }
+                        : {}),
                 })
 
-                // Start the recipe import job
-                const jobId = await startRecipeImportJob("dishcovery", dishcoveryData)
-                console.log(`[DishcoveryDescription] Started recipe import job: ${jobId}`)
+                console.log(`[DishcoveryDescription] Starting recipe import job for dishcovery`)
 
-                // Call the original onContinue callback
-                onContinue(trimmedDescription)
-            } catch (error) {
-                console.error("[DishcoveryDescription] Failed to start recipe import job:", error)
-                setDishcoveryError(
-                    "Er ging iets mis bij het starten van de recept generatie. Probeer het opnieuw."
-                )
-                setDishcoveryProcessing(false)
+                // Start the recipe import job (this will create a DRAFT recipe)
+                await startRecipeImportJob("dishcovery", dishcoveryData)
+
+                // Reset processing state BEFORE calling onContinue
+                setIsProcessing(false)
+
+                // Call the original onContinue callback to navigate to collection page
+                onContinue(inputMode === "voice" ? "Voice opname" : trimmedDescription)
+            } else {
+                const errorMessage = "Voeg minimaal 3 karakters toe om door te gaan."
+                setError(errorMessage)
+                setIsProcessing(false)
             }
-        } else {
-            const errorMessage =
-                inputMode === "voice"
-                    ? "Voeg minimaal 3 karakters toe via spraak om door te gaan."
-                    : "Voeg minimaal 3 karakters toe via tekst om door te gaan."
-            setDishcoveryError(errorMessage)
+        } catch (error) {
+            console.error("[DishcoveryDescription] Failed to process:", error)
+            setError("Er ging iets mis bij het verwerken van je input. Probeer het opnieuw.")
+            setIsProcessing(false)
         }
     }, [
         inputMode,
-        voiceState.transcript,
+        voiceState.audioBlob,
         textInput,
         onContinue,
-        setDishcoveryProcessing,
-        setDishcoveryError,
         photo.file,
+        setError,
+        setIsProcessing,
     ])
-
-    // Use dishcovery hook for complete validation (photo + input)
-    const hasValidInput = dishcoveryCanProceed
 
     return (
         <div className="flex min-h-screen flex-col bg-gray-50">
@@ -409,19 +263,19 @@ export function DishcoveryDescription({
                                 Vertel meer over dit gerecht
                             </h1>
                             <p
-                                id="text-instructions"
                                 className="text-text-muted px-2 text-sm sm:text-base"
+                                id="text-instructions"
                             >
                                 Beschrijf ingrediënten, smaken, kruiden, en alles wat bijzonder is.
                             </p>
                         </div>
 
                         {/* Voice input mode */}
-                        {inputMode === "voice" && (
+                        {inputMode === "voice" ? (
                             <div className="mb-6 text-center">
                                 <div className="relative inline-flex items-center justify-center">
                                     {/* Pulsing sound wave bars to left and right when listening */}
-                                    {voiceState.isListening && (
+                                    {voiceState.isRecording && (
                                         <>
                                             {/* Left side wave bars */}
                                             <div className="absolute top-1/2 left-0 flex -translate-x-8 -translate-y-1/2 flex-row items-center gap-1 sm:-translate-x-12">
@@ -532,7 +386,7 @@ export function DishcoveryDescription({
                                                     }}
                                                 />
                                                 <motion.div
-                                                    className="h-2 w-1 rounded-full bg-green-500"
+                                                    className="h-2 w-1 rounded-full bg-[#268a40]"
                                                     animate={{
                                                         height: [8, 20, 8],
                                                         opacity: [0.9, 0.4, 0.9],
@@ -545,7 +399,7 @@ export function DishcoveryDescription({
                                                     }}
                                                 />
                                                 <motion.div
-                                                    className="h-2 w-1 rounded-full bg-green-500"
+                                                    className="h-2 w-1 rounded-full bg-[#268a40]"
                                                     animate={{
                                                         height: [8, 16, 8],
                                                         opacity: [0.9, 0.4, 0.9],
@@ -564,7 +418,7 @@ export function DishcoveryDescription({
                                     {/* Main microphone button */}
                                     <motion.div
                                         animate={
-                                            voiceState.isListening
+                                            voiceState.isRecording
                                                 ? {
                                                       scale: [1, 1.08, 1],
                                                   }
@@ -572,38 +426,42 @@ export function DishcoveryDescription({
                                         }
                                         transition={{
                                             duration: 1.2,
-                                            repeat: voiceState.isListening ? Infinity : 0,
+                                            repeat: voiceState.isRecording ? Infinity : 0,
                                             ease: "easeInOut",
                                         }}
                                     >
                                         <Button
-                                            onClick={toggleVoiceInput}
+                                            onClick={
+                                                voiceState.isRecording
+                                                    ? stopRecording
+                                                    : startRecording
+                                            }
                                             className={`relative z-10 h-16 w-16 rounded-full transition-all duration-300 sm:h-20 sm:w-20 ${
-                                                voiceState.isListening
+                                                voiceState.isRecording
                                                     ? "bg-[#b9e7ca] text-[#157f3d] shadow-lg hover:bg-[#a1ddb8]"
                                                     : "bg-[#385940] text-white hover:bg-[#2b2b2b]"
                                             }`}
                                             aria-label={
-                                                voiceState.isListening
-                                                    ? "Pauzeren"
+                                                voiceState.isRecording
+                                                    ? "Stop opname"
                                                     : "Beginnen met spreken"
                                             }
                                         >
                                             <AnimatePresence mode="wait">
-                                                {voiceState.isListening ? (
+                                                {voiceState.isRecording ? (
                                                     <motion.div
-                                                        key="listening"
+                                                        key="recording"
                                                         initial={{ scale: 0.8, opacity: 0 }}
                                                         animate={{ scale: 1, opacity: 1 }}
                                                         exit={{ scale: 0.8, opacity: 0 }}
                                                         className="flex items-center justify-center"
                                                         transition={{ duration: 0.2 }}
                                                     >
-                                                        <Volume2 className="h-8 w-8 text-white" />
+                                                        <Mic className="h-8 w-8 text-white" />
                                                     </motion.div>
                                                 ) : (
                                                     <motion.div
-                                                        key="not-listening"
+                                                        key="not-recording"
                                                         initial={{ scale: 0.8, opacity: 0 }}
                                                         animate={{ scale: 1, opacity: 1 }}
                                                         exit={{ scale: 0.8, opacity: 0 }}
@@ -619,11 +477,9 @@ export function DishcoveryDescription({
                                 </div>
 
                                 <p className="mt-2 text-sm text-gray-600">
-                                    {voiceState.isListening
+                                    {voiceState.isRecording
                                         ? "Luisteren..."
-                                        : voiceState.isPaused
-                                          ? "Tik om te beginnen met spreken"
-                                          : "Tik om te beginnen met spreken"}
+                                        : "Tik om te beginnen met spreken"}
                                 </p>
 
                                 {/* "Ik kan nu niet praten" button */}
@@ -639,40 +495,28 @@ export function DishcoveryDescription({
                                     </Button>
                                 </div>
 
-                                {voiceState.transcript && (
+                                {voiceState.audioBlob && (
                                     <div className="mt-4 rounded-lg bg-gray-100 p-3 text-left">
                                         <div className="max-h-[4.5rem] overflow-y-auto">
                                             <p className="text-sm leading-relaxed text-gray-800">
-                                                {voiceState.transcript}
+                                                ✅ Opname voltooid! Klik op Bonchef!! om door te
+                                                gaan.
                                             </p>
                                         </div>
                                     </div>
                                 )}
                             </div>
-                        )}
-
-                        {/* Text input mode */}
-                        {inputMode === "text" && (
+                        ) : (
                             <div className="mb-6">
                                 <Textarea
                                     value={textInput}
-                                    onChange={(e) => {
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                                         const value = e.target.value
                                         setTextInput(value)
 
-                                        // Update the dishcovery hook with text input
-                                        const trimmedValue = value.trim()
-                                        const isValid = trimmedValue.length >= 3
-
-                                        setDishcoveryInput({
-                                            type: "text",
-                                            content: trimmedValue,
-                                            isValid,
-                                        })
-
                                         // Clear any previous errors when user types
-                                        if (isValid && dishcoveryState.error) {
-                                            setDishcoveryError(null)
+                                        if (error) {
+                                            setError(null)
                                         }
                                     }}
                                     placeholder="Beschrijf de ingrediënten, smaken, kruiden, en bereidingswijze die je ziet of weet..."
@@ -705,7 +549,7 @@ export function DishcoveryDescription({
 
                         {/* Error message */}
                         <AnimatePresence>
-                            {dishcoveryState.error && (
+                            {error && (
                                 <motion.div
                                     initial={{ opacity: 0, y: -10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -714,9 +558,7 @@ export function DishcoveryDescription({
                                     role="alert"
                                     aria-live="polite"
                                 >
-                                    <p className="text-status-red-text text-sm">
-                                        {dishcoveryState.error}
-                                    </p>
+                                    <p className="text-status-red-text text-sm">{error}</p>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -725,15 +567,13 @@ export function DishcoveryDescription({
                         <div className="text-center">
                             <Button
                                 onClick={handleContinue}
-                                disabled={!hasValidInput || dishcoveryState.isProcessing}
+                                disabled={!canProceed}
                                 className="bg-accent-new hover:bg-status-green-text disabled:bg-text-muted w-full text-white shadow-lg disabled:cursor-not-allowed"
                                 size="lg"
-                                aria-describedby={
-                                    dishcoveryState.isProcessing ? "button-status" : undefined
-                                }
+                                aria-describedby={isProcessing ? "button-status" : undefined}
                             >
                                 <AnimatePresence mode="wait">
-                                    {dishcoveryState.isProcessing ? (
+                                    {isProcessing ? (
                                         <motion.div
                                             key="loading"
                                             initial={{ opacity: 0, scale: 0.9 }}

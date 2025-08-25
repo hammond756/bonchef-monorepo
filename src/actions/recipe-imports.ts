@@ -173,6 +173,37 @@ export async function uploadImage(file: File): Promise<string> {
     return publicUrlData.publicUrl
 }
 
+export async function uploadAudio(audioBlob: Blob): Promise<string> {
+    const supabaseAdmin = await createAdminClient()
+
+    // Convert Blob to File with proper MIME type
+    // Use audio/mpeg as it's more widely supported than audio/webm
+    const audioFile = new File([audioBlob], `audio-${uuidv4()}.mp3`, {
+        type: "audio/mpeg",
+    })
+
+    const { data, error } = await supabaseAdmin.storage
+        .from("recipe-images") // Using same bucket for now, could create separate audio bucket
+        .upload(audioFile.name, audioFile, {
+            contentType: "audio/mpeg",
+            upsert: false,
+        })
+
+    if (error) {
+        throw new Error(error.message)
+    }
+
+    const { data: publicUrlData } = supabaseAdmin.storage
+        .from("recipe-images")
+        .getPublicUrl(data.path)
+
+    if (!publicUrlData) {
+        throw new Error("Could not get public URL for uploaded audio.")
+    }
+
+    return publicUrlData.publicUrl
+}
+
 export async function extractTextFromImage(imageUrl: string): Promise<string> {
     return await withTempFileFromUrl(imageUrl, async (tempFilePath) => {
         return await detectText(tempFilePath)
@@ -186,36 +217,73 @@ export async function generateRecipeFromDishcovery(
         `[generateRecipeFromDishcovery] Starting generation for dishcovery data: ${dishcoveryData.substring(0, 100)}...`
     )
 
-    // Parse the dishcovery data (photo + description)
+    // Parse the dishcovery data (photo + description or audio)
     const data = JSON.parse(dishcoveryData)
-    const { photoUrl, description } = data
+    const { photoUrl, description, audioBase64 } = data
 
-    if (!photoUrl || !description) {
-        throw new Error("Invalid dishcovery data: missing photoUrl or description")
+    if (!photoUrl) {
+        throw new Error("Invalid dishcovery data: missing photoUrl")
     }
 
-    // Extract text from the photo using OCR
-    console.log("[generateRecipeFromDishcovery] Extracting text from photo...")
-    const photoText = await extractTextFromImage(photoUrl)
+    let finalDescription = description
 
-    // Combine photo text and user description for a richer input
-    const combinedInput = `PHOTO TEXT (extracted from image):
-${photoText}
+    // If we have audio data, transcribe it first
+    if (audioBase64 && !description) {
+        console.log("[generateRecipeFromDishcovery] Transcribing audio in background...")
+        try {
+            const { transcribeBase64Audio } = await import("@/services/speech/server")
+            const transcription = await transcribeBase64Audio(audioBase64)
+            finalDescription = transcription.transcript
+            console.log(
+                `[generateRecipeFromDishcovery] Transcription complete: "${finalDescription}"`
+            )
+        } catch (error) {
+            console.error("[generateRecipeFromDishcovery] Transcription failed:", error)
+            throw new Error(
+                "Failed to transcribe audio: " +
+                    (error instanceof Error ? error.message : "Unknown error")
+            )
+        }
+    }
+
+    if (!finalDescription || finalDescription.trim().length < 3) {
+        throw new Error("Invalid dishcovery data: missing or invalid description")
+    }
+
+    // Use the existing RecipeGenerationService which can actually analyze photos!
+    console.log(
+        "[generateRecipeFromDishcovery] Using RecipeGenerationService for real photo analysis..."
+    )
+
+    const recipeGenerationService = new RecipeGenerationService()
+
+    // Create a prompt that focuses on visual analysis
+    const visualAnalysisPrompt = `VISUAL ANALYSIS REQUEST:
+A user took a photo of a dish and wants a recipe generated based on what they can SEE in the image.
+
+PHOTO ANALYSIS FOCUS:
+- What ingredients are VISIBLE in the photo?
+- What is the SHAPE and STRUCTURE of the dish?
+- What COLORS are present (indicating ingredients, cooking methods, etc.)?
+- What cooking TECHNIQUES are suggested by the visual appearance?
+- What type of dish does this LOOK like?
 
 USER DESCRIPTION:
-${description}
+${finalDescription}
 
-CONTEXT: This is a dishcovery request where a user took a photo of a dish and provided additional description. Please create a recipe based on both the visual information from the photo and the user's description.`
+CONTEXT: This is a dishcovery request where a user took a photo of a dish and provided additional description. Please create a recipe based on the VISUAL information from the photo (ingredients, shape, color, texture) and the user's description. DO NOT extract or rely on any text that might be in the photo.`
 
-    // Use the existing ExtractRecipeFromWebcontent prompt via formatRecipe
-    console.log("[generateRecipeFromDishcovery] Generating recipe with AI...")
-    const recipeInfo = await formatRecipe(combinedInput)
-    console.log("[generateRecipeFromDishcovery] AI formatting complete. Processing photo...")
+    // Generate recipe using the multimodal service that can actually see the photo
+    console.log(
+        "[generateRecipeFromDishcovery] Generating recipe with AI that can see the photo..."
+    )
+    const recipe = await recipeGenerationService.generateBlocking(visualAnalysisPrompt, photoUrl)
+    console.log("[generateRecipeFromDishcovery] AI photo analysis complete. Processing recipe...")
 
     // The photo is already uploaded to Supabase storage, use it directly as thumbnail
     const thumbnail = photoUrl
 
-    const translatedRecipe = translateRecipeUnits(recipeInfo.recipe)
+    const translatedRecipe = translateRecipeUnits(recipe)
 
     return {
         ...translatedRecipe,

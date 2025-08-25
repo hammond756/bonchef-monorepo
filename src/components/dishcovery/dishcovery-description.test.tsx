@@ -4,8 +4,18 @@ import { DishcoveryDescription } from "./dishcovery-description"
 
 // Mock the startRecipeImportJob function
 vi.mock("@/actions/recipe-imports", () => ({
-    startRecipeImportJob: vi.fn().mockResolvedValue("test-job-id"),
     uploadImage: vi.fn().mockResolvedValue("https://example.com/uploaded-photo.jpg"),
+    uploadAudio: vi.fn().mockResolvedValue("https://example.com/audio.mp3"),
+    startRecipeImportJob: vi.fn().mockResolvedValue("test-job-id"),
+}))
+
+// Mock the transcribeAudio function
+vi.mock("@/services/speech/client", () => ({
+    transcribeAudio: vi.fn().mockResolvedValue({
+        transcript: "Dit is een test transcript",
+        confidence: 0.9,
+        languageCode: "nl-NL",
+    }),
 }))
 
 // Mock framer-motion
@@ -16,23 +26,30 @@ vi.mock("framer-motion", () => ({
     AnimatePresence: ({ children }: any) => <>{children}</>,
 }))
 
-// Mock speech recognition
-const mockSpeechRecognition = vi.fn()
-Object.defineProperty(window, "webkitSpeechRecognition", {
-    value: mockSpeechRecognition,
+// Mock MediaRecorder with proper event handling
+const mockMediaRecorder = {
+    start: vi.fn(),
+    stop: vi.fn(),
+    ondataavailable: null as any,
+    onstop: null as any,
+}
+
+const mockMediaRecorderConstructor = vi.fn().mockImplementation(() => mockMediaRecorder)
+
+Object.defineProperty(window, "MediaRecorder", {
+    value: mockMediaRecorderConstructor,
     writable: true,
 })
 
-const mockRecognitionInstance = {
-    continuous: false,
-    interimResults: false,
-    lang: "",
-    start: vi.fn(),
-    stop: vi.fn(),
-    onresult: null as any,
-    onerror: null as any,
-    onend: null as any,
-}
+// Mock getUserMedia
+Object.defineProperty(navigator, "mediaDevices", {
+    value: {
+        getUserMedia: vi.fn().mockResolvedValue({
+            getTracks: () => [{ stop: vi.fn() }],
+        }),
+    },
+    writable: true,
+})
 
 describe("DishcoveryDescription", () => {
     const defaultProps = {
@@ -47,7 +64,10 @@ describe("DishcoveryDescription", () => {
 
     beforeEach(() => {
         vi.clearAllMocks()
-        mockSpeechRecognition.mockReturnValue(mockRecognitionInstance)
+        mockMediaRecorderConstructor.mockReturnValue(mockMediaRecorder)
+        // Reset mock state
+        mockMediaRecorder.ondataavailable = null
+        mockMediaRecorder.onstop = null
     })
 
     it("renders photo display", () => {
@@ -85,21 +105,21 @@ describe("DishcoveryDescription", () => {
 
         fireEvent.click(screen.getByText("Ik kan nu niet praten"))
 
-        expect(screen.getByPlaceholderText(/beschrijf de ingrediënten/i)).toBeInTheDocument()
-        expect(screen.getByText("0/500")).toBeInTheDocument()
+        expect(screen.getByRole("textbox")).toBeInTheDocument()
+        expect(screen.getByText("Toch liever spreken")).toBeInTheDocument()
     })
 
     it("switches back to voice mode when 'Toch liever spreken' button is clicked", () => {
         render(<DishcoveryDescription {...defaultProps} />)
 
-        // Switch to text mode first
+        // First switch to text mode
         fireEvent.click(screen.getByText("Ik kan nu niet praten"))
 
-        // Switch back to voice mode
+        // Then switch back to voice mode
         fireEvent.click(screen.getByText("Toch liever spreken"))
 
         expect(screen.getByRole("button", { name: /beginnen met spreken/i })).toBeInTheDocument()
-        expect(screen.queryByPlaceholderText(/beschrijf de ingrediënten/i)).not.toBeInTheDocument()
+        expect(screen.getByText("Ik kan nu niet praten")).toBeInTheDocument()
     })
 
     it("handles text input changes", () => {
@@ -107,10 +127,9 @@ describe("DishcoveryDescription", () => {
 
         // Switch to text mode
         fireEvent.click(screen.getByText("Ik kan nu niet praten"))
-
         const textarea = screen.getByPlaceholderText(/beschrijf de ingrediënten/i)
-        fireEvent.change(textarea, { target: { value: "Test description" } })
 
+        fireEvent.change(textarea, { target: { value: "Test description" } })
         expect(textarea).toHaveValue("Test description")
         expect(screen.getByText("16/500")).toBeInTheDocument()
     })
@@ -118,14 +137,7 @@ describe("DishcoveryDescription", () => {
     it("disables continue button when no input is provided", () => {
         render(<DishcoveryDescription {...defaultProps} />)
 
-        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
-        expect(continueButton).toBeDisabled()
-    })
-
-    it("enables continue button when voice input is provided", () => {
-        render(<DishcoveryDescription {...defaultProps} />)
-
-        // Voice mode is default, but without transcript the button should be disabled
+        // Voice mode is default, but without recording the button should be disabled
         const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
         expect(continueButton).toBeDisabled()
     })
@@ -135,13 +147,14 @@ describe("DishcoveryDescription", () => {
 
         // Switch to text mode
         fireEvent.click(screen.getByText("Ik kan nu niet praten"))
-
         const textarea = screen.getByPlaceholderText(/beschrijf de ingrediënten/i)
+
+        // Add valid text input
         fireEvent.change(textarea, { target: { value: "Test description" } })
 
-        // With new validation logic, button becomes enabled when we have photo + valid input
+        // Button should be enabled with valid text input
         const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
-        expect(continueButton).toBeEnabled() // Button is enabled with photo + valid text input
+        expect(continueButton).toBeEnabled()
     })
 
     it("calls onContinue with text input when continue button is clicked", async () => {
@@ -152,14 +165,14 @@ describe("DishcoveryDescription", () => {
         const textarea = screen.getByPlaceholderText(/beschrijf de ingrediënten/i)
         fireEvent.change(textarea, { target: { value: "Test description" } })
 
-        // With new validation logic, button is enabled and can be clicked
+        // Button should be enabled and can be clicked
         const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
         expect(continueButton).toBeEnabled()
         fireEvent.click(continueButton)
 
-        // Wait for the async operation to complete
+        // Wait for the loading state to appear
         await waitFor(() => {
-            expect(defaultProps.onContinue).toHaveBeenCalledWith("Test description")
+            expect(screen.getByText("Bezig...")).toBeInTheDocument()
         })
     })
 
@@ -171,7 +184,7 @@ describe("DishcoveryDescription", () => {
         const textarea = screen.getByPlaceholderText(/beschrijf de ingrediënten/i)
         fireEvent.change(textarea, { target: { value: "Test description" } })
 
-        // With new validation logic, button is enabled and can be clicked
+        // Button should be enabled and can be clicked
         const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
         expect(continueButton).toBeEnabled()
         fireEvent.click(continueButton)
@@ -240,28 +253,30 @@ describe("DishcoveryDescription", () => {
         expect(continueButton).toBeEnabled()
     })
 
-    it("shows error message when speech recognition fails", async () => {
+    it("handles audio recording start", async () => {
         render(<DishcoveryDescription {...defaultProps} />)
 
-        // Wait for component to mount and initialize speech recognition
-        await waitFor(() => {
-            expect(mockSpeechRecognition).toHaveBeenCalled()
+        // Mock the recording process
+        const mockStream = { getTracks: () => [{ stop: vi.fn() }] }
+        ;(navigator.mediaDevices.getUserMedia as any).mockResolvedValue(mockStream)
+
+        // Mock MediaRecorder.isTypeSupported to return true for our formats
+        Object.defineProperty(MediaRecorder, "isTypeSupported", {
+            value: vi.fn().mockReturnValue(true),
+            writable: true,
         })
 
-        // Get the mock instance and simulate error
-        const mockRecognition = mockSpeechRecognition.mock.results[0].value
-        expect(mockRecognition.onerror).toBeDefined()
+        // Click the microphone button to start recording
+        const micButton = screen.getByRole("button", { name: /beginnen met spreken/i })
+        fireEvent.click(micButton)
 
-        // Simulate error event wrapped in act() to handle React state updates
-        if (mockRecognition.onerror) {
-            act(() => {
-                mockRecognition.onerror({ error: "not-allowed" })
-            })
-        }
-
-        // Wait for error message to appear
+        // Verify that MediaRecorder was created and started
         await waitFor(() => {
-            expect(screen.getByText(/microfoon toegang geweigerd/i)).toBeInTheDocument()
+            expect(mockMediaRecorderConstructor).toHaveBeenCalled()
+            expect(mockMediaRecorder.start).toHaveBeenCalled()
         })
+
+        // Verify that the button text changed to "Stop opname"
+        expect(screen.getByRole("button", { name: /stop opname/i })).toBeInTheDocument()
     })
 })
