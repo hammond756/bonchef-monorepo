@@ -220,7 +220,7 @@ CONTEXT: This is a dishcovery request where a user took a photo of a dish and pr
     return {
         ...translatedRecipe,
         thumbnail: thumbnail,
-        source_name: "Dishcovery",
+        source_name: "",
         source_url: "",
     }
 }
