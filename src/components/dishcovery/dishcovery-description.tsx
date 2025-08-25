@@ -111,47 +111,85 @@ export function DishcoveryDescription({
             recognitionRef.current = new SpeechRecognitionClass()
 
             const recognition = recognitionRef.current
-            recognition.continuous = true
-            recognition.interimResults = true
+
+            // Optimized settings for mobile devices
+            recognition.continuous = false // Better for mobile - restart after each phrase
+            recognition.interimResults = false // Only final results for better accuracy
             recognition.lang = "nl-NL" // Dutch language
+
+            // Mobile-specific optimizations
+            if (
+                /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+            ) {
+                recognition.continuous = false
+                recognition.interimResults = false
+            }
 
             recognition.onresult = (event: SpeechRecognitionEvent) => {
                 let finalTranscript = ""
+                let confidence = 0
 
                 for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript
-                    if (event.results[i].isFinal) {
+                    const result = event.results[i]
+                    if (result.isFinal) {
+                        const transcript = result[0].transcript
+                        confidence = result[0].confidence
                         finalTranscript += transcript
                     }
                 }
 
-                // Only update if we have actual content (not just silence)
-                if (finalTranscript.trim().length > 0) {
+                // Only update if we have actual content with good confidence
+                if (finalTranscript.trim().length > 0 && confidence > 0.3) {
                     setVoiceState((prev) => ({
                         ...prev,
-                        transcript: prev.transcript + finalTranscript,
+                        transcript: prev.transcript + " " + finalTranscript.trim(),
                     }))
+
+                    // Update the dishcovery hook with voice input
+                    const totalContent = (
+                        voiceState.transcript +
+                        " " +
+                        finalTranscript.trim()
+                    ).trim()
+                    if (totalContent.length > 0) {
+                        const isValid = totalContent.length >= 3
+                        setDishcoveryInput({
+                            type: "voice",
+                            content: totalContent,
+                            isValid,
+                        })
+
+                        // Clear any previous errors when valid voice input is received
+                        if (isValid && dishcoveryState.error) {
+                            setDishcoveryError(null)
+                        }
+                    }
                 }
 
-                // Update the dishcovery hook with voice input
-                const totalContent = (voiceState.transcript + finalTranscript).trim()
-                if (totalContent.length > 0) {
-                    const isValid = totalContent.length >= 3
-                    setDishcoveryInput({
-                        type: "voice",
-                        content: totalContent,
-                        isValid,
-                    })
-
-                    // Clear any previous errors when valid voice input is received
-                    if (isValid && dishcoveryState.error) {
-                        setDishcoveryError(null)
-                    }
+                // Auto-restart for continuous listening on mobile
+                if (
+                    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                        navigator.userAgent
+                    )
+                ) {
+                    setTimeout(() => {
+                        if (recognitionRef.current && voiceState.isListening) {
+                            try {
+                                recognitionRef.current.start()
+                            } catch (error) {
+                                console.error("Failed to restart speech recognition:", error)
+                            }
+                        }
+                    }, 100)
                 }
             }
 
             recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-                console.error("Speech recognition error:", event.error)
+                console.error("Speech recognition error:", {
+                    error: event.error,
+                    userAgent: navigator.userAgent,
+                })
+
                 // Reset state on any error
                 setVoiceState((prev) => ({ ...prev, isListening: false, isPaused: false }))
 
@@ -162,6 +200,10 @@ export function DishcoveryDescription({
                     )
                 } else if (event.error === "no-speech") {
                     setDishcoveryError("Geen spraak gedetecteerd. Probeer het opnieuw.")
+                } else if (event.error === "audio-capture") {
+                    setDishcoveryError("Microfoon probleem. Controleer je microfoon instellingen.")
+                } else if (event.error === "network") {
+                    setDishcoveryError("Netwerk probleem. Controleer je internetverbinding.")
                 } else {
                     setDishcoveryError(
                         "Er ging iets mis met de spraakherkenning. Probeer het opnieuw."
@@ -172,6 +214,28 @@ export function DishcoveryDescription({
             recognition.onend = () => {
                 // Speech recognition ended naturally, reset listening state
                 setVoiceState((prev) => ({ ...prev, isListening: false }))
+
+                // Auto-restart on mobile for better user experience
+                if (
+                    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                        navigator.userAgent
+                    )
+                ) {
+                    if (voiceState.isListening) {
+                        setTimeout(() => {
+                            if (recognitionRef.current && voiceState.isListening) {
+                                try {
+                                    recognitionRef.current.start()
+                                } catch (error) {
+                                    console.error(
+                                        "Failed to auto-restart speech recognition:",
+                                        error
+                                    )
+                                }
+                            }
+                        }, 500)
+                    }
+                }
             }
         }
 

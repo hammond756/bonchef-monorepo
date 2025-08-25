@@ -1,6 +1,6 @@
 "use client"
 
-import { Camera, FileText, Link as LinkIcon, X } from "lucide-react"
+import { Camera, FileText, HandPlatter, Link as LinkIcon, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { ImportMode } from "@/lib/types"
@@ -63,20 +63,7 @@ export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayPr
                     onClick={handleDishcoveryClick}
                     className="flex w-full items-center justify-center space-x-2 rounded-lg bg-green-100 p-4 text-center text-green-800 transition-colors hover:bg-green-200"
                 >
-                    <svg
-                        className="h-5 w-5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    >
-                        <path d="M3 7V5a2 2 0 0 1 2-2h2" />
-                        <path d="M17 3h2a2 2 0 0 1 2 2v2" />
-                        <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
-                        <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-                    </svg>
+                    <HandPlatter className="h-5 w-5" />
                     <span className="text-sm font-medium">Dishcovery</span>
                 </button>
 
