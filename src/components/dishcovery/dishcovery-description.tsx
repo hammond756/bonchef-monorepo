@@ -137,36 +137,26 @@ export function DishcoveryDescription({
             setIsProcessing(true)
 
             let description = ""
-            let audioBase64 = ""
-            let mimeType = ""
+            let audioUrl = ""
 
             if (inputMode === "voice" && voiceState.audioBlob) {
-                // Convert audio to base64 but don't transcribe here
+                // Upload audio to Supabase storage
                 // Transcription will happen in the background as part of the recipe import job
-                audioBase64 = await new Promise<string>((resolve, reject) => {
-                    const reader = new FileReader()
-                    reader.onload = () => {
-                        if (typeof reader.result === "string") {
-                            // Remove the data URL prefix (e.g., "data:audio/webm;basecs=opus,")
-                            const base64 = reader.result.split(",")[1]
-                            resolve(base64)
-                        } else {
-                            reject(new Error("Failed to convert audio to base64"))
-                        }
-                    }
-                    reader.onerror = () => reject(new Error("Failed to read audio file"))
-                    reader.readAsDataURL(voiceState.audioBlob!)
-                })
-
-                mimeType = voiceState.audioBlob.type
-                description = "" // Will be filled in by the background job
+                try {
+                    const { uploadAudio } = await import("@/actions/recipe-imports")
+                    audioUrl = await uploadAudio(voiceState.audioBlob)
+                    description = "" // Will be filled in by the background job
+                } catch (error) {
+                    console.error("Failed to upload audio:", error)
+                    throw new Error("Failed to upload audio file")
+                }
             } else {
                 description = textInput
             }
 
             const trimmedDescription = description.trim()
 
-            if (trimmedDescription.length >= 3 || (inputMode === "voice" && audioBase64)) {
+            if (trimmedDescription.length >= 3 || (inputMode === "voice" && audioUrl)) {
                 // Upload the photo to storage first to get a permanent URL
                 const { uploadImage } = await import("@/actions/recipe-imports")
                 const uploadedPhotoUrl = await uploadImage(photo.file)
@@ -176,10 +166,9 @@ export function DishcoveryDescription({
                 const dishcoveryData = JSON.stringify({
                     photoUrl: uploadedPhotoUrl,
                     description: inputMode === "voice" ? "" : trimmedDescription, // Empty for voice, actual text for text mode
-                    ...(inputMode === "voice" && audioBase64
+                    ...(inputMode === "voice" && audioUrl
                         ? {
-                              audioBase64,
-                              mimeType,
+                              audioUrl,
                           }
                         : {}),
                 })

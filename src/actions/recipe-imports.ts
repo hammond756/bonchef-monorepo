@@ -183,7 +183,7 @@ export async function uploadAudio(audioBlob: Blob): Promise<string> {
     })
 
     const { data, error } = await supabaseAdmin.storage
-        .from("recipe-images") // Using same bucket for now, could create separate audio bucket
+        .from("audio-files") // Using dedicated audio bucket
         .upload(audioFile.name, audioFile, {
             contentType: "audio/mpeg",
             upsert: false,
@@ -193,8 +193,8 @@ export async function uploadAudio(audioBlob: Blob): Promise<string> {
         throw new Error(error.message)
     }
 
-    const { data: publicUrlData } = supabaseAdmin.storage
-        .from("recipe-images")
+    const { data: publicUrlData } = await supabaseAdmin.storage
+        .from("audio-files")
         .getPublicUrl(data.path)
 
     if (!publicUrlData) {
@@ -219,7 +219,7 @@ export async function generateRecipeFromDishcovery(
 
     // Parse the dishcovery data (photo + description or audio)
     const data = JSON.parse(dishcoveryData)
-    const { photoUrl, description, audioBase64 } = data
+    const { photoUrl, description, audioUrl } = data
 
     if (!photoUrl) {
         throw new Error("Invalid dishcovery data: missing photoUrl")
@@ -228,12 +228,26 @@ export async function generateRecipeFromDishcovery(
     let finalDescription = description
 
     // If we have audio data, transcribe it first
-    if (audioBase64 && !description) {
-        console.log("[generateRecipeFromDishcovery] Transcribing audio in background...")
+    if (audioUrl && !description) {
+        console.log("[generateRecipeFromDishcovery] Transcribing audio from URL in background...")
         try {
-            const { transcribeBase64Audio } = await import("@/services/speech/server")
-            const transcription = await transcribeBase64Audio(audioBase64)
-            finalDescription = transcription.transcript
+            const { TranscriptionService } = await import("@/lib/services/transcription-service")
+
+            if (!process.env.OPENAI_API_KEY) {
+                throw new Error("OpenAI API key not configured")
+            }
+
+            const transcriptionService = new TranscriptionService({
+                apiKey: process.env.OPENAI_API_KEY,
+            })
+
+            const transcriptionResult = await transcriptionService.transcribeVideoFromUrl(audioUrl)
+
+            if (!transcriptionResult.success) {
+                throw new Error(transcriptionResult.error)
+            }
+
+            finalDescription = transcriptionResult.data
             console.log(
                 `[generateRecipeFromDishcovery] Transcription complete: "${finalDescription}"`
             )

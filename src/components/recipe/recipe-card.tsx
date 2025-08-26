@@ -4,7 +4,7 @@ import { Recipe, RecipeImportJob } from "@/lib/types"
 import Link from "next/link"
 import { BookmarkButton } from "@/components/bookmark-button"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, LinkIcon, TextIcon } from "lucide-react"
+import { Loader2, LinkIcon, TextIcon, HandPlatter } from "lucide-react"
 import { getHostnameFromUrl, cn, createRecipeSlug } from "@/lib/utils"
 import Image from "next/image"
 
@@ -112,6 +112,15 @@ export function InProgressRecipeCard({ job }: { readonly job: RecipeImportJob })
                         <p className="line-clamp-4 text-sm text-slate-600 italic">
                             {`"${job.source_data}"`}
                         </p>
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <Loader2 className="h-8 w-8 animate-spin text-white" />
+                        </div>
+                    </div>
+                )
+            case "dishcovery":
+                return (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-100 p-4">
+                        <HandPlatter className="h-10 w-10 text-slate-400" />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                             <Loader2 className="h-8 w-8 animate-spin text-white" />
                         </div>

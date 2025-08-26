@@ -3,7 +3,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { BookmarkButton } from "@/components/bookmark-button"
 import { Badge } from "@/components/ui/badge"
-import { ImageIcon, LinkIcon, Loader2, TextIcon } from "lucide-react"
+import { ImageIcon, LinkIcon, Loader2, TextIcon, HandPlatter } from "lucide-react"
 import { getHostnameFromUrl, cn, createRecipeSlug } from "@/lib/utils"
 
 export function RecipeListItem({ recipe }: { readonly recipe: RecipeRead }) {
@@ -70,6 +70,12 @@ export function InProgressRecipeListItem({ job }: { readonly job: RecipeImportJo
                         <TextIcon className="h-8 w-8 text-slate-500" />
                     </div>
                 )
+            case "dishcovery":
+                return (
+                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md bg-slate-100">
+                        <HandPlatter className="h-8 w-8 text-slate-500" />
+                    </div>
+                )
             default:
                 return null
         }
@@ -83,7 +89,9 @@ export function InProgressRecipeListItem({ job }: { readonly job: RecipeImportJo
                 <p className="line-clamp-1 text-sm text-slate-500">
                     {job.source_type === "url"
                         ? getHostnameFromUrl(job.source_data)
-                        : job.source_data}
+                        : job.source_type === "dishcovery"
+                          ? ""
+                          : job.source_data}
                 </p>
             </div>
             <div className="mr-2 pr-2">

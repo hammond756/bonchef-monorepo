@@ -121,6 +121,12 @@ file_size_limit = "10MiB"
 allowed_mime_types = ["image/png", "image/jpeg", "image/svg+xml", "image/gif"]
 objects_path = "./email-assets"
 
+[storage.buckets.audio-files]
+public = true
+file_size_limit = "50MiB"
+allowed_mime_types = ["audio/mpeg", "audio/mp3", "audio/wav", "audio/webm", "audio/ogg", "audio/m4a"]
+objects_path = "./audio-files"
+
 [auth]
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
