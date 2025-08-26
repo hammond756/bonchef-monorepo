@@ -16,6 +16,7 @@ import fs from "fs"
 import path from "path"
 import { OnboardingService } from "@/lib/services/onboarding-service"
 import { createJobWithClient } from "@/lib/services/recipe-imports-job/shared"
+import type { PhotoAnalysisResult } from "@/lib/services/photo-analysis-service"
 
 type GeneratedRecipeWithSource = GeneratedRecipe & {
     source_name?: string | null
@@ -227,80 +228,127 @@ export async function generateRecipeFromDishcovery(
 
     let finalDescription = description
 
-    // If we have audio data, transcribe it first
+    // Start both tasks in parallel for better performance
+    const tasks: Promise<string | PhotoAnalysisResult>[] = []
+
+    // Task 1: Audio transcription (if needed)
     if (audioUrl && !description) {
-        console.log("[generateRecipeFromDishcovery] Transcribing audio from URL in background...")
+        console.log("[generateRecipeFromDishcovery] Starting audio transcription in parallel...")
+        const transcriptionTask = (async () => {
+            try {
+                const { TranscriptionService } = await import(
+                    "@/lib/services/transcription-service"
+                )
+
+                if (!process.env.OPENAI_API_KEY) {
+                    throw new Error("OpenAI API key not configured")
+                }
+
+                const transcriptionService = new TranscriptionService({
+                    apiKey: process.env.OPENAI_API_KEY,
+                })
+
+                const transcriptionResult =
+                    await transcriptionService.transcribeVideoFromUrl(audioUrl)
+
+                if (!transcriptionResult.success) {
+                    throw new Error(transcriptionResult.error)
+                }
+
+                console.log(
+                    `[generateRecipeFromDishcovery] Transcription complete: "${transcriptionResult.data}"`
+                )
+                return transcriptionResult.data
+            } catch (error) {
+                console.error("[generateRecipeFromDishcovery] Transcription failed:", error)
+                throw new Error(
+                    "Failed to transcribe audio: " +
+                        (error instanceof Error ? error.message : "Unknown error")
+                )
+            }
+        })()
+
+        tasks.push(transcriptionTask)
+    }
+
+    // Task 2: Photo analysis
+    console.log("[generateRecipeFromDishcovery] Starting photo analysis in parallel...")
+    const photoAnalysisTask = (async () => {
         try {
-            const { TranscriptionService } = await import("@/lib/services/transcription-service")
+            const { PhotoAnalysisService } = await import("@/lib/services/photo-analysis-service")
 
             if (!process.env.OPENAI_API_KEY) {
                 throw new Error("OpenAI API key not configured")
             }
 
-            const transcriptionService = new TranscriptionService({
-                apiKey: process.env.OPENAI_API_KEY,
-            })
+            const photoAnalysisService = new PhotoAnalysisService()
+            const analysisResult = await photoAnalysisService.analyzePhoto(photoUrl)
 
-            const transcriptionResult = await transcriptionService.transcribeVideoFromUrl(audioUrl)
-
-            if (!transcriptionResult.success) {
-                throw new Error(transcriptionResult.error)
+            if (!analysisResult.success) {
+                throw new Error(analysisResult.error)
             }
 
-            finalDescription = transcriptionResult.data
-            console.log(
-                `[generateRecipeFromDishcovery] Transcription complete: "${finalDescription}"`
-            )
+            console.log("[generateRecipeFromDishcovery] Photo analysis complete")
+            return analysisResult.data
         } catch (error) {
-            console.error("[generateRecipeFromDishcovery] Transcription failed:", error)
+            console.error("[generateRecipeFromDishcovery] Photo analysis failed:", error)
             throw new Error(
-                "Failed to transcribe audio: " +
+                "Failed to analyze photo: " +
                     (error instanceof Error ? error.message : "Unknown error")
             )
         }
+    })()
+
+    tasks.push(photoAnalysisTask)
+
+    // Wait for all tasks to complete
+    console.log("[generateRecipeFromDishcovery] Waiting for parallel tasks to complete...")
+    const results = await Promise.all(tasks)
+
+    // Extract results
+    let transcriptionResult: string | undefined
+    let photoAnalysisResult: PhotoAnalysisResult
+
+    if (audioUrl && !description) {
+        transcriptionResult = results[0] as string
+        photoAnalysisResult = results[1] as PhotoAnalysisResult
+    } else {
+        photoAnalysisResult = results[0] as PhotoAnalysisResult
+    }
+
+    // Set final description
+    if (transcriptionResult) {
+        finalDescription = transcriptionResult
     }
 
     if (!finalDescription || finalDescription.trim().length < 3) {
         throw new Error("Invalid dishcovery data: missing or invalid description")
     }
 
-    // Use the existing RecipeGenerationService which can actually analyze photos!
-    console.log(
-        "[generateRecipeFromDishcovery] Using RecipeGenerationService for real photo analysis..."
-    )
+    // Now generate the recipe using the same service as URL imports
+    console.log("[generateRecipeFromDishcovery] Generating recipe with formatRecipe service...")
 
-    const recipeGenerationService = new RecipeGenerationService()
-
-    // Create a prompt that focuses on visual analysis
-    const visualAnalysisPrompt = `VISUAL ANALYSIS REQUEST:
-A user took a photo of a dish and wants a recipe generated based on what they can SEE in the image.
-
-PHOTO ANALYSIS FOCUS:
-- What ingredients are VISIBLE in the photo?
-- What is the SHAPE and STRUCTURE of the dish?
-- What COLORS are present (indicating ingredients, cooking methods, etc.)?
-- What cooking TECHNIQUES are suggested by the visual appearance?
-- What type of dish does this LOOK like?
+    // Create an enhanced prompt using both the photo analysis and user description
+    const enhancedPrompt = `PHOTO ANALYSIS RESULTS:
+- Dish Type: ${photoAnalysisResult.dishType}
+- Visible Ingredients: ${photoAnalysisResult.visibleIngredients.join(", ")}
+- Cooking Methods: ${photoAnalysisResult.cookingMethods.join(", ")}
+- Visual Description: ${photoAnalysisResult.visualDescription}
 
 USER DESCRIPTION:
-${finalDescription}
+${finalDescription}`
 
-CONTEXT: This is a dishcovery request where a user took a photo of a dish and provided additional description. Please create a recipe based on the VISUAL information from the photo (ingredients, shape, color, texture) and the user's description. DO NOT extract or rely on any text that might be in the photo.`
-
-    // Generate recipe using the multimodal service that can actually see the photo
-    console.log(
-        "[generateRecipeFromDishcovery] Generating recipe with AI that can see the photo..."
-    )
-    const recipe = await recipeGenerationService.generateBlocking(visualAnalysisPrompt, photoUrl)
-    console.log("[generateRecipeFromDishcovery] AI photo analysis complete. Processing recipe...")
+    // Use the same formatRecipe service that URL imports use
+    const recipeInfo = await formatRecipe(enhancedPrompt)
+    const recipe = recipeInfo.recipe
+    console.log("[generateRecipeFromDishcovery] Recipe generation complete")
 
     // The photo is already uploaded to Supabase storage, use it directly as thumbnail
     const thumbnail = photoUrl
 
-    const translatedRecipe = translateRecipeUnits(recipe)
-
+    // formatRecipe already handles unit translation, so we don't need to do it again
     return {
-        ...translatedRecipe,
+        ...recipe,
         thumbnail: thumbnail,
         source_name: "",
         source_url: "",
