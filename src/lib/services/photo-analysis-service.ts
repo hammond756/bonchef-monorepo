@@ -1,6 +1,7 @@
 import { ChatOpenAI } from "@langchain/openai"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
 import { hostedImageToBase64 } from "@/lib/utils"
+import Langfuse from "langfuse"
 
 export interface PhotoAnalysisResult {
     dishType: string
@@ -26,6 +27,7 @@ type ServiceResponse<T> = Promise<
  */
 export class PhotoAnalysisService {
     private openai: ChatOpenAI
+    private langfuse: Langfuse
 
     constructor() {
         if (!process.env.OPENAI_API_KEY) {
@@ -33,10 +35,10 @@ export class PhotoAnalysisService {
         }
 
         this.openai = new ChatOpenAI({
-            modelName: "gpt-4o",
+            modelName: "gpt-5",
             openAIApiKey: process.env.OPENAI_API_KEY,
-            maxTokens: 1000,
         })
+        this.langfuse = new Langfuse()
     }
 
     /**
@@ -51,31 +53,11 @@ export class PhotoAnalysisService {
             // Convert hosted image to base64
             const base64Image = await hostedImageToBase64(photoUrl)
 
-            // Create the system prompt for visual analysis
-            const systemPrompt =
-                new SystemMessage(`You are a culinary expert specializing in visual analysis of food dishes. Your task is to analyze photos of dishes and provide practical observations about what you can see.
-
-ANALYSIS REQUIREMENTS:
-- Focus ONLY on what you can VISUALLY see in the image
-- Do NOT make assumptions about taste, smell, or cooking methods you can't see
-- Be practical and concise in your observations
-- Identify the dish type and main ingredients
-- Note any obvious cooking methods you can see
-
-WHAT TO ANALYZE:
-1. What type of dish this appears to be
-2. The main ingredients you can clearly see
-3. Any obvious cooking methods (grilled, fried, raw, etc.) if visible
-4. A brief visual description of what you observe
-
-RESPONSE FORMAT:
-Return a JSON object with the following structure:
-{
-  "dishType": "what type of dish this appears to be",
-  "visibleIngredients": ["main ingredient 1", "main ingredient 2", ...],
-  "cookingMethods": ["cooking method 1", "cooking method 2", ...] (only if clearly visible),
-  "visualDescription": "brief description of what you see in the image"
-}`)
+            // Get the system prompt from Langfuse
+            const promptClient = await this.langfuse.getPrompt("AnalyzeDishPhoto", undefined, {
+                type: "text",
+            })
+            const systemPrompt = new SystemMessage(await promptClient.compile())
 
             // Create the human message with the image
             const humanMessage = new HumanMessage({
