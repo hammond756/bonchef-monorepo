@@ -20,6 +20,7 @@ import { CommentOverlay } from "@/components/comment-overlay"
 import { useEffect, useState } from "react"
 import { RecipeStateProvider } from "@/components/recipe/recipe-state-provider"
 import { useRestoreRecipeStateFromUrl } from "@/hooks/use-recipe-state"
+import { RecipeSourceDisplay } from "./recipe/recipe-source-display"
 
 interface RecipeMetadataProps {
     recipe: RecipeRead
@@ -120,24 +121,16 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                                             {recipe.title}
                                         </h1>
                                     </div>
-                                    {recipe.profiles && (
-                                        <div className="flex items-center gap-2 text-xs">
-                                            <Link
-                                                href={`/profiles/~${recipe.profiles.id}`}
-                                                className="group/profile"
-                                            >
-                                                <span className="font-medium group-hover/profile:underline">
-                                                    {recipe.profiles.display_name ||
-                                                        "Anonieme chef"}
-                                                </span>
-                                            </Link>
-                                            <span className="text-surface/70">|</span>
-                                            <span className="text-surface/70 flex items-center gap-1">
-                                                <Clock className="h-3 w-3" />
-                                                {recipe.total_cook_time_minutes} min
-                                            </span>
-                                        </div>
-                                    )}
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <span>
+                                            <RecipeSourceDisplay recipe={recipe} />
+                                        </span>
+                                        <span className="text-surface/70">|</span>
+                                        <span className="text-surface/70 flex items-center gap-1">
+                                            <Clock className="h-3 w-3" />
+                                            {recipe.total_cook_time_minutes} min
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="absolute right-6 bottom-1">
                                     <RecipeActionButtons
