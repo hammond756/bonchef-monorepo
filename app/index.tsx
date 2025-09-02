@@ -1,13 +1,15 @@
 import LoginForm from "@/components/login-form";
+import { useSession } from "@/hooks/use-session";
 import { useRouter } from "expo-router";
 import { useShareIntentContext } from "expo-share-intent";
 import { useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 export default function Home() {
   const router = useRouter();
 
   const { hasShareIntent } = useShareIntentContext();
+  const { session, isLoading } = useSession();
 
   useEffect(() => {
     if (hasShareIntent) {
@@ -21,7 +23,8 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <LoginForm />
+      {isLoading ? <Text>Loading...</Text> : <LoginForm />}
+      {session && <Text>Logged in</Text>}
     </View>
   );
 }

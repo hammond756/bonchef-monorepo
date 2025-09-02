@@ -1,11 +1,12 @@
+import { supabase } from "@/lib/utils/supabase/client";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { close, type InitialProps } from "expo-share-extension";
 import { useEffect, useState } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring
 } from "react-native-reanimated";
 import ImportRecipe from "./import-recipe";
 
@@ -14,11 +15,17 @@ export default function IOSShareExtension({ url, text }: InitialProps) {
   const scale = useSharedValue(0.8);
   const checkmarkScale = useSharedValue(0);
   const [showCheckmark, setShowCheckmark] = useState(false);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     // Animate in when component mounts
     opacity.value = withSpring(1, { damping: 20, stiffness: 90 });
     scale.value = withSpring(1, { damping: 20, stiffness: 90 });
+    const fetchUserName = async () => {
+      const { data: user } = await supabase.auth.getUser();
+      setUserName(user.user?.user_metadata.full_name ?? '');
+    };
+    fetchUserName();
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -62,7 +69,10 @@ export default function IOSShareExtension({ url, text }: InitialProps) {
             </View>
           </Animated.View>
         ) : (
-          <ImportRecipe url={url} text={text} onClose={handleImportComplete} />
+          <>
+            <Text>{userName}</Text>
+            <ImportRecipe url={url} text={text} onClose={handleImportComplete} />
+          </>
         )}
     </Animated.View>
   );
