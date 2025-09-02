@@ -13,7 +13,7 @@ export default function Home() {
       // we want to handle share intent event in a specific page
       console.debug("[expo-router-index] redirect to ShareIntent screen");
       router.replace({
-        pathname: "shareintent",
+        pathname: "/share-intent",
       });
     }
   }, [hasShareIntent]);
