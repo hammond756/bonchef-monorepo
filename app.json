@@ -3,13 +3,18 @@
     "name": "bonchef-native",
     "slug": "bonchef-native",
     "version": "1.0.0",
+    "owner": "bonchef",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "bonchefnative",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bonchef-digital-kitchen.bonchef",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -33,10 +38,17 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-share-intent"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3132c17e-7a3a-4dc8-aeac-098ee6afda8d"
+      }
     }
   }
 }
