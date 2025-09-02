@@ -1,19 +1,15 @@
-import { Button, Image, StyleSheet, Text, View } from "react-native";
+import { Button, Image, Text, View } from "react-native";
 
 import { useRouter } from "expo-router";
 import {
-    ShareIntent as ShareIntentType,
-    useShareIntentContext,
+  ShareIntent as ShareIntentType,
+  useShareIntentContext,
 } from "expo-share-intent";
 
 const WebUrlComponent = ({ shareIntent }: { shareIntent: ShareIntentType }) => {
   return (
     <View
-      style={[
-        styles.gap,
-        styles.row,
-        { borderWidth: 1, borderRadius: 5, height: 102 },
-      ]}
+      className="flex-row gap-10 mb-20 border-1 rounded-5 h-102"
     >
       <Image
         source={
@@ -21,13 +17,13 @@ const WebUrlComponent = ({ shareIntent }: { shareIntent: ShareIntentType }) => {
             ? { uri: shareIntent.meta?.["og:image"] }
             : undefined
         }
-        style={[styles.icon, styles.gap, { borderRadius: 5 }]}
+        className="w-100 h-100 rounded-5 mb-20"
       />
-      <View style={{ flexShrink: 1, padding: 5 }}>
-        <Text style={[styles.gap]}>
+      <View className="flex-shrink-1 p-5">
+        <Text className="mb-20">
           {shareIntent.meta?.title || "<NO TITLE>"}
         </Text>
-        <Text style={styles.gap}>{shareIntent.webUrl}</Text>
+        <Text className="mb-20">{shareIntent.webUrl}</Text>
       </View>
     </View>
   );
@@ -39,14 +35,14 @@ export default function ShareIntent() {
     useShareIntentContext();
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-white items-center justify-center p-10">
       {!hasShareIntent && <Text>No Share intent detected</Text>}
       {hasShareIntent && (
-        <Text style={[styles.gap, { fontSize: 20 }]}>
+        <Text className="mb-20 text-20">
           Congratz, a share intent value is available
         </Text>
       )}
-      {!!shareIntent.text && <Text style={styles.gap}>{shareIntent.text}</Text>}
+      {!!shareIntent.text && <Text className="mb-20">{shareIntent.text}</Text>}
       {shareIntent?.type === "weburl" && (
         <WebUrlComponent shareIntent={shareIntent} />
       )}
@@ -54,50 +50,14 @@ export default function ShareIntent() {
         <Image
           key={file.path}
           source={{ uri: file.path }}
-          style={[styles.image, styles.gap]}
+          className="w-200 h-200 rounded-5 mb-20"
         />
       ))}
       {hasShareIntent && (
         <Button onPress={() => resetShareIntent()} title="Reset" />
       )}
-      <Text style={[styles.error]}>{error}</Text>
+      <Text className="text-red-500">{error}</Text>
       <Button onPress={() => router.replace("/")} title="Go home" />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 10,
-  },
-  logo: {
-    width: 75,
-    height: 75,
-    resizeMode: "contain",
-  },
-  image: {
-    width: 200,
-    height: 200,
-    resizeMode: "contain",
-  },
-  icon: {
-    width: 100,
-    height: 100,
-    resizeMode: "contain",
-    backgroundColor: "lightgray",
-  },
-  row: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  gap: {
-    marginBottom: 20,
-  },
-  error: {
-    color: "red",
-  },
-});
