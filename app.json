@@ -40,7 +40,14 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-share-intent"
+      [
+        "expo-share-intent",
+        {
+          "disableIOS": true
+        }
+        
+      ],
+      "expo-share-extension"
     ],
     "experiments": {
       "typedRoutes": true
