@@ -1,15 +1,19 @@
-import { close, type InitialProps, Text, View } from "expo-share-extension";
-import { useEffect } from "react";
-import { Button, StyleSheet } from "react-native";
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { close, type InitialProps } from "expo-share-extension";
+import { useEffect, useState } from "react";
+import { TouchableOpacity, View } from "react-native";
 import Animated, {
-  useSharedValue,
-  withSpring,
-  useAnimatedStyle,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring
 } from "react-native-reanimated";
+import ImportRecipe from "./import-recipe";
 
 export default function IOSShareExtension({ url, text }: InitialProps) {
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.8);
+  const checkmarkScale = useSharedValue(0);
+  const [showCheckmark, setShowCheckmark] = useState(false);
 
   useEffect(() => {
     // Animate in when component mounts
@@ -24,54 +28,42 @@ export default function IOSShareExtension({ url, text }: InitialProps) {
     };
   });
 
+  const checkmarkAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: checkmarkScale.value }],
+    };
+  });
+
+  const handleImportComplete = () => {
+    setShowCheckmark(true);
+    // Animate checkmark in
+    checkmarkScale.value = withSpring(1, { damping: 15, stiffness: 100 });
+    
+    // Close extension after 500ms
+    setTimeout(() => {
+      close();
+    }, 1200);
+  };
+
   return (
-    <View style={styles.container}>
-      <Animated.View style={[styles.contentContainer, animatedStyle]}>
-        <Text
-          style={{ fontFamily: "Inter-Black", fontSize: 24, marginBottom: 10 }}
+    <Animated.View className="w-full h-full items-center justify-center p-16">
+        {/* X icon in top right */}
+        <TouchableOpacity 
+          onPress={close}
+          className="absolute top-8 right-8 items-center justify-center"
         >
-          Basic Example
-        </Text>
-        {url && (
-          <Text
-            style={{
-              textAlign: "center",
-              color: "#313639",
-              fontSize: 16,
-            }}
-          >
-            URL: {url}
-          </Text>
+          <Ionicons name="close" size={24} color="black" />
+        </TouchableOpacity>
+        
+        {showCheckmark ? (
+          <Animated.View style={checkmarkAnimatedStyle} className="items-center justify-center">
+            <View className="w-20 h-20 bg-green-500 rounded-full items-center justify-center">
+              <Ionicons name="checkmark" size={40} color="white" />
+            </View>
+          </Animated.View>
+        ) : (
+          <ImportRecipe url={url} text={text} onClose={handleImportComplete} />
         )}
-        {text && (
-          <Text
-            style={{
-              textAlign: "center",
-              color: "#313639",
-              fontSize: 16,
-            }}
-          >
-            Text: {text}
-          </Text>
-        )}
-        <Button title="Close" onPress={close} />
-      </Animated.View>
-    </View>
+    </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    borderRadius: 20,
-    backgroundColor: "#FAF8F5",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 30,
-  },
-  contentContainer: {
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

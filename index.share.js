@@ -1,4 +1,6 @@
+
 import { AppRegistry } from "react-native";
+import "./global.css";
 
 // could be any component you want to use as the root component of your share extension's bundle
 import IOSShareExtension from "./components/ios-share-extension";

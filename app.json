@@ -47,7 +47,12 @@
         }
         
       ],
-      "expo-share-extension"
+      [
+        "expo-share-extension",
+        {
+          "height": 500
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
