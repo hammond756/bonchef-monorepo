@@ -1,5 +1,6 @@
 import { Button, Image, Text, View } from "react-native";
 
+import ImportRecipe from "@/components/import-recipe";
 import { useRouter } from "expo-router";
 import {
   ShareIntent as ShareIntentType,
@@ -42,17 +43,10 @@ export default function ShareIntent() {
           Congratz, a share intent value is available
         </Text>
       )}
-      {!!shareIntent.text && <Text className="mb-20">{shareIntent.text}</Text>}
-      {shareIntent?.type === "weburl" && (
-        <WebUrlComponent shareIntent={shareIntent} />
+      {shareIntent?.type === "weburl" && shareIntent.webUrl && (
+        <ImportRecipe url={shareIntent.webUrl} />
       )}
-      {shareIntent?.files?.map((file) => (
-        <Image
-          key={file.path}
-          source={{ uri: file.path }}
-          className="w-200 h-200 rounded-5 mb-20"
-        />
-      ))}
+      {!!shareIntent.text && <ImportRecipe text={shareIntent.text} />}
       {hasShareIntent && (
         <Button onPress={() => resetShareIntent()} title="Reset" />
       )}
