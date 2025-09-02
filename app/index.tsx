@@ -1,7 +1,8 @@
+import LoginForm from "@/components/login-form";
 import { useRouter } from "expo-router";
 import { useShareIntentContext } from "expo-share-intent";
 import { useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 export default function Home() {
   const router = useRouter();
@@ -20,8 +21,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Welcome to Expo Share Intent Demo !</Text>
-      <Text>Try to share a content to access specific page</Text>
+      <LoginForm />
     </View>
   );
 }
