@@ -23,7 +23,7 @@ export default function IOSShareExtension({ url, text }: InitialProps) {
     scale.value = withSpring(1, { damping: 20, stiffness: 90 });
     const fetchUserName = async () => {
       const { data: user } = await supabase.auth.getUser();
-      setUserName(user.user?.user_metadata.full_name ?? '');
+      setUserName(user.user?.user_metadata.display_name ?? '');
     };
     fetchUserName();
   }, []);
