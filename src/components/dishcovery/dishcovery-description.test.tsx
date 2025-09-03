@@ -4,8 +4,10 @@ import { DishcoveryDescription } from "./dishcovery-description"
 
 // Mock the startRecipeImportJob function
 vi.mock("@/actions/recipe-imports", () => ({
-    uploadImage: vi.fn().mockResolvedValue("https://example.com/uploaded-photo.jpg"),
-    uploadAudio: vi.fn().mockResolvedValue("https://example.com/audio.mp3"),
+    uploadDishcoveryAssets: vi.fn().mockResolvedValue({
+        photoUrl: "https://example.com/uploaded-photo.jpg",
+        audioUrl: "https://example.com/audio.mp3",
+    }),
     startRecipeImportJob: vi.fn().mockResolvedValue("test-job-id"),
 }))
 
@@ -170,9 +172,9 @@ describe("DishcoveryDescription", () => {
         expect(continueButton).toBeEnabled()
         fireEvent.click(continueButton)
 
-        // Wait for the loading state to appear
+        // Wait for the processing to complete (no loading state in new architecture)
         await waitFor(() => {
-            expect(screen.getByText("Bezig...")).toBeInTheDocument()
+            expect(defaultProps.onContinue).toHaveBeenCalled()
         })
     })
 
@@ -189,9 +191,9 @@ describe("DishcoveryDescription", () => {
         expect(continueButton).toBeEnabled()
         fireEvent.click(continueButton)
 
-        // Wait for the loading state to appear
+        // Wait for the processing to complete (no loading state in new architecture)
         await waitFor(() => {
-            expect(screen.getByText("Bezig...")).toBeInTheDocument()
+            expect(defaultProps.onContinue).toHaveBeenCalled()
         })
     })
 
@@ -253,9 +255,7 @@ describe("DishcoveryDescription", () => {
         expect(continueButton).toBeEnabled()
     })
 
-    it("handles audio recording start", async () => {
-        render(<DishcoveryDescription {...defaultProps} />)
-
+    it("handles audio recording auto-start", async () => {
         // Mock the recording process
         const mockStream = { getTracks: () => [{ stop: vi.fn() }] }
         ;(navigator.mediaDevices.getUserMedia as any).mockResolvedValue(mockStream)
@@ -266,17 +266,57 @@ describe("DishcoveryDescription", () => {
             writable: true,
         })
 
-        // Click the microphone button to start recording
-        const micButton = screen.getByRole("button", { name: /beginnen met spreken/i })
-        fireEvent.click(micButton)
+        render(<DishcoveryDescription {...defaultProps} />)
 
-        // Verify that MediaRecorder was created and started
+        // Verify that MediaRecorder was created and started automatically
         await waitFor(() => {
             expect(mockMediaRecorderConstructor).toHaveBeenCalled()
             expect(mockMediaRecorder.start).toHaveBeenCalled()
         })
 
-        // Verify that the button text changed to "Stop opname"
+        // Verify that the button shows "Stop opname"
         expect(screen.getByRole("button", { name: /stop opname/i })).toBeInTheDocument()
+    })
+
+    it("enables continue button after audio recording", async () => {
+        // Mock the recording process
+        const mockStream = { getTracks: () => [{ stop: vi.fn() }] }
+        ;(navigator.mediaDevices.getUserMedia as any).mockResolvedValue(mockStream)
+
+        // Mock MediaRecorder.isTypeSupported to return true for our formats
+        Object.defineProperty(MediaRecorder, "isTypeSupported", {
+            value: vi.fn().mockReturnValue(true),
+            writable: true,
+        })
+
+        render(<DishcoveryDescription {...defaultProps} />)
+
+        // Wait for auto-start recording
+        await waitFor(() => {
+            expect(mockMediaRecorder.start).toHaveBeenCalled()
+        })
+
+        // Simulate recording completion by triggering onstop event
+        const mockAudioBlob = new Blob(["test audio"], { type: "audio/webm" })
+        act(() => {
+            if (mockMediaRecorder.onstop) {
+                mockMediaRecorder.onstop(new Event("stop"))
+            }
+        })
+
+        // Simulate data available event
+        act(() => {
+            if (mockMediaRecorder.ondataavailable) {
+                mockMediaRecorder.ondataavailable({
+                    data: mockAudioBlob,
+                } as any)
+            }
+        })
+
+        // The continue button should now be enabled
+        await waitFor(() => {
+            const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
+            expect(continueButton).toBeEnabled()
+        })
     })
 })

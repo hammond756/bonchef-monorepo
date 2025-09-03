@@ -25,7 +25,10 @@ function translateRecipeUnits<T extends GeneratedRecipe>(recipe: T): T {
     }
 }
 
-export async function formatRecipe(text: string): Promise<{
+export async function formatRecipe(
+    text: string,
+    promptName: string = "ExtractRecipeFromWebcontent"
+): Promise<{
     recipe: GeneratedRecipeWithSource
     thumbnailUrl: string | null
 }> {
@@ -50,7 +53,7 @@ export async function formatRecipe(text: string): Promise<{
     )
 
     const langfuse = new Langfuse()
-    const promptClient = await langfuse.getPrompt("ExtractRecipeFromWebcontent", undefined, {
+    const promptClient = await langfuse.getPrompt(promptName, undefined, {
         type: "chat",
     })
     const prompt = promptClient.compile({ input: text })
@@ -80,44 +83,7 @@ export async function formatDishcoveryRecipe(text: string): Promise<{
     recipe: GeneratedRecipeWithSource
     thumbnailUrl: string | null
 }> {
-    const model = new ChatOpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-        modelName: "gpt-4.1",
-        temperature: 0.1,
-        maxTokens: 4096,
-    }).withStructuredOutput(
-        z.object({
-            recipe: GeneratedRecipeSchema.extend({
-                source_name: z.string(),
-                source_url: z.string(),
-            }),
-            thumbnailUrl: z
-                .string()
-                .nullable()
-                .describe(
-                    "The URL of the main image for the recipe. This should be the most appealing and representative image available on the page. MUST be null if no image URL is found."
-                ),
-        })
-    )
-
-    const langfuse = new Langfuse()
-    const promptClient = await langfuse.getPrompt("DishcoveryRecipeGenerator", undefined, {
-        type: "chat",
-    })
-    const prompt = promptClient.compile({ input: text })
-
-    try {
-        const { recipe, thumbnailUrl } = await model.invoke(prompt, {
-            callbacks: [new CallbackHandler()],
-        })
-        const translatedRecipe = translateRecipeUnits(recipe)
-        return {
-            recipe: translatedRecipe,
-            thumbnailUrl,
-        }
-    } catch (error: unknown) {
-        throw error
-    }
+    return formatRecipe(text, "DishcoveryRecipeGenerator")
 }
 
 export async function getRecipeContent(url: string): Promise<{

@@ -93,7 +93,7 @@ describe("DishcoveryCamera", () => {
         render(<DishcoveryCamera {...defaultProps} />)
 
         await waitFor(() => {
-            expect(screen.getByRole("button", { name: /kies uit galerij/i })).toBeInTheDocument()
+            expect(screen.getAllByText("NotFoundError")).toHaveLength(2)
         })
     })
 

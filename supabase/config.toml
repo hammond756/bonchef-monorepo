@@ -121,6 +121,12 @@ file_size_limit = "10MiB"
 allowed_mime_types = ["image/png", "image/jpeg", "image/svg+xml", "image/gif"]
 objects_path = "./email-assets"
 
+[storage.buckets.dishcovery-assets]
+public = true
+file_size_limit = "50MiB"
+allowed_mime_types = ["image/png", "image/jpeg", "image/webp", "image/avif", "audio/mpeg", "audio/webm"]
+objects_path = "./dishcovery-assets"
+
 [storage.buckets.audio-files]
 public = true
 file_size_limit = "50MiB"

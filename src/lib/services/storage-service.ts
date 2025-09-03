@@ -3,6 +3,16 @@ import { SupabaseClient } from "@supabase/supabase-js"
 export class StorageService {
     constructor(private supabase: SupabaseClient) {}
 
+    /**
+     * Generate a session-based file path for dishcovery assets
+     * Format: YYYY-MM-DDTHH:mm:ss+02:00/audio.mp3 or image.jpeg
+     */
+    generateDishcoverySessionPath(fileName: string): string {
+        const now = new Date()
+        const sessionId = now.toISOString()
+        return `${sessionId}/${fileName}`
+    }
+
     async uploadImage(
         bucket: string,
         image: File,
@@ -71,6 +81,33 @@ export class StorageService {
         if (!publicUrlData?.publicUrl) {
             throw new Error("Failed to get public URL")
         }
+        return publicUrlData.publicUrl
+    }
+
+    async uploadAudio(bucket: string, audioBlob: Blob, filePath: string): Promise<string> {
+        // Convert Blob to File with proper MIME type
+        // Use audio/mpeg as it's more widely supported than audio/webm
+        const audioFile = new File([audioBlob], `audio-${Date.now()}.mp3`, {
+            type: "audio/mpeg",
+        })
+
+        const { data, error } = await this.supabase.storage
+            .from(bucket)
+            .upload(filePath, audioFile, {
+                contentType: "audio/mpeg",
+                upsert: false,
+            })
+
+        if (error) {
+            throw new Error(error.message)
+        }
+
+        const { data: publicUrlData } = this.supabase.storage.from(bucket).getPublicUrl(data.path)
+
+        if (!publicUrlData) {
+            throw new Error("Could not get public URL for uploaded audio.")
+        }
+
         return publicUrlData.publicUrl
     }
 }

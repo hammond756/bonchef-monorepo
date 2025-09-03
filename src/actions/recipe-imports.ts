@@ -229,6 +229,64 @@ export async function uploadAudio(audioBlob: Blob): Promise<string> {
     return publicUrlData.publicUrl
 }
 
+/**
+ * Upload dishcovery assets (photo and audio) to the dishcovery-assets bucket
+ * with session-based organization
+ */
+export async function uploadDishcoveryAssets(
+    photo: File,
+    audioBlob?: Blob
+): Promise<{ photoUrl: string; audioUrl?: string }> {
+    console.log("[uploadDishcoveryAssets] Starting upload:", {
+        hasPhoto: !!photo,
+        photoSize: photo?.size,
+        photoType: photo?.type,
+        hasAudioBlob: !!audioBlob,
+        audioBlobSize: audioBlob?.size,
+        audioBlobType: audioBlob?.type,
+    })
+
+    const supabaseAdmin = await createAdminClient()
+    const storageService = new (await import("@/lib/services/storage-service")).StorageService(
+        supabaseAdmin
+    )
+
+    // Generate session-based paths
+    const photoPath = storageService.generateDishcoverySessionPath("image.jpeg")
+    const audioPath = audioBlob
+        ? storageService.generateDishcoverySessionPath("audio.mp3")
+        : undefined
+
+    console.log("[uploadDishcoveryAssets] Generated paths:", {
+        photoPath,
+        audioPath,
+    })
+
+    // Upload photo
+    const photoUrl = await storageService.uploadImage("dishcovery-assets", photo, true, photoPath)
+    console.log("[uploadDishcoveryAssets] Photo uploaded:", photoUrl)
+
+    // Upload audio if provided
+    let audioUrl: string | undefined
+    if (audioBlob && audioPath) {
+        console.log("[uploadDishcoveryAssets] Starting audio upload...")
+        audioUrl = await storageService.uploadAudio("dishcovery-assets", audioBlob, audioPath)
+        console.log("[uploadDishcoveryAssets] Audio uploaded:", audioUrl)
+    } else {
+        console.log("[uploadDishcoveryAssets] No audio to upload:", {
+            audioBlob: !!audioBlob,
+            audioPath,
+        })
+    }
+
+    console.log("[uploadDishcoveryAssets] Final result:", {
+        photoUrl: photoUrl ? "present" : "missing",
+        audioUrl: audioUrl ? "present" : "missing",
+    })
+
+    return { photoUrl, audioUrl }
+}
+
 export async function extractTextFromImage(imageUrl: string): Promise<string> {
     return await withTempFileFromUrl(imageUrl, async (tempFilePath) => {
         return await detectText(tempFilePath)
@@ -242,9 +300,22 @@ export async function generateRecipeFromDishcovery(
         `[generateRecipeFromDishcovery] Starting generation for dishcovery data: ${dishcoveryData.substring(0, 100)}...`
     )
 
+    // Initialize transcription service at the beginning
+    const { TranscriptionService } = await import("@/lib/services/transcription-service")
+    const transcriptionService = new TranscriptionService({
+        apiKey: process.env.OPENAI_API_KEY!,
+    })
+
     // Parse the dishcovery data (photo + description or audio)
     const data = JSON.parse(dishcoveryData)
     const { photoUrl, description, audioUrl } = data
+
+    console.log("[generateRecipeFromDishcovery] Parsed data:", {
+        photoUrl: photoUrl ? "present" : "missing",
+        description: description || "empty",
+        audioUrl: audioUrl ? "present" : "missing",
+        descriptionLength: description?.length || 0,
+    })
 
     if (!photoUrl) {
         throw new Error("Invalid dishcovery data: missing photoUrl")
@@ -256,24 +327,18 @@ export async function generateRecipeFromDishcovery(
     const tasks: Promise<string | PhotoAnalysisResult>[] = []
 
     // Task 1: Audio transcription (if needed)
-    if (audioUrl && !description) {
+    if (audioUrl && (!description || description.trim().length === 0)) {
         console.log("[generateRecipeFromDishcovery] Starting audio transcription in parallel...")
+        console.log("[generateRecipeFromDishcovery] Audio URL:", audioUrl)
         const transcriptionTask = (async () => {
             try {
-                const { TranscriptionService } = await import(
-                    "@/lib/services/transcription-service"
-                )
-
-                if (!process.env.OPENAI_API_KEY) {
-                    throw new Error("OpenAI API key not configured")
-                }
-
-                const transcriptionService = new TranscriptionService({
-                    apiKey: process.env.OPENAI_API_KEY,
-                })
-
                 const transcriptionResult =
                     await transcriptionService.transcribeVideoFromUrl(audioUrl)
+
+                console.log(
+                    "[generateRecipeFromDishcovery] Transcription result:",
+                    transcriptionResult
+                )
 
                 if (!transcriptionResult.success) {
                     throw new Error(transcriptionResult.error)
@@ -341,25 +406,56 @@ export async function generateRecipeFromDishcovery(
     // Wait for all tasks to complete
     console.log("[generateRecipeFromDishcovery] Waiting for parallel tasks to complete...")
     const results = await Promise.all(tasks)
+    console.log("[generateRecipeFromDishcovery] All tasks completed, results:", results)
 
     // Extract results
     let transcriptionResult: string | undefined
     let photoAnalysisResult: PhotoAnalysisResult
 
-    if (audioUrl && !description) {
+    if (audioUrl && (!description || description.trim().length === 0)) {
         transcriptionResult = results[0] as string
         photoAnalysisResult = results[1] as PhotoAnalysisResult
+        console.log(
+            "[generateRecipeFromDishcovery] Transcription result extracted:",
+            transcriptionResult
+        )
     } else {
         photoAnalysisResult = results[0] as PhotoAnalysisResult
+        console.log(
+            "[generateRecipeFromDishcovery] No transcription, using description:",
+            description
+        )
     }
 
     // Set final description
     if (transcriptionResult) {
         finalDescription = transcriptionResult
+        console.log(
+            "[generateRecipeFromDishcovery] Final description set from transcription:",
+            finalDescription
+        )
+        console.log(
+            "[generateRecipeFromDishcovery] Transcription result length:",
+            transcriptionResult.length
+        )
+    } else {
+        console.log(
+            "[generateRecipeFromDishcovery] Final description from input:",
+            finalDescription
+        )
+        console.log(
+            "[generateRecipeFromDishcovery] Input description length:",
+            finalDescription?.length || 0
+        )
     }
 
+    // Allow dishcovery with only photo if no description is provided
+    // The new prompt can handle minimal user input by relying more on visual analysis
     if (!finalDescription || finalDescription.trim().length < 3) {
-        throw new Error("Invalid dishcovery data: missing or invalid description")
+        console.log(
+            "[generateRecipeFromDishcovery] No description provided, will rely on visual analysis only"
+        )
+        finalDescription = "" // Set to empty string for minimal input scenario
     }
 
     // Now generate the recipe using the dishcovery-specific prompt

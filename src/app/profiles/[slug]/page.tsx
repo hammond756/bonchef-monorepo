@@ -12,6 +12,7 @@ import { ClientBackButton } from "@/components/ui/client-back-button"
 import { ShareProfileButton } from "@/components/share-profile-button"
 import { EditButton } from "@/components/ui/edit-button"
 import { EditProfileDialog } from "@/components/profile/edit-profile-dialog"
+import { LogoutButton } from "@/components/ui/logout-button"
 
 interface ProfilePageProps {
     slug: string
@@ -86,6 +87,7 @@ export default async function ProfilePage({ params }: { params: Promise<ProfileP
                     profileId={profile.id}
                     displayName={profile.display_name || "Naamloos"}
                 />
+                {isOwner && <LogoutButton />}
             </div>
 
             <Suspense fallback={<RecipeGridSkeleton />}>
