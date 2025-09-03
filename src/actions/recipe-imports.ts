@@ -3,7 +3,12 @@
 import { v4 as uuidv4 } from "uuid"
 import { GeneratedRecipe } from "@/lib/types"
 import { createAdminClient, createClient } from "@/utils/supabase/server"
-import { formatRecipe, getRecipeContent, normalizeUrl } from "@/lib/services/web-service"
+import {
+    formatRecipe,
+    formatDishcoveryRecipe,
+    getRecipeContent,
+    normalizeUrl,
+} from "@/lib/services/web-service"
 import { RecipeService } from "@/lib/services/recipe-service"
 import { RecipeGenerationService } from "@/lib/services/recipe-generation-service"
 import { getHostnameFromUrl, hostedImageToBuffer } from "@/lib/utils"
@@ -145,6 +150,14 @@ export async function getSignedUploadUrl(
 export async function uploadImage(file: File): Promise<string> {
     const supabaseAdmin = await createAdminClient()
 
+    // Check if file type is supported
+    const supportedTypes = ["image/png", "image/jpeg", "image/webp", "image/avif"]
+    if (!supportedTypes.includes(file.type)) {
+        throw new Error(
+            `Dit afbeeldingsformaat wordt niet ondersteund. Ondersteunde formaten: PNG, JPEG, WebP, AVIF. Probeer een screenshot te maken met je telefoon.`
+        )
+    }
+
     const uploadOptions: { contentType: string; upsert: boolean } = {
         contentType: file.type,
         upsert: false,
@@ -160,7 +173,18 @@ export async function uploadImage(file: File): Promise<string> {
         .upload(`${uuidv4()}.${file.name.split(".").pop()}`, file, uploadOptions)
 
     if (error) {
-        throw new Error(error.message)
+        // Provide more specific error messages based on the error type
+        if (error.message.includes("Invalid file type")) {
+            throw new Error(
+                "Dit afbeeldingsformaat wordt niet ondersteund. Probeer een screenshot te maken met je telefoon en probeer het opnieuw!"
+            )
+        } else if (error.message.includes("File size")) {
+            throw new Error(
+                "De afbeelding is te groot. Probeer een kleinere afbeelding of maak een screenshot."
+            )
+        } else {
+            throw new Error(`Upload mislukt: ${error.message}`)
+        }
     }
 
     const { data: publicUrlData } = supabaseAdmin.storage
@@ -168,7 +192,7 @@ export async function uploadImage(file: File): Promise<string> {
         .getPublicUrl(data.path)
 
     if (!publicUrlData) {
-        throw new Error("Could not get public URL for uploaded image.")
+        throw new Error("Kon geen publieke URL genereren voor de afbeelding.")
     }
 
     return publicUrlData.publicUrl
@@ -292,10 +316,23 @@ export async function generateRecipeFromDishcovery(
             return analysisResult.data
         } catch (error) {
             console.error("[generateRecipeFromDishcovery] Photo analysis failed:", error)
-            throw new Error(
+
+            // Provide more specific error messages for OpenAI Vision API errors
+            let errorMessage =
                 "Failed to analyze photo: " +
-                    (error instanceof Error ? error.message : "Unknown error")
-            )
+                (error instanceof Error ? error.message : "Unknown error")
+
+            if (error instanceof Error) {
+                if (error.message.includes("unsupported image")) {
+                    errorMessage =
+                        "Failed to analyze photo: This image format is not supported by the photo analysis service. Please try taking a screenshot with your phone."
+                } else if (error.message.includes("400")) {
+                    errorMessage =
+                        "Failed to analyze photo: The image could not be processed. Please try a different photo or take a screenshot."
+                }
+            }
+
+            throw new Error(errorMessage)
         }
     })()
 
@@ -325,8 +362,8 @@ export async function generateRecipeFromDishcovery(
         throw new Error("Invalid dishcovery data: missing or invalid description")
     }
 
-    // Now generate the recipe using the same service as URL imports
-    console.log("[generateRecipeFromDishcovery] Generating recipe with formatRecipe service...")
+    // Now generate the recipe using the dishcovery-specific prompt
+    console.log("[generateRecipeFromDishcovery] Generating recipe with dishcovery prompt...")
 
     // Create an enhanced prompt using both the photo analysis and user description
     const enhancedPrompt = `PHOTO ANALYSIS RESULTS:
@@ -338,8 +375,8 @@ export async function generateRecipeFromDishcovery(
 USER DESCRIPTION:
 ${finalDescription}`
 
-    // Use the same formatRecipe service that URL imports use
-    const recipeInfo = await formatRecipe(enhancedPrompt)
+    // Use the dishcovery-specific prompt instead of the general formatRecipe
+    const recipeInfo = await formatDishcoveryRecipe(enhancedPrompt)
     const recipe = recipeInfo.recipe
     console.log("[generateRecipeFromDishcovery] Recipe generation complete")
 

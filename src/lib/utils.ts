@@ -145,7 +145,30 @@ export function createRecipeSlug(title: string, recipeId: string): string {
 
 export async function hostedImageToBase64(url: string): Promise<string> {
     const { data, contentType } = await hostedImageToBuffer(url)
-    return `data:${contentType};base64,${data.toString("base64")}`
+
+    // Convert AVIF to JPEG for OpenAI compatibility
+    // OpenAI Vision API supports: png, jpeg, gif, webp (but not avif)
+    let finalData = data
+    let finalContentType = contentType
+
+    if (contentType === "image/avif") {
+        // Only try to convert on server-side (where sharp is available)
+        if (typeof window === "undefined") {
+            try {
+                const sharp = (await import("sharp")).default
+                finalData = await sharp(data).jpeg().toBuffer()
+                finalContentType = "image/jpeg"
+            } catch (error) {
+                console.warn("Failed to convert AVIF to JPEG, using original:", error)
+                // Fallback to original if conversion fails
+            }
+        } else {
+            // On client-side, we can't convert AVIF, so we'll let OpenAI handle the error
+            console.warn("AVIF conversion not available on client-side, using original format")
+        }
+    }
+
+    return `data:${finalContentType};base64,${finalData.toString("base64")}`
 }
 
 export async function hostedImageToBuffer(

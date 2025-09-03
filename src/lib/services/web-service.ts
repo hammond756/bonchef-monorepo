@@ -76,6 +76,50 @@ export async function formatRecipe(text: string): Promise<{
     }
 }
 
+export async function formatDishcoveryRecipe(text: string): Promise<{
+    recipe: GeneratedRecipeWithSource
+    thumbnailUrl: string | null
+}> {
+    const model = new ChatOpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+        modelName: "gpt-4.1",
+        temperature: 0.1,
+        maxTokens: 4096,
+    }).withStructuredOutput(
+        z.object({
+            recipe: GeneratedRecipeSchema.extend({
+                source_name: z.string(),
+                source_url: z.string(),
+            }),
+            thumbnailUrl: z
+                .string()
+                .nullable()
+                .describe(
+                    "The URL of the main image for the recipe. This should be the most appealing and representative image available on the page. MUST be null if no image URL is found."
+                ),
+        })
+    )
+
+    const langfuse = new Langfuse()
+    const promptClient = await langfuse.getPrompt("DishcoveryRecipeGenerator", undefined, {
+        type: "chat",
+    })
+    const prompt = promptClient.compile({ input: text })
+
+    try {
+        const { recipe, thumbnailUrl } = await model.invoke(prompt, {
+            callbacks: [new CallbackHandler()],
+        })
+        const translatedRecipe = translateRecipeUnits(recipe)
+        return {
+            recipe: translatedRecipe,
+            thumbnailUrl,
+        }
+    } catch (error: unknown) {
+        throw error
+    }
+}
+
 export async function getRecipeContent(url: string): Promise<{
     textForLLM: string
     bestImageUrl: string | null

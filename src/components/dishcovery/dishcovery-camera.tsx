@@ -131,8 +131,11 @@ export function DishcoveryCamera({ onPhotoCaptured, onBack }: DishcoveryCameraPr
         const file = files[0]
 
         // Validate file type
-        if (!file.type.startsWith("image/")) {
-            setError("Selecteer een geldig afbeeldingsbestand.")
+        const supportedTypes = ["image/png", "image/jpeg", "image/webp", "image/avif"]
+        if (!supportedTypes.includes(file.type)) {
+            setError(
+                "Dit afbeeldingsformaat wordt niet ondersteund. Ondersteunde formaten: PNG, JPEG, WebP, AVIF. Probeer een screenshot te maken met je telefoon."
+            )
             return
         }
 

@@ -190,7 +190,34 @@ export function DishcoveryDescription({
             }
         } catch (error) {
             console.error("[DishcoveryDescription] Failed to process:", error)
-            setError("Er ging iets mis bij het verwerken van je input. Probeer het opnieuw.")
+
+            // Provide more specific error messages based on the error type
+            let errorMessage =
+                "Er ging iets mis bij het verwerken van je input. Probeer het opnieuw."
+
+            if (error instanceof Error) {
+                if (error.message.includes("afbeeldingsformaat wordt niet ondersteund")) {
+                    errorMessage = error.message
+                } else if (error.message.includes("te groot")) {
+                    errorMessage = error.message
+                } else if (error.message.includes("Upload mislukt")) {
+                    errorMessage = error.message
+                } else if (error.message.includes("Invalid dishcovery data")) {
+                    errorMessage =
+                        "De foto of beschrijving kon niet worden verwerkt. Probeer het opnieuw."
+                } else if (error.message.includes("Failed to analyze photo")) {
+                    errorMessage =
+                        "De foto kon niet worden geanalyseerd. Probeer een andere foto of maak een screenshot."
+                } else if (error.message.includes("unsupported image")) {
+                    errorMessage =
+                        "Dit afbeeldingsformaat wordt niet ondersteund door de foto-analyse. Probeer een screenshot te maken met je telefoon."
+                } else if (error.message.includes("Failed to transcribe audio")) {
+                    errorMessage =
+                        "De spraakopname kon niet worden verwerkt. Probeer opnieuw te spreken of gebruik tekstinvoer."
+                }
+            }
+
+            setError(errorMessage)
             setIsProcessing(false)
         }
     }, [
