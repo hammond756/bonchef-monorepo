@@ -121,6 +121,12 @@ file_size_limit = "10MiB"
 allowed_mime_types = ["image/png", "image/jpeg", "image/svg+xml", "image/gif"]
 objects_path = "./email-assets"
 
+[storage.buckets.video-summaries]
+public = true
+file_size_limit = "50MiB"
+allowed_mime_types = ["image/jpeg", "audio/mpeg"]
+objects_path = "./video-summaries"
+
 [auth]
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
