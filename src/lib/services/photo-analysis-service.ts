@@ -2,13 +2,21 @@ import { ChatOpenAI } from "@langchain/openai"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
 import { hostedImageToBase64 } from "@/lib/utils"
 import Langfuse from "langfuse"
+import { z } from "zod"
 
-export interface PhotoAnalysisResult {
-    dishType: string
-    visibleIngredients: string[]
-    cookingMethods: string[]
-    visualDescription: string
-}
+// Zod schema for photo analysis result
+export const PhotoAnalysisResultSchema = z.object({
+    dishType: z.string().describe("The type of dish visible in the photo"),
+    visibleIngredients: z
+        .array(z.string())
+        .describe("List of ingredients that can be clearly seen in the photo"),
+    cookingMethods: z
+        .array(z.string())
+        .describe("Cooking methods that appear to have been used based on visual cues"),
+    visualDescription: z.string().describe("Detailed description of what is visible in the photo"),
+})
+
+export type PhotoAnalysisResult = z.infer<typeof PhotoAnalysisResultSchema>
 
 type ServiceResponse<T> = Promise<
     | {
@@ -26,7 +34,7 @@ type ServiceResponse<T> = Promise<
  * This service focuses purely on visual analysis without generating recipes.
  */
 export class PhotoAnalysisService {
-    private openai: ChatOpenAI
+    private openai: ReturnType<typeof ChatOpenAI.prototype.withStructuredOutput>
     private langfuse: Langfuse
 
     constructor() {
@@ -35,9 +43,11 @@ export class PhotoAnalysisService {
         }
 
         this.openai = new ChatOpenAI({
-            modelName: "gpt-5",
+            modelName: "gpt-4o",
             openAIApiKey: process.env.OPENAI_API_KEY,
-        })
+            temperature: 0.1,
+            maxTokens: 4096,
+        }).withStructuredOutput(PhotoAnalysisResultSchema)
         this.langfuse = new Langfuse()
     }
 
@@ -73,60 +83,22 @@ export class PhotoAnalysisService {
                 ],
             })
 
-            // Get the analysis from OpenAI
-            const response = await this.openai.invoke([systemPrompt, humanMessage])
-            const content = response.content
+            // Get the structured analysis from OpenAI
+            const analysisResult = await this.openai.invoke([systemPrompt, humanMessage])
+            console.log("[PhotoAnalysisService] Raw analysis result:", analysisResult)
+            console.log("[PhotoAnalysisService] Analysis result type:", typeof analysisResult)
+            console.log("[PhotoAnalysisService] Analysis result keys:", Object.keys(analysisResult))
 
-            if (typeof content !== "string") {
-                throw new Error("Unexpected response format from OpenAI")
-            }
-
-            // Parse the JSON response
-            let analysisResult: PhotoAnalysisResult
-            try {
-                // Extract JSON from the response (it might be wrapped in markdown)
-                const jsonMatch = content.match(/\{[\s\S]*\}/)
-                if (!jsonMatch) {
-                    throw new Error("No JSON found in response")
-                }
-                analysisResult = JSON.parse(jsonMatch[0])
-            } catch (parseError) {
-                console.error("Failed to parse OpenAI response:", parseError)
-                throw new Error("Failed to parse photo analysis response")
-            }
-
-            // Validate the result structure
-            if (!this.isValidAnalysisResult(analysisResult)) {
-                throw new Error("Invalid analysis result structure")
-            }
+            // Cast to the expected type since structured output guarantees the format
+            const typedResult = analysisResult as PhotoAnalysisResult
+            console.log("[PhotoAnalysisService] Typed result:", typedResult)
 
             console.log("[PhotoAnalysisService] Photo analysis complete")
-            return { success: true, data: analysisResult }
+            return { success: true, data: typedResult }
         } catch (error) {
             console.error("[PhotoAnalysisService] Photo analysis failed:", error)
             const errorMessage = error instanceof Error ? error.message : "Unknown error"
             return { success: false, error: `Photo analysis failed: ${errorMessage}` }
         }
-    }
-
-    /**
-     * Validates that the analysis result has the correct structure.
-     * @param result - The result to validate
-     * @returns boolean - True if valid, false otherwise
-     */
-    private isValidAnalysisResult(result: unknown): result is PhotoAnalysisResult {
-        return (
-            result !== null &&
-            result !== undefined &&
-            typeof result === "object" &&
-            "dishType" in result &&
-            "visibleIngredients" in result &&
-            "cookingMethods" in result &&
-            "visualDescription" in result &&
-            typeof (result as Record<string, unknown>).dishType === "string" &&
-            Array.isArray((result as Record<string, unknown>).visibleIngredients) &&
-            Array.isArray((result as Record<string, unknown>).cookingMethods) &&
-            typeof (result as Record<string, unknown>).visualDescription === "string"
-        )
     }
 }

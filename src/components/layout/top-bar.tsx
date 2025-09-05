@@ -1,14 +1,11 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { LogOut, UserIcon } from "lucide-react"
+import { MessageSquarePlus, UserIcon } from "lucide-react"
 import { cn, createProfileSlug } from "@/lib/utils"
 import Image from "next/image"
 import { ProfileImage } from "../ui/profile-image"
 import { useProfile } from "@/hooks/use-profile"
 import Link from "next/link"
-import { createClient } from "@/utils/supabase/client"
-import { usePostHog } from "posthog-js/react"
 
 interface TopBarProps {
     children?: React.ReactNode
@@ -17,7 +14,6 @@ interface TopBarProps {
 
 export function TopBar({ children, className }: TopBarProps) {
     const { profile } = useProfile()
-    const posthog = usePostHog()
 
     const defaultContent = (
         <>
@@ -48,24 +44,13 @@ export function TopBar({ children, className }: TopBarProps) {
                                 size={40}
                             />
                         </Link>
-                        <form
-                            onSubmit={() => {
-                                posthog.reset()
-                                const supabase = createClient()
-                                supabase.auth.signOut()
-                            }}
+                        <Link
+                            href="/chat"
+                            className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-300 bg-white shadow-xs transition-colors hover:bg-slate-50"
+                            aria-label="Ga naar chat"
                         >
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                type="submit"
-                                className="text-primary hover:bg-primary/10 rounded-full transition-colors"
-                                data-testid="logout-button"
-                                aria-label="Uitloggen"
-                            >
-                                <LogOut className="h-5 w-5" strokeWidth={2.5} />
-                            </Button>
-                        </form>
+                            <MessageSquarePlus className="text-primary h-5 w-5" strokeWidth={2.5} />
+                        </Link>
                     </div>
                 ) : (
                     <Link

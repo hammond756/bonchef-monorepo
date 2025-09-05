@@ -53,17 +53,26 @@ export class TranscriptionService {
      */
     async transcribeVideoFromUrl(videoUrl: string): ServiceResponse<string> {
         try {
+            console.log("[TranscriptionService] Starting transcription from URL:", videoUrl)
+
             // Validate URL format
             if (!this.isValidUrl(videoUrl)) {
+                console.log("[TranscriptionService] Invalid URL format")
                 return { success: false, error: "Invalid URL format provided" }
             }
 
             // Download the file
+            console.log("[TranscriptionService] Downloading file...")
             const response = await fetch(videoUrl, {
                 method: "GET",
             })
 
             if (!response.ok) {
+                console.log(
+                    "[TranscriptionService] Download failed:",
+                    response.status,
+                    response.statusText
+                )
                 return {
                     success: false,
                     error: `Failed to download video: ${response.status} ${response.statusText}`,
@@ -72,7 +81,9 @@ export class TranscriptionService {
 
             // Detect content type and validate it's supported
             const contentType = this.detectContentType(response, videoUrl)
+            console.log("[TranscriptionService] Detected content type:", contentType)
             if (!contentType) {
+                console.log("[TranscriptionService] Unsupported content type")
                 return {
                     success: false,
                     error: `Unsupported file type [${contentType}]. Please provide an audio or video file.`,
@@ -80,17 +91,25 @@ export class TranscriptionService {
             }
 
             // Download and buffer the file
+            console.log("[TranscriptionService] Buffering file...")
             const arrayBuffer = await response.arrayBuffer()
+            console.log("[TranscriptionService] File buffer size:", arrayBuffer.byteLength)
 
             // Create a proper File object with correct extension
             const file = this.createFileFromBuffer(arrayBuffer, contentType)
+            console.log("[TranscriptionService] Created file object:", {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+            })
 
             // Transcribe using OpenAI
             const transcriptionResponse = await this.transcribeAudioFile(file)
+            console.log("[TranscriptionService] Transcription response:", transcriptionResponse)
 
             return transcriptionResponse
         } catch (error) {
-            console.error("Error transcribing video:", error)
+            console.error("[TranscriptionService] Error transcribing video:", error)
             const errorMessage = this.formatErrorMessage(error)
             return { success: false, error: errorMessage }
         }
@@ -105,15 +124,26 @@ export class TranscriptionService {
         }
 
         try {
+            console.log("[TranscriptionService] Starting audio transcription...")
+            console.log("[TranscriptionService] File details:", {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+            })
+
             const transcription = await this.openai.audio.transcriptions.create({
                 file,
                 model: "whisper-1",
                 response_format: "text",
+                // Let Whisper auto-detect language (supports Dutch, English, and many others)
             })
+
+            console.log("[TranscriptionService] Transcription result:", transcription)
+            console.log("[TranscriptionService] Transcription type:", typeof transcription)
 
             return { success: true, data: transcription }
         } catch (error) {
-            console.error("Error transcribing audio file:", error)
+            console.error("[TranscriptionService] Error transcribing audio file:", error)
             const errorMessage = this.formatErrorMessage(error)
             return { success: false, error: errorMessage }
         }
