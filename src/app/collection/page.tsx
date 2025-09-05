@@ -111,7 +111,7 @@ function RecipePageSkeleton() {
     )
 }
 
-function MyRecipesTabContent({
+export function MyRecipesTabContent({
     viewMode,
     sortOrder,
 }: {
@@ -133,26 +133,13 @@ function MyRecipesTabContent({
 
         const recipes = userRecipes.map((recipe) => ({ ...recipe, viewType: "RECIPE" as const }))
 
-        // Sort items within their groups, but keep failed jobs at the top
-        const sortedFailedJobs = failedJobs.sort((a, b) => {
+        const allCards = [...failedJobs, ...pendingJobs, ...recipes]
+
+        return allCards.sort((a, b) => {
             const dateA = new Date(a.created_at ?? 0).getTime()
             const dateB = new Date(b.created_at ?? 0).getTime()
             return sortOrder === "newest" ? dateB - dateA : dateA - dateB
         })
-
-        const sortedPendingJobs = pendingJobs.sort((a, b) => {
-            const dateA = new Date(a.created_at ?? 0).getTime()
-            const dateB = new Date(b.created_at ?? 0).getTime()
-            return sortOrder === "newest" ? dateB - dateA : dateA - dateB
-        })
-
-        const sortedRecipes = recipes.sort((a, b) => {
-            const dateA = new Date(a.created_at ?? 0).getTime()
-            const dateB = new Date(b.created_at ?? 0).getTime()
-            return sortOrder === "newest" ? dateB - dateA : dateA - dateB
-        })
-
-        return [...sortedFailedJobs, ...sortedPendingJobs, ...sortedRecipes]
     }, [importJobs, userRecipes, sortOrder])
 
     if (userRecipesLoading || importJobsLoading) {

@@ -2,28 +2,28 @@ import { describe, test, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import CollectionPage from "./page"
 import { RecipeImportJob, RecipeRead } from "@/lib/types"
+import { MyRecipesTabContent } from "./page"
+import { useBookmarkedRecipes } from "@/hooks/use-bookmarked-recipes"
+import { useOwnRecipes } from "@/hooks/use-own-recipes"
+import { useRecipeImportJobs } from "@/hooks/use-recipe-import-jobs"
 
-// Mock the hooks
+// Mock the hooks with factories
 vi.mock("@/hooks/use-bookmarked-recipes", () => ({
-    useBookmarkedRecipes: () => ({
-        recipes: [],
-        isLoading: false,
-    }),
+    useBookmarkedRecipes: vi.fn(),
 }))
 
 vi.mock("@/hooks/use-own-recipes", () => ({
-    useOwnRecipes: () => ({
-        recipes: [],
-        isLoading: false,
-    }),
+    useOwnRecipes: vi.fn(),
 }))
 
 vi.mock("@/hooks/use-recipe-import-jobs", () => ({
-    useRecipeImportJobs: () => ({
-        jobs: [],
-        isLoading: false,
-    }),
+    useRecipeImportJobs: vi.fn(),
 }))
+
+// Get references to the mocked functions
+const mockUseBookmarkedRecipes = vi.mocked(useBookmarkedRecipes)
+const mockUseOwnRecipes = vi.mocked(useOwnRecipes)
+const mockUseRecipeImportJobs = vi.mocked(useRecipeImportJobs)
 
 vi.mock("@/hooks/use-navigation-visibility", () => ({
     useNavigationVisibility: () => ({
@@ -34,6 +34,57 @@ vi.mock("@/hooks/use-navigation-visibility", () => ({
 
 vi.mock("@/components/util/navigation-tracker", () => ({
     NavigationTracker: () => <div data-testid="navigation-tracker" />,
+}))
+
+// Mock the card components
+vi.mock("@/components/recipe/recipe-card", () => ({
+    RecipeCard: ({ recipe }: { recipe: any }) => (
+        <div data-testid={`recipe-card-${recipe.id}`}>
+            <h3>{recipe.title}</h3>
+            <span data-testid="recipe-date">{recipe.created_at}</span>
+        </div>
+    ),
+}))
+
+vi.mock("@/components/recipe/pending-job", () => ({
+    PendingJob: ({ job }: { job: any }) => (
+        <div data-testid={`pending-job-${job.id}`}>
+            <h3>Recept wordt gemaakt...</h3>
+            <span data-testid="job-date">{job.created_at}</span>
+        </div>
+    ),
+}))
+
+vi.mock("@/components/recipe/failed-job", () => ({
+    FailedJob: ({ job }: { job: any }) => (
+        <div data-testid={`failed-job-${job.id}`}>
+            <h3>Import mislukt</h3>
+            <span data-testid="job-date">{job.created_at}</span>
+        </div>
+    ),
+}))
+
+vi.mock("@/components/recipe/recipe-list-item", () => ({
+    RecipeListItem: ({ recipe }: { recipe: any }) => (
+        <div data-testid={`recipe-list-item-${recipe.id}`}>
+            <h3>{recipe.title}</h3>
+            <span data-testid="recipe-date">{recipe.created_at}</span>
+        </div>
+    ),
+    InProgressRecipeListItem: ({ job }: { job: any }) => (
+        <div data-testid={`in-progress-list-item-${job.id}`}>
+            <h3>Recept wordt gemaakt...</h3>
+            <span data-testid="job-date">{job.created_at}</span>
+        </div>
+    ),
+}))
+
+vi.mock("@/components/recipe/recipe-page-skeleton", () => ({
+    RecipePageSkeleton: () => <div data-testid="recipe-page-skeleton">Loading...</div>,
+}))
+
+vi.mock("@/components/recipe/welcome-section", () => ({
+    WelcomeSection: () => <div data-testid="welcome-section">Welkom bij jouw kookboek!</div>,
 }))
 
 vi.mock("nuqs", () => ({
@@ -77,6 +128,32 @@ const createMockJob = (overrides: Partial<RecipeImportJob> = {}): RecipeImportJo
 })
 
 describe("Collection Page", () => {
+    beforeEach(() => {
+        // Set up default mock return values
+        mockUseBookmarkedRecipes.mockReturnValue({
+            recipes: [],
+            isLoading: false,
+            isError: null,
+            mutate: vi.fn(),
+        })
+        mockUseOwnRecipes.mockReturnValue({
+            recipes: [],
+            isLoading: false,
+            error: null,
+            mutate: vi.fn(),
+            count: vi.fn(() => 0),
+        })
+        mockUseRecipeImportJobs.mockReturnValue({
+            jobs: [],
+            isLoading: false,
+            isError: null,
+            addJob: vi.fn(),
+            removeJob: vi.fn(),
+            isDeleting: null,
+            mutate: vi.fn(),
+        })
+    })
+
     test("shows welcome section when no recipes or jobs exist", () => {
         render(<CollectionPage />)
         expect(screen.getByText("Welkom bij jouw kookboek!")).toBeInTheDocument()
@@ -88,9 +165,70 @@ describe("Collection Page", () => {
     })
 })
 
-// Test the sorting logic separately
-describe("Collection Sorting Logic", () => {
-    test("sorts failed jobs first, then pending jobs, then recipes", () => {
+// Test the MyRecipesTabContent component directly
+describe("MyRecipesTabContent Component", () => {
+    beforeEach(() => {
+        // Reset all mocks before each test
+        vi.clearAllMocks()
+    })
+
+    test("shows loading state when data is loading", () => {
+        // Set up mocks for loading state
+        mockUseOwnRecipes.mockReturnValue({
+            recipes: [],
+            isLoading: true,
+            error: null,
+            mutate: vi.fn(),
+            count: vi.fn(() => 0),
+        })
+        mockUseRecipeImportJobs.mockReturnValue({
+            jobs: [],
+            isLoading: true,
+            isError: null,
+            addJob: vi.fn(),
+            removeJob: vi.fn(),
+            isDeleting: null,
+            mutate: vi.fn(),
+        })
+
+        render(<MyRecipesTabContent viewMode="grid" sortOrder="newest" />)
+        // Check for skeleton loading state - should show 8 skeleton cards
+        const skeletonCards = screen
+            .getAllByRole("generic")
+            .filter(
+                (el) => el.className.includes("bg-muted") && el.className.includes("animate-pulse")
+            )
+        expect(skeletonCards).toHaveLength(8)
+    })
+
+    test("shows welcome section when no recipes or jobs exist", () => {
+        // Set up mocks for empty state
+        mockUseOwnRecipes.mockReturnValue({
+            recipes: [],
+            isLoading: false,
+            error: null,
+            mutate: vi.fn(),
+            count: vi.fn(() => 0),
+        })
+        mockUseRecipeImportJobs.mockReturnValue({
+            jobs: [],
+            isLoading: false,
+            isError: null,
+            addJob: vi.fn(),
+            removeJob: vi.fn(),
+            isDeleting: null,
+            mutate: vi.fn(),
+        })
+
+        render(<MyRecipesTabContent viewMode="grid" sortOrder="newest" />)
+        // Check for welcome section content
+        expect(screen.getByText("Welkom bij jouw kookboek!")).toBeInTheDocument()
+        expect(
+            screen.getByText(/Hier vind je al jouw recepten en favorieten op één plek/)
+        ).toBeInTheDocument()
+    })
+
+    test("renders cards in correct order: failed jobs first, then pending jobs, then recipes (newest first)", () => {
         const failedJob = createMockJob({
             id: "failed1",
             status: "failed",
@@ -101,55 +239,140 @@ describe("Collection Sorting Logic", () => {
         const pendingJob = createMockJob({
             id: "pending1",
             status: "pending",
-            created_at: new Date("2024-01-01T11:00:00Z").toISOString(),
+            created_at: new Date("2024-01-03T11:00:00Z").toISOString(),
         })
 
         const recipe = createMockRecipe({
             id: "recipe1",
+            title: "Test Recipe",
+            created_at: new Date("2024-01-04T10:00:00Z").toISOString(),
+        })
+
+        // Set up mocks for this test
+        mockUseOwnRecipes.mockReturnValue({
+            recipes: [recipe],
+            isLoading: false,
+            error: null,
+            mutate: vi.fn(),
+            count: vi.fn(() => 1),
+        })
+        mockUseRecipeImportJobs.mockReturnValue({
+            jobs: [failedJob, pendingJob],
+            isLoading: false,
+            isError: null,
+            addJob: vi.fn(),
+            removeJob: vi.fn(),
+            isDeleting: null,
+            mutate: vi.fn(),
+        })
+
+        render(<MyRecipesTabContent viewMode="grid" sortOrder="newest" />)
+
+        // Check that failed job comes first
+        expect(screen.getByTestId("failed-job-failed1")).toBeInTheDocument()
+        expect(screen.getByText("Import mislukt")).toBeInTheDocument()
+
+        // Check that pending job comes second
+        expect(screen.getByTestId("pending-job-pending1")).toBeInTheDocument()
+        expect(screen.getByText("Recept wordt gemaakt...")).toBeInTheDocument()
+
+        // Check that recipe comes last
+        expect(screen.getByTestId("recipe-card-recipe1")).toBeInTheDocument()
+        expect(screen.getByText("Test Recipe")).toBeInTheDocument()
+    })
+
+    test("renders cards in correct order: failed jobs first, then pending jobs, then recipes (oldest first)", () => {
+        const failedJob = createMockJob({
+            id: "failed1",
+            status: "failed",
+            error_message: "Test error",
+            created_at: new Date("2024-01-04T12:00:00Z").toISOString(),
+        })
+
+        const pendingJob = createMockJob({
+            id: "pending1",
+            status: "pending",
+            created_at: new Date("2024-01-02T11:00:00Z").toISOString(),
+        })
+
+        const recipe = createMockRecipe({
+            id: "recipe1",
+            title: "Test Recipe",
             created_at: new Date("2024-01-01T10:00:00Z").toISOString(),
         })
 
-        // This would be the actual sorting logic from the component
-        const sortItems = (items: any[], sortOrder: "newest" | "oldest" = "newest") => {
-            const failedJobs = items.filter((item) => item.status === "failed")
-            const pendingJobs = items.filter((item) => item.status === "pending")
-            const recipes = items.filter((item) => item.viewType === "RECIPE")
+        // Set up mocks for this test
+        mockUseOwnRecipes.mockReturnValue({
+            recipes: [recipe],
+            isLoading: false,
+            error: null,
+            mutate: vi.fn(),
+            count: vi.fn(() => 1),
+        })
+        mockUseRecipeImportJobs.mockReturnValue({
+            jobs: [failedJob, pendingJob],
+            isLoading: false,
+            isError: null,
+            addJob: vi.fn(),
+            removeJob: vi.fn(),
+            isDeleting: null,
+            mutate: vi.fn(),
+        })
 
-            const sortByDate = (a: any, b: any) => {
-                const dateA = new Date(a.created_at ?? 0).getTime()
-                const dateB = new Date(b.created_at ?? 0).getTime()
-                return sortOrder === "newest" ? dateB - dateA : dateA - dateB
-            }
+        render(<MyRecipesTabContent viewMode="grid" sortOrder="oldest" />)
 
-            const sortedFailedJobs = failedJobs.sort(sortByDate)
-            const sortedPendingJobs = pendingJobs.sort(sortByDate)
-            const sortedRecipes = recipes.sort(sortByDate)
+        // Check that failed job comes first (regardless of date)
+        expect(screen.getByTestId("failed-job-failed1")).toBeInTheDocument()
+        expect(screen.getByText("Import mislukt")).toBeInTheDocument()
 
-            return [...sortedFailedJobs, ...sortedPendingJobs, ...sortedRecipes]
-        }
+        // Check that pending job comes second (regardless of date)
+        expect(screen.getByTestId("pending-job-pending1")).toBeInTheDocument()
+        expect(screen.getByText("Recept wordt gemaakt...")).toBeInTheDocument()
 
-        const allItems = [
-            { ...failedJob, viewType: "JOB" },
-            { ...pendingJob, viewType: "JOB" },
-            { ...recipe, viewType: "RECIPE" },
-        ]
-
-        const sortedItems = sortItems(allItems, "newest")
-
-        // Check that failed jobs come first
-        expect(sortedItems[0].id).toBe("failed1")
-        expect(sortedItems[0].status).toBe("failed")
-
-        // Check that pending jobs come second
-        expect(sortedItems[1].id).toBe("pending1")
-        expect(sortedItems[1].status).toBe("pending")
-
-        // Check that recipes come last
-        expect(sortedItems[2].id).toBe("recipe1")
-        expect(sortedItems[2].viewType).toBe("RECIPE")
+        // Check that recipe comes last (regardless of date)
+        expect(screen.getByTestId("recipe-card-recipe1")).toBeInTheDocument()
+        expect(screen.getByText("Test Recipe")).toBeInTheDocument()
     })
 
-    test("sorts items within groups by date (newest first)", () => {
+    test("renders list view when viewMode is list", () => {
+        const recipe = createMockRecipe({
+            id: "recipe1",
+            title: "Test Recipe",
+            created_at: new Date("2024-01-04T10:00:00Z").toISOString(),
+        })
+
+        const pendingJob = createMockJob({
+            id: "pending1",
+            status: "pending",
+            created_at: new Date("2024-01-03T11:00:00Z").toISOString(),
+        })
+
+        // Set up mocks for this test
+        mockUseOwnRecipes.mockReturnValue({
+            recipes: [recipe],
+            isLoading: false,
+            error: null,
+            mutate: vi.fn(),
+            count: vi.fn(() => 1),
+        })
+        mockUseRecipeImportJobs.mockReturnValue({
+            jobs: [pendingJob],
+            isLoading: false,
+            isError: null,
+            addJob: vi.fn(),
+            removeJob: vi.fn(),
+            isDeleting: null,
+            mutate: vi.fn(),
+        })
+
+        render(<MyRecipesTabContent viewMode="list" sortOrder="newest" />)
+
+        // Check that list items are rendered
+        expect(screen.getByTestId("in-progress-list-item-pending1")).toBeInTheDocument()
+        expect(screen.getByTestId("recipe-list-item-recipe1")).toBeInTheDocument()
+    })
+
+    test("sorts multiple items within each group by date correctly", () => {
         const oldFailedJob = createMockJob({
             id: "old-failed",
             status: "failed",
@@ -164,17 +387,66 @@ describe("Collection Sorting Logic", () => {
             created_at: new Date("2024-01-01T12:00:00Z").toISOString(),
         })
 
-        const sortByDate = (a: any, b: any) => {
-            const dateA = new Date(a.created_at ?? 0).getTime()
-            const dateB = new Date(b.created_at ?? 0).getTime()
-            return dateB - dateA
-        }
+        const oldPendingJob = createMockJob({
+            id: "old-pending",
+            status: "pending",
+            created_at: new Date("2024-01-02T10:00:00Z").toISOString(),
+        })
 
-        const failedJobs = [oldFailedJob, newFailedJob]
-        const sortedFailedJobs = failedJobs.sort(sortByDate)
+        const newPendingJob = createMockJob({
+            id: "new-pending",
+            status: "pending",
+            created_at: new Date("2024-01-02T12:00:00Z").toISOString(),
+        })
 
-        // Check that newer failed job comes first
-        expect(sortedFailedJobs[0].id).toBe("new-failed")
-        expect(sortedFailedJobs[1].id).toBe("old-failed")
+        const oldRecipe = createMockRecipe({
+            id: "old-recipe",
+            title: "Old Recipe",
+            created_at: new Date("2024-01-03T10:00:00Z").toISOString(),
+        })
+
+        const newRecipe = createMockRecipe({
+            id: "new-recipe",
+            title: "New Recipe",
+            created_at: new Date("2024-01-03T12:00:00Z").toISOString(),
+        })
+
+        // Set up mocks for this test
+        mockUseOwnRecipes.mockReturnValue({
+            recipes: [oldRecipe, newRecipe],
+            isLoading: false,
+            error: null,
+            mutate: vi.fn(),
+            count: vi.fn(() => 2),
+        })
+        mockUseRecipeImportJobs.mockReturnValue({
+            jobs: [oldFailedJob, newFailedJob, oldPendingJob, newPendingJob],
+            isLoading: false,
+            isError: null,
+            addJob: vi.fn(),
+            removeJob: vi.fn(),
+            isDeleting: null,
+            mutate: vi.fn(),
+        })
+
+        render(<MyRecipesTabContent viewMode="grid" sortOrder="newest" />)
+
+        // Get all rendered elements
+        const failedJobs = screen.getAllByText("Import mislukt")
+        const pendingJobs = screen.getAllByText("Recept wordt gemaakt...")
+        const recipes = screen.getAllByText(/Recipe/)
+
+        // Check that we have the right number of each type
+        expect(failedJobs).toHaveLength(2)
+        expect(pendingJobs).toHaveLength(2)
+        expect(recipes).toHaveLength(2)
+
+        // Check that failed jobs come first, then pending jobs, then recipes
+        expect(screen.getByTestId("failed-job-new-failed")).toBeInTheDocument()
+        expect(screen.getByTestId("failed-job-old-failed")).toBeInTheDocument()
+        expect(screen.getByTestId("pending-job-new-pending")).toBeInTheDocument()
+        expect(screen.getByTestId("pending-job-old-pending")).toBeInTheDocument()
+        expect(screen.getByTestId("recipe-card-new-recipe")).toBeInTheDocument()
+        expect(screen.getByTestId("recipe-card-old-recipe")).toBeInTheDocument()
     })
 })
