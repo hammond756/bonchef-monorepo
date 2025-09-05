@@ -488,8 +488,7 @@ USER DESCRIPTION:
 ${finalDescription}`
 
     // Use the dishcovery-specific prompt instead of the general formatRecipe
-    const recipeInfo = await formatDishcoveryRecipe(enhancedPrompt)
-    const recipe = recipeInfo.recipe
+    const { recipe, metadata } = await formatDishcoveryRecipe(enhancedPrompt)
     console.log("[generateRecipeFromDishcovery] Recipe generation complete")
 
     // The photo is already uploaded to Supabase storage, use it directly as thumbnail
@@ -503,10 +502,7 @@ ${finalDescription}`
             source_name: "",
             source_url: "",
         },
-        metadata: {
-            containsFood: true,
-            enoughContext: true,
-        },
+        metadata: metadata,
     }
 }
 
