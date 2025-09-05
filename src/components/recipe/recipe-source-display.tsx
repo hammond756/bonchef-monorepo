@@ -37,6 +37,15 @@ export function RecipeSourceDisplay({ recipe }: Readonly<RecipeSourceDisplayProp
         )
     }
 
+    // Check if there's a source name without URL
+    if (recipe.source_name && recipe.source_name !== "BonChef") {
+        return (
+            <>
+                van <span className="text-surface/70">{recipe.source_name}</span>
+            </>
+        )
+    }
+
     // Fallback to user profile
     return (
         <>

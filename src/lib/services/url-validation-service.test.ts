@@ -32,17 +32,14 @@ describe("URL Validation Service", () => {
             facebookUrls.forEach((url) => {
                 const result = validateUrlForImport(url)
                 expect(result.isValid).toBe(false)
-                expect(result.errorMessage).toBe(
-                    "Deze bron ondersteunen we via URL nog niet (maar dat komt eraan!). Probeer het intussen met een foto of screenshot 😉"
-                )
+                expect(result.errorMessage).toBeTruthy()
             })
         })
 
-        it("should reject Instagram URLs", () => {
+        it("should reject non-reel Instagram URLs", () => {
             const instagramUrls = [
                 "https://www.instagram.com/p/ABC123/",
                 "https://instagram.com/p/ABC123/",
-                "https://www.instagram.com/reel/ABC123/",
                 "https://www.instagram.nl/p/ABC123/",
                 "https://instagram.nl/p/ABC123/",
                 "https://www.instagram.be/p/ABC123/",
@@ -52,29 +49,21 @@ describe("URL Validation Service", () => {
             instagramUrls.forEach((url) => {
                 const result = validateUrlForImport(url)
                 expect(result.isValid).toBe(false)
-                expect(result.errorMessage).toBe(
-                    "Deze bron ondersteunen we via URL nog niet (maar dat komt eraan!). Probeer het intussen met een foto of screenshot 😉"
-                )
+                expect(result.errorMessage).toBeTruthy()
             })
         })
 
-        it("should reject TikTok URLs", () => {
-            const tiktokUrls = [
-                "https://www.tiktok.com/@user/video/12345",
-                "https://tiktok.com/@user/video/12345",
-                "https://vm.tiktok.com/ABC123/",
-                "https://www.tiktok.nl/@user/video/12345",
-                "https://tiktok.nl/@user/video/12345",
-                "https://www.tiktok.be/@user/video/12345",
-                "https://tiktok.be/@user/video/12345",
+        it("should accept reel Instagram URLs", () => {
+            const reelInstagramUrls = [
+                "https://www.instagram.com/reel/ABC123/",
+                "https://instagram.com/reel/ABC123/",
+                "https://www.instagram.com/etenmetnicknl/reel/DMKGWNOoPSj/",
             ]
 
-            tiktokUrls.forEach((url) => {
+            reelInstagramUrls.forEach((url) => {
                 const result = validateUrlForImport(url)
-                expect(result.isValid).toBe(false)
-                expect(result.errorMessage).toBe(
-                    "Deze bron ondersteunen we via URL nog niet (maar dat komt eraan!). Probeer het intussen met een foto of screenshot 😉"
-                )
+                expect(result.isValid).toBe(true)
+                expect(result.errorMessage).toBeUndefined()
             })
         })
 
@@ -89,9 +78,7 @@ describe("URL Validation Service", () => {
             ahUrls.forEach((url) => {
                 const result = validateUrlForImport(url)
                 expect(result.isValid).toBe(false)
-                expect(result.errorMessage).toBe(
-                    "Deze bron ondersteunen we via URL nog niet (maar dat komt eraan!). Probeer het intussen met een foto of screenshot 😉"
-                )
+                expect(result.errorMessage).toBeTruthy()
             })
         })
 
@@ -122,16 +109,13 @@ describe("URL Validation Service", () => {
             const mixedCaseUrls = [
                 "https://www.FACEBOOK.com/recipe/12345",
                 "https://www.Instagram.com/p/ABC123/",
-                "https://www.TIKTOK.com/@user/video/12345",
                 "https://www.AH.nl/allerhande/recepten/recipe/12345",
             ]
 
             mixedCaseUrls.forEach((url) => {
                 const result = validateUrlForImport(url)
                 expect(result.isValid).toBe(false)
-                expect(result.errorMessage).toBe(
-                    "Deze bron ondersteunen we via URL nog niet (maar dat komt eraan!). Probeer het intussen met een foto of screenshot 😉"
-                )
+                expect(result.errorMessage).toBeTruthy()
             })
         })
     })

@@ -1,5 +1,9 @@
 import { createClient } from "@/utils/supabase/client"
-import { listJobsWithClient, getJobByRecipeIdWithClient } from "./shared"
+import {
+    listJobsWithClient,
+    getJobByRecipeIdWithClient,
+    deleteRecipeImportJobWithClient,
+} from "./shared"
 
 export const listJobs = (userId: string) => {
     const supabase = createClient()
@@ -9,4 +13,9 @@ export const listJobs = (userId: string) => {
 export const getJobByRecipeId = (recipeId: string) => {
     const supabase = createClient()
     return getJobByRecipeIdWithClient(supabase, recipeId)
+}
+
+export const deleteRecipeImportJob = (jobId: string) => {
+    const supabase = createClient()
+    return deleteRecipeImportJobWithClient(supabase, jobId)
 }

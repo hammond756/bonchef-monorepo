@@ -1,21 +1,23 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { RecipeImportJob, RecipeImportSourceTypeEnum } from "@/lib/types"
 import useSWR from "swr"
 import { startRecipeImportJob } from "@/actions/recipe-imports"
 import { z } from "zod"
-import { listJobs } from "@/lib/services/recipe-imports-job/client"
+import { listJobs, deleteRecipeImportJob } from "@/lib/services/recipe-imports-job/client"
 import { useSession } from "@/hooks/use-session"
 import { useOwnRecipes } from "./use-own-recipes"
 import { trackEvent } from "@/lib/analytics/track"
+import { NonCompletedRecipeImportJob } from "@/lib/services/recipe-imports-job/shared"
 
 export function useRecipeImportJobs() {
     const { session } = useSession()
     const { mutate: mutateOwnRecipes } = useOwnRecipes()
     const previousJobsRef = useRef<RecipeImportJob[]>([])
+    const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
-    const { data, error, isLoading, mutate } = useSWR<RecipeImportJob[]>(
+    const { data, error, isLoading, mutate } = useSWR<NonCompletedRecipeImportJob[]>(
         session ? ["jobs", session.user.id] : null,
         async () => {
             const response = await listJobs(session!.user.id)
@@ -47,7 +49,7 @@ export function useRecipeImportJobs() {
         sourceData: string,
         onboardingSessionId?: string
     ) => {
-        const optimisticJob: RecipeImportJob = {
+        const optimisticJob: NonCompletedRecipeImportJob = {
             id: crypto.randomUUID(),
             status: "pending",
             source_type: type,
@@ -77,11 +79,38 @@ export function useRecipeImportJobs() {
         }
     }
 
+    const removeJob = async (jobId: string) => {
+        if (isDeleting === jobId) return // Prevent multiple clicks for the same job
+
+        setIsDeleting(jobId)
+
+        // Optimistically update the UI by filtering out the job
+        const updatedJobs = (data || []).filter((job) => job.id !== jobId)
+
+        await mutate(
+            async () => {
+                // Perform the actual deletion
+                await deleteRecipeImportJob(jobId)
+                // Return the optimistically updated list
+                return updatedJobs
+            },
+            {
+                optimisticData: updatedJobs,
+                rollbackOnError: true,
+                revalidate: false, // Tell SWR not to refetch immediately after
+            }
+        )
+
+        setIsDeleting(null)
+    }
+
     return {
         jobs: data || [],
         isLoading,
         isError: error,
         addJob,
-        mutate,
+        removeJob,
+        isDeleting,
+        mutate, // Expose mutate for advanced usage and testing
     }
 }

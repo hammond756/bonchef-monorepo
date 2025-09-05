@@ -11,12 +11,19 @@ async function loginUser(page: Page, baseURL: string, email: string, password: s
     await page.waitForURL("/")
 }
 
+async function loginWithTemporaryUser(page: Page, baseURL: string) {
+    await page.goto(baseURL + "/login")
+    await page.getByRole("link", { name: "Log in met test account" }).click()
+    await page.waitForURL("/")
+}
+
 /**
  * Define the custom fixtures
  */
 interface CustomFixtures {
     unauthenticatedPage: Page
     authenticatedPage: Page
+    temporaryUserPage: Page
     secondUserPage: Page
     authenticatedRequest: APIRequestContext
 }
@@ -44,6 +51,15 @@ export const test = base.extend<CustomFixtures>({
             process.env.TEST_USER_EMAIL!,
             process.env.TEST_USER_PASSWORD!
         )
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        await use(page)
+        await context.close()
+    },
+
+    temporaryUserPage: async ({ browser, baseURL }, use) => {
+        const context = await browser.newContext()
+        const page = await context.newPage()
+        await loginWithTemporaryUser(page, baseURL!)
         // eslint-disable-next-line react-hooks/rules-of-hooks
         await use(page)
         await context.close()

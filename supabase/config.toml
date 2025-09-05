@@ -127,6 +127,12 @@ file_size_limit = "50MiB"
 allowed_mime_types = ["audio/mpeg", "audio/mp3", "audio/wav", "audio/webm", "audio/ogg", "audio/m4a"]
 objects_path = "./audio-files"
 
+[storage.buckets.video-summaries]
+public = true
+file_size_limit = "50MiB"
+allowed_mime_types = ["image/jpeg", "audio/mpeg"]
+objects_path = "./video-summaries"
+
 [auth]
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used

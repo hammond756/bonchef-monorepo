@@ -5,8 +5,18 @@ import { z } from "zod"
 import { GeneratedRecipe, GeneratedRecipeSchema } from "../types"
 import { parse } from "node-html-parser"
 import { unitTranslations } from "@/lib/translations"
+import { MessageContent } from "@langchain/core/messages"
 
-type GeneratedRecipeWithSource = GeneratedRecipe & { source_name: string; source_url: string }
+export type GeneratedRecipeWithSourceAndThumbnail = GeneratedRecipe & {
+    source_name: string
+    source_url: string
+    thumbnail: string | null
+}
+
+export type RecipeGenerationMetadata = {
+    containsFood: boolean
+    enoughContext: boolean
+}
 
 function translateRecipeUnits<T extends GeneratedRecipe>(recipe: T): T {
     return {
@@ -25,9 +35,83 @@ function translateRecipeUnits<T extends GeneratedRecipe>(recipe: T): T {
     }
 }
 
-export async function formatRecipe(text: string): Promise<{
-    recipe: GeneratedRecipeWithSource
-    thumbnailUrl: string | null
+export async function recipeFromSocialMediaVideo(
+    textInput: string,
+    imageUrl: string
+): Promise<{
+    recipe: GeneratedRecipe
+    metadata: RecipeGenerationMetadata
+}> {
+    const langfuse = new Langfuse()
+    const promptClient = await langfuse.getPrompt("SocialMediaVideoImport", undefined, {
+        type: "text",
+    })
+
+    const content: {
+        role: "system" | "user"
+        content: MessageContent
+    }[] = [
+        {
+            role: "system",
+            content: await promptClient.compile(),
+        },
+        {
+            role: "user",
+            content: [
+                {
+                    type: "text",
+                    text: textInput,
+                },
+            ],
+        },
+    ]
+
+    if (imageUrl) {
+        content.push({
+            role: "user",
+            content: [
+                {
+                    type: "image_url",
+                    image_url: { url: imageUrl, detail: "high" },
+                },
+            ],
+        })
+    }
+
+    const model = new ChatOpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+        modelName: "gpt-4.1",
+        temperature: 0.1,
+        maxTokens: 4096,
+    }).withStructuredOutput(
+        z.object({
+            recipe: GeneratedRecipeSchema,
+            metadata: z.object({
+                containsFood: z.boolean(),
+                enoughContext: z.boolean(),
+            }),
+        }),
+        {
+            name: "response",
+        }
+    )
+
+    const response = await model.invoke(content, {
+        callbacks: [new CallbackHandler()],
+    })
+
+    return {
+        recipe: translateRecipeUnits(response.recipe),
+        metadata: response.metadata,
+    }
+}
+
+export async function formatRecipe(
+    text: string,
+    imageUrl?: string
+): Promise<{
+    recipe: GeneratedRecipeWithSourceAndThumbnail
+    metadata: RecipeGenerationMetadata
 }> {
     const model = new ChatOpenAI({
         apiKey: process.env.OPENAI_API_KEY,
@@ -39,13 +123,21 @@ export async function formatRecipe(text: string): Promise<{
             recipe: GeneratedRecipeSchema.extend({
                 source_name: z.string(),
                 source_url: z.string(),
+                thumbnail: z
+                    .string()
+                    .nullable()
+                    .describe(
+                        "The URL of the main image for the recipe. This should be the most appealing and representative image available on the page. MUST be null if no image URL is found."
+                    ),
             }),
-            thumbnailUrl: z
-                .string()
-                .nullable()
-                .describe(
-                    "The URL of the main image for the recipe. This should be the most appealing and representative image available on the page. MUST be null if no image URL is found."
-                ),
+            metadata: z.object({
+                containsFood: z
+                    .boolean()
+                    .describe("Whether the content contains food or recipe-related information"),
+                enoughContext: z
+                    .boolean()
+                    .describe("Whether there is enough context to generate a good recipe"),
+            }),
         })
     )
 
@@ -55,14 +147,32 @@ export async function formatRecipe(text: string): Promise<{
     })
     const prompt = promptClient.compile({ input: text })
 
+    if (imageUrl) {
+        prompt.push({
+            role: "user",
+            content: [
+                {
+                    type: "text",
+                    text: "Here is a collage of screenshots showing each step of the recipe. Use this to available information to generate a recipe, but keep in mind that it may not be enough to generate a good recipe.",
+                },
+                {
+                    type: "image_url",
+                    image_url: {
+                        url: imageUrl,
+                    },
+                },
+            ],
+        })
+    }
+
     try {
-        const { recipe, thumbnailUrl } = await model.invoke(prompt, {
+        const { recipe, metadata } = await model.invoke(prompt, {
             callbacks: [new CallbackHandler()],
         })
         const translatedRecipe = translateRecipeUnits(recipe)
         return {
             recipe: translatedRecipe,
-            thumbnailUrl,
+            metadata,
         }
     } catch (error: unknown) {
         // const errorMessage = error?.message || error?.response?.data?.error?.message || "";

@@ -37,7 +37,11 @@ export function useRecipeImport() {
             }, 300)
         } catch (error) {
             console.error(`Failed to start recipe import job for type ${type}`, error)
-            setError("Kon de server niet bereiken. Controleer je internetverbinding.")
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "Er ging iets mis bij het importeren van het recept. Het is helaas niet duidelijk wat de oorzaak is."
+            )
             setIsLoading(false)
         }
     }

@@ -97,6 +97,13 @@ export class TranscriptionService {
     }
 
     async transcribeAudioFile(file: File): ServiceResponse<string> {
+        if (!this.isValidFileSize(file)) {
+            return {
+                success: false,
+                error: "Het media bestand is te groot. Deze is helaas niet geschikt voor deze functie.",
+            }
+        }
+
         try {
             const transcription = await this.openai.audio.transcriptions.create({
                 file,
@@ -110,6 +117,13 @@ export class TranscriptionService {
             const errorMessage = this.formatErrorMessage(error)
             return { success: false, error: errorMessage }
         }
+    }
+
+    isValidFileSize(file: File): boolean {
+        if (file.size > 25 * 1024 * 1024) {
+            return false
+        }
+        return true
     }
 
     /**
