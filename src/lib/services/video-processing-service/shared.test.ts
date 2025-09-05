@@ -41,7 +41,10 @@ describe("Video Processing Service - Shared", () => {
                 "https://example.com/video.mp4"
             )
 
-            expect(result).toEqual(mockResponse)
+            expect(result.success).toEqual(true)
+            if (result.success) {
+                expect(result.data).toEqual(mockResponse)
+            }
             expect(mockFetch).toHaveBeenCalledWith("http://localhost:8000/api/v1/video/summarize", {
                 method: "POST",
                 headers: {
@@ -64,13 +67,13 @@ describe("Video Processing Service - Shared", () => {
                 json: () => Promise.resolve(mockError),
             })
 
-            await expect(
-                processVideoUrlWithEndpoint(
-                    "http://localhost:8000/api/v1/video/summarize",
-                    "api-key",
-                    "https://example.com/video.mp4"
-                )
-            ).rejects.toThrow("Video processing failed")
+            const videoSummaryResult = await processVideoUrlWithEndpoint(
+                "http://localhost:8000/api/v1/video/summarize",
+                "api-key",
+                "https://example.com/video.mp4"
+            )
+
+            expect(videoSummaryResult.success).toBe(false)
         })
 
         it("should throw error on network failure", async () => {

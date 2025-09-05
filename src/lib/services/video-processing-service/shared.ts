@@ -1,3 +1,5 @@
+import { ServiceResponse } from "@/lib/types"
+
 export interface VideoSummaryRequest {
     video_url: string
 }
@@ -8,11 +10,6 @@ export interface VideoSummaryResponse {
     transcript: string
     frames_used: number
     seconds_per_frame: number
-}
-
-export interface VideoProcessingError {
-    detail: string
-    status_code: number
 }
 
 /**
@@ -39,7 +36,7 @@ export async function processVideoUrlWithEndpoint(
     apiEndpoint: string,
     apiKey: string,
     videoUrl: string
-): Promise<VideoSummaryResponse> {
+): Promise<ServiceResponse<VideoSummaryResponse>> {
     const response = await fetch(apiEndpoint, {
         method: "POST",
         headers: {
@@ -50,9 +47,13 @@ export async function processVideoUrlWithEndpoint(
     })
 
     if (!response.ok) {
-        const errorData: VideoProcessingError = await response.json()
-        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`)
+        const errorData = await response.json()
+        console.error({ response: errorData, status: response.status })
+        return {
+            success: false,
+            error: "Er ging iets mis bij het verwerken van de video. Het is helaas niet duidelijk wat de oorzaak is.",
+        }
     }
 
-    return response.json()
+    return { success: true, data: (await response.json()) as VideoSummaryResponse }
 }

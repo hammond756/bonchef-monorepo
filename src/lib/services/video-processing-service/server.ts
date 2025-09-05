@@ -1,3 +1,4 @@
+import { ServiceResponse } from "@/lib/types"
 import { processVideoUrlWithEndpoint, validateVideoUrl, type VideoSummaryResponse } from "./shared"
 
 const API_BASE_URL = process.env.VIDEO_PROCESSING_API_URL || "http://localhost:8000"
@@ -9,7 +10,9 @@ const API_ENDPOINT = `${API_BASE_URL}/api/v1/video/summarize`
  * @param videoUrl - The video URL to process
  * @returns Promise resolving to video summary response
  */
-export const processVideoUrl = async (videoUrl: string): Promise<VideoSummaryResponse> => {
+export const processVideoUrl = async (
+    videoUrl: string
+): Promise<ServiceResponse<VideoSummaryResponse>> => {
     return processVideoUrlWithEndpoint(API_ENDPOINT, API_KEY, videoUrl)
 }
 

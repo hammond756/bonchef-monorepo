@@ -283,7 +283,13 @@ async function handleVerticalVideoImport(
     }
 
     // Process video through external service to get collage and transcript
-    const videoSummary = await processVideoUrl(scrapeResult.data.videoUrl)
+    const videoSummaryResult = await processVideoUrl(scrapeResult.data.videoUrl)
+
+    if (!videoSummaryResult.success) {
+        throw new Error(videoSummaryResult.error)
+    }
+
+    const videoSummary = videoSummaryResult.data
     const combinedText = `${scrapeResult.data.caption}\n\n${videoSummary.transcript}`
 
     const { recipe: transcriptionRecipe, metadata: transcriptionMetadata } =
