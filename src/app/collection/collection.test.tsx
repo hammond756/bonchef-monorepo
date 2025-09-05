@@ -2,7 +2,7 @@ import { describe, test, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import CollectionPage from "./page"
 import { RecipeImportJob, RecipeRead } from "@/lib/types"
-import { MyRecipesTabContent } from "./page"
+import { MyRecipes } from "@/components/collection/my-recipes"
 import { useBookmarkedRecipes } from "@/hooks/use-bookmarked-recipes"
 import { useOwnRecipes } from "@/hooks/use-own-recipes"
 import { useRecipeImportJobs } from "@/hooks/use-recipe-import-jobs"
@@ -165,8 +165,8 @@ describe("Collection Page", () => {
     })
 })
 
-// Test the MyRecipesTabContent component directly
-describe("MyRecipesTabContent Component", () => {
+// Test the MyRecipes component directly
+describe("MyRecipes Component", () => {
     beforeEach(() => {
         // Reset all mocks before each test
         vi.clearAllMocks()
@@ -191,7 +191,7 @@ describe("MyRecipesTabContent Component", () => {
             mutate: vi.fn(),
         })
 
-        render(<MyRecipesTabContent viewMode="grid" sortOrder="newest" />)
+        render(<MyRecipes viewMode="grid" sortOrder="newest" />)
         // Check for skeleton loading state - should show 8 skeleton cards
         const skeletonCards = screen
             .getAllByRole("generic")
@@ -220,7 +220,7 @@ describe("MyRecipesTabContent Component", () => {
             mutate: vi.fn(),
         })
 
-        render(<MyRecipesTabContent viewMode="grid" sortOrder="newest" />)
+        render(<MyRecipes viewMode="grid" sortOrder="newest" />)
         // Check for welcome section content
         expect(screen.getByText("Welkom bij jouw kookboek!")).toBeInTheDocument()
         expect(
@@ -266,7 +266,7 @@ describe("MyRecipesTabContent Component", () => {
             mutate: vi.fn(),
         })
 
-        render(<MyRecipesTabContent viewMode="grid" sortOrder="newest" />)
+        render(<MyRecipes viewMode="grid" sortOrder="newest" />)
 
         // Check that failed job comes first
         expect(screen.getByTestId("failed-job-failed1")).toBeInTheDocument()
@@ -319,7 +319,7 @@ describe("MyRecipesTabContent Component", () => {
             mutate: vi.fn(),
         })
 
-        render(<MyRecipesTabContent viewMode="grid" sortOrder="oldest" />)
+        render(<MyRecipes viewMode="grid" sortOrder="oldest" />)
 
         // Check that failed job comes first (regardless of date)
         expect(screen.getByTestId("failed-job-failed1")).toBeInTheDocument()
@@ -365,7 +365,7 @@ describe("MyRecipesTabContent Component", () => {
             mutate: vi.fn(),
         })
 
-        render(<MyRecipesTabContent viewMode="list" sortOrder="newest" />)
+        render(<MyRecipes viewMode="list" sortOrder="newest" />)
 
         // Check that list items are rendered
         expect(screen.getByTestId("in-progress-list-item-pending1")).toBeInTheDocument()
@@ -429,7 +429,7 @@ describe("MyRecipesTabContent Component", () => {
             mutate: vi.fn(),
         })
 
-        render(<MyRecipesTabContent viewMode="grid" sortOrder="newest" />)
+        render(<MyRecipes viewMode="grid" sortOrder="newest" />)
 
         // Get all rendered elements
         const failedJobs = screen.getAllByText("Import mislukt")

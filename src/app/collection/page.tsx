@@ -1,17 +1,8 @@
 "use client"
 
-import { useState, Suspense, useMemo } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import { RecipeRead, RecipeImportJob } from "@/lib/types"
-import { Tabs, TabsContent } from "@/components/ui/tabs"
-import { AppTabsList } from "@/components/ui/app-tabs"
-import { useBookmarkedRecipes } from "@/hooks/use-bookmarked-recipes"
-import { useOwnRecipes } from "@/hooks/use-own-recipes"
-import { useRecipeImportJobs } from "@/hooks/use-recipe-import-jobs"
+import { useState, Suspense } from "react"
 import { useQueryState } from "nuqs"
-import { ArrowDown, LayoutGrid, List, PlusIcon } from "lucide-react"
+import { LayoutGrid, List } from "lucide-react"
 import {
     Select,
     SelectContent,
@@ -19,180 +10,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import React from "react"
-import { RecipeCard } from "@/components/recipe/recipe-card"
-import { PendingJob } from "@/components/recipe/pending-job"
-import { FailedJob } from "@/components/recipe/failed-job"
-import { NavigationTracker } from "@/components/util/navigation-tracker"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
+import { AppTabsList } from "@/components/ui/app-tabs"
 import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 import { cn } from "@/lib/utils"
-import { InProgressRecipeListItem, RecipeListItem } from "@/components/recipe/recipe-list-item"
+import { NavigationTracker } from "@/components/util/navigation-tracker"
+import { RecipeGridSkeleton } from "@/components/collection/recipe-grid-skeleton"
+import { MyRecipes } from "@/components/collection/my-recipes"
+import { FavoritesTabContent } from "@/components/collection/favorites-tab-content"
 
-// A union type for items that can be displayed in the collection grid/list
-type CollectionItem =
-    | (RecipeRead & { viewType: "RECIPE" })
-    | (RecipeImportJob & { viewType: "JOB" })
-
-function RecipeGrid({ items }: { items: Readonly<CollectionItem>[] }) {
-    if (!items || items.length === 0) {
-        return null
-    }
-
-    return (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
-            {items.map((item) =>
-                item.viewType === "RECIPE" ? (
-                    <RecipeCard key={item.id} recipe={item} />
-                ) : item.status === "failed" ? (
-                    <FailedJob key={item.id} job={item} />
-                ) : (
-                    <PendingJob key={item.id} job={item} />
-                )
-            )}
-        </div>
-    )
-}
-
-function RecipeList({ items }: { items: Readonly<CollectionItem>[] }) {
-    if (!items || items.length === 0) {
-        return null
-    }
-    return (
-        <div className="grid grid-cols-1 gap-4">
-            {items.map((item) =>
-                item.viewType === "RECIPE" ? (
-                    <RecipeListItem key={item.id} recipe={item} />
-                ) : (
-                    <InProgressRecipeListItem key={item.id} job={item} />
-                )
-            )}
-        </div>
-    )
-}
-
-function WelcomeSection() {
-    return (
-        <div className="py-10 text-center">
-            <h2 className="mb-2 text-xl font-bold">Welkom bij jouw kookboek!</h2>
-            <p className="text-muted-foreground mb-4">
-                Hier vind je al jouw recepten en favorieten op één plek. Klik op de{" "}
-                <PlusIcon className="inline-block" /> knop om je eerste recept toe te voegen.
-            </p>
-            <ArrowDown className="mx-auto mt-[100px] h-20 w-20 animate-bounce" />
-        </div>
-    )
-}
-
-function FavoritesCTA() {
-    return (
-        <div className="py-10 text-center">
-            <h2 className="mb-2 text-xl font-bold">Nog geen favorieten</h2>
-            <p className="text-muted-foreground mb-4">
-                Ontdek nieuwe recepten en sla ze op als favoriet.
-            </p>
-            <Button asChild>
-                <Link href="/ontdek">Ontdek recepten</Link>
-            </Button>
-        </div>
-    )
-}
-
-function RecipePageSkeleton() {
-    return (
-        <div className="container mx-auto max-w-4xl px-4 pt-4 pb-10">
-            <div className="grid grid-cols-2 gap-4">
-                {Array.from({ length: 8 }).map((_, index) => (
-                    <div key={index} className="flex flex-col gap-2">
-                        <Skeleton className="aspect-[3/4] w-full" />
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
-}
-
-export function MyRecipesTabContent({
-    viewMode,
-    sortOrder,
-}: {
-    viewMode: "grid" | "list"
-    sortOrder: "newest" | "oldest"
-}) {
-    const { recipes: userRecipes, isLoading: userRecipesLoading } = useOwnRecipes()
-    const { jobs: importJobs, isLoading: importJobsLoading } = useRecipeImportJobs()
-
-    const myRecipesAndJobs = useMemo(() => {
-        // Failed jobs first, then pending jobs, then recipes
-        const failedJobs = importJobs
-            .filter((job) => job.status === "failed")
-            .map((job) => ({ ...job, viewType: "JOB" as const }))
-
-        const pendingJobs = importJobs
-            .filter((job) => job.status === "pending")
-            .map((job) => ({ ...job, viewType: "JOB" as const }))
-
-        const recipes = userRecipes.map((recipe) => ({ ...recipe, viewType: "RECIPE" as const }))
-
-        const allCards = [...failedJobs, ...pendingJobs, ...recipes]
-
-        return allCards.sort((a, b) => {
-            const dateA = new Date(a.created_at ?? 0).getTime()
-            const dateB = new Date(b.created_at ?? 0).getTime()
-            return sortOrder === "newest" ? dateB - dateA : dateA - dateB
-        })
-    }, [importJobs, userRecipes, sortOrder])
-
-    if (userRecipesLoading || importJobsLoading) {
-        return <RecipePageSkeleton />
-    }
-
-    if (myRecipesAndJobs.length === 0) {
-        return <WelcomeSection />
-    }
-
-    if (viewMode === "grid") {
-        return <RecipeGrid items={myRecipesAndJobs} />
-    }
-
-    return <RecipeList items={myRecipesAndJobs} />
-}
-
-function FavoritesTabContent({
-    viewMode,
-    sortOrder,
-}: {
-    viewMode: "grid" | "list"
-    sortOrder: "newest" | "oldest"
-}) {
-    const { recipes: bookmarkedRecipes, isLoading: bookmarkedRecipesLoading } =
-        useBookmarkedRecipes()
-
-    const sortedLikedRecipes = useMemo(() => {
-        const sorted = [...(bookmarkedRecipes || [])]
-        sorted.sort((a, b) => {
-            const dateA = new Date(a.created_at ?? 0).getTime()
-            const dateB = new Date(b.created_at ?? 0).getTime()
-            return sortOrder === "newest" ? dateB - dateA : dateA - dateB
-        })
-        return sorted.map((r) => ({ ...r, viewType: "RECIPE" as const }))
-    }, [bookmarkedRecipes, sortOrder])
-
-    if (bookmarkedRecipesLoading) {
-        return <RecipePageSkeleton />
-    }
-
-    if (sortedLikedRecipes.length === 0) {
-        return <FavoritesCTA />
-    }
-
-    if (viewMode === "grid") {
-        return <RecipeGrid items={sortedLikedRecipes} />
-    }
-
-    return <RecipeList items={sortedLikedRecipes} />
-}
-
-function RecipesSection() {
+function CollectionContent() {
     const [activeTab, setActiveTab] = useQueryState("tab", {
         defaultValue: "my-recipes",
     })
@@ -264,7 +91,7 @@ function RecipesSection() {
                     </div>
                 </div>
                 <TabsContent value="my-recipes" className="mt-0">
-                    <MyRecipesTabContent viewMode={viewMode} sortOrder={sortOrder} />
+                    <MyRecipes viewMode={viewMode} sortOrder={sortOrder} />
                 </TabsContent>
                 <TabsContent value="favorieten" className="mt-0">
                     <FavoritesTabContent viewMode={viewMode} sortOrder={sortOrder} />
@@ -274,22 +101,12 @@ function RecipesSection() {
     )
 }
 
-function RecipeGridSkeleton() {
-    return (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            {Array.from({ length: 6 }).map((_, index) => (
-                <Skeleton key={index} className="h-64 w-full" />
-            ))}
-        </div>
-    )
-}
-
 export default function CollectionPage() {
     return (
         <>
             <NavigationTracker path="/collection" />
             <Suspense fallback={<RecipeGridSkeleton />}>
-                <RecipesSection />
+                <CollectionContent />
             </Suspense>
         </>
     )

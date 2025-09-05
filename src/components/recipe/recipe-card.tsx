@@ -61,7 +61,7 @@ export function RecipeCard({ recipe }: { readonly recipe: Recipe }) {
                 priority={false}
             />
 
-            <div className="absolute top-2 right-2">
+            <div className="absolute top-2 right-2 z-10">
                 <BookmarkButton
                     recipeId={recipe.id}
                     showCount={false}
