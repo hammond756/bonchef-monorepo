@@ -215,7 +215,7 @@ export interface PublicProfile {
 }
 
 export const RecipeImportStatusEnum = z.enum(["pending", "completed", "failed"])
-export const RecipeImportSourceTypeEnum = z.enum(["url", "image", "text"])
+export const RecipeImportSourceTypeEnum = z.enum(["url", "image", "text", "vertical_video"])
 
 export const RecipeImportJobSchema = z.object({
     id: z.string(),

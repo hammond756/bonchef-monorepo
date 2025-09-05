@@ -9,6 +9,7 @@ import { listJobs, deleteRecipeImportJob } from "@/lib/services/recipe-imports-j
 import { useSession } from "@/hooks/use-session"
 import { useOwnRecipes } from "./use-own-recipes"
 import { trackEvent } from "@/lib/analytics/track"
+import { NonCompletedRecipeImportJob } from "@/lib/services/recipe-imports-job/shared"
 
 export function useRecipeImportJobs() {
     const { session } = useSession()
@@ -16,7 +17,7 @@ export function useRecipeImportJobs() {
     const previousJobsRef = useRef<RecipeImportJob[]>([])
     const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
-    const { data, error, isLoading, mutate } = useSWR<RecipeImportJob[]>(
+    const { data, error, isLoading, mutate } = useSWR<NonCompletedRecipeImportJob[]>(
         session ? ["jobs", session.user.id] : null,
         async () => {
             const response = await listJobs(session!.user.id)
@@ -48,7 +49,7 @@ export function useRecipeImportJobs() {
         sourceData: string,
         onboardingSessionId?: string
     ) => {
-        const optimisticJob: RecipeImportJob = {
+        const optimisticJob: NonCompletedRecipeImportJob = {
             id: crypto.randomUUID(),
             status: "pending",
             source_type: type,

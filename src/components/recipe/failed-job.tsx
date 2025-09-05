@@ -3,6 +3,7 @@
 import { RecipeImportJob } from "@/lib/types"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { useRecipeImportJobs } from "@/hooks/use-recipe-import-jobs"
+import Image from "next/image"
 
 export function FailedJob({ job }: { readonly job: RecipeImportJob }) {
     const { isDeleting, removeJob } = useRecipeImportJobs()
@@ -15,6 +16,29 @@ export function FailedJob({ job }: { readonly job: RecipeImportJob }) {
 
     const jobIsBeingDeleted = isDeleting === job.id
 
+    function getSourceData(job: RecipeImportJob) {
+        if (job.source_type === "url" || job.source_type === "vertical_video") {
+            return (
+                <a href={job.source_data} target="_blank" rel="noopener noreferrer">
+                    {job.source_data}
+                </a>
+            )
+        } else if (job.source_type === "image") {
+            return (
+                <Image
+                    src={job.source_data}
+                    alt="Imported image"
+                    width={100}
+                    height={300}
+                    className="inline-block"
+                />
+            )
+        } else if (job.source_type === "text") {
+            return <p>{job.source_data.slice(0, 100)}...</p>
+        }
+        return null
+    }
+
     return (
         <div className="group relative block aspect-[3/4] w-full overflow-hidden rounded-lg">
             <div className="absolute inset-x-0 bottom-0 z-10 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
@@ -23,6 +47,7 @@ export function FailedJob({ job }: { readonly job: RecipeImportJob }) {
                 <AlertCircle className="h-10 w-10 text-red-500" />
                 <div className="space-y-2">
                     <p className="text-sm font-medium text-red-700">Import mislukt</p>
+                    {getSourceData(job)}
                     {job.error_message && (
                         <p className="text-xs leading-relaxed text-red-600">{job.error_message}</p>
                     )}

@@ -7,7 +7,7 @@ import { useImportStatusStore } from "@/lib/store/import-status-store"
 
 interface ImportPopupBaseProps {
     title: string
-    description: string
+    description?: string
     isLoading: boolean
     children: React.ReactNode
     onSubmit: () => void
@@ -88,7 +88,9 @@ export function ImportPopupBase({
                             <X className="h-5 w-5" />
                         </Button>
                     </div>
-                    <p className="text-muted-foreground mb-4 text-sm">{description}</p>
+                    {description && (
+                        <p className="text-muted-foreground mb-4 text-sm">{description}</p>
+                    )}
                     <div className="space-y-4">
                         {children}
                         {error && (

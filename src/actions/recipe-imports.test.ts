@@ -111,8 +111,7 @@ describe("validateRecipeContent", () => {
             const result = validateRecipeContent(recipe as any, "text")
 
             expect(result.isError).toBe(false)
-            expect(result.message).toBeUndefined()
-            expect(result.warning).toBe(
+            expect(result.message).toBe(
                 "Het lijkt erop dat er beperkte context beschikbaar is - recept wordt gegenereerd met beschikbare informatie"
             )
         })
@@ -125,38 +124,30 @@ describe("validateRecipeContent", () => {
             expect(result.message).toBe("Deze tekst lijkt geen recept te bevatten")
             expect(result.warning).toBeUndefined()
         })
+
+        test("fails when not enough context for vertical_video", () => {
+            const recipe = createMockRecipe({ containsFood: true, enoughContext: false })
+            const result = validateRecipeContent(recipe as any, "vertical_video")
+
+            expect(result.isError).toBe(true)
+            expect(result.message).toBe(
+                "We konden niet genoeg informatie vinden om een goed recept te maken"
+            )
+        })
+
+        test("fails when no food content for vertical_video", () => {
+            const recipe = createMockRecipe({ containsFood: false, enoughContext: true })
+            const result = validateRecipeContent(recipe as any, "vertical_video")
+
+            expect(result.isError).toBe(true)
+            expect(result.message).toBe("Deze video lijkt geen recept te bevatten")
+        })
     })
 
     describe("Edge cases", () => {
         test("handles unknown source type gracefully", () => {
             const recipe = createMockRecipe()
             const result = validateRecipeContent(recipe as any, "unknown" as any)
-
-            expect(result.isError).toBe(false)
-            expect(result.message).toBeUndefined()
-            expect(result.warning).toBeUndefined()
-        })
-
-        test("skips validation for existing recipes without quality fields", () => {
-            const existingRecipe = {
-                containsFood: undefined,
-                enoughContext: undefined,
-                thumbnail: "test.jpg",
-            }
-            const result = validateRecipeContent(existingRecipe as any, "image")
-
-            expect(result.isError).toBe(false)
-            expect(result.message).toBeUndefined()
-            expect(result.warning).toBeUndefined()
-        })
-
-        test("skips validation for recipes with partial quality fields", () => {
-            const partialRecipe = {
-                containsFood: true,
-                enoughContext: undefined,
-                thumbnail: "test.jpg",
-            }
-            const result = validateRecipeContent(partialRecipe as any, "image")
 
             expect(result.isError).toBe(false)
             expect(result.message).toBeUndefined()

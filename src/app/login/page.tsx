@@ -16,7 +16,12 @@ export default function LoginPage() {
                             op de timeline
                         </Link>
                         . Alleen even proberen? Log dan in{" "}
-                        <button className="underline" onClick={createTemporaryUser}>
+                        <button
+                            className="underline"
+                            onClick={createTemporaryUser}
+                            role="link"
+                            aria-label="Log in met test account"
+                        >
                             met een test account
                         </button>
                         .

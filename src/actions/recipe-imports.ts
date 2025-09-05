@@ -9,6 +9,7 @@ import {
     GeneratedRecipeWithSourceAndThumbnail,
     normalizeUrl,
     RecipeGenerationMetadata,
+    recipeFromSocialMediaVideo,
 } from "@/lib/services/web-service"
 import { RecipeService } from "@/lib/services/recipe-service"
 import { RecipeGenerationService } from "@/lib/services/recipe-generation-service"
@@ -40,6 +41,24 @@ function translateRecipeUnits<T extends GeneratedRecipe>(recipe: T): T {
             }),
         })),
     }
+}
+
+async function uploadExternalImage(url: string): Promise<string> {
+    let { data, contentType, extension } = await hostedImageToBuffer(url)
+
+    // Convert webp to jpeg before uploading
+    if (contentType === "image/webp") {
+        data = await sharp(data).jpeg().toBuffer()
+        contentType = "image/jpeg"
+        extension = "jpg"
+    } else if (contentType === "image/svg+xml") {
+        // Convert svg to png before uploading
+        data = await sharp(data).png().toBuffer()
+        contentType = "image/png"
+        extension = "png"
+    }
+
+    return uploadImage(new File([data], `scraped-thumbnail.${extension}`, { type: contentType }))
 }
 
 export async function scrapeRecipe(
@@ -74,24 +93,7 @@ export async function scrapeRecipe(
         }
     }
 
-    let { data, contentType, extension } = await hostedImageToBuffer(finalThumbnailUrl)
-
-    // Convert webp to jpeg before uploading
-    if (contentType === "image/webp") {
-        data = await sharp(data).jpeg().toBuffer()
-        contentType = "image/jpeg"
-        extension = "jpg"
-    } else if (contentType === "image/svg+xml") {
-        // Convert svg to png before uploading
-        data = await sharp(data).png().toBuffer()
-        contentType = "image/png"
-        extension = "png"
-    }
-
-    const thumbnail = await uploadImage(
-        new File([data], `scraped-thumbnail.${extension}`, { type: contentType })
-    )
-
+    const thumbnail = await uploadExternalImage(finalThumbnailUrl)
     const sourceName = recipeInfo.recipe.source_name || getHostnameFromUrl(normalizedUrl)
     const translatedRecipe = translateRecipeUnits(recipeInfo.recipe)
 
@@ -238,6 +240,68 @@ export async function createDraftRecipe(
     return savedRecipe.data
 }
 
+import { ApifyService, ScrapeResult } from "@/lib/services/apify-service"
+import { processVideoUrl } from "@/lib/services/video-processing-service/server"
+
+async function handleVerticalVideoImport(
+    sourceData: string
+): Promise<{ recipe: GeneratedRecipeWithSourceAndThumbnail; metadata: RecipeGenerationMetadata }> {
+    const apifyService = new ApifyService({
+        apiToken: process.env.APIFY_API_KEY!,
+    })
+
+    let scrapeResult: { success: true; data: ScrapeResult } | { success: false; error: string } = {
+        success: false,
+        error: "No scrape result",
+    }
+
+    if (sourceData.includes("instagram.com")) {
+        scrapeResult = await apifyService.scrapeInstagramReel(sourceData)
+    } else if (sourceData.includes("tiktok.com")) {
+        scrapeResult = await apifyService.scrapeTikTok(sourceData)
+    }
+
+    if (!scrapeResult.success) {
+        throw new Error(scrapeResult.error)
+    }
+
+    const thumbnail = await uploadExternalImage(scrapeResult.data.thumbnailUrl)
+    const { recipe: captionRecipe, metadata: captionMetadata } = await formatRecipe(
+        scrapeResult.data.caption
+    )
+
+    if (captionMetadata.enoughContext && captionMetadata.containsFood) {
+        return {
+            recipe: {
+                ...captionRecipe,
+                thumbnail,
+                source_name: scrapeResult.data.author,
+                source_url: sourceData,
+            },
+            metadata: captionMetadata,
+        }
+    }
+
+    // Process video through external service to get collage and transcript
+    const videoSummary = await processVideoUrl(scrapeResult.data.videoUrl)
+    const combinedText = `${scrapeResult.data.caption}\n\n${videoSummary.transcript}`
+
+    const { recipe: transcriptionRecipe, metadata: transcriptionMetadata } =
+        await recipeFromSocialMediaVideo(combinedText, videoSummary.collage_url)
+
+    const translatedRecipe = translateRecipeUnits(transcriptionRecipe)
+
+    return {
+        recipe: {
+            ...translatedRecipe,
+            thumbnail,
+            source_name: scrapeResult.data.author,
+            source_url: sourceData,
+        },
+        metadata: transcriptionMetadata,
+    }
+}
+
 async function _processJobInBackground(
     job: {
         id: string
@@ -261,6 +325,9 @@ async function _processJobInBackground(
             case "text":
                 ;({ recipe, metadata } = await generateRecipeFromSnippet(job.source_data))
                 break
+            case "vertical_video":
+                ;({ recipe, metadata } = await handleVerticalVideoImport(job.source_data))
+                break
             default:
                 throw new Error(`Unsupported source type: ${job.source_type}`)
         }
@@ -269,11 +336,6 @@ async function _processJobInBackground(
         const validationResult = validateRecipeContent(metadata, job.source_type)
         if (validationResult.isError) {
             throw new Error(validationResult.message)
-        }
-
-        // If there's a warning (enoughContext: false for text/URLs), log it but continue
-        if (validationResult.warning) {
-            console.warn(`Job ${job.id}: ${validationResult.warning}`)
         }
 
         const savedRecipe = await createDraftRecipe({
@@ -340,7 +402,7 @@ async function _processJobInBackground(
 }
 
 export async function startRecipeImportJob(
-    sourceType: "url" | "image" | "text",
+    sourceType: "url" | "image" | "text" | "vertical_video",
     sourceData: string,
     onboardingSessionId?: string
 ) {

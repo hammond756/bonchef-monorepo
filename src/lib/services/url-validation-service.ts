@@ -11,11 +11,10 @@ interface UrlValidationResult {
  * List of unsupported URL patterns that should be blocked
  * This can be easily extended by adding new patterns
  */
-const UNSUPPORTED_URL_PATTERNS = [
+const PATTERNS_TO_CHECK = [
     // Social media platforms
     { pattern: /facebook\.(com|nl|be|de|fr|co\.uk)/i, name: "Facebook" },
     { pattern: /instagram\.(com|nl|be|de|fr|co\.uk)/i, name: "Instagram" },
-    { pattern: /tiktok\.(com|nl|be|de|fr|co\.uk)/i, name: "TikTok" },
 
     // Dutch supermarkets
     { pattern: /ah\.nl/i, name: "Albert Heijn" },
@@ -35,8 +34,12 @@ export function validateUrlForImport(url: string): UrlValidationResult {
         const urlObj = new URL(normalizedUrl)
 
         // Check against unsupported patterns (social media, Albert Heijn, etc.)
-        for (const { pattern } of UNSUPPORTED_URL_PATTERNS) {
-            if (pattern.test(urlObj.hostname)) {
+        for (const { pattern, name } of PATTERNS_TO_CHECK) {
+            if (pattern.test(urlObj.href)) {
+                if (name === "Instagram") {
+                    return validateInstagramUrl(url)
+                }
+
                 return {
                     isValid: false,
                     errorMessage: `Deze bron ondersteunen we via URL nog niet (maar dat komt eraan!). Probeer het intussen met een foto of screenshot 😉`,
@@ -63,4 +66,18 @@ function normalizeUrl(url: string): string {
         return `https://${url}`
     }
     return url
+}
+
+function validateInstagramUrl(url: string): UrlValidationResult {
+    const urlObj = new URL(url)
+
+    if (urlObj.pathname.includes("/reel/")) {
+        return { isValid: true }
+    }
+
+    return {
+        isValid: false,
+        errorMessage:
+            "Sorry! Op dit moment ondersteunen we voor Instagram alleen het importeren van reels.",
+    }
 }

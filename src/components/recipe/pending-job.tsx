@@ -1,7 +1,7 @@
 "use client"
 
 import { RecipeImportJob } from "@/lib/types"
-import { Loader2, LinkIcon, TextIcon } from "lucide-react"
+import { Loader2, LinkIcon, TextIcon, VideoIcon } from "lucide-react"
 import { getHostnameFromUrl } from "@/lib/utils"
 import Image from "next/image"
 import { RecipeCardContainer, RecipeCardTitle } from "./recipe-card"
@@ -23,6 +23,18 @@ export function PendingJob({ job }: { readonly job: RecipeImportJob }) {
                             <Loader2 className="h-8 w-8 animate-spin text-white" />
                         </div>
                     </>
+                )
+            case "vertical_video":
+                return (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-100 p-4">
+                        <VideoIcon className="h-10 w-10 text-slate-400" />
+                        <p className="line-clamp-4 text-sm text-slate-600 italic">
+                            {getHostnameFromUrl(job.source_data)}
+                        </p>
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <Loader2 className="h-8 w-8 animate-spin text-white" />
+                        </div>
+                    </div>
                 )
             case "url":
                 return (

@@ -10,64 +10,40 @@ export function validateRecipeContent(
     metadata: RecipeGenerationMetadata,
     sourceType: string
 ): { isError: boolean; message?: string; warning?: string } {
-    // Only validate if the recipe has the new quality validation fields
-    // This prevents validation errors on existing recipes that don't have these fields
-    if (metadata.containsFood === undefined || metadata.enoughContext === undefined) {
-        return { isError: false } // Skip validation for existing recipes
+    const messages: Record<string, Record<string, string>> = {
+        no_food: {
+            image: "Deze afbeelding lijkt geen recept te bevatten",
+            url: "Deze pagina lijkt geen recept te bevatten",
+            text: "Deze tekst lijkt geen recept te bevatten",
+            vertical_video: "Deze video lijkt geen recept te bevatten",
+        },
+        no_context: {
+            image: "We konden niet genoeg informatie uit de afbeelding halen om een recept te maken",
+            url: "We konden niet genoeg informatie vinden om een goed recept te maken",
+            text: "Het lijkt erop dat er beperkte context beschikbaar is - recept wordt gegenereerd met beschikbare informatie",
+            vertical_video: "We konden niet genoeg informatie vinden om een goed recept te maken",
+        },
     }
 
-    // Strict validation for images
-    if (sourceType === "image") {
-        if (!metadata.containsFood) {
-            return {
-                isError: true,
-                message: "Deze afbeelding lijkt geen recept te bevatten",
-            }
-        }
-        if (!metadata.enoughContext) {
-            return {
-                isError: true,
-                message:
-                    "We konden niet genoeg informatie uit de afbeelding halen om een recept te maken",
-            }
-        }
-    }
-
-    // Strict validation for URLs (same as images)
-    if (sourceType === "url") {
-        if (!metadata.containsFood) {
-            return {
-                isError: true,
-                message: "Deze pagina lijkt geen recept te bevatten",
-            }
-        }
-        if (!metadata.enoughContext) {
-            return {
-                isError: true,
-                message: "We konden niet genoeg informatie vinden om een goed recept te maken",
-            }
+    if (metadata.containsFood && !metadata.enoughContext && sourceType === "text") {
+        return {
+            isError: false,
+            message: messages["no_context"]["text"],
         }
     }
 
-    // Flexible validation only for text snippets
-    if (sourceType === "text") {
-        if (!metadata.containsFood) {
-            return {
-                isError: true,
-                message: "Deze tekst lijkt geen recept te bevatten",
-            }
-        }
+    let messageType: "no_food" | "no_context"
 
-        // For text snippets, enoughContext: false is allowed to continue
-        // but we log a warning
-        if (!metadata.enoughContext) {
-            return {
-                isError: false,
-                warning:
-                    "Het lijkt erop dat er beperkte context beschikbaar is - recept wordt gegenereerd met beschikbare informatie",
-            }
-        }
+    if (!metadata.containsFood) {
+        messageType = "no_food"
+    } else if (!metadata.enoughContext) {
+        messageType = "no_context"
+    } else {
+        return { isError: false }
     }
 
-    return { isError: false } // Validation passed
+    return {
+        isError: !(metadata.containsFood && metadata.enoughContext),
+        message: messages[messageType][sourceType],
+    }
 }

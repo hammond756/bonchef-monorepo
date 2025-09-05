@@ -6,6 +6,7 @@ import { MyRecipes } from "@/components/collection/my-recipes"
 import { useBookmarkedRecipes } from "@/hooks/use-bookmarked-recipes"
 import { useOwnRecipes } from "@/hooks/use-own-recipes"
 import { useRecipeImportJobs } from "@/hooks/use-recipe-import-jobs"
+import { NonCompletedRecipeImportJob } from "@/lib/services/recipe-imports-job/shared"
 
 // Mock the hooks with factories
 vi.mock("@/hooks/use-bookmarked-recipes", () => ({
@@ -114,7 +115,9 @@ const createMockRecipe = (overrides: Partial<RecipeRead> = {}): RecipeRead => ({
     ...overrides,
 })
 
-const createMockJob = (overrides: Partial<RecipeImportJob> = {}): RecipeImportJob => ({
+const createMockJob = (
+    overrides: Partial<NonCompletedRecipeImportJob> = {}
+): NonCompletedRecipeImportJob => ({
     id: "job1",
     user_id: "user1",
     status: "pending",

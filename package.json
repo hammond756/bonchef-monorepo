@@ -49,6 +49,7 @@
         "@supabase/ssr": "^0.5.2",
         "@supabase/supabase-js": "^2.48.1",
         "@types/nodemailer": "^6.4.17",
+        "apify-client": "^2.15.0",
         "autoprefixer": "^10.4.21",
         "boring-avatars": "^1.11.2",
         "class-variance-authority": "^0.7.1",
