@@ -14,19 +14,16 @@ import {
 } from "@/lib/services/web-service"
 import { RecipeService } from "@/lib/services/recipe-service"
 import { RecipeGenerationService } from "@/lib/services/recipe-generation-service"
-import { getHostnameFromUrl, hostedImageToBuffer } from "@/lib/utils"
+import { getHostnameFromUrl } from "@/lib/utils"
 import { validateRecipeContent } from "@/lib/utils/recipe-validation"
 import { withTempFileFromUrl } from "@/lib/temp-file-utils"
 import { detectText } from "@/lib/services/google-vision-ai-service"
 import { StorageService } from "@/lib/services/storage-service"
 import { unitTranslations } from "@/lib/translations"
-import sharp from "sharp"
-import fs from "fs"
-import path from "path"
 import { OnboardingService } from "@/lib/services/onboarding-service"
 import { createJobWithClient } from "@/lib/services/recipe-imports-job/shared"
 import type { PhotoAnalysisResult } from "@/lib/services/photo-analysis-service"
-import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
+import { COLORFUL_PLACEHOLDER_IMAGE, TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
 
 function translateRecipeUnits<T extends GeneratedRecipe>(recipe: T): T {
     return {
@@ -46,20 +43,10 @@ function translateRecipeUnits<T extends GeneratedRecipe>(recipe: T): T {
 }
 
 async function uploadExternalImage(url: string): Promise<string> {
-    let { data, contentType, extension } = await hostedImageToBuffer(url)
-
-    // Convert webp to jpeg before uploading
-    if (contentType === "image/webp") {
-        data = await sharp(data).jpeg().toBuffer()
-        contentType = "image/jpeg"
-        extension = "jpg"
-    } else if (contentType === "image/svg+xml") {
-        // Convert svg to png before uploading
-        data = await sharp(data).png().toBuffer()
-        contentType = "image/png"
-        extension = "png"
-    }
-
+    const response = await fetch(url)
+    const data = await response.arrayBuffer()
+    const contentType = response.headers.get("content-type") || "image/jpeg"
+    const extension = contentType.split("/")[1] || "jpg"
     return uploadImage(new File([data], `scraped-thumbnail.${extension}`, { type: contentType }))
 }
 
@@ -80,16 +67,10 @@ export async function scrapeRecipe(
 
     if (!finalThumbnailUrl) {
         console.warn("[scrapeRecipe] No thumbnail URL found from any source. Using placeholder.")
-        const placeholderPath = path.join(process.cwd(), "public", "no-image_placeholder.png")
-        const placeholderBuffer = await fs.promises.readFile(placeholderPath)
-        const placeholderFile = new File([placeholderBuffer], "no-image_placeholder.png", {
-            type: "image/png",
-        })
-        const thumbnailUrl = await uploadImage(placeholderFile)
         return {
             recipe: {
                 ...recipeInfo.recipe,
-                thumbnail: thumbnailUrl,
+                thumbnail: COLORFUL_PLACEHOLDER_IMAGE,
             },
             metadata: recipeInfo.metadata,
         }
