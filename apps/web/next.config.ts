@@ -107,6 +107,11 @@ const nextConfig: NextConfig = {
             bodySizeLimit: "4mb",
         },
     },
+    compiler: {
+        removeConsole: {
+            exclude: ["error"],
+        },
+    },
 }
 
 export default nextConfig
