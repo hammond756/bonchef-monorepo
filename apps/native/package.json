@@ -3,11 +3,14 @@
   "main": "index.js",
   "version": "1.0.0",
   "scripts": {
+    "dev": "expo start",
     "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
+    "android": "expo start --android",
+    "build": "expo prebuild --no-install",
+    "ios": "expo start --ios",
     "web": "expo start --web",
+    "run-android": "expo run:android",
+    "run-ios": "expo run:ios",
     "lint": "expo lint",
     "postinstall": "patch-package"
   },
