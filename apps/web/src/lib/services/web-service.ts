@@ -7,6 +7,129 @@ import { parse } from "node-html-parser"
 import { unitTranslations } from "@/lib/translations"
 import { MessageContent } from "@langchain/core/messages"
 
+// Enhanced fetch function to bypass bot detection
+async function fetchWithRetry(url: string, maxRetries: number = 3): Promise<Response> {
+    const userAgents = [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0",
+    ]
+
+    const acceptLanguages = [
+        "en-US,en;q=0.9,nl;q=0.8",
+        "en-US,en;q=0.9",
+        "nl-NL,nl;q=0.9,en;q=0.8",
+        "en-GB,en;q=0.9,en-US;q=0.8",
+    ]
+
+    // Try different strategies
+    const strategies = [
+        { name: "direct", useProxy: false },
+        { name: "proxy", useProxy: true },
+    ]
+
+    for (const strategy of strategies) {
+        console.log(`[fetchWithRetry] Trying strategy: ${strategy.name}`)
+        
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+            try {
+                // Add random delay between attempts to avoid rate limiting
+                if (attempt > 0) {
+                    const delay = Math.random() * 2000 + 1000 // 1-3 seconds
+                    console.log(`[fetchWithRetry] Waiting ${Math.round(delay)}ms before retry ${attempt + 1}`)
+                    await new Promise(resolve => setTimeout(resolve, delay))
+                }
+
+                const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)]
+                const randomAcceptLanguage = acceptLanguages[Math.floor(Math.random() * acceptLanguages.length)]
+
+                const headers: HeadersInit = {
+                    "User-Agent": randomUserAgent,
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                    "Accept-Language": randomAcceptLanguage,
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "DNT": "1",
+                    "Connection": "keep-alive",
+                    "Upgrade-Insecure-Requests": "1",
+                    "Sec-Fetch-Dest": "document",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-User": "?1",
+                    "Cache-Control": "no-cache",
+                    "Pragma": "no-cache",
+                }
+
+                // Add referer for some requests to look more natural
+                if (Math.random() > 0.5) {
+                    headers["Referer"] = "https://www.google.com/"
+                }
+
+                // Add additional headers for proxy strategy
+                if (strategy.useProxy) {
+                    headers["X-Forwarded-For"] = generateRandomIP()
+                    headers["X-Real-IP"] = generateRandomIP()
+                    headers["CF-Connecting-IP"] = generateRandomIP()
+                }
+
+                console.log(`[fetchWithRetry] Attempt ${attempt + 1}/${maxRetries} with User-Agent: ${randomUserAgent.substring(0, 50)}...`)
+
+                let fetchUrl = url
+                let fetchOptions: RequestInit = {
+                    cache: "no-store",
+                    headers,
+                    signal: AbortSignal.timeout(30000), // 30 second timeout
+                }
+
+                // Use proxy if strategy requires it
+                if (strategy.useProxy && process.env.PROXY_URL) {
+                    fetchUrl = `${process.env.PROXY_URL}?url=${encodeURIComponent(url)}`
+                    // Remove some headers that might conflict with proxy
+                    delete headers["Accept-Encoding"]
+                }
+
+                const response = await fetch(fetchUrl, fetchOptions)
+
+                // Check if we got a bot detection page
+                const text = await response.text()
+                if (text.includes("Just a moment") || 
+                    text.includes("Checking your browser") || 
+                    text.includes("Cloudflare") ||
+                    text.includes("cf-chl-opt") ||
+                    text.includes("challenge-platform")) {
+                    console.warn(`[fetchWithRetry] Bot detection detected on attempt ${attempt + 1} with strategy ${strategy.name}`)
+                    if (attempt === maxRetries - 1) {
+                        continue // Try next strategy
+                    }
+                    continue
+                }
+
+                // If we got here, the response looks good
+                console.log(`[fetchWithRetry] Success on attempt ${attempt + 1} with strategy ${strategy.name}`)
+                return new Response(text, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: response.headers,
+                })
+
+            } catch (error) {
+                console.error(`[fetchWithRetry] Attempt ${attempt + 1} failed with strategy ${strategy.name}:`, error)
+                if (attempt === maxRetries - 1) {
+                    continue // Try next strategy
+                }
+            }
+        }
+    }
+
+    throw new Error("All fetch attempts failed with all strategies")
+}
+
+// Helper function to generate random IP addresses for proxy headers
+function generateRandomIP(): string {
+    return `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`
+}
+
 export type GeneratedRecipeWithSourceAndThumbnail = GeneratedRecipe & {
     source_name: string
     source_url: string
@@ -181,13 +304,7 @@ export async function getRecipeContent(url: string): Promise<{
 }> {
     try {
         console.log(`[getRecipeContent] Fetching URL: ${url}`)
-        const response = await fetch(url, {
-            cache: "no-store",
-            headers: {
-                "User-Agent":
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            },
-        })
+        const response = await fetchWithRetry(url)
 
         if (!response.ok) {
             console.error(`[getRecipeContent] Failed to fetch URL: ${await response.text()}`)
