@@ -1,0 +1,184 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Bonchef LLM Coding Guidelines
+
+## 🧑‍🍳 Business Context
+
+Bonchef is a social cooking platform where hobby chefs can upload, discover, like, and save recipes. The product is mobile-first, web-based, and powered by generative AI. It is currently in early-stage development with the goal of validating market interest through lean product iterations and small-scale user tests (e.g. via Instagram ads).
+
+The app is designed to scale across platforms (web, iOS, Android) and must remain maintainable by a small engineering team. As such, the codebase favors reusability, clarity, and strong architectural boundaries.
+
+---
+
+## 🔧 Tech Stack Overview
+
+- **Frontend & Backend:** Next.js (App Router, TypeScript)
+- **Database:** Supabase (PostgreSQL)
+- **Authentication & Storage:** Supabase
+- **Deployment:** Heroku
+- **E2E Testing:** Playwright (using sematic .getByRole() selectors)
+
+---
+
+## 🧱 Database Standards
+
+- Use **UUIDs** as primary keys on all tables  
+  - Type: `uuid`  
+  - Default: `gen_random_uuid()`
+- Use the Supabase CLI:  
+  - Create migrations via `supabase migrations new <name>`  
+  - Commit and version-control all schema changes
+- ❌ **Avoid database functions or Supabase edge functions**  
+  - Reason: Difficult to version, hard to observe/debug
+  - All business logic should live in versioned application code
+
+---
+
+## 🧠 Business Logic Architecture
+
+- Business logic must live in **pure service modules**:
+  - Must be reusable across:
+    - Server actions
+    - API routes
+    - Client components (when applicable)
+  - Inject all dependencies (e.g. Supabase client, config, user context)
+    - Never hardcode dependencies inside services
+    - Services must be portable across runtime contexts
+
+Follow @data-handling.mdc for designing testable services
+
+---
+
+## User Experience
+
+User interactions need to be as smooth as possible. That means that when they perform an action, they get instant feedback. To achieve this, we use SWR hooks + mutation. Follow @data-handling.mdc to design components and hooks that allow for efficient revalidation and optimistic updates/
+
+---
+
+## 📦 Code Quality & Style
+
+- Language: TypeScript (ES modules)
+- Use modern ES/React idioms (e.g. async/await, arrow functions, hooks)
+- **Docstrings are required** for all exported functions
+- Comments:
+  - Use sparingly
+  - Focus on the **why**, not the what
+  - Write all comments in **English**
+- Avoid unnecessary abstraction or early optimization
+- Service methods never throw errors, but return a success flag, like
+
+```
+type ServiceResponse<T> = Promise<{
+    success: false
+    error: string
+} | {
+    success: true
+    data: T
+}>
+```
+
+- Always mark component props as Readonly, by using ReadOnly<...>. React props should be read-only because it helps to enforce the principle of immutability in React functional components. By making props read-only, you ensure that the data passed from a parent component to a child component cannot be modified directly by the child component. This helps maintain a clear data flow and prevents unexpected side effects.
+- Avoid complex nesting, don't go more than 4 levels deep
+- Default parameters should come last in the function signature
+- Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator.
+
+---
+
+## 🔁 Code Reuse Rules
+
+- Prefer reuse over duplication
+- When building new functionality:
+  1. Check @design-patterns.mdc
+  2. Search for similar patterns in the codebase
+  3. Refactor shared logic first if needed
+  4. Apply the logic in the new feature
+- Respect existing folder and file structure
+  - Organize code by domain or feature
+  - src/components: re-usable ui components 
+  - src/app: pages
+  - src/hooks: re-usable state logic
+  - src/callbacks: callbacks for langchain invocations
+  - src/services: business logic services, organized by domain (recipes, users, storage, etc..)
+  - src/stores: localized caching tools (like those using zustand)
+  - src/lib/utils.ts: helper functions that are domain agnostic
+
+---
+
+## 🎨 Styling & Design System
+
+All new UI implementations and modifications **must** use the central Bonchef Design System.
+
+*   **Use Tokens:** Always use the defined design tokens from `src/app/globals.css` for colors, fonts, spacing, and border-radius.
+    *   **Example:** Use `bg-primary` instead of `bg-[#1E4D37]`. Use `rounded-xl` instead of `rounded-[12px]`.
+*   **Use `shadcn/ui` Components:** Leverage the existing UI components in `src/components/ui` (like `Button`, `Card`, `Alert`, `Badge`). These components already incorporate the correct styling and variants.
+*   **No Ad-Hoc Styling:** It is **forbidden** to use hardcoded hex colors, pixel values, or other "magic numbers" directly in component `className`s.
+*   **New Styles? Update the System!** If a new design introduces a style that doesn't yet exist in the design system, the **first step** must be to extend the system:
+    1.  Add the new color, font, etc., as a token to the `@theme` block in `src/app/globals.css`.
+    2.  Update the variants of an existing `ui` component (e.g., `badge.tsx`) or create a new reusable component if necessary.
+    3.  Only then, use the new token or component in the feature.
+
+---
+
+## How to Structure Components
+
+- **One Job, One Component:** Each component should have a single responsibility. If it grows complex, break it into smaller components.
+
+- **Separate Logic from Presentation:**
+    - **UI Components (`/ui`):** These are "dumb" components.
+        - They receive all data and functions exclusively through `props`.
+        - They do **not** fetch data or manage complex state.
+        - Their only purpose is to render UI.
+    - **Feature Components (`/components/feature-name`):** These are "smart" components.
+        - They manage state and fetch data, usually by calling hooks.
+        - They pass data and functions down to UI components as props.
+
+- **Extract All Logic to Hooks:**
+    - Any reusable logic, data fetching, or state management **must** be extracted into a custom hook in the `src/hooks` directory (e.g., `useUser`, `useRecipeData`).
+    - Components then consume these hooks.
+
+- **Callbacks Must Be Props:**
+    - A component should never call an analytics or API service directly.
+    - Instead, it must call a function passed in via its props (e.g., `<Button onClick={props.onSave}>`).
+    - This makes the component reusable and easy to test. 
+
+---
+
+## ✅ Testing Requirements
+
+- Use **Playwright** for E2E tests
+  - Target elements by role (aria-label, semantic elements)
+- Prioritize:
+  - E2E and integration tests for user flows
+  - Unit tests for core business logic (using vitest, following @component-testing.mdc)
+- Ensure all new features include or extend tests
+
+---
+
+## 🔄 Deployment & CI
+
+- App is deployed on **Heroku**
+- Use Heroku Config Vars for environment settings
+- All migrations must be committed before release
+- No changes should rely solely on the Supabase UI
+
+---
+
+## ✅ Summary Checklist for LLMs
+
+- [ ] Use UUIDs as PKs  
+- [ ] Write and version migrations  
+- [ ] Avoid edge/database functions  
+- [ ] Use services with injected dependencies  
+- [ ] Reuse and refactor before duplicating code  
+- [ ] Add `aria-label` in UI components  
+- [ ] Provide docstrings for all functions  
+- [ ] Comment *why*, not what  
+- [ ] Include tests or extend existing ones
+
+---
+
+> Generated code should be idiomatic, modular, testable, and follow the practices above. When in doubt, prefer explicitness over cleverness.
