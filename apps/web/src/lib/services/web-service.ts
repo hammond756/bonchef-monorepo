@@ -182,6 +182,7 @@ export async function getRecipeContent(url: string): Promise<{
     try {
         console.log(`[getRecipeContent] Fetching URL: ${url}`)
         const response = await fetch(url, {
+            cache: "no-store",
             headers: {
                 "User-Agent":
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
