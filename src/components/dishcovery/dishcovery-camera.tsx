@@ -3,7 +3,8 @@
 import { useState, useRef } from "react"
 import { CameraView } from "@/components/ui/camera-view"
 import { motion, AnimatePresence } from "framer-motion"
-import { ClientBackButton } from "../ui/client-back-button"
+import { useRouter } from "next/navigation"
+import { CloseButton } from "../ui/close-button"
 
 interface DishcoveryCameraProps {
     onPhotoCaptured: (photo: CapturedPhoto) => void
@@ -17,6 +18,7 @@ interface CapturedPhoto {
 
 export function DishcoveryCamera({ onPhotoCaptured }: DishcoveryCameraProps) {
     const [error, setError] = useState<string | null>(null)
+    const router = useRouter()
 
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -67,7 +69,13 @@ export function DishcoveryCamera({ onPhotoCaptured }: DishcoveryCameraProps) {
 
     return (
         <div className="flex h-full flex-col">
-            <ClientBackButton />
+            {/* Header */}
+            <div className="absolute top-0 right-0 left-0 z-40 flex items-center justify-between p-4">
+                <CloseButton onClick={() => router.back()} />
+                <h2 className="text-lg font-semibold text-white">Gerecht vastleggen</h2>
+                <div className="w-10" /> {/* Spacer */}
+            </div>
+
             {/* Camera/Photo area */}
             <div className="relative flex-1">
                 <CameraView
