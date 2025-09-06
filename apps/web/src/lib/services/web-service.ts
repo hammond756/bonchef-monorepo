@@ -190,6 +190,7 @@ export async function getRecipeContent(url: string): Promise<{
         })
 
         if (!response.ok) {
+            console.error(`[getRecipeContent] Failed to fetch URL: ${await response.text()}`)
             throw new Error(`Failed to fetch URL: ${response.status} ${response.statusText}`)
         }
 
