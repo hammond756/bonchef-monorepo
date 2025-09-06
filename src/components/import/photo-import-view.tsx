@@ -159,18 +159,9 @@ export function PhotoImportView({ onDismiss, onSubmit }: PhotoImportViewProps) {
 
         try {
             // Upload all photos
-            const imageUrls = await Promise.all(
-                photos.map((photo) => uploadImageToSignedUrl(photo.file))
-            )
+            const imageUrl = await uploadImageToSignedUrl(photos[0].file)
 
-            // Start the recipe import job with all images
-            const importData = JSON.stringify({
-                imageUrls,
-                source: "photo_import",
-                onboardingSessionId,
-            })
-
-            await startRecipeImportJob("image", importData)
+            await startRecipeImportJob("image", imageUrl, onboardingSessionId ?? undefined)
 
             // Hide navigation and submit
             setIsVisible(false)
@@ -267,28 +258,32 @@ export function PhotoImportView({ onDismiss, onSubmit }: PhotoImportViewProps) {
                         <div className="absolute right-0 bottom-6 left-0 z-30 sm:bottom-8">
                             <div className="flex items-center justify-center px-4 sm:px-8">
                                 {/* Gallery button - fixed width */}
-                                <div className="flex w-12 justify-start sm:w-16">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={openGallery}
-                                        className="h-10 w-10 border border-blue-200 bg-blue-100 text-blue-800 shadow-sm hover:bg-blue-200 sm:h-12 sm:w-12"
-                                        aria-label="Galerij"
-                                    >
-                                        <ImageIcon className="h-6 w-6" />
-                                    </Button>
-                                </div>
+                                {photos.length === 0 && (
+                                    <div className="flex w-12 justify-start sm:w-16">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={openGallery}
+                                            className="h-10 w-10 border border-blue-200 bg-blue-100 text-blue-800 shadow-sm hover:bg-blue-200 sm:h-12 sm:w-12"
+                                            aria-label="Galerij"
+                                        >
+                                            <ImageIcon className="h-6 w-6" />
+                                        </Button>
+                                    </div>
+                                )}
 
                                 {/* Capture button - centered */}
-                                <div className="flex flex-1 justify-center">
-                                    <Button
-                                        onClick={capturePhoto}
-                                        className="h-16 w-16 rounded-full border-4 border-white bg-white shadow-lg hover:bg-gray-50 sm:h-20 sm:w-20"
-                                        aria-label="Foto maken"
-                                    >
-                                        <Camera className="h-8 w-8 text-gray-800 sm:h-10 sm:w-10" />
-                                    </Button>
-                                </div>
+                                {photos.length === 0 && (
+                                    <div className="flex flex-1 justify-center">
+                                        <Button
+                                            onClick={capturePhoto}
+                                            className="h-16 w-16 rounded-full border-4 border-white bg-white shadow-lg hover:bg-gray-50 sm:h-20 sm:w-20"
+                                            aria-label="Foto maken"
+                                        >
+                                            <Camera className="h-8 w-8 text-gray-800 sm:h-10 sm:w-10" />
+                                        </Button>
+                                    </div>
+                                )}
 
                                 {/* Bonchef button - fixed width */}
                                 <div className="flex w-12 justify-end sm:w-16">
