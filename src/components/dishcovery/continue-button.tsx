@@ -19,6 +19,7 @@ export function ContinueButton({ onClick, disabled, isProcessing }: Readonly<Con
                 disabled={disabled}
                 className="bg-accent-new hover:bg-status-green-text disabled:bg-text-muted w-full text-white shadow-lg disabled:cursor-not-allowed"
                 size="lg"
+                aria-label="Importeren"
                 aria-describedby={isProcessing ? "button-status" : undefined}
             >
                 <AnimatePresence mode="wait">

@@ -153,6 +153,7 @@ export function VoiceInput({
                     size="default"
                     onClick={onSwitchToText}
                     className="border-text-muted text-text-default h-10 hover:bg-gray-50 sm:h-9"
+                    aria-label="Ik kan nu niet praten"
                 >
                     <Type className="mr-2 h-4 w-4" />
                     Ik kan nu niet praten
