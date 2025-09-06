@@ -13,6 +13,8 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "android-simulator": {},
+    "ios-simulator": {},
     "dev": {
       "cache": false,
       "persistent": true
