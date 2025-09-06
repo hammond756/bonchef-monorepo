@@ -1,21 +1,15 @@
-import { test, expect } from "@playwright/test"
+import { test, expect } from "../fixtures"
 
 /**
  * Integration test for the complete dishcovery flow
  * Tests the entire user journey from navigation to recipe generation
  */
 test.describe("Dishcovery Flow", () => {
-    test.beforeEach(async ({ page }) => {
-        // Navigate to the main page
-        await page.goto("/")
-
-        // Wait for the page to load
-        await page.waitForLoadState("networkidle")
-    })
-
-    test("Complete dishcovery flow with photo and voice input", async ({ page }) => {
+    test("Complete dishcovery flow with photo and voice input", async ({
+        temporaryUserPage: page,
+    }) => {
         // 1. Open import overlay and click dishcovery
-        const importButton = page.getByRole("button", { name: /\+/i })
+        const importButton = page.getByRole("button", { name: "Importeer recept" })
         await expect(importButton).toBeVisible()
         await importButton.click()
 
@@ -34,11 +28,12 @@ test.describe("Dishcovery Flow", () => {
         const galleryButton = page.getByRole("button", { name: /galerij/i })
         await expect(galleryButton).toBeVisible()
 
-        // 5. Click gallery to select a photo (simulating photo capture)
+        const uploadPromise = page.waitForEvent("filechooser")
         await galleryButton.click()
 
-        // 6. Should show file input (we'll simulate this in test)
-        // Note: In real test, we'd need to mock file selection
+        // At this point, a system image picker should be openend. Select the test image.
+        const fileChooser = await uploadPromise
+        await fileChooser.setFiles("src/tests/test_files/gnocchi.png")
 
         // 7. Verify we can navigate back from camera
         const backButton = page.getByRole("button", { name: /terug/i })
@@ -46,10 +41,10 @@ test.describe("Dishcovery Flow", () => {
         await backButton.click()
 
         // 8. Should return to main page
-        await expect(page).toHaveURL("/")
+        await expect(page).toHaveURL("/ontdek")
     })
 
-    test("Dishcovery navigation and button states", async ({ page }) => {
+    test("Dishcovery navigation and button states", async ({ temporaryUserPage: page }) => {
         // Test that dishcovery button is properly integrated
         const importButton = page.getByRole("button", { name: /\+/i })
         await importButton.click()
@@ -63,7 +58,7 @@ test.describe("Dishcovery Flow", () => {
         await expect(chatButton).not.toBeVisible()
     })
 
-    test("Dishcovery page layout and components", async ({ page }) => {
+    test("Dishcovery page layout and components", async ({ temporaryUserPage: page }) => {
         // Navigate directly to dishcovery page
         await page.goto("/dishcovery")
 
@@ -86,7 +81,7 @@ test.describe("Dishcovery Flow", () => {
         await expect(generateButton).toBeDisabled() // Should be disabled without input
     })
 
-    test("Voice and text input switching", async ({ page }) => {
+    test("Voice and text input switching", async ({ temporaryUserPage: page }) => {
         await page.goto("/dishcovery")
 
         // Start in voice mode
@@ -109,7 +104,7 @@ test.describe("Dishcovery Flow", () => {
         await expect(page.getByRole("button", { name: /ik kan nu niet praten/i })).toBeVisible()
     })
 
-    test("Input validation and error handling", async ({ page }) => {
+    test("Input validation and error handling", async ({ temporaryUserPage: page }) => {
         await page.goto("/dishcovery")
 
         // Try to generate recipe without input (should show error)
@@ -131,7 +126,7 @@ test.describe("Dishcovery Flow", () => {
         await expect(generateButton).toBeEnabled()
     })
 
-    test("Responsive design on mobile", async ({ page }) => {
+    test("Responsive design on mobile", async ({ temporaryUserPage: page }) => {
         // Set mobile viewport
         await page.setViewportSize({ width: 375, height: 667 })
 

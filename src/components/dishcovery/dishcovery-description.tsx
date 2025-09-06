@@ -10,6 +10,7 @@ import { ErrorMessage } from "./error-message"
 import { useInputMode } from "@/hooks/use-input-mode"
 import { useDishcoveryProcessing } from "@/hooks/use-dishcovery-processing"
 import { useVoiceRecording } from "@/hooks/use-voice-recording"
+import { BackButton } from "../ui/back-button"
 
 interface DishcoveryDescriptionProps {
     photo: {
@@ -53,36 +54,32 @@ export function DishcoveryDescription({
     }
 
     return (
-        <div className="flex min-h-screen flex-col bg-gray-50">
-            {/* Skip link for keyboard navigation */}
-            <a
-                href="#main-content"
-                className="focus:bg-primary sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded focus:px-4 focus:py-2 focus:text-white"
-            >
-                Ga naar hoofdinhoud
-            </a>
+        <div className="flex min-h-screen flex-col bg-gray-50 lg:flex-row">
+            <BackButton handleBack={onBack} />
             <AnimatePresence>
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="flex flex-1 flex-col"
+                    className="flex flex-1 flex-col lg:flex-row"
                 >
-                    {/* Photo display */}
-                    <PhotoDisplay photo={photo} onBack={onBack} />
+                    {/* Photo display - responsive sizing */}
+                    <div className="lg:w-1/2 lg:flex-shrink-0">
+                        <PhotoDisplay photo={photo} />
+                    </div>
 
-                    {/* Input section */}
+                    {/* Input section - responsive layout */}
                     <div
                         id="main-content"
-                        className="bg-surface relative z-10 -mt-8 flex-1 p-4 sm:p-6"
+                        className="bg-surface relative z-10 flex-1 p-4 sm:p-6 lg:-mt-0 lg:flex lg:flex-col lg:justify-center"
                     >
                         {/* Title and subtitle */}
-                        <div className="mb-4 text-center sm:mb-6">
+                        <div className="mb-4 text-center lg:mb-6 lg:text-left">
                             <h1 className="text-text-default mb-2 text-xl font-semibold sm:text-2xl">
                                 Vertel meer over dit gerecht
                             </h1>
                             <p
-                                className="text-text-muted px-2 text-sm sm:text-base"
+                                className="text-text-muted px-2 text-sm sm:text-base lg:px-0"
                                 id="text-instructions"
                             >
                                 Beschrijf ingrediënten, smaken, kruiden, en alles wat bijzonder is.

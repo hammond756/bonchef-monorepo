@@ -32,11 +32,16 @@ test.describe("Signed in user flows", () => {
         await expect(page.getByRole("link", { name: "Ga naar jouw profiel" })).toBeVisible()
     })
 
-    test("Logs out successfully", async ({ authenticatedPage: page, baseURL }) => {
+    test("Logs out successfully", async ({ temporaryUserPage: page, baseURL }) => {
         await page.goto(baseURL!)
         await expect(page).toHaveURL("/ontdek")
 
+        const profileButton = await page.getByRole("link", { name: "Ga naar jouw profiel" })
+        await profileButton.click()
+
         await page.getByRole("button", { name: "Uitloggen" }).click()
+
+        await page.waitForLoadState("networkidle")
 
         // Check the browser session cookie is cleared
         const cookies = await page.context().cookies()

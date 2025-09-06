@@ -2,6 +2,15 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { DishcoveryCamera } from "./dishcovery-camera"
 import { vi } from "vitest"
 
+// Mock Next.js router
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({
+        push: vi.fn(),
+        back: vi.fn(),
+    }),
+    useSearchParams: () => new URLSearchParams(),
+}))
+
 // Mock navigator.mediaDevices
 const mockGetUserMedia = vi.fn()
 Object.defineProperty(navigator, "mediaDevices", {
@@ -44,7 +53,6 @@ const mockVideo = {
 describe("DishcoveryCamera", () => {
     const defaultProps = {
         onPhotoCaptured: vi.fn(),
-        onBack: vi.fn(),
     }
 
     beforeEach(() => {
@@ -76,13 +84,6 @@ describe("DishcoveryCamera", () => {
         render(<DishcoveryCamera {...defaultProps} />)
 
         expect(screen.getByRole("button", { name: /foto maken/i })).toBeInTheDocument()
-    })
-
-    it("calls onBack when back button is clicked", () => {
-        render(<DishcoveryCamera {...defaultProps} />)
-
-        fireEvent.click(screen.getByRole("button", { name: /terug/i }))
-        expect(defaultProps.onBack).toHaveBeenCalled()
     })
 
     it("shows gallery option when camera is not available", async () => {

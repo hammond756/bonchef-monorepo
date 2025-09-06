@@ -62,6 +62,7 @@ export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayPr
                 <button
                     onClick={handleDishcoveryClick}
                     className="flex w-full items-center justify-center space-x-2 rounded-lg bg-green-100 p-4 text-center text-green-800 transition-colors hover:bg-green-200"
+                    aria-label="Dishcovery"
                 >
                     <HandPlatter className="h-8 w-8" />
                     <span className="text-sm font-medium">Dishcovery</span>

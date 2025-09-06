@@ -12,11 +12,8 @@ vi.mock("next/navigation", () => ({
 
 // Mock the camera component
 vi.mock("@/components/dishcovery/dishcovery-camera", () => ({
-    DishcoveryCamera: ({ onPhotoCaptured, onBack }: any) => (
+    DishcoveryCamera: ({ onPhotoCaptured }: any) => (
         <div>
-            <button onClick={onBack} aria-label="Mock back button">
-                Back
-            </button>
             <button
                 onClick={() =>
                     onPhotoCaptured({
@@ -56,20 +53,6 @@ describe("DishcoveryPage", () => {
         vi.clearAllMocks()
     })
 
-    it("renders camera component initially", () => {
-        render(<DishcoveryPage />)
-
-        expect(screen.getByLabelText("Mock back button")).toBeInTheDocument()
-        expect(screen.getByLabelText("Mock capture button")).toBeInTheDocument()
-    })
-
-    it("navigates back to home when back button is clicked", () => {
-        render(<DishcoveryPage />)
-
-        fireEvent.click(screen.getByLabelText("Mock back button"))
-        expect(mockPush).toHaveBeenCalledWith("/")
-    })
-
     it("shows description screen after photo capture", () => {
         render(<DishcoveryPage />)
 
@@ -90,7 +73,6 @@ describe("DishcoveryPage", () => {
         fireEvent.click(screen.getByLabelText("Mock description back button"))
 
         // Should be back to camera screen
-        expect(screen.getByLabelText("Mock back button")).toBeInTheDocument()
         expect(screen.getByLabelText("Mock capture button")).toBeInTheDocument()
     })
 

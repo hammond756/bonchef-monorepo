@@ -1,14 +1,12 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { CameraView } from "@/components/ui/camera-view"
 import { motion, AnimatePresence } from "framer-motion"
+import { ClientBackButton } from "../ui/client-back-button"
 
 interface DishcoveryCameraProps {
     onPhotoCaptured: (photo: CapturedPhoto) => void
-    onBack: () => void
 }
 
 interface CapturedPhoto {
@@ -17,7 +15,7 @@ interface CapturedPhoto {
     file: File
 }
 
-export function DishcoveryCamera({ onPhotoCaptured, onBack }: DishcoveryCameraProps) {
+export function DishcoveryCamera({ onPhotoCaptured }: DishcoveryCameraProps) {
     const [error, setError] = useState<string | null>(null)
 
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -69,21 +67,7 @@ export function DishcoveryCamera({ onPhotoCaptured, onBack }: DishcoveryCameraPr
 
     return (
         <div className="flex h-full flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onBack}
-                    className="h-10 w-10"
-                    aria-label="Terug"
-                >
-                    <ArrowLeft className="h-5 w-5" />
-                </Button>
-                <h1 className="text-lg font-semibold">Maak een foto</h1>
-                <div className="w-10" /> {/* Spacer */}
-            </div>
-
+            <ClientBackButton />
             {/* Camera/Photo area */}
             <div className="relative flex-1">
                 <CameraView

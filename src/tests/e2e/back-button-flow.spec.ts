@@ -14,12 +14,13 @@ async function getFirstRecipeId(page: Page): Promise<string> {
 test.describe("Back button navigation flow", () => {
     test("navigates to /ontdek after editing", async ({ authenticatedPage: page, baseURL }) => {
         // 1. Go to any recipe and then to the edit page
+        await page.goto(`${baseURL}/collection`)
         const recipeId = await getFirstRecipeId(page)
         await page.goto(`${baseURL}/edit/${recipeId}`)
         await expect(page).toHaveURL(`${baseURL}/edit/${recipeId}`)
 
         // 2. Save the recipe
-        await page.getByTestId("save-recipe").click()
+        await page.getByRole("button", { name: "Opslaan" }).click()
         if (await page.getByText("Zichtbaarheid instellen").isVisible()) {
             await page.getByText("Privé").click()
             await page.getByRole("button", { name: "Opslaan" }).click()

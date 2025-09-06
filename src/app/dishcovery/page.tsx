@@ -31,12 +31,8 @@ export default function DishcoveryPage() {
         setCapturedPhoto(null)
     }
 
-    function handleBackToHome() {
-        router.push("/")
-    }
-
     if (currentStep === "camera") {
-        return <DishcoveryCamera onPhotoCaptured={handlePhotoCaptured} onBack={handleBackToHome} />
+        return <DishcoveryCamera onPhotoCaptured={handlePhotoCaptured} />
     }
 
     if (currentStep === "description" && capturedPhoto) {
