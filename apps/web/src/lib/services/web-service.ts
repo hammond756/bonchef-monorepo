@@ -76,7 +76,7 @@ async function fetchWithRetry(url: string, maxRetries: number = 3): Promise<Resp
                 console.log(`[fetchWithRetry] Attempt ${attempt + 1}/${maxRetries} with User-Agent: ${randomUserAgent.substring(0, 50)}...`)
 
                 let fetchUrl = url
-                let fetchOptions: RequestInit = {
+                const fetchOptions: RequestInit = {
                     cache: "no-store",
                     headers,
                     signal: AbortSignal.timeout(30000), // 30 second timeout
