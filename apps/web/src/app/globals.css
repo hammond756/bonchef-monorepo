@@ -1,0 +1,274 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Lora:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    /* --- New Bonchef Design System --- */
+    /* 1. Core Color Palette */
+    --color-primary: #385940; /* Main CTA, navigation, accents */
+
+    --color-text-default: #2b2b2b; /* Body text */
+    --color-text-muted: #6f6f6f; /* Subtext, explanations */
+    --color-accent-new: #268a40; /* Active tab underline, highlights (renamed to avoid conflict) */
+    --color-overlay-dark: rgba(0, 0, 0, 0.5); /* Text overlay on images */
+    --color-surface: #ffffff; /* Background, cards */
+
+    /* 2. Status Colors (for labels/badges) */
+    --color-status-blue-0: #8ed0ff; /* badge blauw */
+    --color-status-blue-bg: #e7f3fb; /* babyblauw */
+    --color-status-blue-text: #264e76; /* bonchef blauw */
+    --color-status-blue-border: #b3d8f2; /* hemelsblauw */
+    --color-status-green-0: #effdf6; /* New, lighter green for checked items */
+    --color-status-green-bg: #e5f7eb; /* heel lichtgroen */
+    --color-status-green-text: #157f3d; /* donkergroen */
+    --color-status-green-border: #b9e7ca; /* pastelgroen */
+    --color-status-yellow-bg: #fff9d9;
+    --color-status-yellow-text: #8a5a00;
+    --color-status-yellow-border: #ffeeaa;
+    --color-status-red-bg: #fce7e7;
+    --color-status-red-text: #8f1d1d;
+    --color-status-red-border: #f5b5b5;
+    --color-status-orange-0: #f96a25;
+    --color-status-orange-bg: #fef7ee;
+    --color-status-orange-border: #fcf3e4;
+    --color-status-purple-0: #9d5def;
+    --color-status-purple-bg: #f9f5fe;
+    --color-status-purple-border: #f5effd;
+
+    /* 3. Border Radius */
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-2xl: 24px;
+
+    /* 4. Typography */
+    --font-lora: "Lora", serif;
+    --font-montserrat: "Montserrat", sans-serif;
+    --font-size-h1: 24px;
+    --line-height-h1: 32px;
+    --font-size-h2: 20px;
+    --line-height-h2: 25px;
+    --font-size-h3: 14px;
+    --line-height-h3: 22px;
+    --font-size-h4: 14px;
+    --line-height-h4: 20px;
+    --font-size-p: 16px;
+    --line-height-p: 24px;
+    --font-size-lg: 18px; /* New size for instructions */
+    --line-height-lg: 28px; /* New line-height for instructions */
+    --font-size-small: 14px;
+    --line-height-small: 20px;
+    --font-size-span: 12px;
+    --line-height-span: 19px;
+
+    /* --- Existing Theme --- */
+    --animate-jiggle: jiggle 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
+    --animate-sheen: sheen 2s infinite;
+
+    --color-background: hsl(var(--background));
+    --color-foreground: hsl(var(--foreground));
+
+    --color-card: hsl(var(--card));
+    --color-card-foreground: hsl(var(--card-foreground));
+
+    --color-popover: hsl(var(--popover));
+    --color-popover-foreground: hsl(var(--popover-foreground));
+
+    /* --color-primary: hsl(var(--primary)); */ /* This is now overridden by the new system above */
+    --color-primary-foreground: hsl(var(--primary-foreground));
+
+    --color-secondary: hsl(var(--secondary));
+    --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+    --color-muted: hsl(var(--muted));
+    --color-muted-foreground: hsl(var(--muted-foreground));
+
+    --color-accent: hsl(var(--accent));
+    --color-accent-foreground: hsl(var(--accent-foreground));
+
+    --color-destructive: hsl(var(--destructive));
+    --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+    --color-border: hsl(var(--border));
+    --color-input: hsl(var(--input));
+    --color-ring: hsl(var(--ring));
+
+    --color-chart-1: hsl(var(--chart-1));
+    --color-chart-2: hsl(var(--chart-2));
+    --color-chart-3: hsl(var(--chart-3));
+    --color-chart-4: hsl(var(--chart-4));
+    --color-chart-5: hsl(var(--chart-5));
+
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    @keyframes jiggle {
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+        25% {
+            transform: translateX(-4px);
+        }
+        75% {
+            transform: translateX(4px);
+        }
+    }
+    @keyframes sheen {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(100%);
+        }
+    }
+}
+
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 0 0% 17%; /* Mapped to text-default */
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 17%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 17%;
+        --primary: 138 23% 29%; /* New: #385940 */
+        --primary-foreground: 0 0% 98%;
+        --secondary: 240 4.8% 95.9%;
+        --secondary-foreground: 240 5.9% 10%;
+        --muted: 240 4.8% 95.9%;
+        --muted-foreground: 0 0% 44%; /* New: #6F6F6F */
+        --accent: 240 4.8% 95.9%;
+        --accent-foreground: 240 5.9% 10%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 240 5.9% 90%;
+        --input: 240 5.9% 90%;
+        --ring: 240 5.9% 10%;
+        --chart-1: 12 76% 61%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+        --radius: 0.5rem;
+        /* Manually Added values*/
+        --top-bar-height: 4rem;
+        --chat-input-height: 4.5rem;
+    }
+
+    .dark {
+        --background: 240 5.9% 10%;
+        --foreground: 0 0% 98%;
+        --card: 240 5.9% 10%;
+        --card-foreground: 0 0% 98%;
+        --popover: 240 5.9% 10%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 0 0% 98%;
+        --primary-foreground: 240 5.9% 10%;
+        --secondary: 240 3.7% 15.9%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 240 3.7% 15.9%;
+        --muted-foreground: 240 5% 64.9%;
+        --accent: 240 3.7% 15.9%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 240 3.7% 15.9%;
+        --input: 240 3.7% 15.9%;
+        --ring: 240 4.9% 83.9%;
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 350 75% 55%;
+    }
+
+    *,
+    ::before,
+    ::after {
+        border-color: theme("colors.gray.200", currentColor);
+    }
+
+    img {
+        color-rendering: optimizeSpeed;
+    }
+
+    body {
+        font-family: var(--font-montserrat);
+        color: theme("colors.foreground");
+        background-color: theme("colors.background");
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-lora);
+        font-weight: 700;
+    }
+
+    .font-serif {
+        font-family: var(--font-lora);
+    }
+}
+
+/* Safe area utilities */
+@layer utilities {
+    .safe-area-top {
+        padding-top: env(safe-area-inset-top);
+    }
+
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .safe-area-left {
+        padding-left: env(safe-area-inset-left);
+    }
+
+    .safe-area-right {
+        padding-right: env(safe-area-inset-right);
+    }
+
+    .bg-bonchef-green-tab {
+        background-color: var(--bonchef-green-tab);
+    }
+}
+
+/* Ensure smooth scrolling and prevent scroll bounce on iOS */
+html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable; /* Reserve space for scrollbar */
+    overflow-y: scroll; /* Always show vertical scrollbar */
+}
+
+/* Fix for iOS Safari address bar behavior */
+@supports (-webkit-touch-callout: none) {
+    .min-h-screen {
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Prevent zoom on input focus (mobile) */
+input,
+select,
+textarea {
+    font-size: 16px;
+}
+
+@media screen and (max-width: 768px) {
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}

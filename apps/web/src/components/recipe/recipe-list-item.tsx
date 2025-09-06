@@ -1,0 +1,102 @@
+import { RecipeImportJob, RecipeRead } from "@/lib/types"
+import Link from "next/link"
+import Image from "next/image"
+import { BookmarkButton } from "@/components/bookmark-button"
+import { Badge } from "@/components/ui/badge"
+import { ImageIcon, LinkIcon, Loader2, TextIcon, HandPlatter } from "lucide-react"
+import { getHostnameFromUrl, cn, createRecipeSlug } from "@/lib/utils"
+
+export function RecipeListItem({ recipe }: { readonly recipe: RecipeRead }) {
+    const isDraft = recipe.status === "DRAFT"
+    const shouldBlur = isDraft
+    const href = isDraft
+        ? `/edit/${recipe.id}`
+        : `/recipes/${createRecipeSlug(recipe.title, recipe.id)}`
+
+    return (
+        <div className="group border-border bg-surface relative flex items-center gap-4 rounded-xl border p-2 shadow-sm">
+            <Link href={href} className="flex flex-1 items-center gap-4">
+                <div className="relative aspect-square h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
+                    <Image
+                        src={recipe.thumbnail}
+                        alt={recipe.title}
+                        fill
+                        className={cn("object-cover", shouldBlur && "blur-sm")}
+                        sizes="64px"
+                    />
+                    {isDraft && (
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40">
+                            <Badge variant="yellow" className="scale-75 px-2 py-0.5 text-xs">
+                                Concept
+                            </Badge>
+                        </div>
+                    )}
+                </div>
+                <div className="flex-1">
+                    <h2 className="text-default line-clamp-2 font-semibold group-hover:underline">
+                        {recipe.title}
+                    </h2>
+                </div>
+            </Link>
+            <div className="pr-2">
+                <BookmarkButton
+                    recipeId={recipe.id}
+                    initialBookmarked={recipe.is_bookmarked_by_current_user ?? false}
+                    initialBookmarkCount={recipe.bookmark_count || 0}
+                />
+            </div>
+        </div>
+    )
+}
+
+export function InProgressRecipeListItem({ job }: { readonly job: RecipeImportJob }) {
+    const renderSourceIcon = () => {
+        switch (job.source_type) {
+            case "image":
+                return (
+                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md bg-slate-100">
+                        <ImageIcon className="h-8 w-8 text-slate-500" />
+                    </div>
+                )
+            case "url":
+                return (
+                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md bg-slate-100">
+                        <LinkIcon className="h-8 w-8 text-slate-500" />
+                    </div>
+                )
+            case "text":
+                return (
+                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md bg-slate-100">
+                        <TextIcon className="h-8 w-8 text-slate-500" />
+                    </div>
+                )
+            case "dishcovery":
+                return (
+                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md bg-slate-100">
+                        <HandPlatter className="h-8 w-8 text-slate-500" />
+                    </div>
+                )
+            default:
+                return null
+        }
+    }
+
+    return (
+        <div className="border-border bg-surface relative flex items-center gap-4 rounded-xl border p-2 shadow-sm">
+            {renderSourceIcon()}
+            <div className="flex-1">
+                <h2 className="text-default font-semibold">Recept wordt gemaakt...</h2>
+                <p className="line-clamp-1 text-sm text-slate-500">
+                    {job.source_type === "url"
+                        ? getHostnameFromUrl(job.source_data)
+                        : job.source_type === "dishcovery"
+                          ? ""
+                          : job.source_data}
+                </p>
+            </div>
+            <div className="mr-2 pr-2">
+                <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+            </div>
+        </div>
+    )
+}

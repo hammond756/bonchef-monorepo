@@ -1,0 +1,123 @@
+---
+globs: *.tsx
+alwaysApply: false
+---
+## Checking supabase auth state
+
+1.  **Use Supabase's `getSession()` or `getUser()` on the server side** to check the current session or user. This ensures validation against the server session cookie or token, enabling secure session verification without relying solely on client-side state.
+
+2.  **Use Supabase's `onAuthStateChange` on the client side** to listen for real-time authentication events. This is the recommended approach for handling client-side session management with `@supabase/ssr` in the Next.js App Router.
+
+3.  **Use Next.js middleware for protecting routes** by checking for a valid session on every request to guard resources server-side, avoiding client-side flicker or unauthorized access.
+
+Example snippet for server-side session check in Next.js App Router:
+
+```ts
+import { createClient } from "@/utils/supabase/server"
+
+export async function getSession() {
+    const supabase = createClient()
+    const {
+        data: { session },
+    } = await supabase.auth.getSession()
+    return session
+}
+```
+
+Example client-side hook usage:
+
+```ts
+import { createClient } from "@/utils/supabase/client"
+import { type User } from "@supabase/supabase-js"
+import { useEffect, useState } from "react"
+
+export function useUser() {
+    const [user, setUser] = useState<User | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        const supabase = createClient()
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null)
+            setIsLoading(false)
+        })
+
+        return () => {
+            subscription.unsubscribe()
+        }
+    }, [])
+    return { user, isLoading }
+}
+```
+
+### User vs Session
+
+-   Check the **user** (e.g., `session?.user`) when you need reliable, up-to-date information about the authenticated user, such as their ID, email, or other profile attributes.
+-   Check the **session** (e.g., `session`) when you want to verify whether there is an active authenticated session. 
+
+User vs Session
+* Check the user (using getUser() or getSession().session.user) when you need reliable, up-to-date information about the authenticated user, such as their user ID, email, or other profile attributes.
+* Check the session (using getSession() or getSession().session) when you want to verify whether there is an active authenticated session. 
+
+
+
+## Checking supabase auth state
+
+1.  **Use Supabase's `getSession()` or `getUser()` on the server side** to check the current session or user. This ensures validation against the server session cookie or token, enabling secure session verification without relying solely on client-side state.
+
+2.  **Use Supabase's `onAuthStateChange` on the client side** to listen for real-time authentication events. This is the recommended approach for handling client-side session management with `@supabase/ssr` in the Next.js App Router.
+
+3.  **Use Next.js middleware for protecting routes** by checking for a valid session on every request to guard resources server-side, avoiding client-side flicker or unauthorized access.
+
+Example snippet for server-side session check in Next.js App Router:
+
+```ts
+import { createClient } from "@/utils/supabase/server"
+
+export async function getSession() {
+    const supabase = createClient()
+    const {
+        data: { session },
+    } = await supabase.auth.getSession()
+    return session
+}
+```
+
+Example client-side hook usage:
+
+```ts
+import { createClient } from "@/utils/supabase/client"
+import { type User } from "@supabase/supabase-js"
+import { useEffect, useState } from "react"
+
+export function useUser() {
+    const [user, setUser] = useState<User | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        const supabase = createClient()
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null)
+            setIsLoading(false)
+        })
+
+        return () => {
+            subscription.unsubscribe()
+        }
+    }, [])
+    return { user, isLoading }
+}
+```
+
+### User vs Session
+
+-   Check the **user** (e.g., `session?.user`) when you need reliable, up-to-date information about the authenticated user, such as their ID, email, or other profile attributes.
+-   Check the **session** (e.g., `session`) when you want to verify whether there is an active authenticated session. 
+
+User vs Session
+* Check the user (using getUser() or getSession().session.user) when you need reliable, up-to-date information about the authenticated user, such as their user ID, email, or other profile attributes.
+* Check the session (using getSession() or getSession().session) when you want to verify whether there is an active authenticated session. 

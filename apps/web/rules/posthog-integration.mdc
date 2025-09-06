@@ -1,0 +1,67 @@
+---
+description: apply when interacting with PostHog/analytics tasks
+globs: 
+alwaysApply: true
+---
+
+Never hallucinate an API key. Instead, always use the API key populated in the .env file.
+
+# 🎯 Analytics & Event Tracking Guidelines
+
+This file defines our analytics tracking conventions and rules for using PostHog in this app. All developers should follow these guidelines to ensure clean, consistent, and useful analytics data.
+
+---
+
+## ✅ Event Design Principles
+
+### 1. Track **User Intent**, Not UI Details
+Always capture the **meaning** behind an action, not the interaction itself.
+
+- ✅ `added_recipe`
+- ❌ `clicked_plus_button`
+
+---
+
+### 2. Use `verb_object` Naming Convention
+Keep event names concise and consistent:
+
+- `signed_up`
+- `shared_recipe`
+- `followed_user`
+
+---
+
+### 3. Focus on High-Value Events
+We care most about events that support:
+
+- **Activation** → e.g. `added_recipe` (first recipe is key)
+- **Engagement** → e.g. `searched_recipe`, `commented_on_recipe`
+- **Network Effects** → e.g. `shared_profile`, `invited_friend`
+
+Avoid tracking low-value or noisy interactions unless there's a strong case.
+
+---
+
+## 🧠 Versioned Event Schema
+
+### 1. Events are versioned using a `version` property
+We use **Zod** to define and validate event schemas. Each event can have multiple versions, but only the latest should be used in production.
+
+### 2. Always use `trackLatestEvent()`
+This helper:
+
+- Automatically fills in the correct `version`
+- Validates props using the appropriate Zod schema
+- Sends the event via PostHog
+
+### 3. Schema location
+All schemas are defined in `lib/analytics/events.ts`.
+
+Example usage:
+
+```ts
+trackEvent("added_recipe", {
+  recipe_id: "abc123",
+  previous_recipe_count: 0,
+  source: "manual",
+})
