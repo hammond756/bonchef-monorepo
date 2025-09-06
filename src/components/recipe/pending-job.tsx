@@ -62,8 +62,12 @@ export function PendingJob({ job }: { readonly job: RecipeImportJob }) {
                 )
             case "dishcovery":
                 return (
-                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md bg-slate-100">
-                        <HandPlatter className="h-8 w-8 text-slate-500" />
+                    <div className="flex h-full w-full flex-col items-center justify-center bg-slate-100">
+                        <HandPlatter className="h-10 w-10 text-slate-500" />
+                        <p className="text-sm text-slate-600 italic">Dishcovery</p>
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <Loader2 className="h-8 w-8 animate-spin text-white" />
+                        </div>
                     </div>
                 )
             default:
