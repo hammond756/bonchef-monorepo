@@ -1,4 +1,5 @@
 import { ImageAnnotatorClient } from "@google-cloud/vision"
+import fs from "fs"
 
 const client = new ImageAnnotatorClient()
 
@@ -23,6 +24,9 @@ export async function detectText(filePath: string): Promise<string> {
             console.error("error", error)
             throw new Error("Failed to detect text from image")
         }
+
+        // clean up the temporary file
+        await fs.promises.unlink(filePath)
 
         if (textAnnotations && textAnnotations.length > 0) {
             // The first element in textAnnotations is usually the full text detected

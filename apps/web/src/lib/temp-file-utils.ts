@@ -13,7 +13,7 @@ export async function withTempFileFromUrl<T>(
     callback: (tempFilePath: string) => Promise<T>
 ): Promise<T> {
     const { data, extension } = await hostedImageToBuffer(imageUrl)
-    const tempFileName = `temp-image-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${extension}`
+    const tempFileName = `/tmp/temp-image-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${extension}`
 
     try {
         // Write buffer to temporary file

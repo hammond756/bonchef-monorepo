@@ -246,6 +246,12 @@ This provides a more interactive and user-friendly way to discover recipes durin
 
 ## Troubleshooting
 
+## PNPM Not resolving
+
+Fixing ERR_INVALID_THIS error on Vercel using PNPM
+
+https://jelaniharris.com/blog/fixing-errinvalidthis-error-on-vercel-using-pnpm/
+
 ### React Type Conflicts in Monorepo
 
 This project is part of a monorepo structure, which can sometimes lead to React type definition conflicts. If you encounter TypeScript errors like "Two different types with this name exist, but they are unrelated" or JSX component type errors, it's likely due to mismatched `@types/react` versions across packages.
