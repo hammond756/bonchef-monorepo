@@ -1,0 +1,67 @@
+{
+  "expo": {
+    "name": "bonchef-native",
+    "slug": "bonchef-native",
+    "version": "1.0.0",
+    "owner": "bonchef",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "bonchefnative",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bonchef-digital-kitchen.bonchef",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.bonchefdigitalkitchen.bonchef"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-share-intent",
+        {
+          "disableIOS": true
+        }
+        
+      ],
+      [
+        "expo-share-extension",
+        {
+          "height": 500
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3132c17e-7a3a-4dc8-aeac-098ee6afda8d"
+      }
+    }
+  }
+}
