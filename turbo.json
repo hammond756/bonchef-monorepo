@@ -5,7 +5,22 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": [
+        "APIFY_API_KEY",
+        "GOOGLE_APPLICATION_CREDENTIALS",
+        "GOOGLE_CREDENTIALS",
+        "LANGFUSE_HOST",
+        "LANGFUSE_PUBLIC_KEY",
+        "LANGFUSE_SECRET_KEY",
+        "OPENAI_API_KEY",
+        "POSTMARK_API_KEY",
+        "POSTMARK_FROM_EMAIL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "VIDEO_PROCESSING_API_KEY",
+        "VIDEO_PROCESSING_API_URL",
+        "ENABLE_EXPERIMENTAL_COREPACK"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
