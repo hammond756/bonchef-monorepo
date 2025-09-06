@@ -243,3 +243,28 @@ When a user clicks on a teaser card:
 3. The full recipe details are displayed in a modal without leaving the chat interface
 
 This provides a more interactive and user-friendly way to discover recipes during conversation.
+
+## Troubleshooting
+
+### React Type Conflicts in Monorepo
+
+This project is part of a monorepo structure, which can sometimes lead to React type definition conflicts. If you encounter TypeScript errors like "Two different types with this name exist, but they are unrelated" or JSX component type errors, it's likely due to mismatched `@types/react` versions across packages.
+
+**Symptoms:**
+- TypeScript errors about incompatible React types
+- JSX components showing as invalid element types
+- ForwardRef component type conflicts
+- ReactNode type compatibility issues
+
+**Solution:**
+Ensure all packages in the monorepo use the same exact version of `@types/react` and `@types/react-dom`. The current setup uses:
+- `@types/react: "19.1.12"`
+- `@types/react-dom: "19.1.9"`
+
+If conflicts occur:
+1. Check package.json files across all packages for version mismatches
+2. Run `rm -rf node_modules` in the root and all package directories
+3. Run `pnpm install` to reinstall with consistent versions
+4. Verify with `npx tsc --noEmit` that all TypeScript errors are resolved
+
+This ensures type consistency across the entire monorepo and prevents React type definition conflicts.
