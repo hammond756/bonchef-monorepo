@@ -1,6 +1,6 @@
 "use client"
 
-import { Camera, FileText, Link as LinkIcon, X, MessageCircle } from "lucide-react"
+import { FileText, HandPlatter, Link as LinkIcon, ScanText, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { ImportMode } from "@/lib/types"
@@ -15,9 +15,9 @@ interface ImportOverlayProps {
 export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayProps) {
     const router = useRouter()
 
-    const handleChatClick = () => {
+    const handleDishcoveryClick = () => {
         onClose()
-        router.push("/chat")
+        router.push("/dishcovery")
     }
 
     return (
@@ -35,7 +35,7 @@ export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayPr
                         className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-orange-100 p-4 text-center text-orange-800 transition-colors hover:bg-orange-200"
                         aria-label="Foto"
                     >
-                        <Camera className="h-8 w-8" />
+                        <ScanText className="h-8 w-8" />
                         <span className="text-sm font-medium">Scan</span>
                     </button>
                     <button
@@ -60,11 +60,12 @@ export function ImportOverlay({ isOpen, onClose, onSelectMode }: ImportOverlayPr
                     <div className="absolute top-1/2 left-0 w-full -translate-y-1/2 border-t"></div>
                 </div>
                 <button
-                    onClick={handleChatClick}
+                    onClick={handleDishcoveryClick}
                     className="flex w-full items-center justify-center space-x-2 rounded-lg bg-green-100 p-4 text-center text-green-800 transition-colors hover:bg-green-200"
+                    aria-label="Dishcovery"
                 >
-                    <MessageCircle className="h-5 w-5" />
-                    <span className="text-sm font-medium">Chat</span>
+                    <HandPlatter className="h-8 w-8" />
+                    <span className="text-sm font-medium">Dishcovery</span>
                 </button>
 
                 {/* Extra whitespace for better spacing */}

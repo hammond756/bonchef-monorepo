@@ -108,7 +108,7 @@ export async function recipeFromSocialMediaVideo(
 
 export async function formatRecipe(
     text: string,
-    imageUrl?: string
+    promptName: string = "ExtractRecipeFromWebcontent"
 ): Promise<{
     recipe: GeneratedRecipeWithSourceAndThumbnail
     metadata: RecipeGenerationMetadata
@@ -142,28 +142,10 @@ export async function formatRecipe(
     )
 
     const langfuse = new Langfuse()
-    const promptClient = await langfuse.getPrompt("ExtractRecipeFromWebcontent", undefined, {
+    const promptClient = await langfuse.getPrompt(promptName, undefined, {
         type: "chat",
     })
     const prompt = promptClient.compile({ input: text })
-
-    if (imageUrl) {
-        prompt.push({
-            role: "user",
-            content: [
-                {
-                    type: "text",
-                    text: "Here is a collage of screenshots showing each step of the recipe. Use this to available information to generate a recipe, but keep in mind that it may not be enough to generate a good recipe.",
-                },
-                {
-                    type: "image_url",
-                    image_url: {
-                        url: imageUrl,
-                    },
-                },
-            ],
-        })
-    }
 
     try {
         const { recipe, metadata } = await model.invoke(prompt, {
@@ -184,6 +166,13 @@ export async function formatRecipe(
 
         throw error
     }
+}
+
+export async function formatDishcoveryRecipe(text: string): Promise<{
+    recipe: GeneratedRecipeWithSourceAndThumbnail
+    metadata: RecipeGenerationMetadata
+}> {
+    return formatRecipe(text, "DishcoveryRecipeGenerator")
 }
 
 export async function getRecipeContent(url: string): Promise<{

@@ -1,8 +1,7 @@
 "use client"
 
 import { useRouter, useSearchParams } from "next/navigation"
-import { ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { BackButton } from "@/components/ui/back-button"
 
 export function ClientBackButton() {
     const router = useRouter()
@@ -24,15 +23,5 @@ export function ClientBackButton() {
         }
     }
 
-    return (
-        <Button
-            variant="outline-neutral"
-            size="icon"
-            onClick={handleBack}
-            aria-label="Ga terug"
-            className="absolute top-4 left-4 z-40 h-10 w-10 rounded-full bg-white/80 backdrop-blur-sm"
-        >
-            <ArrowLeft className="h-5 w-5" />
-        </Button>
-    )
+    return <BackButton handleBack={handleBack} />
 }

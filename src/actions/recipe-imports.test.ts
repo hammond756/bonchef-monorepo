@@ -144,6 +144,28 @@ describe("validateRecipeContent", () => {
         })
     })
 
+    describe("Dishcovery validation", () => {
+        test("passes when both containsFood and enoughContext are true", () => {
+            const recipe = createMockRecipe({ containsFood: true, enoughContext: true })
+            const result = validateRecipeContent(recipe as any, "dishcovery")
+        })
+
+        test("fails when containsFood is false", () => {
+            const recipe = createMockRecipe({ containsFood: false, enoughContext: true })
+            const result = validateRecipeContent(recipe as any, "dishcovery")
+        })
+
+        test("fails when enoughContext is false", () => {
+            const recipe = createMockRecipe({ containsFood: true, enoughContext: false })
+            const result = validateRecipeContent(recipe as any, "dishcovery")
+        })
+
+        test("fails when both containsFood and enoughContext are false", () => {
+            const recipe = createMockRecipe({ containsFood: false, enoughContext: false })
+            const result = validateRecipeContent(recipe as any, "dishcovery")
+        })
+    })
+
     describe("Edge cases", () => {
         test("handles unknown source type gracefully", () => {
             const recipe = createMockRecipe()

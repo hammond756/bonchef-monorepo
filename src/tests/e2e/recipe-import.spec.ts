@@ -90,6 +90,43 @@ test.describe("Recipe import flows", () => {
         await expect(page.getByText("Concept")).toBeVisible()
     })
 
+    test("Complete dishcovery flow with gallery photo and written input", async ({
+        temporaryUserPage: page,
+    }) => {
+        // 1. Open import overlay and click dishcovery
+        const importButton = page.getByRole("button", { name: "Importeer recept" })
+        await expect(importButton).toBeVisible()
+        await importButton.click()
+
+        // 2. Verify dishcovery button is visible and click it
+        await page.getByRole("button", { name: /dishcovery/i }).click()
+
+        // 3. Should navigate to dishcovery page
+        await expect(page).toHaveURL("/dishcovery")
+
+        // 4. Verify camera interface is shown
+        const cameraButton = page.getByRole("button", { name: /foto maken/i })
+        await expect(cameraButton).toBeVisible()
+
+        const uploadPromise = page.waitForEvent("filechooser")
+
+        await page.getByRole("button", { name: /galerij/i }).click()
+
+        // At this point, a system image picker should be openend. Select the test image.
+        const fileChooser = await uploadPromise
+        await fileChooser.setFiles("src/tests/test_files/gnocchi.png")
+
+        await page.getByRole("button", { name: "Ik kan nu niet praten" }).click()
+
+        await page
+            .getByRole("textbox", { name: "Beschrijving van het gerecht" })
+            .fill("Dit is een heerlijke pasta met pesto en parmazaan")
+
+        await page.getByRole("button", { name: "Importeren" }).click()
+
+        await expect(page.getByText("Concept")).toBeVisible({ timeout: 120000 })
+    })
+
     test("imports a recipe from an image", async () => {
         // TODO: make this work with the camera permissions
         await expect(0).toBe(1)

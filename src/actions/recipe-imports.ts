@@ -10,6 +10,7 @@ import {
     normalizeUrl,
     RecipeGenerationMetadata,
     recipeFromSocialMediaVideo,
+    formatDishcoveryRecipe,
 } from "@/lib/services/web-service"
 import { RecipeService } from "@/lib/services/recipe-service"
 import { RecipeGenerationService } from "@/lib/services/recipe-generation-service"
@@ -24,6 +25,7 @@ import fs from "fs"
 import path from "path"
 import { OnboardingService } from "@/lib/services/onboarding-service"
 import { createJobWithClient } from "@/lib/services/recipe-imports-job/shared"
+import type { PhotoAnalysisResult } from "@/lib/services/photo-analysis-service"
 import { TINY_PLACEHOLDER_IMAGE } from "@/utils/contants"
 
 function translateRecipeUnits<T extends GeneratedRecipe>(recipe: T): T {
@@ -164,6 +166,14 @@ export async function getSignedUploadUrl(
 export async function uploadImage(file: File): Promise<string> {
     const supabaseAdmin = await createAdminClient()
 
+    // Check if file type is supported
+    const supportedTypes = ["image/png", "image/jpeg", "image/webp", "image/avif"]
+    if (!supportedTypes.includes(file.type)) {
+        throw new Error(
+            `Dit afbeeldingsformaat wordt niet ondersteund. Ondersteunde formaten: PNG, JPEG, WebP, AVIF. Probeer een screenshot te maken met je telefoon.`
+        )
+    }
+
     const uploadOptions: { contentType: string; upsert: boolean } = {
         contentType: file.type,
         upsert: false,
@@ -179,7 +189,18 @@ export async function uploadImage(file: File): Promise<string> {
         .upload(`${uuidv4()}.${file.name.split(".").pop()}`, file, uploadOptions)
 
     if (error) {
-        throw new Error(error.message)
+        // Provide more specific error messages based on the error type
+        if (error.message.includes("Invalid file type")) {
+            throw new Error(
+                "Dit afbeeldingsformaat wordt niet ondersteund. Probeer een screenshot te maken met je telefoon en probeer het opnieuw!"
+            )
+        } else if (error.message.includes("File size")) {
+            throw new Error(
+                "De afbeelding is te groot. Probeer een kleinere afbeelding of maak een screenshot."
+            )
+        } else {
+            throw new Error(`Upload mislukt: ${error.message}`)
+        }
     }
 
     const { data: publicUrlData } = supabaseAdmin.storage
@@ -187,16 +208,302 @@ export async function uploadImage(file: File): Promise<string> {
         .getPublicUrl(data.path)
 
     if (!publicUrlData) {
-        throw new Error("Could not get public URL for uploaded image.")
+        throw new Error("Kon geen publieke URL genereren voor de afbeelding.")
     }
 
     return publicUrlData.publicUrl
+}
+
+export async function uploadAudio(audioBlob: Blob): Promise<string> {
+    const supabaseAdmin = await createAdminClient()
+
+    // Convert Blob to File with proper MIME type
+    // Use audio/mpeg as it's more widely supported than audio/webm
+    const audioFile = new File([audioBlob], `audio-${uuidv4()}.mp3`, {
+        type: "audio/mpeg",
+    })
+
+    const { data, error } = await supabaseAdmin.storage
+        .from("audio-files") // Using dedicated audio bucket
+        .upload(audioFile.name, audioFile, {
+            contentType: "audio/mpeg",
+            upsert: false,
+        })
+
+    if (error) {
+        throw new Error(error.message)
+    }
+
+    const { data: publicUrlData } = await supabaseAdmin.storage
+        .from("audio-files")
+        .getPublicUrl(data.path)
+
+    if (!publicUrlData) {
+        throw new Error("Could not get public URL for uploaded audio.")
+    }
+
+    return publicUrlData.publicUrl
+}
+
+/**
+ * Upload dishcovery assets (photo and audio) to the dishcovery-assets bucket
+ * with session-based organization
+ */
+export async function uploadDishcoveryAssets(
+    photo: File,
+    audioBlob?: Blob
+): Promise<{ photoUrl: string; audioUrl?: string }> {
+    console.log("[uploadDishcoveryAssets] Starting upload:", {
+        hasPhoto: !!photo,
+        photoSize: photo?.size,
+        photoType: photo?.type,
+        hasAudioBlob: !!audioBlob,
+        audioBlobSize: audioBlob?.size,
+        audioBlobType: audioBlob?.type,
+    })
+
+    const supabaseAdmin = await createAdminClient()
+    const storageService = new (await import("@/lib/services/storage-service")).StorageService(
+        supabaseAdmin
+    )
+
+    // Generate session-based paths
+    const photoPath = storageService.generateDishcoverySessionPath("image.jpeg")
+    const audioPath = audioBlob
+        ? storageService.generateDishcoverySessionPath("audio.mp3")
+        : undefined
+
+    console.log("[uploadDishcoveryAssets] Generated paths:", {
+        photoPath,
+        audioPath,
+    })
+
+    // Upload photo
+    const photoUrl = await storageService.uploadImage("dishcovery-assets", photo, true, photoPath)
+    console.log("[uploadDishcoveryAssets] Photo uploaded:", photoUrl)
+
+    // Upload audio if provided
+    let audioUrl: string | undefined
+    if (audioBlob && audioPath) {
+        console.log("[uploadDishcoveryAssets] Starting audio upload...")
+        audioUrl = await storageService.uploadAudio("dishcovery-assets", audioBlob, audioPath)
+        console.log("[uploadDishcoveryAssets] Audio uploaded:", audioUrl)
+    } else {
+        console.log("[uploadDishcoveryAssets] No audio to upload:", {
+            audioBlob: !!audioBlob,
+            audioPath,
+        })
+    }
+
+    console.log("[uploadDishcoveryAssets] Final result:", {
+        photoUrl: photoUrl ? "present" : "missing",
+        audioUrl: audioUrl ? "present" : "missing",
+    })
+
+    return { photoUrl, audioUrl }
 }
 
 export async function extractTextFromImage(imageUrl: string): Promise<string> {
     return await withTempFileFromUrl(imageUrl, async (tempFilePath) => {
         return await detectText(tempFilePath)
     })
+}
+
+export async function generateRecipeFromDishcovery(
+    dishcoveryData: string
+): Promise<{ recipe: GeneratedRecipeWithSourceAndThumbnail; metadata: RecipeGenerationMetadata }> {
+    console.log(
+        `[generateRecipeFromDishcovery] Starting generation for dishcovery data: ${dishcoveryData.substring(0, 100)}...`
+    )
+
+    // Initialize transcription service at the beginning
+    const { TranscriptionService } = await import("@/lib/services/transcription-service")
+    const transcriptionService = new TranscriptionService({
+        apiKey: process.env.OPENAI_API_KEY!,
+    })
+
+    // Parse the dishcovery data (photo + description or audio)
+    const data = JSON.parse(dishcoveryData)
+    const { photoUrl, description, audioUrl } = data
+
+    console.log("[generateRecipeFromDishcovery] Parsed data:", {
+        photoUrl: photoUrl ? "present" : "missing",
+        description: description || "empty",
+        audioUrl: audioUrl ? "present" : "missing",
+        descriptionLength: description?.length || 0,
+    })
+
+    if (!photoUrl) {
+        throw new Error("Invalid dishcovery data: missing photoUrl")
+    }
+
+    let finalDescription = description
+
+    // Start both tasks in parallel for better performance
+    const tasks: Promise<string | PhotoAnalysisResult>[] = []
+
+    // Task 1: Audio transcription (if needed)
+    if (audioUrl && (!description || description.trim().length === 0)) {
+        console.log("[generateRecipeFromDishcovery] Starting audio transcription in parallel...")
+        console.log("[generateRecipeFromDishcovery] Audio URL:", audioUrl)
+        const transcriptionTask = (async () => {
+            try {
+                const transcriptionResult =
+                    await transcriptionService.transcribeVideoFromUrl(audioUrl)
+
+                console.log(
+                    "[generateRecipeFromDishcovery] Transcription result:",
+                    transcriptionResult
+                )
+
+                if (!transcriptionResult.success) {
+                    throw new Error(transcriptionResult.error)
+                }
+
+                console.log(
+                    `[generateRecipeFromDishcovery] Transcription complete: "${transcriptionResult.data}"`
+                )
+                return transcriptionResult.data
+            } catch (error) {
+                console.error("[generateRecipeFromDishcovery] Transcription failed:", error)
+                throw new Error(
+                    "Failed to transcribe audio: " +
+                        (error instanceof Error ? error.message : "Unknown error")
+                )
+            }
+        })()
+
+        tasks.push(transcriptionTask)
+    }
+
+    // Task 2: Photo analysis
+    console.log("[generateRecipeFromDishcovery] Starting photo analysis in parallel...")
+    const photoAnalysisTask = (async () => {
+        try {
+            const { PhotoAnalysisService } = await import("@/lib/services/photo-analysis-service")
+
+            if (!process.env.OPENAI_API_KEY) {
+                throw new Error("OpenAI API key not configured")
+            }
+
+            const photoAnalysisService = new PhotoAnalysisService()
+            const analysisResult = await photoAnalysisService.analyzePhoto(photoUrl)
+
+            if (!analysisResult.success) {
+                throw new Error(analysisResult.error)
+            }
+
+            console.log("[generateRecipeFromDishcovery] Photo analysis complete")
+            return analysisResult.data
+        } catch (error) {
+            console.error("[generateRecipeFromDishcovery] Photo analysis failed:", error)
+
+            // Provide more specific error messages for OpenAI Vision API errors
+            let errorMessage =
+                "Failed to analyze photo: " +
+                (error instanceof Error ? error.message : "Unknown error")
+
+            if (error instanceof Error) {
+                if (error.message.includes("unsupported image")) {
+                    errorMessage =
+                        "Failed to analyze photo: This image format is not supported by the photo analysis service. Please try taking a screenshot with your phone."
+                } else if (error.message.includes("400")) {
+                    errorMessage =
+                        "Failed to analyze photo: The image could not be processed. Please try a different photo or take a screenshot."
+                }
+            }
+
+            throw new Error(errorMessage)
+        }
+    })()
+
+    tasks.push(photoAnalysisTask)
+
+    // Wait for all tasks to complete
+    console.log("[generateRecipeFromDishcovery] Waiting for parallel tasks to complete...")
+    const results = await Promise.all(tasks)
+    console.log("[generateRecipeFromDishcovery] All tasks completed, results:", results)
+
+    // Extract results
+    let transcriptionResult: string | undefined
+    let photoAnalysisResult: PhotoAnalysisResult
+
+    if (audioUrl && (!description || description.trim().length === 0)) {
+        transcriptionResult = results[0] as string
+        photoAnalysisResult = results[1] as PhotoAnalysisResult
+        console.log(
+            "[generateRecipeFromDishcovery] Transcription result extracted:",
+            transcriptionResult
+        )
+    } else {
+        photoAnalysisResult = results[0] as PhotoAnalysisResult
+        console.log(
+            "[generateRecipeFromDishcovery] No transcription, using description:",
+            description
+        )
+    }
+
+    // Set final description
+    if (transcriptionResult) {
+        finalDescription = transcriptionResult
+        console.log(
+            "[generateRecipeFromDishcovery] Final description set from transcription:",
+            finalDescription
+        )
+        console.log(
+            "[generateRecipeFromDishcovery] Transcription result length:",
+            transcriptionResult.length
+        )
+    } else {
+        console.log(
+            "[generateRecipeFromDishcovery] Final description from input:",
+            finalDescription
+        )
+        console.log(
+            "[generateRecipeFromDishcovery] Input description length:",
+            finalDescription?.length || 0
+        )
+    }
+
+    // Allow dishcovery with only photo if no description is provided
+    // The new prompt can handle minimal user input by relying more on visual analysis
+    if (!finalDescription || finalDescription.trim().length < 3) {
+        console.log(
+            "[generateRecipeFromDishcovery] No description provided, will rely on visual analysis only"
+        )
+        finalDescription = "" // Set to empty string for minimal input scenario
+    }
+
+    // Now generate the recipe using the dishcovery-specific prompt
+    console.log("[generateRecipeFromDishcovery] Generating recipe with dishcovery prompt...")
+
+    // Create an enhanced prompt using both the photo analysis and user description
+    const enhancedPrompt = `PHOTO ANALYSIS RESULTS:
+- Dish Type: ${photoAnalysisResult.dishType}
+- Visible Ingredients: ${photoAnalysisResult.visibleIngredients.join(", ")}
+- Cooking Methods: ${photoAnalysisResult.cookingMethods.join(", ")}
+- Visual Description: ${photoAnalysisResult.visualDescription}
+
+USER DESCRIPTION:
+${finalDescription}`
+
+    // Use the dishcovery-specific prompt instead of the general formatRecipe
+    const { recipe, metadata } = await formatDishcoveryRecipe(enhancedPrompt)
+    console.log("[generateRecipeFromDishcovery] Recipe generation complete")
+
+    // The photo is already uploaded to Supabase storage, use it directly as thumbnail
+    const thumbnail = photoUrl
+
+    // formatRecipe already handles unit translation, so we don't need to do it again
+    return {
+        recipe: {
+            ...recipe,
+            thumbnail: thumbnail,
+            source_name: "",
+            source_url: "",
+        },
+        metadata: metadata,
+    }
 }
 
 export async function createDraftRecipe(
@@ -334,6 +641,9 @@ async function _processJobInBackground(
             case "vertical_video":
                 ;({ recipe, metadata } = await handleVerticalVideoImport(job.source_data))
                 break
+            case "dishcovery":
+                ;({ recipe, metadata } = await generateRecipeFromDishcovery(job.source_data))
+                break
             default:
                 throw new Error(`Unsupported source type: ${job.source_type}`)
         }
@@ -408,7 +718,7 @@ async function _processJobInBackground(
 }
 
 export async function startRecipeImportJob(
-    sourceType: "url" | "image" | "text" | "vertical_video",
+    sourceType: "url" | "image" | "text" | "vertical_video" | "dishcovery",
     sourceData: string,
     onboardingSessionId?: string
 ) {
