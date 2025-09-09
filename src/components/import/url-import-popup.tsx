@@ -25,6 +25,19 @@ function isVerticalVideoUrl(url: string) {
     return /instagram\.com(.*)\/reel\//.test(url) || /tiktok\.com\//.test(url)
 }
 
+function cleanUrl(url: string) {
+    let result = ""
+    result = url.trim()
+
+    // Remove the igs pram, which identifies the instagram account of the person
+    // that shared the video.
+    // Matches the igs param until and including the next &
+    const SHARE_PARAM = /igsh=[^&]*&?/g
+    result = result.replace(SHARE_PARAM, "")
+
+    return result
+}
+
 export function UrlImportPopup({ onDismiss, onSubmit }: Readonly<UrlImportPopupProps>) {
     const [url, setUrl] = useState("")
     const { isLoading, error, setError, handleSubmit } = useRecipeImport()
@@ -32,7 +45,7 @@ export function UrlImportPopup({ onDismiss, onSubmit }: Readonly<UrlImportPopupP
     const handleUrlSubmit = async () => {
         setError(null)
 
-        let urlToSubmit = url.trim()
+        let urlToSubmit = cleanUrl(url)
         if (!urlToSubmit) {
             setError("Voer een URL in.")
             return

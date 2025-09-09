@@ -583,7 +583,7 @@ async function handleVerticalVideoImport(
                 ...captionRecipe,
                 thumbnail,
                 source_name: scrapeResult.data.author,
-                source_url: sourceData,
+                source_url: scrapeResult.data.canonicalUrl,
             },
             metadata: captionMetadata,
         }
@@ -609,7 +609,7 @@ async function handleVerticalVideoImport(
             ...translatedRecipe,
             thumbnail,
             source_name: scrapeResult.data.author,
-            source_url: sourceData,
+            source_url: scrapeResult.data.canonicalUrl,
         },
         metadata: transcriptionMetadata,
     }
