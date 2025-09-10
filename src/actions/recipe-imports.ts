@@ -569,6 +569,7 @@ async function handleVerticalVideoImport(
     }
 
     if (!scrapeResult.success) {
+        console.error(`Failed to scrape vertical video: ${scrapeResult.error}`)
         throw new Error(scrapeResult.error)
     }
 
@@ -593,6 +594,7 @@ async function handleVerticalVideoImport(
     const videoSummaryResult = await processVideoUrl(scrapeResult.data.videoUrl)
 
     if (!videoSummaryResult.success) {
+        console.error(`Error summarizing video: ${videoSummaryResult.error}`)
         throw new Error(videoSummaryResult.error)
     }
 
@@ -709,7 +711,7 @@ async function _processJobInBackground(
             )
         } else {
             if (isContentQualityError) {
-                console.log(`Job ${job.id} failed due to content quality issues: ${errorMessage}`)
+                console.warn(`Job ${job.id} failed due to content quality issues: ${errorMessage}`)
             } else {
                 console.error(`Job ${job.id} failed due to technical issues: ${errorMessage}`)
             }
