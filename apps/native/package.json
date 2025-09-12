@@ -1,5 +1,5 @@
 {
-  "name": "bonchef-native",
+  "name": "native",
   "main": "index.js",
   "version": "1.0.0",
   "scripts": {
@@ -14,10 +14,11 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
+    "@repo/lib": "workspace:*",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
-    "@supabase/supabase-js": "^2.57.0",
+    "@supabase/supabase-js": "^2.57.4",
     "expo": "~53.0.22",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",
@@ -39,6 +40,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.6",
+    "react-native-css-interop": "^0.1.22",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-mmkv": "^3.3.0",
     "react-native-nitro-modules": "^0.29.2",

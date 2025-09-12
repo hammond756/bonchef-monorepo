@@ -4,19 +4,15 @@ import { getServerBaseUrl } from "@/lib/utils"
 import { createClient } from "@/utils/supabase/server"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
+import * as authService from "@repo/lib/services/auth"
 
 export async function login(email: string, password: string) {
     const supabase = await createClient()
-
-    const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-    })
-
-    if (error) {
-        return { error: error.message }
+    try {
+        await authService.login(supabase, email, password)
+    } catch (error) {
+        return { error: error instanceof Error ? error.message : "Er is iets misgegaan bij het inloggen." }
     }
-
     redirect("/auth-callback")
 }
 
@@ -27,28 +23,17 @@ export async function createTemporaryUser() {
     const email = `tijdelijke-bezoeker-${uuid}@example.com`
     const password = Math.random().toString(36).slice(-8)
 
-    const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
-        },
-    })
-
-    if (signUpError) {
-        return { error: signUpError.message }
+    try {
+        await authService.signup(supabase, email, password)
+    } catch (error) {
+        return { error: error instanceof Error ? error.message : "Er is iets misgegaan bij het aanmaken van je account" }
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-    })
-
-    if (signInError) {
-        return { error: signInError.message }
+    try {
+        await authService.login(supabase, email, password)
+    } catch (error) {
+        return { error: error instanceof Error ? error.message : "Er is iets misgegaan bij het inloggen" }
     }
-
-    redirect("/auth-callback")
 }
 
 export async function loginWithGoogle(): Promise<{
@@ -57,16 +42,11 @@ export async function loginWithGoogle(): Promise<{
 }> {
     const supabase = await createClient()
     const baseUrl = getServerBaseUrl(await headers())
-    const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-            redirectTo: `${baseUrl}/api/0auth/exchange`,
-        },
-    })
-
-    if (error) {
-        return { error: error.message, redirectUrl: null }
+    
+    try {
+        const data = await authService.loginWithGoogle(supabase)
+        return { redirectUrl: data.url, error: null }
+    } catch (error) {
+        return { error: error instanceof Error ? error.message : "Er is iets misgegaan bij het inloggen met Google", redirectUrl: null }
     }
-
-    return { redirectUrl: data.url, error: null }
 }

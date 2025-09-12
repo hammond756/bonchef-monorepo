@@ -35,7 +35,6 @@ export function LoginForm({ onLogin }: LoginFormProps) {
                 description: error,
             })
             setIsLoading(false)
-            return
         }
     }
 
