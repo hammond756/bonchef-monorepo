@@ -23,8 +23,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      {isLoading ? <Text>Loading...</Text> : <LoginForm />}
-      {session && <Text>Logged in</Text>}
+      <LoginForm />
     </View>
   );
 }
@@ -35,6 +34,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+    height: "100%",
     padding: 20,
   },
   heading: {

@@ -1,3 +1,4 @@
+import "../global.css";
 import { Slot, useRouter } from "expo-router";
 
 import { ShareIntentProvider } from "expo-share-intent";
