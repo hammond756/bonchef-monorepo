@@ -1,24 +1,40 @@
 import "../global.css";
-import { Slot, useRouter } from "expo-router";
-
+import { Slot, Stack, useRouter } from "expo-router";
 import { ShareIntentProvider } from "expo-share-intent";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 
 export default function Layout() {
   const router = useRouter();
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+      },
+    },
+  }));
 
   return (
-    <ShareIntentProvider
-      options={{
-        debug: true,
-        resetOnBackground: true,
-        onResetShareIntent: () =>
-          // used when app going in background and when the reset button is pressed
-          router.replace({
-            pathname: "/",
-          }),
-      }}
-    >
-      <Slot />
-    </ShareIntentProvider>
+    <QueryClientProvider client={queryClient}>
+      <ShareIntentProvider
+        options={{
+          debug: true,
+          resetOnBackground: true,
+          onResetShareIntent: () =>
+            // used when app going in background and when the reset button is pressed
+            router.replace({
+              pathname: "/",
+            }),
+        }}
+      >
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="discover" options={{ headerShown: false }} />
+          <Stack.Screen name="signup" options={{ headerShown: false }} />
+        </Stack>
+      </ShareIntentProvider>
+    </QueryClientProvider>
   );
 }

@@ -1,15 +1,14 @@
 import LoginForm from "@/components/login-form";
-import { useSession } from "@/hooks/use-session";
 import { useRouter } from "expo-router";
 import { useShareIntentContext } from "expo-share-intent";
 import { useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useSession } from "@/hooks/use-session";
+import { View, ActivityIndicator } from "react-native";
 
 export default function Home() {
   const router = useRouter();
-
-  const { hasShareIntent } = useShareIntentContext();
   const { session, isLoading } = useSession();
+  const { hasShareIntent } = useShareIntentContext();
 
   useEffect(() => {
     if (hasShareIntent) {
@@ -21,26 +20,27 @@ export default function Home() {
     }
   }, [hasShareIntent]);
 
-  return (
-    <View style={styles.container}>
-      <LoginForm />
-    </View>
-  );
-}
+  useEffect(() => {
+    if (!isLoading && session) {
+      // User is authenticated, redirect to discover page
+      console.debug("[expo-router-index] user authenticated, redirecting to discover");
+      router.replace({
+        pathname: "/discover",
+      });
+    }
+  }, [session, isLoading, router]);
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    height: "100%",
-    padding: 20,
-  },
-  heading: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-});
+  // Show loading spinner while checking session
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#1E4D37" />
+      </View>
+    );
+  }
+
+  // Show login form if no session
+  if (!session) {
+    return <LoginForm />;
+  }
+}
