@@ -21,7 +21,9 @@
         "format:check": "prettier --check .",
         "prepare": "husky",
         "notify": "tsx notification-job/notify.ts",
-        "notify:dev": "NODE_ENV=development tsx notification-job/notify.ts"
+        "notify:dev": "NODE_ENV=development tsx notification-job/notify.ts",
+        "post-to-instagram": "tsx instagram-repost-job/index.ts",
+        "post-to-instagram:dry-run": "tsx instagram-repost-job/index.ts --dry-run"
     },
     "dependencies": {
         "@dnd-kit/core": "^6.3.1",
