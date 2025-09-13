@@ -4,20 +4,13 @@ import { DishcoveryDescription } from "./dishcovery-description"
 
 // Mock the startRecipeImportJob function
 vi.mock("@/actions/recipe-imports", () => ({
-    uploadDishcoveryAssets: vi.fn().mockResolvedValue({
-        photoUrl: "https://example.com/uploaded-photo.jpg",
-        audioUrl: "https://example.com/audio.mp3",
-    }),
     startRecipeImportJob: vi.fn().mockResolvedValue("test-job-id"),
 }))
 
-// Mock the transcribeAudio function
-vi.mock("@/services/speech/client", () => ({
-    transcribeAudio: vi.fn().mockResolvedValue({
-        transcript: "Dit is een test transcript",
-        confidence: 0.9,
-        languageCode: "nl-NL",
-    }),
+// Mock the new upload functions
+vi.mock("@/lib/services/storage/client", () => ({
+    uploadDishcoveryImage: vi.fn().mockResolvedValue({ url: "https://example.com/test-image.jpg" }),
+    uploadDishcoveryAudio: vi.fn().mockResolvedValue({ url: "https://example.com/test-audio.mp3" }),
 }))
 
 // Mock framer-motion

@@ -5,8 +5,7 @@ import { DestructiveButton } from "../ui/destructive-button"
 
 interface VoiceState {
     isRecording: boolean
-    audioBlob: Blob | null
-    audioBlobs: Blob[]
+    audioFiles: File[]
 }
 
 interface VoiceInputProps {
@@ -89,28 +88,29 @@ export function VoiceInput({
                 )}
 
                 {/* Main microphone button */}
-                <motion.div
-                    animate={
-                        voiceState.isRecording
-                            ? {
-                                  scale: [1, 1.08, 1],
-                              }
-                            : {}
-                    }
-                    transition={{
-                        duration: 1.2,
-                        repeat: voiceState.isRecording ? Infinity : 0,
-                        ease: "easeInOut",
-                    }}
+                <Button
+                    onClick={handleMicrophoneClick}
+                    className="relative z-10 h-16 w-16 rounded-full p-0 shadow-lg transition-all duration-300 sm:h-20 sm:w-20"
+                    aria-label={voiceState.isRecording ? "Stop opname" : "Beginnen met spreken"}
                 >
-                    <Button
-                        onClick={handleMicrophoneClick}
-                        className={`relative z-10 h-16 w-16 rounded-full transition-all duration-300 sm:h-20 sm:w-20 ${
+                    <motion.div
+                        animate={
                             voiceState.isRecording
-                                ? "bg-[#b9e7ca] text-[#157f3d] shadow-lg hover:bg-[#a1ddb8]"
+                                ? {
+                                      scale: [1, 1.08, 1],
+                                  }
+                                : {}
+                        }
+                        transition={{
+                            duration: 1.2,
+                            repeat: voiceState.isRecording ? Infinity : 0,
+                            ease: "easeInOut",
+                        }}
+                        className={`flex h-full w-full items-center justify-center rounded-full shadow-lg ${
+                            voiceState.isRecording
+                                ? "bg-[#b9e7ca] text-[#157f3d] hover:bg-[#a1ddb8]"
                                 : "bg-[#385940] text-white hover:bg-[#2b2b2b]"
                         }`}
-                        aria-label={voiceState.isRecording ? "Stop opname" : "Beginnen met spreken"}
                     >
                         <AnimatePresence mode="wait">
                             {voiceState.isRecording ? (
@@ -137,8 +137,8 @@ export function VoiceInput({
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                    </Button>
-                </motion.div>
+                    </motion.div>
+                </Button>
 
                 {/* Trash can button - only show when not recording and has audio */}
                 {!voiceState.isRecording && hasAudio && (
@@ -174,9 +174,9 @@ export function VoiceInput({
                         return "Druk op de microfoon knop als je klaar bent met praten"
                     if (hasAudio) {
                         let opnameText = "opname"
-                        if (voiceState.audioBlobs.length > 1) opnameText += "s"
+                        if (voiceState.audioFiles.length > 1) opnameText += "s"
                         return (
-                            `Top! Je hebt ${voiceState.audioBlobs.length} ${opnameText} gemaakt. ` +
+                            `Top! Je hebt ${voiceState.audioFiles.length} ${opnameText} gemaakt. ` +
                             "Druk op Bonchef!! als je klaar bent of druk op de microfoon om verder te praten"
                         )
                     }

@@ -11,7 +11,7 @@ async function loginUser(page: Page, baseURL: string, email: string, password: s
     await page.waitForURL("/")
 }
 
-async function loginWithTemporaryUser(page: Page, baseURL: string) {
+export async function loginWithTemporaryUser(page: Page, baseURL: string) {
     await page.goto(baseURL + "/login")
     await page.getByRole("link", { name: "Log in met test account" }).click()
     await page.waitForURL("/")

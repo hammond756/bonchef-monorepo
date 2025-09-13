@@ -94,7 +94,11 @@ describe("DishcoveryCamera", () => {
         render(<DishcoveryCamera {...defaultProps} />)
 
         await waitFor(() => {
-            expect(screen.getAllByText("NotFoundError")).toHaveLength(2)
+            expect(
+                screen.getAllByText(
+                    "Je browser heeft geen toegang tot de camera. Kies een foto uit de galerij of update je instellingen."
+                )
+            ).toHaveLength(1)
         })
     })
 

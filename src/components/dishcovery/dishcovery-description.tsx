@@ -18,7 +18,7 @@ interface DishcoveryDescriptionProps {
         file: File
     }
     onBack: () => void
-    onContinue: (description: string) => void
+    onContinue: () => void
 }
 
 export function DishcoveryDescription({
@@ -49,7 +49,7 @@ export function DishcoveryDescription({
     const canProceed = hasValidInput && !isProcessing
 
     const handleContinue = async () => {
-        await processDishcovery(photo.file, inputMode, textInput, voiceState.audioBlobs)
+        await processDishcovery(photo.file, inputMode, textInput, voiceState.audioFiles)
     }
 
     return (

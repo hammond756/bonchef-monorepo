@@ -1,8 +1,15 @@
 import { test, expect } from "../fixtures"
+import { audioTest } from "../fixtures/audio-fixture"
 import { v4 as uuidv4 } from "uuid"
+import {
+    navigateToDishcovery,
+    uploadTestImage,
+    submitDishcoveryForm,
+    completeDishcoveryWithVoiceInput,
+} from "../helpers/dishcovery-test-helpers"
 
 test.describe("Recipe import flows", () => {
-    test.setTimeout(120000)
+    test.setTimeout(240000)
 
     test("imports a recipe from url", async ({ temporaryUserPage: page }) => {
         const RECIPE_URL = "https://www.recipetineats.com/parmesan-roasted-green-beans/"
@@ -93,39 +100,31 @@ test.describe("Recipe import flows", () => {
     test("Complete dishcovery flow with gallery photo and written input", async ({
         temporaryUserPage: page,
     }) => {
-        // 1. Open import overlay and click dishcovery
-        const importButton = page.getByRole("button", { name: "Importeer recept" })
-        await expect(importButton).toBeVisible()
-        await importButton.click()
+        await navigateToDishcovery(page, page.url())
+        await uploadTestImage(page)
 
-        // 2. Verify dishcovery button is visible and click it
-        await page.getByRole("button", { name: /dishcovery/i }).click()
-
-        // 3. Should navigate to dishcovery page
-        await expect(page).toHaveURL("/dishcovery")
-
-        // 4. Verify camera interface is shown
-        const cameraButton = page.getByRole("button", { name: /foto maken/i })
-        await expect(cameraButton).toBeVisible()
-
-        const uploadPromise = page.waitForEvent("filechooser")
-
-        await page.getByRole("button", { name: /galerij/i }).click()
-
-        // At this point, a system image picker should be openend. Select the test image.
-        const fileChooser = await uploadPromise
-        await fileChooser.setFiles("src/tests/test_files/gnocchi.png")
-
+        // Use written input instead of voice
         await page.getByRole("button", { name: "Ik kan nu niet praten" }).click()
-
         await page
             .getByRole("textbox", { name: "Beschrijving van het gerecht" })
             .fill("Dit is een heerlijke pasta met pesto en parmazaan")
 
-        await page.getByRole("button", { name: "Importeren" }).click()
-
-        await expect(page.getByText("Concept")).toBeVisible({ timeout: 120000 })
+        await submitDishcoveryForm(page)
     })
+
+    audioTest(
+        "Complete dishcovery flow with gallery photo and relatively long voice input",
+        async ({ audioTestPage: page, baseURL }) => {
+            await completeDishcoveryWithVoiceInput(page, baseURL!, 66100)
+        }
+    )
+
+    audioTest(
+        "Complete dishcovery flow with gallery photo and relatively short voice input",
+        async ({ shortAudioTestPage: page, baseURL }) => {
+            await completeDishcoveryWithVoiceInput(page, baseURL!, 8100)
+        }
+    )
 
     test("imports a recipe from an image", async () => {
         // TODO: make this work with the camera permissions
