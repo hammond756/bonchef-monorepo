@@ -1,13 +1,14 @@
 import { useState } from "react"
 import { View, Text, TouchableOpacity, Image, Alert } from "react-native"
-import { Recipe } from "../../lib/types"
+import { useRouter } from "expo-router"
+import { RecipeRead } from "@repo/lib"
 import { RecipeActionButtons } from "./recipe-action-buttons"
 import { RecipeSourceDisplay } from "./recipe-source-display"
 import { LinearGradient } from "expo-linear-gradient"
 
 
 interface RecipeFeedCardProps {
-    recipe: Recipe
+    recipe: RecipeRead
 }
 
 
@@ -17,12 +18,13 @@ interface RecipeFeedCardProps {
  */
 export function RecipeFeedCard({ recipe }: Readonly<RecipeFeedCardProps>) {
     const [isExpanded, setIsExpanded] = useState(false)
+    const router = useRouter()
 
     const caption = recipe.description || ""
     const isLongCaption = caption.length > 80
 
     const handleRecipePress = () => {
-        Alert.alert("Recipe Selected", `Selected recipe: ${recipe.title}`)
+        router.push(`/recipe/${recipe.id}`)
     }
 
     const handleToggleExpand = () => {

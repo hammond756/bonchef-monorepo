@@ -2,14 +2,12 @@
 
 import { useCallback } from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
-
+import { getPublicRecipesWithClient } from "../services/recipes"
+import { SupabaseClient } from "@supabase/supabase-js"
 
 const PAGE_SIZE = 12
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
-
-export function usePublicRecipes(query: string = "") {
-
+export function usePublicRecipes(supabase: SupabaseClient, query: string = "") {
     const {
         data,
         error,
@@ -22,8 +20,11 @@ export function usePublicRecipes(query: string = "") {
     } = useInfiniteQuery({
         queryKey: ["public-recipes", query],
         queryFn: ({ pageParam = 1 }) => {
-            const searchParam = query ? `&q=${encodeURIComponent(query)}` : ""
-            return fetcher(`http://localhost:3000/api/public/recipes?page=${pageParam}&pageSize=${PAGE_SIZE}${searchParam}`)
+            return getPublicRecipesWithClient(supabase, {
+                page: pageParam,
+                pageSize: PAGE_SIZE,
+                query: query || undefined,
+            })
         },
         getNextPageParam: (lastPage, allPages) => {
             const totalCount = lastPage?.count || 0

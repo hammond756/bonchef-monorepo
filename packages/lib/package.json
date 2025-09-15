@@ -7,7 +7,8 @@
     "types": "index.ts",
     "exports": {
         "./services/auth": "./src/services/auth.ts",
-        "./hooks/use-public-recipes": "./src/hooks/use-public-recipes.ts"
+        "./hooks/use-public-recipes": "./src/hooks/use-public-recipes.ts",
+        "./hooks/use-recipe": "./src/hooks/use-recipe.ts"
     },
     "peerDependencies": {
         "@supabase/supabase-js": "^2.57.4",
