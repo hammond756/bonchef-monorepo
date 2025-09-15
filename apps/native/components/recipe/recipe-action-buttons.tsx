@@ -49,11 +49,11 @@ export function RecipeActionButtons({
     }
 
     return (
-        <View className="items-center space-y-3">
+        <View className="flex items-center justify-start gap-2">
             {/* Share Button */}
             <TouchableOpacity
                 onPress={handleShare}
-                className="items-center justify-center rounded-full bg-black/20 p-2"
+                className="flex items-center justify-center rounded-full bg-black/50 p-2 h-10 w-10"
                 style={{ width: buttonSize, height: buttonSize }}
             >
                 <Ionicons name="share-outline" size={iconSize} color={iconColor} />
@@ -62,7 +62,7 @@ export function RecipeActionButtons({
             {/* Like Button */}
             <TouchableOpacity
                 onPress={handleLike}
-                className="items-center justify-center rounded-full bg-black/20 p-2"
+                className="flex items-center justify-center rounded-full bg-black/50 p-2"
                 style={{ width: buttonSize, height: buttonSize }}
             >
                 <Ionicons 
@@ -80,7 +80,7 @@ export function RecipeActionButtons({
             {/* Comment Button */}
             <TouchableOpacity
                 onPress={handleComment}
-                className="items-center justify-center rounded-full bg-black/20 p-2"
+                className="flex items-center justify-center rounded-full bg-black/50 p-2"
                 style={{ width: buttonSize, height: buttonSize }}
             >
                 <Ionicons name="chatbubble-outline" size={iconSize} color={iconColor} />
@@ -94,7 +94,7 @@ export function RecipeActionButtons({
             {/* Bookmark Button */}
             <TouchableOpacity
                 onPress={handleBookmark}
-                className="items-center justify-center rounded-full bg-black/20 p-2"
+                className="flex items-center justify-center rounded-full bg-black/50 p-2"
                 style={{ width: buttonSize, height: buttonSize }}
             >
                 <Ionicons 
@@ -113,13 +113,16 @@ export function RecipeActionButtons({
             {recipe.profiles && (
                 <TouchableOpacity
                     onPress={handleProfile}
-                    className="items-center justify-center rounded-full bg-black/20 p-2"
+                    className="flex items-center justify-center rounded-full bg-black/50 p-2"
                     style={{ width: buttonSize, height: buttonSize }}
                 >
-                    <Image 
+                    {recipe.profiles.avatar && <Image 
                         source={{ uri: recipe.profiles.avatar || "https://via.placeholder.com/150" }}
                         style={{ width: iconSize, height: iconSize }}
-                    />
+                    />}
+                    {recipe.profiles.display_name && <Text className={`text-lg font-bold ${textColor} text-center`}>
+                        {recipe.profiles.display_name.charAt(0)}
+                    </Text>}
                 </TouchableOpacity>
             )}
         </View>
