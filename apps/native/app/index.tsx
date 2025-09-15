@@ -1,9 +1,9 @@
 import LoginForm from "@/components/login-form";
+import { SplashScreen } from "@/components/splash-screen";
 import { useRouter } from "expo-router";
 import { useShareIntentContext } from "expo-share-intent";
 import { useEffect } from "react";
 import { useSession } from "@/hooks/use-session";
-import { View, ActivityIndicator } from "react-native";
 
 export default function Home() {
   const router = useRouter();
@@ -22,21 +22,17 @@ export default function Home() {
 
   useEffect(() => {
     if (!isLoading && session) {
-      // User is authenticated, redirect to discover page
-      console.debug("[expo-router-index] user authenticated, redirecting to discover");
+      // User is authenticated, redirect to tabs
+      console.debug("[expo-router-index] user authenticated, redirecting to tabs");
       router.replace({
-        pathname: "/discover",
+        pathname: "/(tabs)/discover",
       });
     }
   }, [session, isLoading, router]);
 
-  // Show loading spinner while checking session
+  // Show splash screen while checking session
   if (isLoading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#1E4D37" />
-      </View>
-    );
+    return <SplashScreen />;
   }
 
   // Show login form if no session

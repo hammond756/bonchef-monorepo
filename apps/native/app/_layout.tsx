@@ -32,7 +32,7 @@ export default function Layout() {
         <Stack
           screenOptions={{
             headerStyle: {
-              backgroundColor: '#f4511e',
+              backgroundColor: '#1E4D37',
             },
             headerTintColor: '#fff',
             headerTitleStyle: {
@@ -41,9 +41,10 @@ export default function Layout() {
             title: "",
           }}
         >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="discover" title="Ontdek" />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="signup" />
+          <Stack.Screen name="share-intent" />
         </Stack>
       </ShareIntentProvider>
     </QueryClientProvider>
