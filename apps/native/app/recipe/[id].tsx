@@ -1,11 +1,9 @@
 import { View, Text, ScrollView, Image, TouchableOpacity, StatusBar, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { RecipeActionButtons } from "@/components/recipe/recipe-action-buttons";
 import { useRecipe } from "@repo/lib/hooks/use-recipe";
-import { RecipeRead } from "@repo/lib";
 import { supabase } from "@/lib/utils/supabase/client";
 
 
@@ -19,9 +17,6 @@ export default function RecipeDetail() {
   // Fetch recipe data using the hook
   const { data: recipe, isLoading, error } = useRecipe(supabase, id);
   const [servings, setServings] = useState(recipe?.n_portions || 6);
-
-  // Use fallback data if API is not available or still loading
-  const displayRecipe = recipe
 
   const handleBack = () => {
     router.back();
@@ -64,6 +59,14 @@ export default function RecipeDetail() {
     );
   }
 
+  if (!recipe) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <Text className="text-gray-600">Recipe not found</Text>
+      </View>
+    );
+  }
+
   const renderIngredients = () => (
     <View className="px-4 py-6">
       {/* Servings Adjuster */}
@@ -91,7 +94,7 @@ export default function RecipeDetail() {
       </View>
 
       {/* Ingredients List */}
-      {displayRecipe.ingredients.map((category, categoryIndex) => (
+      {recipe.ingredients.map((category, categoryIndex) => (
         <View key={categoryIndex} className="mb-6">
           <Text className="text-lg font-semibold text-gray-900 mb-3">
             {category.name}
@@ -116,7 +119,7 @@ export default function RecipeDetail() {
 
   const renderPreparation = () => (
     <View className="px-4 py-6">
-      {displayRecipe.instructions.map((step, index) => (
+      {recipe.instructions.map((step, index) => (
         <View key={index} className="mb-6">
           <View className="flex-row items-start">
             <View className="w-8 h-8 bg-green-700 rounded-full items-center justify-center mr-4 mt-1">
@@ -158,13 +161,11 @@ export default function RecipeDetail() {
   };
 
   return (
-    <View className="flex-1 bg-white">
-      <StatusBar barStyle="light-content" />
-      
+    <View className="flex-1 flex-col bg-white w-full">
       {/* Header Image */}
-      <View className="relative h-96">
+      <View className="relative h-2/5">
         <Image
-          source={{ uri: displayRecipe.thumbnail }}
+          source={{ uri: recipe.thumbnail }}
           className="w-full h-full"
           resizeMode="cover"
         />
@@ -176,32 +177,20 @@ export default function RecipeDetail() {
         />
 
         {/* Action Buttons */}
-        <View className="absolute right-4 top-12">
-          <RecipeActionButtons
-            recipe={displayRecipe}
-            theme="dark"
-            size="lg"
-          />
-        </View>
-
-        {/* Recipe Info Overlay */}
-        <View className="absolute bottom-0 left-0 right-0 p-6">
-          <Text className="text-3xl font-bold text-white mb-2">
-            {displayRecipe.title}
-          </Text>
-          <Text className="text-white text-base mb-2">
-            van {displayRecipe.profiles?.display_name} | Ⓒ {displayRecipe.total_cook_time_minutes} min
-          </Text>
-          
-          {/* Author Avatar */}
-          {displayRecipe.profiles?.avatar && (
-            <View className="absolute bottom-4 right-6">
-              <Image
-                source={{ uri: displayRecipe.profiles.avatar }}
-                className="w-12 h-12 rounded-full"
+        <View className="absolute bottom-0 right-0 h-full w-full flex-col justify-end p-4">
+          <View className="flex-row justify-between items-end">
+            <View className="flex-col justify-start flex-1 pr-4">
+              <Text className="text-white text-2xl mb-2">{recipe.title}</Text>
+              <Text className="text-white text-base mb-2">van {recipe.profiles?.display_name}</Text>
+            </View>
+            <View className="w-12">
+              <RecipeActionButtons
+                recipe={recipe}
+                theme="dark"
+                size="lg"
               />
             </View>
-          )}
+          </View>
         </View>
       </View>
 

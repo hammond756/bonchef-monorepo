@@ -9,7 +9,7 @@ import { SupabaseClient } from "@supabase/supabase-js"
  * @param recipeId - The recipe ID to fetch
  * @returns Query result with recipe data
  */
-export function useRecipe(supabase: SupabaseClient, recipeId: string | undefined): UseQueryResult<RecipeRead, Error> {
+export function useRecipe(supabase: SupabaseClient, recipeId: string | undefined) {
   return useQuery({
     queryKey: ["recipe", recipeId],
     queryFn: () => getRecipeWithClient(supabase, recipeId!),

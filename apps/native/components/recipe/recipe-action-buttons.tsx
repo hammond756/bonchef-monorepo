@@ -25,10 +25,6 @@ export function RecipeActionButtons({
     const textColor = theme === "dark" ? "text-white" : "text-gray-900"
     const iconColor = theme === "dark" ? "#ffffff" : "#000000"
 
-    useEffect(() => {
-        console.log("recipe", recipe)
-    }, [recipe])
-
     const handleShare = () => {
         Alert.alert("Share", `Share recipe: ${recipe.title}`)
     }
