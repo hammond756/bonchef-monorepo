@@ -1,15 +1,15 @@
 import { useState } from "react"
-import { View, Text, TouchableOpacity, Image, Alert, Dimensions } from "react-native"
+import { View, Text, TouchableOpacity, Image, Alert } from "react-native"
 import { Recipe } from "../../lib/types"
 import { RecipeActionButtons } from "./recipe-action-buttons"
 import { RecipeSourceDisplay } from "./recipe-source-display"
+import { LinearGradient } from "expo-linear-gradient"
+
 
 interface RecipeFeedCardProps {
     recipe: Recipe
 }
 
-const { width: screenWidth } = Dimensions.get("window")
-const cardWidth = screenWidth - 32 // 16px padding on each side
 
 /**
  * Recipe feed card component displaying recipe image, title, description, and action buttons
@@ -49,11 +49,10 @@ export function RecipeFeedCard({ recipe }: Readonly<RecipeFeedCardProps>) {
                     />
                     
                     {/* Gradient Overlay */}
-                    <View 
-                        className="absolute inset-x-0 bottom-0 h-32"
-                        style={{
-                            backgroundColor: 'rgba(0,0,0,0.7)'
-                        }}
+                    <LinearGradient
+                        // Background Linear Gradient
+                        colors={['transparent', 'rgba(0,0,0,0.5)']}
+                        style={{position: 'absolute', bottom: 0, left: 0, right: 0, height: "100%"}}
                     />
                 </TouchableOpacity>
 

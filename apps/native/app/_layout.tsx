@@ -29,10 +29,21 @@ export default function Layout() {
             }),
         }}
       >
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="discover" options={{ headerShown: false }} />
-          <Stack.Screen name="signup" options={{ headerShown: false }} />
+        <Stack
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: '#f4511e',
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+            title: "",
+          }}
+        >
+          <Stack.Screen name="index" />
+          <Stack.Screen name="discover" title="Ontdek" />
+          <Stack.Screen name="signup" />
         </Stack>
       </ShareIntentProvider>
     </QueryClientProvider>
