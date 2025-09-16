@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, FlatList } from 'react-native';
-import { RecipeCard } from '../recipe/recipe-card';
+import { RecipeCollectionCard } from '../recipe/recipe-collection-card';
 import { PendingJobCard } from '../recipe/pending-job-card';
 import { FailedJobCard } from '../recipe/failed-job-card';
 import { NonCompletedRecipeImportJob } from '@repo/lib/services/recipe-import-jobs';
@@ -32,7 +32,7 @@ export function RecipeGrid({
     if (item.viewType === "RECIPE") {
       return (
         <View className="flex-1 p-1">
-          <RecipeCard 
+          <RecipeCollectionCard 
             recipe={item} 
             onPress={() => onRecipePress?.(item)} 
           />

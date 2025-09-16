@@ -50,7 +50,7 @@ export default function Collection() {
             <Text className={`text-center font-medium ${
               activeTab === 'my-recipes' ? 'text-gray-900' : 'text-gray-600'
             }`}>
-              Mijn recepten
+              Eigen recepten
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -62,7 +62,7 @@ export default function Collection() {
             <Text className={`text-center font-medium ${
               activeTab === 'favorites' ? 'text-gray-900' : 'text-gray-600'
             }`}>
-              Mijn favorieten
+              Favorieten
             </Text>
           </TouchableOpacity>
         </View>
