@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { View, Text, TouchableOpacity, Image, Alert } from "react-native"
 import { useRouter } from "expo-router"
-import { RecipeRead } from "@repo/lib"
+import { RecipeRead } from "@repo/lib/services/recipes"
 import { RecipeActionButtons } from "./recipe-action-buttons"
 import { RecipeSourceDisplay } from "./recipe-source-display"
 import { LinearGradient } from "expo-linear-gradient"
