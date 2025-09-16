@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { Animated, Dimensions, ScrollView } from 'react-native';
-import { SlideInOverlay } from './slide-in-overlay';
 import { ImportOptions } from './import-options';
 import { UrlImportForm } from './url-import-form';
 import { TextImportForm } from './text-import-form';
+import { SlideInOverlay } from './slide-in-overlay';
 
 interface ImportTrayProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type ImportStep = 'options' | 'url' | 'text';
+type ImportStep = 'options' | 'url' | 'text' | 'photo' | 'dishcovery';
 
 export function ImportTray({ isOpen, onClose }: ImportTrayProps) {
   const [currentStep, setCurrentStep] = useState<ImportStep>('options');
