@@ -45,12 +45,26 @@
         {
           "disableIOS": true
         }
-        
       ],
       [
         "expo-share-extension",
         {
           "height": 500
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Montserrat-Regular.ttf",
+            "./assets/fonts/Montserrat-Medium.ttf",
+            "./assets/fonts/Montserrat-SemiBold.ttf",
+            "./assets/fonts/Montserrat-Bold.ttf",
+            "./assets/fonts/Lora-Regular.ttf",
+            "./assets/fonts/Lora-Medium.ttf",
+            "./assets/fonts/Lora-SemiBold.ttf",
+            "./assets/fonts/Lora-Bold.ttf"
+          ]
         }
       ]
     ],

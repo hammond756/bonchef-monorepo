@@ -96,14 +96,14 @@ export default function RecipeDetail() {
       {/* Ingredients List */}
       {recipe.ingredients.map((category, categoryIndex) => (
         <View key={categoryIndex} className="mb-6">
-          <Text className="text-lg font-semibold text-gray-900 mb-3">
+          <Text className="text-lg font-medium text-gray-900 mb-3 font-serif">
             {category.name}
           </Text>
           {category.ingredients.map((ingredient, ingredientIndex) => (
             <View key={ingredientIndex} className="flex-row items-start mb-3">
               <View className="w-5 h-5 border border-gray-300 rounded mr-3 mt-0.5" />
               <View className="flex-1">
-                <Text className="text-base text-gray-900">
+                <Text className="text-base text-gray-900 font-montserrat">
                   <Text className="font-semibold">
                     {ingredient.quantity.low} {ingredient.unit}
                   </Text>{" "}
@@ -180,8 +180,8 @@ export default function RecipeDetail() {
         <View className="absolute bottom-0 right-0 h-full w-full flex-col justify-end p-4">
           <View className="flex-row justify-between items-end">
             <View className="flex-col justify-start flex-1 pr-4">
-              <Text className="text-white text-2xl mb-2">{recipe.title}</Text>
-              <Text className="text-white text-base mb-2">van {recipe.profiles?.display_name}</Text>
+              <Text className="text-white text-2xl mb-2 font-serif font-bold">{recipe.title}</Text>
+              <Text className="text-white text-base mb-2 font-montserrat">van {recipe.profiles?.display_name}</Text>
             </View>
             <View className="w-12">
               <RecipeActionButtons

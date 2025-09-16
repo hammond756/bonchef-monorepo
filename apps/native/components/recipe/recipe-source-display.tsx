@@ -17,7 +17,7 @@ export function RecipeSourceDisplay({ recipe }: Readonly<RecipeSourceDisplayProp
             : getHostnameFromUrl(recipe.source_url)
         
         return (
-            <Text className="text-xs text-white/70">
+            <Text className="text-white/70">
                 van {sourceName}
             </Text>
         )
@@ -26,7 +26,7 @@ export function RecipeSourceDisplay({ recipe }: Readonly<RecipeSourceDisplayProp
     // Check if there's a source name without URL
     if (recipe.source_name && recipe.source_name !== "BonChef") {
         return (
-            <Text className="text-xs text-white/70">
+            <Text className="text-white/70">
                 van {recipe.source_name}
             </Text>
         )
@@ -34,7 +34,7 @@ export function RecipeSourceDisplay({ recipe }: Readonly<RecipeSourceDisplayProp
 
     // Fallback to user profile
     return (
-        <Text className="text-xs text-white/70">
+        <Text className="text-white/70">
             van {recipe.profiles?.display_name || "een anonieme chef"}
         </Text>
     )

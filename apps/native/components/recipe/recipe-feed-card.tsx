@@ -98,7 +98,7 @@ export function RecipeFeedCard({ recipe }: Readonly<RecipeFeedCardProps>) {
 
                     {/* Recipe Title */}
                     <Text 
-                        className="text-2xl font-bold text-white leading-tight"
+                        className="text-2xl font-bold text-white leading-tight font-serif"
                         numberOfLines={2}
                     >
                         {recipe.title}
