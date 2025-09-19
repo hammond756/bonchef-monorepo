@@ -38,15 +38,7 @@ export const TabLayout = ({ children, topBarContent, tabBarContent }: TabLayoutP
                 {children}
             </main>
 
-            <footer
-                className={cn(
-                    "fixed right-0 bottom-0 left-0 z-20 pt-8 transition-transform duration-300 ease-in-out",
-                    {
-                        "translate-y-full": !isVisible,
-                        "translate-y-0": isVisible,
-                    }
-                )}
-            >
+            <footer className="fixed right-0 bottom-0 left-0 z-20 pt-8">
                 <TabBar>{tabBarContent}</TabBar>
             </footer>
         </div>
