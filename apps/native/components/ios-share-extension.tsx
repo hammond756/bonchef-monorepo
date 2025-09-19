@@ -1,17 +1,25 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { close, type InitialProps } from "expo-share-extension";
-import { useEffect } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
 import Animated, {
-  useAnimatedStyle,
   useSharedValue,
   withSpring
 } from "react-native-reanimated";
-import ImportRecipe from "./import-recipe";
+import { UrlImportForm } from './import/url-import-form';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 export default function IOSShareExtension({ url, text }: InitialProps) {
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.8);
+
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+      },
+    },
+  }));
 
   useEffect(() => {
     // Animate in when component mounts
@@ -20,16 +28,10 @@ export default function IOSShareExtension({ url, text }: InitialProps) {
   }, []);
 
   return (
-    <Animated.View className="w-full h-full items-center justify-center p-16">
-        {/* X icon in top right */}
-        <TouchableOpacity 
-          onPress={close}
-          className="absolute top-8 right-8 items-center justify-center"
-        >
-          <Ionicons name="close" size={24} color="black" />
-        </TouchableOpacity>
-        
-        <ImportRecipe sharedData={{ url, text }} onClose={close} />
+    <Animated.View className="w-full h-full items-center justify-center">
+        <QueryClientProvider client={queryClient}>
+          <UrlImportForm onClose={close} onBack={close} initialUrl={url} />
+        </QueryClientProvider>
     </Animated.View>
   );
 }

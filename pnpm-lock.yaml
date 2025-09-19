@@ -162,6 +162,9 @@ importers:
       '@babel/core':
         specifier: ^7.25.2
         version: 7.28.4
+      '@babel/plugin-transform-react-jsx':
+        specifier: ^7.27.1
+        version: 7.27.1(@babel/core@7.28.4)
       '@types/react':
         specifier: 19.0.14
         version: 19.0.14

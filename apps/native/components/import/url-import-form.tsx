@@ -8,6 +8,7 @@ import { supabase } from '@/lib/utils/supabase/client';
 interface UrlImportFormProps {
   onBack: () => void;
   onClose: () => void;
+  initialUrl?: string;
 }
 
 function isValidUrl(string: string) {
@@ -23,8 +24,8 @@ function isVerticalVideoUrl(url: string) {
   return /instagram\.com(.*)\/reel\//.test(url) || /tiktok\.com\//.test(url);
 }
 
-export function UrlImportForm({ onBack, onClose }: UrlImportFormProps) {
-  const [url, setUrl] = useState('');
+export function UrlImportForm({ onBack, onClose, initialUrl }: UrlImportFormProps) {
+  const [url, setUrl] = useState(initialUrl || '');
   const { session } = useSession();
   
   const { isLoading, error, setError, handleSubmit } = useRecipeImport({
