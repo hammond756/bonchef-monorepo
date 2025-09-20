@@ -1,0 +1,20 @@
+
+
+> bonchef-native@1.0.0 lint /Users/hammon000/bonchef-monorepo/apps/native
+> expo lint
+
+[90menv: load .env.local[39m
+[90menv: export EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_SUPABASE_URL[39m
+[0m[0m
+[0m[4m/Users/hammon000/bonchef-monorepo/apps/native/app/index.tsx[24m[0m
+[0m  [2m22:6[22m  [33mwarning[39m  React Hook useEffect has a missing dependency: 'router'. Either include it or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m[0m
+[0m[4m/Users/hammon000/bonchef-monorepo/apps/native/app/share-intent.tsx[24m[0m
+[0m  [2m10:7[22m  [33mwarning[39m  'WebUrlComponent' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4m/Users/hammon000/bonchef-monorepo/apps/native/components/ios-share-extension.tsx[24m[0m
+[0m  [2m29:6[22m  [33mwarning[39m  React Hook useEffect has missing dependencies: 'opacity' and 'scale'. Either include them or remove the dependency array  [2mreact-hooks/exhaustive-deps[22m[0m
+[0m  [2m31:9[22m  [33mwarning[39m  'animatedStyle' is assigned a value but never used                                                                        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[33m[1m✖ 4 problems (0 errors, 4 warnings)[22m[39m[0m
+[0m[33m[1m[22m[39m[0m

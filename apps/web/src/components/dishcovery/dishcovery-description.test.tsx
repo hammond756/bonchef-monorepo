@@ -3,21 +3,16 @@ import { vi } from "vitest"
 import { DishcoveryDescription } from "./dishcovery-description"
 
 // Mock the startRecipeImportJob function
-vi.mock("@/actions/recipe-imports", () => ({
-    uploadDishcoveryAssets: vi.fn().mockResolvedValue({
-        photoUrl: "https://example.com/uploaded-photo.jpg",
-        audioUrl: "https://example.com/audio.mp3",
+vi.mock("@/hooks/use-recipe-import-jobs", () => ({
+    useRecipeImportJobs: vi.fn().mockReturnValue({
+        addJob: vi.fn(),
     }),
-    startRecipeImportJob: vi.fn().mockResolvedValue("test-job-id"),
 }))
 
-// Mock the transcribeAudio function
-vi.mock("@/services/speech/client", () => ({
-    transcribeAudio: vi.fn().mockResolvedValue({
-        transcript: "Dit is een test transcript",
-        confidence: 0.9,
-        languageCode: "nl-NL",
-    }),
+// Mock the new upload functions
+vi.mock("@/lib/services/storage/client", () => ({
+    uploadDishcoveryImage: vi.fn().mockResolvedValue({ url: "https://example.com/test-image.jpg" }),
+    uploadDishcoveryAudio: vi.fn().mockResolvedValue({ url: "https://example.com/test-audio.mp3" }),
 }))
 
 // Mock framer-motion
@@ -77,9 +72,6 @@ describe("DishcoveryDescription", () => {
 
         expect(screen.getByAltText("Captured dish")).toBeInTheDocument()
         expect(screen.getByText("Vertel meer over dit gerecht")).toBeInTheDocument()
-        expect(
-            screen.getByText("Beschrijf ingrediënten, smaken, kruiden, en alles wat bijzonder is.")
-        ).toBeInTheDocument()
     })
 
     it("shows back button", () => {
@@ -140,7 +132,7 @@ describe("DishcoveryDescription", () => {
         render(<DishcoveryDescription {...defaultProps} />)
 
         // Voice mode is default, but without recording the button should be disabled
-        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
+        const continueButton = screen.getByRole("button", { name: "Importeren" })
         expect(continueButton).toBeDisabled()
     })
 
@@ -155,7 +147,7 @@ describe("DishcoveryDescription", () => {
         fireEvent.change(textarea, { target: { value: "Test description" } })
 
         // Button should be enabled with valid text input
-        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
+        const continueButton = screen.getByRole("button", { name: "Importeren" })
         expect(continueButton).toBeEnabled()
     })
 
@@ -168,7 +160,7 @@ describe("DishcoveryDescription", () => {
         fireEvent.change(textarea, { target: { value: "Test description" } })
 
         // Button should be enabled and can be clicked
-        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
+        const continueButton = screen.getByRole("button", { name: "Importeren" })
         expect(continueButton).toBeEnabled()
         fireEvent.click(continueButton)
 
@@ -187,7 +179,7 @@ describe("DishcoveryDescription", () => {
         fireEvent.change(textarea, { target: { value: "Test description" } })
 
         // Button should be enabled and can be clicked
-        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
+        const continueButton = screen.getByRole("button", { name: "Importeren" })
         expect(continueButton).toBeEnabled()
         fireEvent.click(continueButton)
 
@@ -207,7 +199,7 @@ describe("DishcoveryDescription", () => {
 
         // Test with 2 characters (invalid)
         fireEvent.change(textarea, { target: { value: "ab" } })
-        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
+        const continueButton = screen.getByRole("button", { name: "Importeren" })
         expect(continueButton).toBeDisabled()
 
         // Test with 3 characters (valid)
@@ -230,7 +222,7 @@ describe("DishcoveryDescription", () => {
         expect(screen.getByText("500/500")).toBeInTheDocument()
 
         // Button should still be enabled with valid length
-        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
+        const continueButton = screen.getByRole("button", { name: "Importeren" })
         expect(continueButton).toBeEnabled()
     })
 
@@ -243,7 +235,7 @@ describe("DishcoveryDescription", () => {
 
         // Test with empty string
         fireEvent.change(textarea, { target: { value: "" } })
-        const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
+        const continueButton = screen.getByRole("button", { name: "Importeren" })
         expect(continueButton).toBeDisabled()
 
         // Test with only whitespace
@@ -315,7 +307,7 @@ describe("DishcoveryDescription", () => {
 
         // The continue button should now be enabled
         await waitFor(() => {
-            const continueButton = screen.getByRole("button", { name: /Bonchef!!/i })
+            const continueButton = screen.getByRole("button", { name: "Importeren" })
             expect(continueButton).toBeEnabled()
         })
     })

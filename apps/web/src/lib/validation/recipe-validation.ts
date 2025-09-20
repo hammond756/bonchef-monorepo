@@ -12,6 +12,8 @@ export interface RecipeValidationErrors {
     ingredients?: string
     steps?: string
     image?: string
+    sourceUrl?: string
+    sourceName?: string
 }
 
 /**
@@ -150,6 +152,45 @@ export function validateImage(imageUrl?: string | null): string | undefined {
 }
 
 /**
+ * Validate source URL (optional)
+ */
+export function validateSourceUrl(sourceUrl?: string | null): string | undefined {
+    if (!sourceUrl) {
+        return undefined // Source URL is optional
+    }
+
+    // Basic URL validation
+    try {
+        new URL(sourceUrl)
+    } catch {
+        return "Ongeldige URL"
+    }
+
+    if (sourceUrl.length > 2047) {
+        return "URL mag maximaal 2047 karakters bevatten"
+    }
+
+    return undefined
+}
+
+/**
+ * Validate source name when source URL is provided
+ */
+export function validateSourceName(
+    sourceName?: string | null,
+    sourceUrl?: string | null
+): string | undefined {
+    // If source URL is provided, source name is required
+    if (sourceUrl && sourceUrl.trim().length > 0) {
+        if (!sourceName || sourceName.trim().length === 0) {
+            return "Voer de bron naam van je link in voordat je verder gaat"
+        }
+    }
+
+    return undefined
+}
+
+/**
  * Validate complete recipe data
  */
 export function validateRecipe(recipe: Recipe): RecipeValidationErrors {
@@ -175,6 +216,12 @@ export function validateRecipe(recipe: Recipe): RecipeValidationErrors {
 
     const imageError = validateImage(recipe.thumbnail)
     if (imageError) errors.image = imageError
+
+    const sourceUrlError = validateSourceUrl(recipe.source_url)
+    if (sourceUrlError) errors.sourceUrl = sourceUrlError
+
+    const sourceNameError = validateSourceName(recipe.source_name, recipe.source_url)
+    if (sourceNameError) errors.sourceName = sourceNameError
 
     return errors
 }

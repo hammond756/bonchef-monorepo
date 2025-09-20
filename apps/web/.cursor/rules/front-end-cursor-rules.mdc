@@ -83,6 +83,7 @@ type ServiceResponse<T> = Promise<{
 
 - Always mark component props as Readonly, by using ReadOnly<...>. React props should be read-only because it helps to enforce the principle of immutability in React functional components. By making props read-only, you ensure that the data passed from a parent component to a child component cannot be modified directly by the child component. This helps maintain a clear data flow and prevents unexpected side effects.
 - Avoid complex nesting, don't go more than 4 levels deep
+- Avoid ternary operators. Prefer if/else statements or coalescing
 - Default parameters should come last in the function signature
 - Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator.
 

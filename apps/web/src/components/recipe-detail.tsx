@@ -213,24 +213,12 @@ export function RecipeDetail({ variant, recipe, user }: RecipeDetailProps) {
                     </Tabs>
                 </div>
 
-                {variant === "saved" &&
-                    recipe.source_name &&
-                    recipe.source_name !== "BonChef" &&
-                    recipe.source_url &&
-                    recipe.source_url !== "https://app.bonchef.io" && (
-                        <div className="py-8 text-center text-xs">
-                            <span className="text-text-default">Bron: </span>
-                            <a
-                                data-testid="recipe-source-link"
-                                href={recipe.source_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-accent-new hover:text-primary underline"
-                            >
-                                {recipe.source_name}
-                            </a>
-                        </div>
-                    )}
+                {variant === "saved" && (
+                    <div className="py-8 text-center text-xs">
+                        <span className="text-text-default">Bron: </span>
+                        <RecipeSourceDisplay recipe={recipe} />
+                    </div>
+                )}
 
                 {variant === "saved" && (
                     <CommentOverlay

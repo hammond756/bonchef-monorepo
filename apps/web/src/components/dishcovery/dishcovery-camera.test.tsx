@@ -68,10 +68,10 @@ describe("DishcoveryCamera", () => {
         })
     })
 
-    it("shows back button", () => {
+    it("shows close button", () => {
         render(<DishcoveryCamera {...defaultProps} />)
 
-        expect(screen.getByRole("button", { name: /terug/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: /sluiten/i })).toBeInTheDocument()
     })
 
     it("shows gallery button", () => {
@@ -94,7 +94,11 @@ describe("DishcoveryCamera", () => {
         render(<DishcoveryCamera {...defaultProps} />)
 
         await waitFor(() => {
-            expect(screen.getAllByText("NotFoundError")).toHaveLength(2)
+            expect(
+                screen.getAllByText(
+                    "Je browser heeft geen toegang tot de camera. Kies een foto uit de galerij of update je instellingen."
+                )
+            ).toHaveLength(1)
         })
     })
 
@@ -103,7 +107,7 @@ describe("DishcoveryCamera", () => {
 
         expect(screen.getByRole("button", { name: /foto maken/i })).toBeInTheDocument()
         expect(screen.getByRole("button", { name: /galerij/i })).toBeInTheDocument()
-        expect(screen.getByRole("button", { name: /terug/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: /sluiten/i })).toBeInTheDocument()
     })
 
     it("handles camera capture button click", () => {

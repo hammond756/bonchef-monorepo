@@ -26,10 +26,6 @@ export function DishcoveryCamera({ onPhotoCaptured }: DishcoveryCameraProps) {
         onPhotoCaptured(capturedPhoto)
     }
 
-    const handleError = (errorMessage: string) => {
-        setError(errorMessage)
-    }
-
     const openGallery = () => {
         fileInputRef.current?.click()
     }
@@ -77,10 +73,9 @@ export function DishcoveryCamera({ onPhotoCaptured }: DishcoveryCameraProps) {
             </div>
 
             {/* Camera/Photo area */}
-            <div className="relative flex-1">
+            <div className="flex-1">
                 <CameraView
                     onPhotoCaptured={handlePhotoCaptured}
-                    onError={handleError}
                     onOpenGallery={openGallery}
                     className="h-full"
                     showPreview={true}

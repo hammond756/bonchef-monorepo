@@ -76,9 +76,7 @@ describe("DishcoveryPage", () => {
         expect(screen.getByLabelText("Mock capture button")).toBeInTheDocument()
     })
 
-    it("calls onContinue when continue button is clicked", () => {
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
-
+    it("Redirects to collection page when continue button is clicked", () => {
         render(<DishcoveryPage />)
 
         // Go to description screen
@@ -87,9 +85,6 @@ describe("DishcoveryPage", () => {
         // Click continue
         fireEvent.click(screen.getByLabelText("Mock continue button"))
 
-        expect(consoleSpy).toHaveBeenCalledWith("Description:", "Test description")
         expect(mockPush).toHaveBeenCalledWith("/collection")
-
-        consoleSpy.mockRestore()
     })
 })

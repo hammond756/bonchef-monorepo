@@ -31,7 +31,7 @@ export class RecipeService {
         const validatedRecipe = this.validateRecipe(recipe)
 
         if (!validatedRecipe.success) {
-            return { success: false, error: validatedRecipe.error }
+            return { success: false, error: validatedRecipe.error, data: null }
         }
 
         const { data, error, status, statusText } = await this.supabase
@@ -42,17 +42,17 @@ export class RecipeService {
 
         if (error) {
             console.error(`Error creating recipe (status: ${status}):`, error)
-            return { success: false, error: error.message || statusText }
+            return { success: false, error: error.message || statusText, data: null }
         }
 
-        return { success: true, data }
+        return { success: true, data, error: null }
     }
 
     async updateRecipe(id: string, recipe: RecipeWrite): ServiceResponse<RecipeRead> {
         const validatedRecipe = this.validateRecipe(recipe)
 
         if (!validatedRecipe.success) {
-            return { success: false, error: validatedRecipe.error }
+            return { success: false, error: validatedRecipe.error, data: null }
         }
 
         const { data, error, status, statusText } = await this.supabase
@@ -64,10 +64,10 @@ export class RecipeService {
 
         if (error) {
             console.error(`Error updating recipe (status: ${status}):`, error)
-            return { success: false, error: error.message || statusText }
+            return { success: false, error: error.message || statusText, data: null }
         }
 
-        return { success: true, data }
+        return { success: true, data, error: null }
     }
 
     async getRecipe(id: string): ServiceResponse<RecipeRead> {
@@ -75,10 +75,10 @@ export class RecipeService {
 
         if (error) {
             console.error("Failed to get recipe:", error)
-            return { success: false, error: error.message }
+            return { success: false, error: error.message, data: null }
         }
 
-        return { success: true, data }
+        return { success: true, data, error: null }
     }
 
     /**
@@ -89,7 +89,7 @@ export class RecipeService {
      */
     async assignRecipesToUser(recipeIds: string[], userId: string): ServiceResponse<null> {
         if (recipeIds.length === 0) {
-            return { success: true, data: null }
+            return { success: true, data: null, error: null }
         }
 
         const { error } = await this.supabase
@@ -99,9 +99,9 @@ export class RecipeService {
 
         if (error) {
             console.error("Failed to assign recipes to user:", error)
-            return { success: false, error: error.message }
+            return { success: false, error: error.message, data: null }
         }
 
-        return { success: true, data: null }
+        return { success: true, data: null, error: null }
     }
 }

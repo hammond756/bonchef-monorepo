@@ -1,6 +1,8 @@
 import { useRef, useEffect, useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ImageIcon, CameraIcon, X } from "lucide-react"
+import { ImageIcon, CameraIcon, X, AlertCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 
 interface CapturedPhoto {
     id: string
@@ -68,7 +70,7 @@ export function CameraView({
             } catch (err) {
                 console.error("Failed to initialize camera:", err)
                 const errorMessage =
-                    err instanceof Error ? err.message : "Camera kon niet worden geïnitialiseerd"
+                    "Je browser heeft geen toegang tot de camera. Kies een foto uit de galerij of update je instellingen."
                 setError(errorMessage)
                 onError?.(errorMessage)
             }
@@ -135,36 +137,31 @@ export function CameraView({
         onCapture?.()
     }
 
-    if (error) {
-        return (
-            <div className={`flex h-full items-center justify-center ${className}`}>
-                <div className="text-center">
-                    <p className="mb-4 text-red-600">{error}</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                    >
-                        Opnieuw proberen
-                    </button>
-                </div>
-            </div>
-        )
-    }
-
     return (
         <div className={`relative h-full w-full overflow-hidden ${className}`}>
             {error ? (
                 /* Error state with fallback to gallery */
-                <div className="flex h-full items-center justify-center">
-                    <div className="text-center">
-                        <p className="mb-4 text-red-600">{error}</p>
+                <div className="flex h-full items-center justify-center p-6">
+                    <div className="w-full max-w-sm space-y-6">
+                        <Alert variant="destructive" className="bg-status-red-bg text-center">
+                            <AlertCircle className="h-5 w-5" />
+                            <AlertDescription className="text-sm leading-relaxed">
+                                {error}
+                            </AlertDescription>
+                        </Alert>
+
                         {onOpenGallery && (
-                            <button
-                                onClick={onOpenGallery}
-                                className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                            >
-                                Kies uit galerij
-                            </button>
+                            <div className="flex justify-center">
+                                <Button
+                                    onClick={onOpenGallery}
+                                    variant="default"
+                                    size="lg"
+                                    className="w-full"
+                                >
+                                    <ImageIcon className="h-4 w-4" />
+                                    Kies uit galerij
+                                </Button>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -253,13 +250,15 @@ export function CameraView({
                     <div className="flex items-center justify-center px-4 sm:px-8">
                         {/* Gallery button - fixed width */}
                         <div className="flex w-12 justify-start sm:w-16">
-                            <button
+                            <Button
                                 onClick={onOpenGallery}
-                                className="flex h-10 w-10 items-center justify-center rounded-lg border border-blue-200 bg-blue-100 text-blue-800 shadow-sm hover:bg-blue-200 sm:h-12 sm:w-12"
+                                variant="outline"
+                                size="icon"
+                                className="h-10 w-10 sm:h-12 sm:w-12"
                                 aria-label="Galerij"
                             >
                                 <ImageIcon className="h-6 w-6" />
-                            </button>
+                            </Button>
                         </div>
 
                         {/* Capture button - centered */}

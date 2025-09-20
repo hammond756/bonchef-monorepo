@@ -24,10 +24,10 @@ export async function listJobsWithClient(
 
     if (error) {
         console.error("Failed to list recipe import jobs:", error)
-        return { success: false, error: error.message }
+        return { success: false, error: error.message, data: null }
     }
 
-    return { success: true, data }
+    return { success: true, data, error: null }
 }
 
 export async function createJobWithClient(
@@ -35,7 +35,7 @@ export async function createJobWithClient(
     sourceType: z.infer<typeof RecipeImportSourceTypeEnum>,
     sourceData: string,
     userId: string
-): ServiceResponse<{ id: string }> {
+): ServiceResponse<NonCompletedRecipeImportJob> {
     if (sourceType === "vertical_video") {
         const { count } = await client
             .from("recipe_import_jobs")
@@ -48,6 +48,7 @@ export async function createJobWithClient(
             return {
                 success: false,
                 error: "Er staan te veel social media imports in de wachtrij. Probeer het later nog eens.",
+                data: null,
             }
         }
     }
@@ -60,15 +61,15 @@ export async function createJobWithClient(
             user_id: userId,
             status: "pending",
         })
-        .select("id")
+        .select("*")
         .single()
 
     if (error) {
         console.error("Failed to create recipe import job:", error)
-        return { success: false, error: error.message }
+        return { success: false, error: error.message, data: null }
     }
 
-    return { success: true, data }
+    return { success: true, data, error: null }
 }
 
 export async function getJobByRecipeIdWithClient(
@@ -84,13 +85,13 @@ export async function getJobByRecipeIdWithClient(
     if (error) {
         if (error.code === "PGRST116") {
             // No job found for this recipe (not an error in this context)
-            return { success: false, error: "No job found for this recipe" }
+            return { success: false, error: "No job found for this recipe", data: null }
         }
         console.error("Failed to get job ID by recipe ID:", error)
-        return { success: false, error: error.message }
+        return { success: false, error: error.message, data: null }
     }
 
-    return { success: true, data }
+    return { success: true, data, error: null }
 }
 
 export async function assignJobsToUserWithClient(
@@ -99,7 +100,7 @@ export async function assignJobsToUserWithClient(
     userId: string
 ): ServiceResponse<null> {
     if (jobIds.length === 0) {
-        return { success: true, data: null }
+        return { success: true, data: null, error: null }
     }
 
     const { error } = await client
@@ -109,10 +110,10 @@ export async function assignJobsToUserWithClient(
 
     if (error) {
         console.error("Failed to assign jobs to user:", error)
-        return { success: false, error: error.message }
+        return { success: false, error: error.message, data: null }
     }
 
-    return { success: true, data: null }
+    return { success: true, data: null, error: null }
 }
 
 export async function deleteRecipeImportJobWithClient(client: SupabaseClient, jobId: string) {
@@ -123,5 +124,41 @@ export async function deleteRecipeImportJobWithClient(client: SupabaseClient, jo
         throw new Error(error.message)
     }
 
-    return { success: true }
+    return { success: true, data: null, error: null }
+}
+
+export async function completeJobWithClient(
+    client: SupabaseClient,
+    jobId: string,
+    recipeId: string
+): ServiceResponse<null> {
+    const { error } = await client
+        .from("recipe_import_jobs")
+        .update({ status: "completed", recipe_id: recipeId })
+        .eq("id", jobId)
+
+    if (error) {
+        console.error("Failed to complete recipe import job:", error)
+        return { success: false, error: error.message, data: null }
+    }
+
+    return { success: true, data: null, error: null }
+}
+
+export async function failJobWithClient(
+    client: SupabaseClient,
+    jobId: string,
+    errorMessage: string
+): ServiceResponse<null> {
+    const { error } = await client
+        .from("recipe_import_jobs")
+        .update({ status: "failed", error_message: errorMessage })
+        .eq("id", jobId)
+
+    if (error) {
+        console.error("Failed to fail recipe import job:", error)
+        return { success: false, error: error.message, data: null }
+    }
+
+    return { success: true, data: null, error: null }
 }

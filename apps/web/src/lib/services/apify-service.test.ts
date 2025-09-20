@@ -11,10 +11,23 @@ interface MockInstagramItem {
     videoUrl?: string
     caption?: string
     ownerUsername?: string
+    url?: string
+}
+
+interface MockTikTokItem {
+    text: string
+    webVideoUrl: string
+    authorMeta: {
+        nickName: string
+    }
+    videoMeta: {
+        coverUrl: string
+        downloadAddr: string
+    }
 }
 
 interface MockDatasetResponse {
-    items: MockInstagramItem[]
+    items: (MockInstagramItem | MockTikTokItem)[]
 }
 
 interface MockRunResponse {
@@ -23,7 +36,7 @@ interface MockRunResponse {
 
 // Helper function to create mock responses
 function createMockResponses(
-    mockItems: MockInstagramItem[],
+    mockItems: (MockInstagramItem | MockTikTokItem)[],
     datasetId: string = "dataset-id"
 ): {
     mockRun: MockRunResponse
@@ -38,20 +51,18 @@ function createMockResponses(
 // Helper function to set up mocks for a specific test
 function setupMocks(
     mockApifyClient: ApifyClient,
-    mockItems: MockInstagramItem[],
+    mockItems: (MockInstagramItem | MockTikTokItem)[],
     shouldFail: boolean = false,
     errorMessage?: string
 ) {
     const { mockRun, mockDatasetItems } = createMockResponses(mockItems)
 
     if (shouldFail) {
-        ;((mockApifyClient.actor("shu8hvrXbJbY3Eb9W") as any).call as any).mockRejectedValue(
+        ;((mockApifyClient.actor("ID_OF_THE_ACTOR") as any).call as any).mockRejectedValue(
             new Error(errorMessage || "API call failed")
         )
     } else {
-        ;((mockApifyClient.actor("shu8hvrXbJbY3Eb9W") as any).call as any).mockResolvedValue(
-            mockRun
-        )
+        ;((mockApifyClient.actor("ID_OF_THE_ACTOR") as any).call as any).mockResolvedValue(mockRun)
         ;(
             (mockApifyClient.dataset(mockRun.defaultDatasetId) as any).listItems as any
         ).mockResolvedValue(mockDatasetItems)
@@ -87,6 +98,7 @@ describe("ApifyService", () => {
                 videoUrl: "http://example.com/video.mp4",
                 caption: "A delicious recipe",
                 ownerUsername: "testuser",
+                url: "https://www.instagram.com/reel/C12345/",
             },
         ]
 
@@ -100,6 +112,7 @@ describe("ApifyService", () => {
             expect(result.data.videoUrl).toBe("http://example.com/video.mp4")
             expect(result.data.caption).toBe("A delicious recipe")
             expect(result.data.author).toBe("testuser")
+            expect(result.data.canonicalUrl).toBe("https://www.instagram.com/reel/C12345/")
         }
     })
 
@@ -150,6 +163,130 @@ describe("ApifyService", () => {
             expect(result.error).toBe(
                 "Er ging iets mis bij het ophalen van de instagram content. Helaas is het niet duidelijk wat de oorzaak is."
             )
+        }
+    })
+
+    it("should successfully scrape a TikTok video with canonicalUrl", async () => {
+        const tiktokUrl = "https://www.tiktok.com/@user/video/1234567890"
+        const mockItems: MockTikTokItem[] = [
+            {
+                text: "A delicious recipe video",
+                webVideoUrl: "https://www.tiktok.com/@user/video/1234567890",
+                authorMeta: {
+                    nickName: "tiktokuser",
+                },
+                videoMeta: {
+                    coverUrl: "http://example.com/cover.jpg",
+                    downloadAddr: "http://example.com/video.mp4",
+                },
+            },
+        ]
+
+        setupMocks(mockApifyClient, mockItems)
+        ;(apifyService as any).client = mockApifyClient
+
+        const result = await apifyService.scrapeTikTok(tiktokUrl)
+
+        expect(result.success).toBe(true)
+        if (result.success) {
+            expect(result.data.videoUrl).toBe("http://example.com/video.mp4")
+            expect(result.data.caption).toBe("A delicious recipe video")
+            expect(result.data.author).toBe("tiktokuser")
+            expect(result.data.thumbnailUrl).toBe("http://example.com/cover.jpg")
+            expect(result.data.canonicalUrl).toBe("https://www.tiktok.com/@user/video/1234567890")
+        }
+    })
+
+    it("should use canonicalUrl from Apify response instead of original sourceData", async () => {
+        const originalUrl =
+            "https://www.instagram.com/reel/C12345/?igs=dflskJEkje&otherParam=something"
+        const canonicalUrl = "https://www.instagram.com/reel/C12345/"
+
+        const mockItems: MockInstagramItem[] = [
+            {
+                type: "Video",
+                videoUrl: "http://example.com/video.mp4",
+                caption: "A delicious recipe",
+                ownerUsername: "testuser",
+                url: canonicalUrl, // This should be different from originalUrl
+            },
+        ]
+
+        setupMocks(mockApifyClient, mockItems)
+        ;(apifyService as any).client = mockApifyClient
+
+        const result = await apifyService.scrapeInstagramReel(originalUrl)
+
+        expect(result.success).toBe(true)
+        if (result.success) {
+            // The canonicalUrl should be the clean URL from Apify, not the original URL with parameters
+            expect(result.data.canonicalUrl).toBe(canonicalUrl)
+            expect(result.data.canonicalUrl).not.toBe(originalUrl)
+            expect(result.data.canonicalUrl).not.toContain("?igs=")
+        }
+    })
+
+    it("should return canonicalUrl that differs from input URL for TikTok", async () => {
+        const inputUrl =
+            "https://www.tiktok.com/@user/video/1234567890?is_from_webapp=1&sender_device=pc"
+        const canonicalUrl = "https://www.tiktok.com/@user/video/1234567890"
+
+        const mockItems: MockTikTokItem[] = [
+            {
+                text: "A delicious recipe video",
+                webVideoUrl: canonicalUrl, // Clean URL without tracking parameters
+                authorMeta: {
+                    nickName: "tiktokuser",
+                },
+                videoMeta: {
+                    coverUrl: "http://example.com/cover.jpg",
+                    downloadAddr: "http://example.com/video.mp4",
+                },
+            },
+        ]
+
+        setupMocks(mockApifyClient, mockItems)
+        ;(apifyService as any).client = mockApifyClient
+
+        const result = await apifyService.scrapeTikTok(inputUrl)
+
+        expect(result.success).toBe(true)
+        if (result.success) {
+            // The canonicalUrl should be the clean URL from Apify, not the input URL with parameters
+            expect(result.data.canonicalUrl).toBe(canonicalUrl)
+            expect(result.data.canonicalUrl).not.toBe(inputUrl)
+            expect(result.data.canonicalUrl).not.toContain("?is_from_webapp=")
+            expect(result.data.canonicalUrl).not.toContain("sender_device=")
+        }
+    })
+
+    it("should handle Instagram URL with tracking parameters and return clean canonicalUrl", async () => {
+        const inputUrl =
+            "https://www.instagram.com/reel/C12345/?utm_source=ig_web_copy_link&igshid=MzRlODBiNWFlZA=="
+        const canonicalUrl = "https://www.instagram.com/reel/C12345/"
+
+        const mockItems: MockInstagramItem[] = [
+            {
+                type: "Video",
+                videoUrl: "http://example.com/video.mp4",
+                caption: "A delicious recipe",
+                ownerUsername: "testuser",
+                url: canonicalUrl, // Clean URL without tracking parameters
+            },
+        ]
+
+        setupMocks(mockApifyClient, mockItems)
+        ;(apifyService as any).client = mockApifyClient
+
+        const result = await apifyService.scrapeInstagramReel(inputUrl)
+
+        expect(result.success).toBe(true)
+        if (result.success) {
+            // The canonicalUrl should be the clean URL from Apify, not the input URL with tracking parameters
+            expect(result.data.canonicalUrl).toBe(canonicalUrl)
+            expect(result.data.canonicalUrl).not.toBe(inputUrl)
+            expect(result.data.canonicalUrl).not.toContain("utm_source=")
+            expect(result.data.canonicalUrl).not.toContain("igshid=")
         }
     })
 })

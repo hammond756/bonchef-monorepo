@@ -24,6 +24,8 @@ interface SampleConfig {
 
 interface LangFusePromptConfig {
     random_values: SampleConfig
+    model: string
+    temperature: number
 }
 
 export class RecipeGenerationService {
@@ -131,10 +133,6 @@ export class RecipeGenerationService {
         text: string,
         promptVariables: Record<string, string> | null = null
     ) {
-        const openai = new ChatOpenAI({
-            apiKey: process.env.OPENAI_API_KEY,
-        })
-
         const langfuse = new Langfuse()
 
         const n = Number(process.env.PROMPT_VERSION_WRITE_IMAGE_PROMPT)
@@ -146,6 +144,7 @@ export class RecipeGenerationService {
                 type: "chat",
             }
         )
+
         const negativeImagePrompt = (
             await langfuse.getPrompt("NegativeImage", undefined, { type: "text" })
         ).compile()
@@ -162,6 +161,11 @@ export class RecipeGenerationService {
             recipe: text,
         })
 
+        const openai = new ChatOpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
+            model: config.model,
+            temperature: config.temperature,
+        })
         const openaiResponse = await openai.invoke(textToImagePrompt, {
             response_format: { type: "text" },
             callbacks: [new CallbackHandler()],

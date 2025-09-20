@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button"
-import { Mic, Type } from "lucide-react"
+import { Mic, Trash, Type } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { DestructiveButton } from "../ui/destructive-button"
 
 interface VoiceState {
     isRecording: boolean
-    audioBlob: Blob | null
-    audioBlobs: Blob[]
+    audioFiles: File[]
 }
 
 interface VoiceInputProps {
@@ -15,6 +15,7 @@ interface VoiceInputProps {
     onStopRecording: () => void
     onSwitchToText: () => void
     onError: (error: string) => void
+    onClearAudio: () => void
 }
 
 /**
@@ -27,6 +28,7 @@ export function VoiceInput({
     onStartRecording,
     onStopRecording,
     onSwitchToText,
+    onClearAudio,
     onError: _onError,
 }: Readonly<VoiceInputProps>) {
     const handleMicrophoneClick = () => {
@@ -86,28 +88,29 @@ export function VoiceInput({
                 )}
 
                 {/* Main microphone button */}
-                <motion.div
-                    animate={
-                        voiceState.isRecording
-                            ? {
-                                  scale: [1, 1.08, 1],
-                              }
-                            : {}
-                    }
-                    transition={{
-                        duration: 1.2,
-                        repeat: voiceState.isRecording ? Infinity : 0,
-                        ease: "easeInOut",
-                    }}
+                <Button
+                    onClick={handleMicrophoneClick}
+                    className="relative z-10 h-16 w-16 rounded-full p-0 shadow-lg transition-all duration-300 sm:h-20 sm:w-20"
+                    aria-label={voiceState.isRecording ? "Stop opname" : "Beginnen met spreken"}
                 >
-                    <Button
-                        onClick={handleMicrophoneClick}
-                        className={`relative z-10 h-16 w-16 rounded-full transition-all duration-300 sm:h-20 sm:w-20 ${
+                    <motion.div
+                        animate={
                             voiceState.isRecording
-                                ? "bg-[#b9e7ca] text-[#157f3d] shadow-lg hover:bg-[#a1ddb8]"
+                                ? {
+                                      scale: [1, 1.08, 1],
+                                  }
+                                : {}
+                        }
+                        transition={{
+                            duration: 1.2,
+                            repeat: voiceState.isRecording ? Infinity : 0,
+                            ease: "easeInOut",
+                        }}
+                        className={`flex h-full w-full items-center justify-center rounded-full shadow-lg ${
+                            voiceState.isRecording
+                                ? "bg-[#b9e7ca] text-[#157f3d] hover:bg-[#a1ddb8]"
                                 : "bg-[#385940] text-white hover:bg-[#2b2b2b]"
                         }`}
-                        aria-label={voiceState.isRecording ? "Stop opname" : "Beginnen met spreken"}
                     >
                         <AnimatePresence mode="wait">
                             {voiceState.isRecording ? (
@@ -134,16 +137,51 @@ export function VoiceInput({
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                    </Button>
-                </motion.div>
+                    </motion.div>
+                </Button>
+
+                {/* Trash can button - only show when not recording and has audio */}
+                {!voiceState.isRecording && hasAudio && (
+                    <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute -top-2 -right-2 z-20"
+                    >
+                        <DestructiveButton
+                            onConfirm={onClearAudio}
+                            isLoading={false}
+                            alertTitle="Audio wissen"
+                            alertDescription="Weet je zeker dat je de audio wilt wissen?"
+                        >
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                className="h-8 w-8 rounded-full p-0 shadow-lg hover:bg-red-600"
+                                aria-label="Audio wissen"
+                            >
+                                <Trash className="h-4 w-4" />
+                            </Button>
+                        </DestructiveButton>
+                    </motion.div>
+                )}
             </div>
 
             <p className="mt-2 text-sm text-gray-600">
-                {voiceState.isRecording
-                    ? "Druk op de microfoon knop als je klaar bent met praten"
-                    : hasAudio
-                      ? `Top! Je hebt ${voiceState.audioBlobs.length} opname${voiceState.audioBlobs.length > 1 ? "s" : ""} gemaakt. Druk op Bonchef!! als je klaar bent of druk op de microfoon om verder te praten`
-                      : "De microfoon start automatisch. Spreek je beschrijving in en klik op de knop om te stoppen."}
+                {(() => {
+                    if (voiceState.isRecording)
+                        return "Druk op de microfoon knop als je klaar bent met praten"
+                    if (hasAudio) {
+                        let opnameText = "opname"
+                        if (voiceState.audioFiles.length > 1) opnameText += "s"
+                        return (
+                            `Top! Je hebt ${voiceState.audioFiles.length} ${opnameText} gemaakt. ` +
+                            "Druk op Bonchef!! als je klaar bent of druk op de microfoon om verder te praten"
+                        )
+                    }
+                    return "De microfoon start automatisch. Spreek je beschrijving in en klik op de knop om te stoppen."
+                })()}
             </p>
 
             {/* "Ik kan nu niet praten" button */}

@@ -7,15 +7,22 @@ import { useUiVisibilityStore } from "@/lib/store/ui-visibility-store"
 export function useNavigationVisibility() {
     const scrollDirection = useScrollDirection()
     // Use local storage so that all components can access the same value
-    const { isVisible, setIsVisible: _setIsVisible } = useUiVisibilityStore()
+    const { isVisible, setIsVisible } = useUiVisibilityStore()
 
     useEffect(() => {
         if (scrollDirection === "down") {
-            _setIsVisible(false)
+            // Hide the top bar when scrolling down
+            setIsVisible(false)
         } else if (scrollDirection === "up") {
-            _setIsVisible(true)
+            // Show the top bar when scrolling up
+            setIsVisible(true)
         }
-    }, [scrollDirection, _setIsVisible])
+        // Tab bar always stays visible - no need to change isVisible for tab bar
+    }, [scrollDirection, setIsVisible])
 
-    return { isVisible, setIsVisible: _setIsVisible, scrollDirection }
+    return {
+        isVisible,
+        setIsVisible,
+        scrollDirection,
+    }
 }

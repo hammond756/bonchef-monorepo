@@ -106,12 +106,7 @@ const nextConfig: NextConfig = {
         serverActions: {
             bodySizeLimit: "4mb",
         },
-    },
-    compiler: {
-        removeConsole: {
-            exclude: ["error", "warn"],
-        },
-    },
+    }
 }
 
 export default nextConfig

@@ -237,16 +237,19 @@ export const RecipeImportJobSchema = z.object({
 
 export type RecipeImportJob = z.infer<typeof RecipeImportJobSchema>
 
-export type ServiceResponse<T> = Promise<
-    | {
-          success: false
-          error: string
-      }
-    | {
-          success: true
-          data: T
-      }
->
+type SuccessResponse<T> = {
+    success: true
+    data: T
+    error: null
+}
+
+type ErrorResponse = {
+    success: false
+    error: string
+    data: null
+}
+
+export type ServiceResponse<T> = Promise<ErrorResponse | SuccessResponse<T>>
 
 // Comment-related types
 export const CommentSchema = z.object({
@@ -297,3 +300,36 @@ export const UpdateNotificationPreferencesSchema = z.object({
 })
 
 export type UpdateNotificationPreferences = z.infer<typeof UpdateNotificationPreferencesSchema>
+
+// Instagram repost queue types
+export const RecipeRepostQueueSchema = z.object({
+    id: z.string(),
+    recipe_id: z.string(),
+    scheduled_date: z.string().datetime({ offset: true }),
+    is_posted: z.boolean(),
+    posted_at: z.string().datetime({ offset: true }).nullable(),
+    instagram_post_id: z.string().nullable(),
+    instagram_post_url: z.string().nullable(),
+    error_message: z.string().nullable(),
+    created_at: z.string().datetime({ offset: true }),
+    updated_at: z.string().datetime({ offset: true }),
+})
+
+export type RecipeRepostQueue = z.infer<typeof RecipeRepostQueueSchema>
+
+export const CreateRecipeRepostQueueSchema = z.object({
+    recipe_id: z.string(),
+    scheduled_date: z.string().datetime({ offset: true }),
+})
+
+export type CreateRecipeRepostQueue = z.infer<typeof CreateRecipeRepostQueueSchema>
+
+export const UpdateRecipeRepostQueueSchema = z.object({
+    is_posted: z.boolean().optional(),
+    posted_at: z.string().datetime({ offset: true }).nullable().optional(),
+    instagram_post_id: z.string().nullable().optional(),
+    instagram_post_url: z.string().nullable().optional(),
+    error_message: z.string().nullable().optional(),
+})
+
+export type UpdateRecipeRepostQueue = z.infer<typeof UpdateRecipeRepostQueueSchema>

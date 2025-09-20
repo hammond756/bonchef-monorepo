@@ -2,6 +2,11 @@
 description: When you create or update a component, follow these rules to ensure it is properly tested.
 alwaysApply: false
 ---
+## 1. What to test
+
+* You test behaviour, not implementation
+* Never assert on console output
+
 ## 2. Tooling
 
 - **Test Runner:** [Vitest](https://vitest.dev/)
@@ -17,7 +22,7 @@ All component unit tests should reside next to the component they're testing. Th
 which components are missing tests and to find the test file to update when updating a component.
 
 - **Example:** A test for `src/components/recipe/recipe-card.tsx` should be located at `src/components/recipe/recipe-card.test.tsx`.
-- **Naming Convention:** Use PascalCase for the test file name, followed by `.test.tsx`.
+- **Naming Convention:** Use kebab-case for the test file name, followed by `.test.tsx`.
 
 ---
 

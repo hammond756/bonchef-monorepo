@@ -1,8 +1,9 @@
 import { useCallback, useState } from "react"
-import { uploadDishcoveryAssets } from "@/actions/recipe-imports"
+import { uploadDishcoveryAudio, uploadDishcoveryImage } from "@/lib/services/storage/client"
+import { useRecipeImportJobs } from "./use-recipe-import-jobs"
 
 interface UseDishcoveryProcessingOptions {
-    onSuccess: (description: string) => void
+    onSuccess: () => void
     onError: (error: string) => void
 }
 
@@ -12,61 +13,49 @@ interface UseDishcoveryProcessingOptions {
  */
 export function useDishcoveryProcessing({ onSuccess, onError }: UseDishcoveryProcessingOptions) {
     const [isProcessing, setIsProcessing] = useState(false)
-
+    const { addJob } = useRecipeImportJobs()
     const processDishcovery = useCallback(
         async (
             photo: File,
             inputMode: "voice" | "text",
             description: string,
-            audioBlobs: Blob[]
+            audioFiles: File[]
         ) => {
             try {
                 setIsProcessing(true)
 
-                // Combine all audio blobs into one
-                let combinedAudioBlob: Blob | undefined
-                if (inputMode === "voice" && audioBlobs.length > 0) {
-                    combinedAudioBlob = new Blob(audioBlobs, { type: audioBlobs[0].type })
+                // Combine all audio files into one
+                let combinedAudioFile: File | undefined
+                if (inputMode === "voice" && audioFiles.length > 0) {
+                    // Combine all audio files into a single File
+                    const combinedBlob = new Blob(audioFiles, { type: audioFiles[0].type })
+                    combinedAudioFile = new File(
+                        [combinedBlob],
+                        `combined-recording-${Date.now()}.${audioFiles[0].name.split(".").pop()}`,
+                        {
+                            type: audioFiles[0].type,
+                            lastModified: Date.now(),
+                        }
+                    )
                 }
 
-                console.log("[useDishcoveryProcessing] Upload details:", {
-                    inputMode,
-                    audioBlobsCount: audioBlobs.length,
-                    hasCombinedAudioBlob: !!combinedAudioBlob,
-                    combinedAudioBlobSize: combinedAudioBlob?.size,
-                    combinedAudioBlobType: combinedAudioBlob?.type,
-                })
+                const { url: uploadedPhotoUrl } = await uploadDishcoveryImage(photo)
+                const { url: uploadedAudioUrl } = combinedAudioFile
+                    ? await uploadDishcoveryAudio(combinedAudioFile)
+                    : { url: undefined }
 
-                const { photoUrl: uploadedPhotoUrl, audioUrl: uploadedAudioUrl } =
-                    await uploadDishcoveryAssets(photo, combinedAudioBlob)
-
-                console.log("[useDishcoveryProcessing] Upload results:", {
-                    photoUrl: uploadedPhotoUrl ? "present" : "missing",
-                    audioUrl: uploadedAudioUrl ? "present" : "missing",
-                })
-
-                // Start the recipe import job
-                const { startRecipeImportJob } = await import("@/actions/recipe-imports")
                 const dishcoveryData = JSON.stringify({
                     photoUrl: uploadedPhotoUrl,
-                    description: inputMode === "voice" ? "" : description.trim(),
-                    ...(inputMode === "voice" && uploadedAudioUrl
-                        ? {
-                              audioUrl: uploadedAudioUrl,
-                          }
-                        : {}),
+                    description: description.trim(),
+                    audioUrl: uploadedAudioUrl,
                 })
 
                 console.log(`[useDishcoveryProcessing] Starting recipe import job for dishcovery`)
 
                 // Start the recipe import job (this will create a DRAFT recipe)
-                await startRecipeImportJob("dishcovery", dishcoveryData)
-
-                // Reset processing state BEFORE calling onSuccess
+                await addJob("dishcovery", dishcoveryData)
                 setIsProcessing(false)
-
-                // Call the success callback to navigate to collection page
-                onSuccess(inputMode === "voice" ? "" : description.trim() || "Alleen foto")
+                onSuccess()
             } catch (error) {
                 console.error("[useDishcoveryProcessing] Failed to process:", error)
 
@@ -100,7 +89,7 @@ export function useDishcoveryProcessing({ onSuccess, onError }: UseDishcoveryPro
                 setIsProcessing(false)
             }
         },
-        [onSuccess, onError]
+        [onSuccess, onError, addJob]
     )
 
     return {

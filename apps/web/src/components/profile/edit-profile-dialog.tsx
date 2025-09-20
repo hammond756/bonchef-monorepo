@@ -53,9 +53,11 @@ export function EditProfileDialog({
     } = useFileUpload({ initialFilePath: initialAvatar })
 
     const updateStorage = async (userId: string) => {
-        let remoteUrl = null
+        let remoteUrl = initialAvatar // Preserve existing avatar by default
+
         if (initialAvatar && shouldRemove) {
             deleteProfileAvatarImage(initialAvatar)
+            remoteUrl = null // Only set to null if explicitly removed
         }
         if (newAvatarFile) {
             remoteUrl = await uploadProfileAvatarImage(userId, newAvatarFile)

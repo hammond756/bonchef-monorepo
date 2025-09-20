@@ -2,6 +2,7 @@ import { ApifyClient } from "apify-client"
 
 interface ApifyTikTokResponse {
     text: string
+    webVideoUrl: string
     authorMeta: {
         nickName: string
     }
@@ -23,6 +24,7 @@ interface ApifyInstagramResponse {
     displayUrl: string
     error?: string
     errorDescription?: string
+    url: string
 }
 
 export interface ScrapeResult {
@@ -30,6 +32,7 @@ export interface ScrapeResult {
     caption: string
     author: string
     thumbnailUrl: string
+    canonicalUrl: string
 }
 
 type ServiceResponse<T> = Promise<
@@ -116,6 +119,7 @@ export class ApifyService {
                 caption: post.caption,
                 author: post.ownerUsername,
                 thumbnailUrl: post.displayUrl,
+                canonicalUrl: post.url,
             }
 
             return { success: true, data }
@@ -170,6 +174,7 @@ export class ApifyService {
                 caption: post.text as string,
                 author: post.authorMeta.nickName as string,
                 thumbnailUrl: post.videoMeta.coverUrl as string,
+                canonicalUrl: post.webVideoUrl as string,
             }
 
             return { success: true, data }

@@ -1,0 +1,13 @@
+
+
+> native@1.0.0 build /Users/hammon000/bonchef-monorepo/apps/native
+> expo prebuild --no-install
+
+[90menv: load .env.local[39m
+[90menv: export EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_ANDROID_SIMULATOR_SUPABASE_URL[39m
+[expo-share-intent] IOS module disabled
+[?25l[36m⠋[39m [1mCreating native directories (./ios and ./android)[22m[2K[1G[36m⠙[39m [1mCreating native directories (./ios and ./android)[22m[2K[1G[36m⠹[39m [1mCreating native directories (./ios and ./android)[22m[2K[1G[36m⠸[39m [1mCreating native directories (./ios and ./android)[22m[2K[1G[36m⠼[39m [1mCreating native directories (./ios and ./android)[22m[2K[1G[36m⠴[39m [1mCreating native directories (./ios and ./android)[22m[2K[1G[36m⠦[39m [1mCreating native directories (./ios and ./android)[22m[2K[1G[36m⠧[39m [1mCreating native directories (./ios and ./android)[22m[2K[1G[36m⠇[39m [1mCreating native directories (./ios and ./android)[22m[2K[1G[?25h[32m✔[39m Created native directories
+[?25l[36m⠋[39m [1mUpdating package.json[22m[2K[1G[?25h[32m✔[39m Updated package.json[2m | no changes[22m
+[?25l[36m⠋[39m [1mRunning prebuild[22m[2K[1G[36m⠙[39m [1mRunning prebuild[22m[2K[1G[36m⠹[39m [1mRunning prebuild[22m[2K[1G[36m⠸[39m [1mRunning prebuild[22m[2K[1G[36m⠼[39m [1mRunning prebuild[22m[2K[1G[36m⠴[39m [1mRunning prebuild[22m[2K[1G[36m⠦[39m [1mRunning prebuild[22m[2K[1G[?25h[expo-share-intent] add android filters (text/*) and multi-filters ()
+[?25l[36m⠋[39m [1mRunning prebuild[22m[2K[1G[?25h[32m✔[39m Finished prebuild
+[?25h

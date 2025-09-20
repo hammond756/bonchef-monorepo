@@ -9,6 +9,7 @@ interface SourceFieldProps {
     placeholder?: string
     className?: string
     maxLength?: number
+    error?: string
 }
 
 export function SourceField({
@@ -17,6 +18,7 @@ export function SourceField({
     placeholder = "Bijv. Oma's kookboek, AllRecipes.com, etc.",
     className,
     maxLength = 200,
+    error,
 }: SourceFieldProps) {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value
@@ -42,6 +44,7 @@ export function SourceField({
                     </div>
                 )}
             </div>
+            {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
     )
 }

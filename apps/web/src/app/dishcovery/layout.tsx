@@ -8,5 +8,5 @@ export default function DishcoveryLayout({
 }: Readonly<{
     children: React.ReactNode
 }>) {
-    return <div className="flex h-screen w-full flex-col overflow-hidden bg-black">{children}</div>
+    return <div className="flex h-[100dvh] w-full flex-col bg-black">{children}</div>
 }

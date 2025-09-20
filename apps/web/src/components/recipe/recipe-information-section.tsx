@@ -32,6 +32,9 @@ interface RecipeInformationSectionProps {
     source: string
     onSourceChange: (source: string) => void
 
+    sourceUrl: string
+    onSourceUrlChange: (sourceUrl: string) => void
+
     // Validation errors
     errors?: Record<string, string | undefined>
 
@@ -54,6 +57,8 @@ export function RecipeInformationSection({
     onDescriptionChange,
     source,
     onSourceChange,
+    sourceUrl,
+    onSourceUrlChange,
     errors,
     className,
 }: RecipeInformationSectionProps) {
@@ -105,7 +110,33 @@ export function RecipeInformationSection({
             </div>
 
             {/* Source */}
-            <SourceField value={source} onChange={onSourceChange} className="w-full" />
+            <SourceField
+                value={source}
+                onChange={onSourceChange}
+                className="w-full"
+                error={errors?.sourceName}
+            />
+
+            {/* Source URL */}
+            <div className="space-y-2">
+                <label htmlFor="source-url-input" className="text-foreground text-sm font-medium">
+                    Link naar de bron
+                </label>
+                <div className="relative">
+                    <input
+                        id="source-url-input"
+                        type="url"
+                        value={sourceUrl}
+                        onChange={(e) => onSourceUrlChange(e.target.value)}
+                        placeholder="https://example.com/recept"
+                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-12 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        maxLength={500}
+                    />
+                </div>
+                {errors?.sourceUrl && (
+                    <p className="text-destructive text-sm">{errors.sourceUrl}</p>
+                )}
+            </div>
         </div>
     )
 }

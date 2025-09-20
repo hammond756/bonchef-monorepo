@@ -160,6 +160,8 @@ export function EditRecipeForm({
                     }}
                     source={currentRecipe.source_name || ""}
                     onSourceChange={(source) => updateField("source_name", source)}
+                    sourceUrl={currentRecipe.source_url || ""}
+                    onSourceUrlChange={(sourceUrl) => updateField("source_url", sourceUrl)}
                     onTakePhoto={() => setIsCameraModalOpen(true)}
                     errors={errors as Record<string, string | undefined>}
                 />

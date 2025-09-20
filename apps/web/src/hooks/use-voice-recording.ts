@@ -2,26 +2,24 @@ import { useCallback, useEffect, useRef, useState } from "react"
 
 interface VoiceState {
     isRecording: boolean
-    audioBlob: Blob | null
-    audioBlobs: Blob[]
+    audioFiles: File[]
 }
 
 interface UseVoiceRecordingOptions {
     autoStart?: boolean
-    onError?: (error: string) => void
+    onError?: (error: string | null) => void
 }
 
 /**
  * Custom hook for managing voice recording functionality
- * Handles microphone access, recording state, and audio blob management
+ * Handles microphone access, recording state, and audio file management
  */
 export function useVoiceRecording(options: UseVoiceRecordingOptions = {}) {
     const { autoStart = false, onError } = options
 
     const [voiceState, setVoiceState] = useState<VoiceState>({
         isRecording: false,
-        audioBlob: null,
-        audioBlobs: [],
+        audioFiles: [],
     })
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -31,6 +29,7 @@ export function useVoiceRecording(options: UseVoiceRecordingOptions = {}) {
     const startRecording = useCallback(async () => {
         console.log("[useVoiceRecording] startRecording called")
         try {
+            onError?.(null)
             console.log("[useVoiceRecording] Requesting microphone access...")
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
             console.log("[useVoiceRecording] Microphone access granted")
@@ -60,16 +59,25 @@ export function useVoiceRecording(options: UseVoiceRecordingOptions = {}) {
             mediaRecorder.onstop = () => {
                 try {
                     const audioBlob = new Blob(audioChunksRef.current, { type: mimeType })
+                    // Convert Blob to File with proper metadata
+                    const audioFile = new File(
+                        [audioBlob],
+                        `recording-${Date.now()}.${mimeType.split("/")[1].split(";")[0]}`,
+                        {
+                            type: mimeType,
+                            lastModified: Date.now(),
+                        }
+                    )
                     setVoiceState((prev) => ({
                         ...prev,
-                        audioBlob,
-                        audioBlobs: [...prev.audioBlobs, audioBlob],
+                        audioFile,
+                        audioFiles: [...prev.audioFiles, audioFile],
                         isRecording: false,
                     }))
                     // Clean up stream tracks
                     stream.getTracks().forEach((track) => track.stop())
                 } catch (error) {
-                    console.error("Error creating audio blob:", error)
+                    console.error("Error creating audio file:", error)
                     onError?.("Er ging iets mis bij het verwerken van de opname.")
                 }
             }
@@ -78,7 +86,7 @@ export function useVoiceRecording(options: UseVoiceRecordingOptions = {}) {
             setVoiceState((prev) => ({ ...prev, isRecording: true }))
         } catch (error) {
             console.error("Failed to start recording:", error)
-            onError?.("Kon microfoon niet starten. Controleer je permissies.")
+            onError?.("Kon microfoon niet starten. Controleer je instellingen.")
         }
     }, [onError])
 
@@ -90,7 +98,7 @@ export function useVoiceRecording(options: UseVoiceRecordingOptions = {}) {
     }, [voiceState.isRecording])
 
     const clearAudio = useCallback(() => {
-        setVoiceState((prev) => ({ ...prev, audioBlob: null, audioBlobs: [] }))
+        setVoiceState((prev) => ({ ...prev, audioFile: null, audioFiles: [] }))
     }, [])
 
     const resetAutoStart = useCallback(() => {
@@ -102,14 +110,14 @@ export function useVoiceRecording(options: UseVoiceRecordingOptions = {}) {
         if (
             autoStart &&
             !voiceState.isRecording &&
-            voiceState.audioBlobs.length === 0 &&
+            voiceState.audioFiles.length === 0 &&
             !hasAttemptedRecordingRef.current
         ) {
             console.log("[useVoiceRecording] Auto-starting voice recording...")
             hasAttemptedRecordingRef.current = true
             startRecording()
         }
-    }, [autoStart, voiceState.isRecording, voiceState.audioBlobs.length, startRecording])
+    }, [autoStart, voiceState.isRecording, voiceState.audioFiles.length, startRecording])
 
     return {
         voiceState,
@@ -117,6 +125,6 @@ export function useVoiceRecording(options: UseVoiceRecordingOptions = {}) {
         stopRecording,
         clearAudio,
         resetAutoStart,
-        hasAudio: voiceState.audioBlobs.length > 0,
+        hasAudio: voiceState.audioFiles.length > 0,
     }
 }

@@ -16,12 +16,14 @@ export function validateRecipeContent(
             url: "Deze pagina lijkt geen recept te bevatten",
             text: "Deze tekst lijkt geen recept te bevatten",
             vertical_video: "Deze video lijkt geen recept te bevatten",
+            dishcovery: "Deze afbeelding lijkt geen eten te bevatten",
         },
         no_context: {
             image: "We konden niet genoeg informatie uit de afbeelding halen om een recept te maken",
             url: "We konden niet genoeg informatie vinden om een goed recept te maken",
             text: "Het lijkt erop dat er beperkte context beschikbaar is - recept wordt gegenereerd met beschikbare informatie",
             vertical_video: "We konden niet genoeg informatie vinden om een goed recept te maken",
+            dishcovery: "De input bevat niet genoeg informatie om een recept te maken",
         },
     }
 

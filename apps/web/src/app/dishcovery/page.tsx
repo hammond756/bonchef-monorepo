@@ -40,8 +40,7 @@ export default function DishcoveryPage() {
             <DishcoveryDescription
                 photo={capturedPhoto}
                 onBack={handleBackToCamera}
-                onContinue={(description) => {
-                    console.log("Description:", description)
+                onContinue={() => {
                     // Recipe generation is now handled by the DishcoveryDescription component
                     // The user will be redirected to the collection page after successful generation
                     router.push("/collection")
