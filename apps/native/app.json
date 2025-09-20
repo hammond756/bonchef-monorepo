@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "owner": "bonchef",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icons/iphone-light.png",
     "scheme": "bonchefnative",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
