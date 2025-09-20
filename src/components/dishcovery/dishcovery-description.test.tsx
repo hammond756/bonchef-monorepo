@@ -3,8 +3,10 @@ import { vi } from "vitest"
 import { DishcoveryDescription } from "./dishcovery-description"
 
 // Mock the startRecipeImportJob function
-vi.mock("@/actions/recipe-imports", () => ({
-    startRecipeImportJob: vi.fn().mockResolvedValue("test-job-id"),
+vi.mock("@/hooks/use-recipe-import-jobs", () => ({
+    useRecipeImportJobs: vi.fn().mockReturnValue({
+        addJob: vi.fn(),
+    }),
 }))
 
 // Mock the new upload functions

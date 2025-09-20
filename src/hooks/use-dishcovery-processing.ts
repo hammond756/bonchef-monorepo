@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 import { uploadDishcoveryAudio, uploadDishcoveryImage } from "@/lib/services/storage/client"
-import { startRecipeImportJob } from "@/actions/recipe-imports"
+import { useRecipeImportJobs } from "./use-recipe-import-jobs"
 
 interface UseDishcoveryProcessingOptions {
     onSuccess: () => void
@@ -13,7 +13,7 @@ interface UseDishcoveryProcessingOptions {
  */
 export function useDishcoveryProcessing({ onSuccess, onError }: UseDishcoveryProcessingOptions) {
     const [isProcessing, setIsProcessing] = useState(false)
-
+    const { addJob } = useRecipeImportJobs()
     const processDishcovery = useCallback(
         async (
             photo: File,
@@ -53,7 +53,7 @@ export function useDishcoveryProcessing({ onSuccess, onError }: UseDishcoveryPro
                 console.log(`[useDishcoveryProcessing] Starting recipe import job for dishcovery`)
 
                 // Start the recipe import job (this will create a DRAFT recipe)
-                await startRecipeImportJob("dishcovery", dishcoveryData)
+                await addJob("dishcovery", dishcoveryData)
                 setIsProcessing(false)
                 onSuccess()
             } catch (error) {
@@ -89,7 +89,7 @@ export function useDishcoveryProcessing({ onSuccess, onError }: UseDishcoveryPro
                 setIsProcessing(false)
             }
         },
-        [onSuccess, onError]
+        [onSuccess, onError, addJob]
     )
 
     return {

@@ -72,11 +72,7 @@ describe("useRecipeImportJobs", () => {
         })
 
         await waitFor(() => {
-            expect(recipeImportsActions.startRecipeImportJob).toHaveBeenCalledWith(
-                "url",
-                "new-url",
-                undefined
-            )
+            expect(recipeImportsActions.startRecipeImportJob).toHaveBeenCalledWith("url", "new-url")
         })
     })
 

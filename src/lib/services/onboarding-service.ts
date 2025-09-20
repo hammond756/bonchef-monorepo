@@ -22,10 +22,10 @@ export class OnboardingService {
 
         if (error) {
             console.error("Failed to create job association:", error)
-            return { success: false, error: error.message }
+            return { success: false, error: error.message, data: null }
         }
 
-        return { success: true, data: null }
+        return { success: true, data: null, error: null }
     }
 
     /**
@@ -45,10 +45,10 @@ export class OnboardingService {
 
         if (error) {
             console.error("Failed to create recipe association:", error)
-            return { success: false, error: error.message }
+            return { success: false, error: error.message, data: null }
         }
 
-        return { success: true, data: null }
+        return { success: true, data: null, error: null }
     }
 
     /**
@@ -66,7 +66,7 @@ export class OnboardingService {
 
         if (error) {
             console.error("Failed to get associations for session:", error)
-            return { success: false, error: error.message }
+            return { success: false, error: error.message, data: null }
         }
 
         return {
@@ -75,6 +75,7 @@ export class OnboardingService {
                 recipeIds: data.map((a) => a.recipe_id).filter(Boolean) as string[],
                 jobIds: data.map((a) => a.job_id).filter(Boolean) as string[],
             },
+            error: null,
         }
     }
 
@@ -91,9 +92,9 @@ export class OnboardingService {
 
         if (error) {
             console.error("Failed to delete associations for session:", error)
-            return { success: false, error: error.message }
+            return { success: false, error: error.message, data: null }
         }
 
-        return { success: true, data: null }
+        return { success: true, data: null, error: null }
     }
 }

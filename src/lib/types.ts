@@ -237,16 +237,19 @@ export const RecipeImportJobSchema = z.object({
 
 export type RecipeImportJob = z.infer<typeof RecipeImportJobSchema>
 
-export type ServiceResponse<T> = Promise<
-    | {
-          success: false
-          error: string
-      }
-    | {
-          success: true
-          data: T
-      }
->
+type SuccessResponse<T> = {
+    success: true
+    data: T
+    error: null
+}
+
+type ErrorResponse = {
+    success: false
+    error: string
+    data: null
+}
+
+export type ServiceResponse<T> = Promise<ErrorResponse | SuccessResponse<T>>
 
 // Comment-related types
 export const CommentSchema = z.object({

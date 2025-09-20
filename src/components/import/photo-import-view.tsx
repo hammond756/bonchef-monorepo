@@ -3,14 +3,13 @@
 import { useState, useRef } from "react"
 import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { startRecipeImportJob } from "@/actions/recipe-imports"
 import { StorageService } from "@/lib/services/storage-service"
 import { createClient } from "@/utils/supabase/client"
 import { v4 as uuidv4 } from "uuid"
-import { useOnboarding } from "@/hooks/use-onboarding"
 import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 import { CameraView } from "../ui/camera-view"
 import { CloseButton } from "../ui/close-button"
+import { useRecipeImportJobs } from "@/hooks/use-recipe-import-jobs"
 
 interface PhotoImportViewProps {
     onDismiss: () => void
@@ -36,7 +35,7 @@ export function PhotoImportView({ onDismiss, onSubmit }: PhotoImportViewProps) {
 
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const { onboardingSessionId } = useOnboarding()
+    const { addJob } = useRecipeImportJobs()
     const { setIsVisible } = useNavigationVisibility()
 
     const openGallery = () => {
@@ -69,7 +68,7 @@ export function PhotoImportView({ onDismiss, onSubmit }: PhotoImportViewProps) {
             // Upload all photos
             const imageUrl = await uploadImageToSignedUrl(photo.file)
 
-            await startRecipeImportJob("image", imageUrl, onboardingSessionId ?? undefined)
+            await addJob("image", imageUrl)
 
             // Hide navigation and submit
             setIsVisible(false)

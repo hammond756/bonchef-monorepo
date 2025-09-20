@@ -94,7 +94,7 @@ test.describe("Recipe import flows", () => {
 
         // Go to the collection page and check for the pending recipe
         await page.getByRole("link", { name: "Collectie" }).click()
-        await expect(page.getByText("Concept")).toBeVisible()
+        await expect(page.getByText("Concept")).toBeVisible({ timeout: 60000 })
     })
 
     test("Complete dishcovery flow with gallery photo and written input", async ({

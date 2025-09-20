@@ -5,14 +5,12 @@ import { z } from "zod"
 import { useImportStatusStore } from "@/lib/store/import-status-store"
 import { useNavigationVisibility } from "@/hooks/use-navigation-visibility"
 import { RecipeImportSourceTypeEnum } from "@/lib/types"
-import { useOnboarding } from "@/hooks/use-onboarding"
 import { useRecipeImportJobs } from "./use-recipe-import-jobs"
 
 export function useRecipeImport() {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const { startAnimationToCollection, finishAnimationToCollection } = useImportStatusStore()
-    const { onboardingSessionId } = useOnboarding()
     const { setIsVisible } = useNavigationVisibility()
     const { addJob } = useRecipeImportJobs()
 
@@ -25,7 +23,7 @@ export function useRecipeImport() {
         setIsLoading(true)
 
         try {
-            await addJob(type, data, onboardingSessionId ?? undefined)
+            await addJob(type, data)
 
             setIsVisible(true)
             startAnimationToCollection()

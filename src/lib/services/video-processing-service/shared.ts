@@ -52,8 +52,9 @@ export async function processVideoUrlWithEndpoint(
         return {
             success: false,
             error: "Er ging iets mis bij het verwerken van de video. Het is helaas niet duidelijk wat de oorzaak is.",
+            data: null,
         }
     }
 
-    return { success: true, data: (await response.json()) as VideoSummaryResponse }
+    return { success: true, data: await response.json(), error: null }
 }

@@ -24,9 +24,6 @@ This is the **"Why"** of your PR. The goal is to give the reviewer all the neces
 > This PR addresses [JIRA-123](https://your-jira-instance.com/browse/JIRA-123).
 >
 > **Problem:** On mobile viewports, the main application view does not allow the user to trigger the browser's native "pull-to-refresh" action. This is because the primary scrollable element is a `<div>` container, not the document `<body>`.
->
-> **Current Behavior (Video):**
-> `[Link to a short screen recording of the broken behavior]`
 
 ---
 
@@ -55,7 +52,7 @@ This is the **"How"** and **"Why this way"** of your PR. This section should ant
 
 ## How can I validate that the code works as intended?
 
-This is the **"Prove it"** section. Provide clear, step-by-step instructions that allow a reviewer to confidently verify your changes. The easier you make it for them to test, the faster your PR will be approved.
+This is the **"Prove it"** section. Provide clear, step-by-step instructions that allow a reviewer to confidently verify your changes. Assume there is a preview deployment ready for them attached to the PR. The easier you make it for them to test, the faster your PR will be approved.
 
 **Best Practices:**
 -   **Be specific and actionable:** Use a numbered or checklist format. Write commands that can be copied and pasted.
@@ -64,20 +61,6 @@ This is the **"Prove it"** section. Provide clear, step-by-step instructions tha
 -   **State the expected outcome:** For each step, clearly describe what the reviewer should see. "The page should refresh" is good. "You should see the browser's native refresh spinner at the top of the screen" is better.
 -   **Use visuals:** Provide "after" screenshots or GIFs that demonstrate the correct behavior. This gives the reviewer a clear reference point.
 
-**Example:**
-> 1.  **Check out this branch:**
->     ```bash
->     git checkout fix-scrolling-container
->     ```
-> 2.  **Install dependencies and run the app:**
->     ```bash
->     npm install && npm run dev
->     ```
-> 3.  **Open the app on a mobile device or in your browser's mobile emulator.**
-> 4.  **Navigate to any page that uses the main tab layout (e.g., the home page).**
-> 5.  **Scroll to the top of the page.**
-> 6.  **Attempt to scroll down again (the "pull-to-refresh" gesture).**
->
 > **Expected Result:** The browser's native refresh indicator should appear, and the page should reload. The auto-hiding navigation bars should continue to function as before.
 >
 > **After (GIF):**
