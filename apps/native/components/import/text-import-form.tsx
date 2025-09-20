@@ -8,10 +8,11 @@ import { supabase } from '@/lib/utils/supabase/client';
 interface TextImportFormProps {
   onBack: () => void;
   onClose: () => void;
+  initialText?: string;
 }
 
-export function TextImportForm({ onBack, onClose }: TextImportFormProps) {
-  const [text, setText] = useState('');
+export function TextImportForm({ onBack, onClose, initialText }: TextImportFormProps) {
+  const [text, setText] = useState(initialText || '');
   const { session } = useSession();
   
   const { isLoading, error, setError, handleSubmit } = useRecipeImport({

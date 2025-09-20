@@ -1,11 +1,10 @@
-import { BackHandler, Button, Image, Text, View } from "react-native";
-
-import ImportRecipe from "@/components/import-recipe";
 import { useRouter } from "expo-router";
 import {
-  ShareIntent as ShareIntentType,
   useShareIntentContext,
 } from "expo-share-intent";
+import { BackHandler, Button, Text, View } from "react-native";
+import { TextImportForm } from "@/components/import/text-import-form";
+import { UrlImportForm } from "@/components/import/url-import-form";
 
 
 export default function ShareIntent() {
@@ -21,10 +20,10 @@ export default function ShareIntent() {
   return (
     <View className="flex-1 bg-white items-center justify-center p-10">
       {shareIntent?.type === "weburl" && shareIntent.webUrl && (
-        <ImportRecipe sharedData={{ url: shareIntent.webUrl }} onClose={handleClose} />
+        <UrlImportForm onClose={handleClose} onBack={handleClose} initialUrl={shareIntent.webUrl} />
       )}
       {shareIntent?.type === "text" && shareIntent.text && (
-        <ImportRecipe sharedData={{ text: shareIntent.text }} onClose={handleClose} />
+        <TextImportForm onClose={handleClose} onBack={handleClose} initialText={shareIntent.text} />
       )}
       <Text className="text-red-500">{error}</Text>
       <Button onPress={() => router.replace("/")} title="Go home" />
