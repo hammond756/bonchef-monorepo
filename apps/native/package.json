@@ -61,7 +61,6 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/plugin-transform-react-jsx": "^7.27.1",
-    "@types/react": "19.0.14",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~9.2.0",
     "prettier-plugin-tailwindcss": "^0.5.14",
