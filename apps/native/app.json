@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "bonchef-native",
-    "slug": "bonchef-native",
+    "name": "Bonchef",
+    "slug": "bonchef",
     "version": "1.0.0",
     "owner": "bonchef",
     "orientation": "portrait",
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/icons/iphone-light.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -34,10 +34,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/icons/iphone-light.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#385940"
         }
       ],
       [
