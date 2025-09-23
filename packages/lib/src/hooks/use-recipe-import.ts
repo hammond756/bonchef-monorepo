@@ -1,11 +1,11 @@
 import { API_URL } from "@/config/environment";
 import { supabase } from "@/lib/utils/supabase/client";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryObserverResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import {
-  listJobsWithClient,
   deleteRecipeImportJobWithClient,
+  listJobsWithClient,
   type NonCompletedRecipeImportJob,
   type RecipeImportSourceType
 } from "../services/recipe-import-jobs";
@@ -25,7 +25,7 @@ export interface UseRecipeImportReturn {
     onSuccess?: () => void
   ) => Promise<void>;
   jobs: NonCompletedRecipeImportJob[];
-  refreshJobs: () => Promise<void>;
+  refreshJobs: () => Promise<QueryObserverResult<NonCompletedRecipeImportJob[], Error>>;
   deleteJob: (jobId: string) => Promise<void>;
   isDeleting: boolean;
 }
@@ -165,7 +165,7 @@ export function useRecipeImport({
     error: createJobMutation.error?.message || queryError?.message || null,
     handleSubmit,
     jobs,
-    refreshJobs: () => refreshJobs(),
+    refreshJobs,
     deleteJob,
     isDeleting: deleteJobMutation.isPending,
   };

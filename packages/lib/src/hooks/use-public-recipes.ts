@@ -1,9 +1,9 @@
 "use client"
 
-import { useCallback } from "react"
+import type { SupabaseClient } from "@supabase/supabase-js"
 import { useInfiniteQuery } from "@tanstack/react-query"
+import { useCallback } from "react"
 import { getPublicRecipesWithClient } from "../services/recipes"
-import { SupabaseClient } from "@supabase/supabase-js"
 
 const PAGE_SIZE = 12
 

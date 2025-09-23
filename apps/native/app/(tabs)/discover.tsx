@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/utils/supabase/client";
-import type { RecipeRead } from "@repo/lib";
+import type { RecipeRead } from "@repo/lib/services/recipes";
 import { usePublicRecipes } from "@repo/lib/hooks/use-public-recipes";
 import { FlatList, RefreshControl, Text, View } from "react-native";
 import { RecipeFeedCard } from "../../components/recipe/recipe-feed-card";

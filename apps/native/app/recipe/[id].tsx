@@ -70,12 +70,12 @@ export default function RecipeDetail() {
           {category.name !== "no_group" && <Text className="text-lg font-medium text-gray-900 mb-3 font-serif">
             {category.name}
           </Text>}
-          {category.ingredients.map((ingredient) => {
+          {category.ingredients.map((ingredient, ingredientIndex) => {
             const formatted = formatIngredientLine(ingredient, 1);
             if (!formatted) return null;
             
             return (
-              <View key={ingredient.description + ingredient.quantity.low} className="flex-row items-start mb-3">
+              <View key={ingredient.description + ingredient.quantity.low + ingredientIndex} className="flex-row items-start mb-3">
                 <View className="w-5 h-5 border border-gray-300 rounded mr-3 mt-0.5" />
                 <View className="flex-1">
                   <Text className="text-base text-gray-900 font-montserrat">
