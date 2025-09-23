@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import {
   listJobsWithClient,
+  deleteRecipeImportJobWithClient,
   type NonCompletedRecipeImportJob,
   type RecipeImportSourceType
 } from "../services/recipe-import-jobs";
@@ -24,7 +25,9 @@ export interface UseRecipeImportReturn {
     onSuccess?: () => void
   ) => Promise<void>;
   jobs: NonCompletedRecipeImportJob[];
-  refreshJobs: () => Promise<any>;
+  refreshJobs: () => Promise<void>;
+  deleteJob: (jobId: string) => Promise<void>;
+  isDeleting: boolean;
 }
 
 const triggerJob = async (type: RecipeImportSourceType, data: string): Promise<{jobId: string}> => {
@@ -87,6 +90,42 @@ export function useRecipeImport({
     },
   });
 
+  // Mutation for deleting jobs
+  const deleteJobMutation = useMutation({
+    mutationFn: async (jobId: string) => {
+      await deleteRecipeImportJobWithClient(supabaseClient, jobId);
+    },
+    onMutate: async (jobId: string) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["recipe-import-jobs", userId] });
+
+      // Snapshot the previous value
+      const previousJobs = queryClient.getQueryData<NonCompletedRecipeImportJob[]>([
+        "recipe-import-jobs",
+        userId,
+      ]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData<NonCompletedRecipeImportJob[]>(
+        ["recipe-import-jobs", userId],
+        (old) => old?.filter((job) => job.id !== jobId) ?? []
+      );
+
+      // Return a context object with the snapshotted value
+      return { previousJobs };
+    },
+    onError: (_err, _jobId, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousJobs) {
+        queryClient.setQueryData(["recipe-import-jobs", userId], context.previousJobs);
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: ["recipe-import-jobs", userId] });
+    },
+  });
+
   const handleSubmit = async (
     type: RecipeImportSourceType,
     data: string,
@@ -98,6 +137,15 @@ export function useRecipeImport({
     } catch (err) {
       console.error(`Failed to start recipe import job for type ${type}`, err);
       // Error will be available in createJobMutation.error
+    }
+  };
+
+  const deleteJob = async (jobId: string) => {
+    try {
+      await deleteJobMutation.mutateAsync(jobId);
+    } catch (err) {
+      console.error(`Failed to delete recipe import job ${jobId}`, err);
+      throw err; // Re-throw so the UI can handle the error
     }
   };
 
@@ -118,5 +166,7 @@ export function useRecipeImport({
     handleSubmit,
     jobs,
     refreshJobs: () => refreshJobs(),
+    deleteJob,
+    isDeleting: deleteJobMutation.isPending,
   };
 }

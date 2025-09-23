@@ -1,4 +1,4 @@
-import { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type RecipeImportSourceType = "url" | "image" | "text" | "vertical_video" | "dishcovery";
 
@@ -40,4 +40,26 @@ export async function listJobsWithClient(
   }
 
   return data || [];
+}
+
+/**
+ * Deletes a recipe import job by ID
+ * @param client - Supabase client instance
+ * @param jobId - The job ID to delete
+ * @returns Promise<void>
+ * @throws Error if database error occurs
+ */
+export async function deleteRecipeImportJobWithClient(
+  client: SupabaseClient,
+  jobId: string
+): Promise<void> {
+  const { error } = await client
+    .from("recipe_import_jobs")
+    .delete()
+    .eq("id", jobId);
+
+  if (error) {
+    console.error("Failed to delete recipe import job:", error);
+    throw new Error(`Failed to delete recipe import job: ${error.message}`);
+  }
 }

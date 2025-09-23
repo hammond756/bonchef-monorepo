@@ -43,42 +43,56 @@ export function PendingJobCard({ job }: PendingJobCardProps) {
 
   return (
     <Pressable
-      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+      className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
       style={{ aspectRatio: 0.75 }}
     >
-      <View className="flex-1 items-center justify-center p-4">
-        {/* Loading Indicator */}
-        <ActivityIndicator size="large" color="#1E4D37" />
+      <View className="flex-1 relative">
+        {/* Background Pattern */}
+        <View className="absolute inset-0 bg-gradient-to-br from-green-50 to-emerald-50" />
         
-        {/* Source Icon */}
-        <View className="mt-4 mb-2">
-          <Ionicons 
-            name={getSourceIcon(job.source_type)} 
-            size={32} 
-            color="#1E4D37" 
-          />
-        </View>
-
-        {/* Status Text */}
-        <Text className="text-gray-900 font-semibold text-sm mb-1">
-          {getSourceLabel(job.source_type)} importeren
-        </Text>
+        {/* Decorative Pattern */}
+        <View className="absolute top-4 right-4 w-16 h-16 bg-green-100 rounded-full opacity-20" />
+        <View className="absolute bottom-8 left-4 w-8 h-8 bg-emerald-100 rounded-full opacity-30" />
         
-        <Text className="text-gray-600 text-xs text-center">
-          Je recept wordt verwerkt...
-        </Text>
+        {/* Content */}
+        <View className="flex-1 p-6 flex flex-col justify-center items-center">
+          {/* Loading Indicator */}
+          <View className="mb-4">
+            <ActivityIndicator size="large" color="#1E4D37" />
+          </View>
+          
+          {/* Source Icon */}
+          <View className="mb-4">
+            <View className="w-16 h-16 bg-green-100 rounded-full items-center justify-center shadow-sm">
+              <Ionicons 
+                name={getSourceIcon(job.source_type)} 
+                size={32} 
+                color="#1E4D37" 
+              />
+            </View>
+          </View>
 
-        {/* Source Preview */}
-        <View className="mt-3 px-3 py-2 bg-gray-50 rounded-lg w-full">
-          <Text 
-            className="text-gray-700 text-xs text-center"
-            numberOfLines={2}
-          >
-            {job.source_data.length > 50 
-              ? `${job.source_data.substring(0, 50)}...` 
-              : job.source_data
-            }
+          {/* Status Text */}
+          <Text className="text-gray-900 font-semibold text-sm mb-2 text-center">
+            {getSourceLabel(job.source_type)} importeren
           </Text>
+          
+          <Text className="text-gray-600 text-xs text-center mb-4 leading-relaxed">
+            Je recept wordt verwerkt...
+          </Text>
+
+          {/* Source Preview */}
+          <View className="px-4 py-3 bg-white/80 backdrop-blur-sm rounded-xl w-full shadow-sm">
+            <Text 
+              className="text-gray-700 text-xs text-center leading-relaxed"
+              numberOfLines={2}
+            >
+              {job.source_data.length > 50 
+                ? `${job.source_data.substring(0, 50)}...` 
+                : job.source_data
+              }
+            </Text>
+          </View>
         </View>
       </View>
     </Pressable>
