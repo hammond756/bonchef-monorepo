@@ -1,4 +1,5 @@
 import { useRecipe } from "@repo/lib/hooks/use-recipe";
+import { formatIngredientLine } from "@repo/lib/utils/ingredient-formatting";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -66,22 +67,30 @@ export default function RecipeDetail() {
       {/* Ingredients List */}
       {recipe.ingredients.map((category) => (
         <View key={category.name} className="mb-6">
-          {category.name !== "no_name" && <Text className="text-lg font-medium text-gray-900 mb-3 font-serif">
+          {category.name !== "no_group" && <Text className="text-lg font-medium text-gray-900 mb-3 font-serif">
             {category.name}
           </Text>}
-          {category.ingredients.map((ingredient) => (
-            <View key={ingredient.description + ingredient.quantity} className="flex-row items-start mb-3">
-              <View className="w-5 h-5 border border-gray-300 rounded mr-3 mt-0.5" />
-              <View className="flex-1">
-                <Text className="text-base text-gray-900 font-montserrat">
-                  <Text className="font-semibold">
-                    {ingredient.quantity.low} {ingredient.unit}
-                  </Text>{" "}
-                  {ingredient.description}
-                </Text>
+          {category.ingredients.map((ingredient) => {
+            const formatted = formatIngredientLine(ingredient, 1);
+            if (!formatted) return null;
+            
+            return (
+              <View key={ingredient.description + ingredient.quantity.low} className="flex-row items-start mb-3">
+                <View className="w-5 h-5 border border-gray-300 rounded mr-3 mt-0.5" />
+                <View className="flex-1">
+                  <Text className="text-base text-gray-900 font-montserrat">
+                    {formatted.quantity && (
+                      <Text className="font-semibold">
+                        {formatted.quantity}
+                      </Text>
+                    )}
+                    {formatted.quantity && " "}
+                    {formatted.description}
+                  </Text>
+                </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
       ))}
     </View>
