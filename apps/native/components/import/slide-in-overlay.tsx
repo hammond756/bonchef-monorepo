@@ -9,7 +9,7 @@ interface SlideInOverlayProps {
 
 export function SlideInOverlay({ isOpen, onClose, children }: SlideInOverlayProps) {
   const screenHeight = Dimensions.get('window').height;
-  const trayHeight = screenHeight * 0.4; // 2/5 of screen height
+  const trayHeight = screenHeight * 0.5; // 2/5 of screen height
   const [slideAnimation] = useState(new Animated.Value(trayHeight));
   const [backgroundOpacity] = useState(new Animated.Value(0));
   const [modalVisible, setModalVisible] = useState(false);

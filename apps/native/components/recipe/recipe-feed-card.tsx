@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { View, Text, TouchableOpacity, Alert } from "react-native"
+import type { RecipeRead } from "@repo/lib/services/recipes"
 import { useRouter } from "expo-router"
-import { RecipeRead } from "@repo/lib/services/recipes"
+import { useState } from "react"
+import { Alert, Pressable, Text, TouchableOpacity, View } from "react-native"
 import { RecipeActionButtons } from "./recipe-action-buttons"
-import { RecipeSourceDisplay } from "./recipe-source-display"
 import { RecipeCardBackground } from "./recipe-card-background"
+import { RecipeSourceDisplay } from "./recipe-source-display"
 
 
 interface RecipeFeedCardProps {
@@ -40,12 +40,12 @@ export function RecipeFeedCard({ recipe }: Readonly<RecipeFeedCardProps>) {
     return (
         <View className="w-full px-4 mb-4">
             <View className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-gray-200">
-                <TouchableOpacity onPress={handleRecipePress} className="flex-1">
+                <Pressable onPress={handleRecipePress} className="flex-1">
                     <RecipeCardBackground recipe={recipe} className="flex-1">
                         {/* Content Overlay */}
                         <View className="absolute right-0 bottom-0 left-0 p-4 pr-20">
                             {/* Description */}
-                            <TouchableOpacity
+                            <Pressable
                                 onPress={handleToggleExpand}
                                 className="mb-2"
                                 disabled={!isLongCaption}
@@ -78,7 +78,7 @@ export function RecipeFeedCard({ recipe }: Readonly<RecipeFeedCardProps>) {
                                         )}
                                     </View>
                                 )}
-                            </TouchableOpacity>
+                            </Pressable>
 
                             {/* Recipe Title */}
                             <Text 
@@ -104,7 +104,7 @@ export function RecipeFeedCard({ recipe }: Readonly<RecipeFeedCardProps>) {
                             />
                         </View>
                     </RecipeCardBackground>
-                </TouchableOpacity>
+                </Pressable>
             </View>
         </View>
     )

@@ -1,27 +1,24 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { RecipeRead } from '@repo/lib/services/recipes';
+import type { RecipeRead } from '@repo/lib/services/recipes';
+import { useRouter } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
 import { RecipeCardBackground } from './recipe-card-background';
 
 interface RecipeCollectionCardProps {
   recipe: RecipeRead;
-  onPress?: () => void;
-  onBookmark?: () => void;
-  isBookmarked?: boolean;
 }
 
 export function RecipeCollectionCard({ 
-  recipe, 
-  onPress, 
-  onBookmark,
-  isBookmarked = false 
+  recipe,
 }: RecipeCollectionCardProps) {
+  const router = useRouter()
+  const handleRecipePress = () => {
+    router.push(`/recipe/${recipe.id}`)
+  }
   return (
-    <TouchableOpacity
-      onPress={onPress}
+    <Pressable
+      onPress={handleRecipePress}
       className="rounded-2xl overflow-hidden"
-      style={{ aspectRatio: 1 }}
+      style={{ aspectRatio: 0.75 }}
     >
       <RecipeCardBackground recipe={recipe} className="flex-1">
         {/* Content Overlay */}
@@ -34,21 +31,7 @@ export function RecipeCollectionCard({
             {recipe.title}
           </Text>
         </View>
-
-        {/* Bookmark Action */}
-        <View className="absolute right-4 top-4">
-          <TouchableOpacity
-            onPress={onBookmark}
-            className="w-10 h-10 rounded-full bg-black/30 items-center justify-center"
-          >
-            <Ionicons
-              name={isBookmarked ? "bookmark" : "bookmark-outline"}
-              size={20}
-              color="white"
-            />
-          </TouchableOpacity>
-        </View>
       </RecipeCardBackground>
-    </TouchableOpacity>
+    </Pressable>
   );
 }

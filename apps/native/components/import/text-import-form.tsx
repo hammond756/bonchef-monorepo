@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
 import { useSession } from '@/hooks/use-session';
 import { supabase } from '@/lib/utils/supabase/client';
+import { useSuccessOverlay } from '@/components/ui/success-overlay';
 
 interface TextImportFormProps {
   onBack: () => void;
@@ -13,12 +14,15 @@ interface TextImportFormProps {
 
 export function TextImportForm({ onBack, onClose, initialText }: TextImportFormProps) {
   const [text, setText] = useState(initialText || '');
+  const [error, setError] = useState<string | null>(null);
   const { session } = useSession();
   
-  const { isLoading, error, setError, handleSubmit } = useRecipeImport({
+  const { isLoading, error: triggerError, handleSubmit } = useRecipeImport({
     supabaseClient: supabase,
     userId: session?.user?.id || '',
   });
+
+  const { triggerSuccess, SuccessOverlayComponent } = useSuccessOverlay();
 
   const handleTextSubmit = async () => {
     setError(null);
@@ -30,8 +34,10 @@ export function TextImportForm({ onBack, onClose, initialText }: TextImportFormP
     }
 
     await handleSubmit('text', textToSubmit, () => {
-      setText('');
-      onClose();
+      triggerSuccess(() => {
+        setText('');
+        onClose();
+      });
     });
   };
 
@@ -77,6 +83,9 @@ export function TextImportForm({ onBack, onClose, initialText }: TextImportFormP
           {error && (
             <Text className="text-red-500 text-sm mt-2">{error}</Text>
           )}
+          {triggerError && (
+            <Text className="text-red-500 text-sm mt-2">{triggerError}</Text>
+          )}
         </View>
 
         {/* Submit Button */}
@@ -92,6 +101,8 @@ export function TextImportForm({ onBack, onClose, initialText }: TextImportFormP
           </Text>
         </TouchableOpacity>
       </ScrollView>
+      
+      <SuccessOverlayComponent />
     </View>
   );
 }

@@ -1,26 +1,18 @@
-import React, { useMemo } from 'react';
-import { View, ActivityIndicator } from 'react-native';
 import { useOwnRecipes } from '@repo/lib/hooks/use-own-recipes';
 import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
+import { useMemo } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { useSession } from '@/hooks/use-session';
 import { supabase } from '@/lib/utils/supabase/client';
-import { RecipeGrid, CollectionItem } from './recipe-grid';
+import { RecipeGrid } from './recipe-grid';
 import { WelcomeSection } from './welcome-section';
 
 interface MyRecipesProps {
   sortOrder: 'newest' | 'oldest';
-  onRecipePress?: (recipe: any) => void;
-  onJobPress?: (job: any) => void;
-  onRetryJob?: (job: any) => void;
-  onImportPress?: () => void;
 }
 
 export function MyRecipes({ 
-  sortOrder, 
-  onRecipePress, 
-  onJobPress, 
-  onRetryJob,
-  onImportPress 
+  sortOrder,
 }: MyRecipesProps) {
   const { session } = useSession();
   const userId = session?.user?.id || '';
@@ -65,15 +57,12 @@ export function MyRecipes({
   }
 
   if (myRecipesAndJobs.length === 0) {
-    return <WelcomeSection onImportPress={onImportPress} />;
+    return <WelcomeSection />;
   }
 
   return (
     <RecipeGrid 
       items={myRecipesAndJobs}
-      onRecipePress={onRecipePress}
-      onJobPress={onJobPress}
-      onRetryJob={onRetryJob}
     />
   );
 }

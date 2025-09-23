@@ -1,8 +1,7 @@
-import LoginForm from "@/components/login-form";
-import { SplashScreen } from "@/components/splash-screen";
 import { useRouter } from "expo-router";
 import { useShareIntentContext } from "expo-share-intent";
 import { useEffect } from "react";
+import LoginForm from "@/components/login-form";
 import { useSession } from "@/hooks/use-session";
 
 export default function Home() {
@@ -18,7 +17,7 @@ export default function Home() {
         pathname: "/share-intent",
       });
     }
-  }, [hasShareIntent]);
+  }, [hasShareIntent, router]);
 
   useEffect(() => {
     if (!isLoading && session) {
@@ -29,11 +28,6 @@ export default function Home() {
       });
     }
   }, [session, isLoading, router]);
-
-  // Show splash screen while checking session
-  if (isLoading) {
-    return <SplashScreen />;
-  }
 
   // Show login form if no session
   if (!session) {

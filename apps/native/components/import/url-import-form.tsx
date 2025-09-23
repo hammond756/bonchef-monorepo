@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
 import { useSession } from '@/hooks/use-session';
 import { supabase } from '@/lib/utils/supabase/client';
+import { useSuccessOverlay } from '@/components/ui/success-overlay';
 
 interface UrlImportFormProps {
   onBack: () => void;
@@ -12,12 +13,8 @@ interface UrlImportFormProps {
 }
 
 function isValidUrl(string: string) {
-  try {
-    new URL(string);
-    return true;
-  } catch {
-    return false;
-  }
+  const pattern = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
+  return pattern.test(string);
 }
 
 function isVerticalVideoUrl(url: string) {
@@ -26,12 +23,15 @@ function isVerticalVideoUrl(url: string) {
 
 export function UrlImportForm({ onBack, onClose, initialUrl }: UrlImportFormProps) {
   const [url, setUrl] = useState(initialUrl || '');
+  const [error, setError] = useState<string | null>(null);
   const { session } = useSession();
   
-  const { isLoading, error, setError, handleSubmit } = useRecipeImport({
+  const { isLoading, error: triggerError, handleSubmit } = useRecipeImport({
     supabaseClient: supabase,
     userId: session?.user?.id || '',
   });
+
+  const { triggerSuccess, SuccessOverlayComponent } = useSuccessOverlay();
 
   const handleUrlSubmit = async () => {
     setError(null);
@@ -54,8 +54,10 @@ export function UrlImportForm({ onBack, onClose, initialUrl }: UrlImportFormProp
     const sourceType = isVerticalVideoUrl(urlToSubmit) ? "vertical_video" : "url";
     
     await handleSubmit(sourceType, urlToSubmit, () => {
-      setUrl('');
-      onClose();
+      triggerSuccess(() => {
+        setUrl('');
+        onClose();
+      });
     });
   };
 
@@ -116,6 +118,9 @@ export function UrlImportForm({ onBack, onClose, initialUrl }: UrlImportFormProp
           {error && (
             <Text className="text-red-500 text-sm mt-2">{error}</Text>
           )}
+          {triggerError && (
+            <Text className="text-red-500 text-sm mt-2">{triggerError}</Text>
+          )}
         </View>
 
         {/* Submit Button */}
@@ -131,6 +136,8 @@ export function UrlImportForm({ onBack, onClose, initialUrl }: UrlImportFormProp
           </Text>
         </TouchableOpacity>
       </ScrollView>
+      
+      <SuccessOverlayComponent />
     </View>
   );
 }

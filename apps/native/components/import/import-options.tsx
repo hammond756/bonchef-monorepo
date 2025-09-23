@@ -20,13 +20,6 @@ export function ImportOptions({ onSelectMode, onClose }: ImportOptionsProps) {
 
       {/* Import Options Grid */}
       <View className="flex-row justify-between mb-6">
-        <TouchableOpacity
-          onPress={() => onSelectMode('photo')}
-          className="flex-1 items-center justify-center bg-orange-100 rounded-xl p-3 mx-1"
-        >
-          <Ionicons name="scan" size={28} color="#EA580C" />
-          <Text className="text-sm font-medium text-orange-800 mt-2">Scan</Text>
-        </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => onSelectMode('url')}
@@ -44,21 +37,6 @@ export function ImportOptions({ onSelectMode, onClose }: ImportOptionsProps) {
           <Text className="text-sm font-medium text-purple-800 mt-2">Notitie</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Divider */}
-      <View className="relative items-center mb-6">
-        <View className="absolute top-1/2 left-0 right-0 h-px bg-gray-200" />
-        <Text className="bg-white px-4 text-sm text-gray-500">of</Text>
-      </View>
-
-      {/* Dishcovery Option */}
-      <TouchableOpacity
-        onPress={() => onSelectMode('dishcovery')}
-        className="flex-row items-center justify-center bg-green-100 rounded-xl p-4"
-      >
-        <Ionicons name="restaurant" size={28} color="#16A34A" />
-        <Text className="text-sm font-medium text-green-800 ml-2">Dishcovery</Text>
-      </TouchableOpacity>
     </View>
   );
 }

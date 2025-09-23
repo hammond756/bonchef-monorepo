@@ -13,16 +13,10 @@ export type CollectionItem =
 
 interface RecipeGridProps {
   items: Readonly<CollectionItem[]>;
-  onRecipePress?: (recipe: RecipeRead) => void;
-  onJobPress?: (job: NonCompletedRecipeImportJob) => void;
-  onRetryJob?: (job: NonCompletedRecipeImportJob) => void;
 }
 
 export function RecipeGrid({ 
   items, 
-  onRecipePress, 
-  onJobPress, 
-  onRetryJob 
 }: RecipeGridProps) {
   if (!items || items.length === 0) {
     return null;
@@ -34,7 +28,6 @@ export function RecipeGrid({
         <View className="flex-1 p-1">
           <RecipeCollectionCard 
             recipe={item} 
-            onPress={() => onRecipePress?.(item)} 
           />
         </View>
       );
@@ -42,9 +35,7 @@ export function RecipeGrid({
       return (
         <View className="flex-1 p-1">
           <FailedJobCard 
-            job={item} 
-            onPress={() => onJobPress?.(item)}
-            onRetry={() => onRetryJob?.(item)}
+            job={item}
           />
         </View>
       );
@@ -53,7 +44,6 @@ export function RecipeGrid({
         <View className="flex-1 p-1">
           <PendingJobCard 
             job={item} 
-            onPress={() => onJobPress?.(item)} 
           />
         </View>
       );

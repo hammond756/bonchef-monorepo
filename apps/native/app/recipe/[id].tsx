@@ -1,9 +1,9 @@
-import { View, Text, ScrollView, Image, TouchableOpacity, StatusBar, ActivityIndicator } from "react-native";
+import { useRecipe } from "@repo/lib/hooks/use-recipe";
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { LinearGradient } from "expo-linear-gradient";
+import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { RecipeActionButtons } from "@/components/recipe/recipe-action-buttons";
-import { useRecipe } from "@repo/lib/hooks/use-recipe";
 import { supabase } from "@/lib/utils/supabase/client";
 
 
@@ -16,7 +16,6 @@ export default function RecipeDetail() {
   
   // Fetch recipe data using the hook
   const { data: recipe, isLoading, error } = useRecipe(supabase, id);
-  const [servings, setServings] = useState(recipe?.n_portions || 6);
 
   const handleBack = () => {
     router.back();
@@ -24,11 +23,6 @@ export default function RecipeDetail() {
 
   const handleTabPress = (tab: TabType) => {
     setActiveTab(tab);
-  };
-
-  const adjustServings = (delta: number) => {
-    const newServings = Math.max(1, servings + delta);
-    setServings(newServings);
   };
 
   // Show loading state
@@ -69,38 +63,14 @@ export default function RecipeDetail() {
 
   const renderIngredients = () => (
     <View className="px-4 py-6">
-      {/* Servings Adjuster */}
-      <View className="bg-green-100 rounded-xl p-4 mb-6">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-base font-medium text-gray-900">Aantal personen</Text>
-          <View className="flex-row items-center space-x-3">
-            <TouchableOpacity
-              onPress={() => adjustServings(-1)}
-              className="w-8 h-8 bg-white border border-gray-300 rounded-full items-center justify-center"
-            >
-              <Text className="text-lg font-medium text-gray-700">-</Text>
-            </TouchableOpacity>
-            <Text className="text-xl font-bold text-gray-900 min-w-[40px] text-center">
-              {servings}
-            </Text>
-            <TouchableOpacity
-              onPress={() => adjustServings(1)}
-              className="w-8 h-8 bg-white border border-gray-300 rounded-full items-center justify-center"
-            >
-              <Text className="text-lg font-medium text-gray-700">+</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
       {/* Ingredients List */}
-      {recipe.ingredients.map((category, categoryIndex) => (
-        <View key={categoryIndex} className="mb-6">
-          <Text className="text-lg font-medium text-gray-900 mb-3 font-serif">
+      {recipe.ingredients.map((category) => (
+        <View key={category.name} className="mb-6">
+          {category.name !== "no_name" && <Text className="text-lg font-medium text-gray-900 mb-3 font-serif">
             {category.name}
-          </Text>
-          {category.ingredients.map((ingredient, ingredientIndex) => (
-            <View key={ingredientIndex} className="flex-row items-start mb-3">
+          </Text>}
+          {category.ingredients.map((ingredient) => (
+            <View key={ingredient.description + ingredient.quantity} className="flex-row items-start mb-3">
               <View className="w-5 h-5 border border-gray-300 rounded mr-3 mt-0.5" />
               <View className="flex-1">
                 <Text className="text-base text-gray-900 font-montserrat">
@@ -120,7 +90,7 @@ export default function RecipeDetail() {
   const renderPreparation = () => (
     <View className="px-4 py-6">
       {recipe.instructions.map((step, index) => (
-        <View key={index} className="mb-6">
+        <View key={step} className="mb-6">
           <View className="flex-row items-start">
             <View className="w-8 h-8 bg-green-700 rounded-full items-center justify-center mr-4 mt-1">
               <Text className="text-white font-bold text-sm">{index + 1}</Text>
@@ -136,16 +106,6 @@ export default function RecipeDetail() {
     </View>
   );
 
-  const renderNutrition = () => (
-    <View className="px-4 py-6">
-      <Text className="text-lg font-semibold text-gray-900 mb-4">Voedingswaarden</Text>
-      <View className="bg-gray-50 rounded-xl p-4">
-        <Text className="text-base text-gray-600 text-center">
-          Voedingsinformatie wordt binnenkort toegevoegd
-        </Text>
-      </View>
-    </View>
-  );
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -153,8 +113,6 @@ export default function RecipeDetail() {
         return renderIngredients();
       case "preparation":
         return renderPreparation();
-      case "nutrition":
-        return renderNutrition();
       default:
         return renderIngredients();
     }
@@ -199,7 +157,6 @@ export default function RecipeDetail() {
         {[
           { key: "ingredients", label: "Ingrediënten" },
           { key: "preparation", label: "Bereiding" },
-          { key: "nutrition", label: "Voeding" }
         ].map((tab) => (
           <TouchableOpacity
             key={tab.key}

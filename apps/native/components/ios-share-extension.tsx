@@ -1,15 +1,10 @@
-import { close, type InitialProps } from "expo-share-extension";
-import { useEffect, useState } from "react";
-import Animated, {
-  useSharedValue,
-  withSpring
-} from "react-native-reanimated";
-import { UrlImportForm } from './import/url-import-form';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { close, type InitialProps } from "expo-share-extension";
+import { useState } from "react";
+import { View } from "react-native";
+import { UrlImportForm } from './import/url-import-form';
 
-export default function IOSShareExtension({ url, text }: InitialProps) {
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.8);
+export default function IOSShareExtension({ url }: InitialProps) {
 
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
@@ -21,17 +16,11 @@ export default function IOSShareExtension({ url, text }: InitialProps) {
     },
   }));
 
-  useEffect(() => {
-    // Animate in when component mounts
-    opacity.value = withSpring(1, { damping: 20, stiffness: 90 });
-    scale.value = withSpring(1, { damping: 20, stiffness: 90 });
-  }, []);
-
   return (
-    <Animated.View className="w-full h-full items-center justify-center">
+    <View className="w-full h-full items-center justify-center bg-white rounded-2xl">
         <QueryClientProvider client={queryClient}>
           <UrlImportForm onClose={close} onBack={close} initialUrl={url} />
         </QueryClientProvider>
-    </Animated.View>
+    </View>
   );
 }

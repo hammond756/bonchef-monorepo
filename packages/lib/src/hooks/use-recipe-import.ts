@@ -1,13 +1,13 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { SupabaseClient } from "@supabase/supabase-js";
-import { 
-  RecipeImportSourceType, 
-  listJobsWithClient,
-  NonCompletedRecipeImportJob 
-} from "../services/recipe-import-jobs";
-import { supabase } from "@/lib/utils/supabase/client";
 import { API_URL } from "@/config/environment";
+import { supabase } from "@/lib/utils/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
+import {
+  listJobsWithClient,
+  type NonCompletedRecipeImportJob,
+  type RecipeImportSourceType
+} from "../services/recipe-import-jobs";
 import { useOwnRecipes } from "./use-own-recipes";
 
 export interface UseRecipeImportOptions {
@@ -18,7 +18,6 @@ export interface UseRecipeImportOptions {
 export interface UseRecipeImportReturn {
   isLoading: boolean;
   error: string | null;
-  setError: (error: string | null) => void;
   handleSubmit: (
     type: RecipeImportSourceType,
     data: string,
@@ -116,7 +115,6 @@ export function useRecipeImport({
   return {
     isLoading: createJobMutation.isPending,
     error: createJobMutation.error?.message || queryError?.message || null,
-    setError: () => {}, // Not needed with TanStack Query
     handleSubmit,
     jobs,
     refreshJobs: () => refreshJobs(),

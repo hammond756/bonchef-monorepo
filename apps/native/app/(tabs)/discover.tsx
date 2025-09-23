@@ -1,8 +1,8 @@
-import { usePublicRecipes } from "@repo/lib/hooks/use-public-recipes";
-import { View, Text, FlatList, RefreshControl } from "react-native";
-import { RecipeFeedCard } from "../../components/recipe";
-import { RecipeRead } from "@repo/lib";
 import { supabase } from "@/lib/utils/supabase/client";
+import type { RecipeRead } from "@repo/lib";
+import { usePublicRecipes } from "@repo/lib/hooks/use-public-recipes";
+import { FlatList, RefreshControl, Text, View } from "react-native";
+import { RecipeFeedCard } from "../../components/recipe/recipe-feed-card";
 
 const Feed = () => {
   const { recipes, isLoading, hasMore, loadMore, error, mutate } = usePublicRecipes(supabase);

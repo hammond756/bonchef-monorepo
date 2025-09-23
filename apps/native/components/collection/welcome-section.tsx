@@ -1,12 +1,8 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Text, View } from 'react-native';
 
-interface WelcomeSectionProps {
-  onImportPress?: () => void;
-}
 
-export function WelcomeSection({ onImportPress }: WelcomeSectionProps) {
+export function WelcomeSection() {
   return (
     <View className="flex-1 items-center justify-center px-6 py-12">
       {/* Icon */}
@@ -24,17 +20,6 @@ export function WelcomeSection({ onImportPress }: WelcomeSectionProps) {
         Importeer je eerste recept om te beginnen. Je kunt recepten importeren van websites, 
         foto's maken, of tekst plakken.
       </Text>
-
-      {/* Import Button */}
-      <TouchableOpacity
-        onPress={onImportPress}
-        className="bg-green-600 rounded-xl py-4 px-8 flex-row items-center"
-      >
-        <Ionicons name="add-outline" size={20} color="white" />
-        <Text className="text-white font-semibold text-base ml-2">
-          Eerste recept importeren
-        </Text>
-      </TouchableOpacity>
 
       {/* Tips */}
       <View className="mt-8 w-full">

@@ -1,14 +1,12 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { NonCompletedRecipeImportJob } from '@repo/lib/services/recipe-import-jobs';
+import type { NonCompletedRecipeImportJob } from '@repo/lib/services/recipe-import-jobs';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 interface PendingJobCardProps {
   job: NonCompletedRecipeImportJob;
-  onPress?: () => void;
 }
 
-export function PendingJobCard({ job, onPress }: PendingJobCardProps) {
+export function PendingJobCard({ job }: PendingJobCardProps) {
   const getSourceIcon = (sourceType: string) => {
     switch (sourceType) {
       case 'url':
@@ -44,10 +42,9 @@ export function PendingJobCard({ job, onPress }: PendingJobCardProps) {
   };
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
+    <Pressable
       className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
-      style={{ aspectRatio: 1 }}
+      style={{ aspectRatio: 0.75 }}
     >
       <View className="flex-1 items-center justify-center p-4">
         {/* Loading Indicator */}
@@ -84,6 +81,6 @@ export function PendingJobCard({ job, onPress }: PendingJobCardProps) {
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
