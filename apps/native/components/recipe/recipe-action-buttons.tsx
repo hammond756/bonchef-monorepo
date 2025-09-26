@@ -19,16 +19,12 @@ export function RecipeActionButtons({
     const buttonSize = size === "lg" ? 48 : 40
     const textColor = theme === "dark" ? "text-white" : "text-gray-900"
 
-    const handleProfile = () => {
-        Alert.alert("Profile", `View profile: ${recipe.profiles?.display_name || "Unknown"}`)
-    }
-
     return (
         <View className="flex items-center justify-start gap-2">
             {/* Profile Button */}
             {recipe.profiles && (
                 <TouchableOpacity
-                    onPress={handleProfile}
+                    onPress={() => {}}
                     className="flex items-center justify-center rounded-full"
                     style={{ width: buttonSize, height: buttonSize }}
                 >
