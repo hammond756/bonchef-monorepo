@@ -3,9 +3,10 @@ import { formatIngredientLine } from "@repo/lib/utils/ingredient-formatting";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, Animated, Dimensions } from "react-native";
 import { RecipeActionButtons } from "@/components/recipe/recipe-action-buttons";
 import { supabase } from "@/lib/utils/supabase/client";
+import { useTabAnimation } from "@/hooks/use-tab-animation";
 
 
 type TabType = "ingredients" | "preparation" | "nutrition";
@@ -13,7 +14,25 @@ type TabType = "ingredients" | "preparation" | "nutrition";
 export default function RecipeDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabType>("ingredients");
+  const [activeTab, setActiveTab] = useState<number>(0);
+  
+  // Define tabs configuration
+  const tabs = [
+    { key: "ingredients" as TabType, label: "Ingrediënten" },
+    { key: "preparation" as TabType, label: "Bereiding" },
+  ];
+  
+  const screenWidth = Dimensions.get('window').width;
+  
+  // Use custom hook for tab animation
+  const { 
+    animatedValues, 
+    tabWidth
+  } = useTabAnimation({ 
+    width: screenWidth, 
+    nTabs: tabs.length, 
+    activeTab
+  });
   
   // Fetch recipe data using the hook
   const { data: recipe, isLoading, error } = useRecipe(supabase, id);
@@ -22,8 +41,8 @@ export default function RecipeDetail() {
     router.back();
   };
 
-  const handleTabPress = (tab: TabType) => {
-    setActiveTab(tab);
+  const handleTabPress = (tabIndex: number) => {
+    setActiveTab(tabIndex);
   };
 
   // Show loading state
@@ -78,7 +97,7 @@ export default function RecipeDetail() {
             if (!formatted) return null;
             
             return (
-              <View key={ingredient.description + ingredient.quantity.low + ingredientIndex} className="flex-row items-start mb-3">
+              <View key={`${category.name}-${ingredient.description}-${ingredient.quantity.low}-${ingredientIndex}`} className="flex-row items-start mb-3">
                 <View className="w-5 h-5 border border-gray-300 rounded mr-3 mt-0.5" />
                 <View className="flex-1">
                   <Text className="text-lg text-gray-900 font-montserrat">
@@ -102,7 +121,7 @@ export default function RecipeDetail() {
   const renderPreparation = () => (
     <View className="px-4 py-6">
       {recipe.instructions.map((step, index) => (
-        <View key={step} className="mb-6">
+        <View key={`step-${index}-${step.slice(0, 20)}`} className="mb-6">
           <View className="flex-row items-start">
             <View className="w-8 h-8 bg-green-700 rounded-full items-center justify-center mr-4 mt-1">
               <Text className="text-white font-bold text-sm">{index + 1}</Text>
@@ -121,9 +140,9 @@ export default function RecipeDetail() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "ingredients":
+      case 0:
         return renderIngredients();
-      case "preparation":
+      case 1:
         return renderPreparation();
       default:
         return renderIngredients();
@@ -166,24 +185,34 @@ export default function RecipeDetail() {
 
       {/* Tab Navigation */}
       <View className="flex-row border-b border-gray-200">
-        {[
-          { key: "ingredients", label: "Ingrediënten" },
-          { key: "preparation", label: "Bereiding" },
-        ].map((tab) => (
+        {tabs.map((tab, index) => (
           <TouchableOpacity
             key={tab.key}
-            onPress={() => handleTabPress(tab.key as TabType)}
-            className={`flex-1 py-4 items-center ${
-              activeTab === tab.key ? "border-b-2 border-green-700" : ""
-            }`}
+            onPress={() => handleTabPress(index)}
+            className="flex-1 py-4 items-center relative"
           >
             <Text
               className={`text-xl font-medium ${
-                activeTab === tab.key ? "text-green-700" : "text-gray-500"
+                activeTab === index ? "text-green-700" : "text-gray-500"
               }`}
             >
               {tab.label}
             </Text>
+            
+            {/* Animated underline for each tab */}
+            <Animated.View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                height: 2,
+                backgroundColor: '#1E4D37',
+                width: animatedValues[index],
+                left: Animated.add(
+                  Animated.divide(Animated.subtract(tabWidth, animatedValues[index]), 2),
+                  0
+                ),
+              }}
+            />
           </TouchableOpacity>
         ))}
       </View>
