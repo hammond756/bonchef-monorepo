@@ -100,7 +100,6 @@ export function RecipeFeedCard({ recipe }: Readonly<RecipeFeedCardProps>) {
                                 recipe={recipe}
                                 theme="dark"
                                 size="md"
-                                onCommentClick={handleCommentClick}
                             />
                         </View>
                     </RecipeCardBackground>

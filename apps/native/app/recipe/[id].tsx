@@ -67,9 +67,12 @@ export default function RecipeDetail() {
       {/* Ingredients List */}
       {recipe.ingredients.map((category) => (
         <View key={category.name} className="mb-6">
-          {category.name !== "no_group" && <Text className="text-lg font-medium text-gray-900 mb-3 font-serif">
+          {category.name !== "no_group" && (
+            <Text
+              className="text-xl tracking-wider font-medium text-gray-900 mb-3 font-serif"
+            >
             {category.name}
-          </Text>}
+          </Text>)}
           {category.ingredients.map((ingredient, ingredientIndex) => {
             const formatted = formatIngredientLine(ingredient, 1);
             if (!formatted) return null;
@@ -78,7 +81,7 @@ export default function RecipeDetail() {
               <View key={ingredient.description + ingredient.quantity.low + ingredientIndex} className="flex-row items-start mb-3">
                 <View className="w-5 h-5 border border-gray-300 rounded mr-3 mt-0.5" />
                 <View className="flex-1">
-                  <Text className="text-base text-gray-900 font-montserrat">
+                  <Text className="text-lg text-gray-900 font-montserrat">
                     {formatted.quantity && (
                       <Text className="font-semibold">
                         {formatted.quantity}
@@ -105,7 +108,7 @@ export default function RecipeDetail() {
               <Text className="text-white font-bold text-sm">{index + 1}</Text>
             </View>
             <View className="flex-1">
-              <Text className="text-base text-gray-900 leading-6">
+              <Text className="text-lg text-gray-900 leading-6">
                 {step}
               </Text>
             </View>
@@ -139,8 +142,8 @@ export default function RecipeDetail() {
         
         {/* Gradient Overlay */}
         <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.7)']}
-          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: "60%" }}
+          colors={['rgba(0,0,0,0.0)', 'rgba(0,0,0,0.0)', 'rgba(0,0,0,0.5)']}
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: "100%" }}
         />
 
         {/* Action Buttons */}
@@ -175,7 +178,7 @@ export default function RecipeDetail() {
             }`}
           >
             <Text
-              className={`text-base font-medium ${
+              className={`text-xl font-medium ${
                 activeTab === tab.key ? "text-green-700" : "text-gray-500"
               }`}
             >

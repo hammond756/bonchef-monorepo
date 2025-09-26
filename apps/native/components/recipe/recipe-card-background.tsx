@@ -31,7 +31,7 @@ export function RecipeCardBackground({
       
       {/* Gradient Overlay */}
       <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,0.5)']}
+        colors={['rgba(0,0,0,0.0)', 'rgba(0,0,0,0.0)', 'rgba(0,0,0,0.5)']}
         style={{
           position: 'absolute', 
           bottom: 0, 
