@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, Animated, Dimensions } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { RecipeActionButtons } from "@/components/recipe/recipe-action-buttons";
 import { supabase } from "@/lib/utils/supabase/client";
 import { useTabAnimation } from "@/hooks/use-tab-animation";
@@ -15,6 +16,7 @@ export default function RecipeDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<number>(0);
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
   
   // Define tabs configuration
   const tabs = [
@@ -43,6 +45,18 @@ export default function RecipeDetail() {
 
   const handleTabPress = (tabIndex: number) => {
     setActiveTab(tabIndex);
+  };
+
+  const toggleIngredient = (ingredientKey: string) => {
+    setCheckedIngredients(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(ingredientKey)) {
+        newSet.delete(ingredientKey);
+      } else {
+        newSet.add(ingredientKey);
+      }
+      return newSet;
+    });
   };
 
   // Show loading state
@@ -96,11 +110,30 @@ export default function RecipeDetail() {
             const formatted = formatIngredientLine(ingredient, 1);
             if (!formatted) return null;
             
+            const ingredientKey = `${category.name}-${ingredient.description}-${ingredient.quantity.low}-${ingredientIndex}`;
+            const isChecked = checkedIngredients.has(ingredientKey);
+            
             return (
-              <View key={`${category.name}-${ingredient.description}-${ingredient.quantity.low}-${ingredientIndex}`} className="flex-row items-start mb-3">
-                <View className="w-5 h-5 border border-gray-300 rounded mr-3 mt-0.5" />
+              <TouchableOpacity 
+                key={ingredientKey} 
+                className="flex-row items-start mb-3"
+                onPress={() => toggleIngredient(ingredientKey)}
+                activeOpacity={0.7}
+              >
+                <View 
+                  className={`w-5 h-5 border rounded mr-3 items-center justify-center ${isChecked ? 'border-green-700 bg-green-50' : 'border-gray-300'}`} 
+                  style={{ marginTop: 2 }}
+                >
+                  {isChecked && (
+                    <Ionicons 
+                      name="checkmark" 
+                      size={16} 
+                      color="#1E4D37" 
+                    />
+                  )}
+                </View>
                 <View className="flex-1">
-                  <Text className="text-lg text-gray-900 font-montserrat">
+                  <Text className={`text-lg text-gray-900 font-montserrat leading-6 ${isChecked ? 'line-through text-gray-500' : ''}`}>
                     {formatted.quantity && (
                       <Text className="font-semibold">
                         {formatted.quantity}
@@ -110,7 +143,7 @@ export default function RecipeDetail() {
                     {formatted.description}
                   </Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>
