@@ -83,6 +83,14 @@
             "./assets/fonts/Lora-Bold.ttf"
           ]
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "De app heeft toegang tot je foto's nodig op een nieuwe afbeelding te selecteren voor je recept.",
+          "cameraPermission": "De app heeft toegang tot je camera nodig op een nieuwe afbeelding te maken voor je recept.",
+          "microphonePermission": "De app heeft toegang tot je microfoon nodig om stemopnames te maken als recept beschrijving."
+        }
       ]
     ],
     "experiments": {

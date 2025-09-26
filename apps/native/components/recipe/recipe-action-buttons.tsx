@@ -29,7 +29,7 @@ export function RecipeActionButtons({
             {recipe.profiles && (
                 <TouchableOpacity
                     onPress={handleProfile}
-                    className="flex items-center justify-center rounded-full bg-black/50 p-2"
+                    className="flex items-center justify-center rounded-full"
                     style={{ width: buttonSize, height: buttonSize }}
                 >
                     {recipe.profiles.avatar ? (
@@ -38,9 +38,11 @@ export function RecipeActionButtons({
                             style={{ width: iconSize, height: iconSize, borderRadius: iconSize / 2 }}
                         />
                     ) : (
-                        <Text className={`text-lg font-bold ${textColor} text-center`}>
-                            {recipe.profiles.display_name?.charAt(0) || "?"}
-                        </Text>
+                        <View className="flex items-center justify-center rounded-full bg-black/50" style={{ width: iconSize * 2, height: iconSize * 2 }}>
+                            <Text className={`text-lg font-bold ${textColor} text-center`}>
+                                {recipe.profiles.display_name?.charAt(0) || "?"}
+                            </Text>
+                        </View>
                     )}
                 </TouchableOpacity>
             )}
