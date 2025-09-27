@@ -13,7 +13,10 @@ export default function supabaseImageLoader({ src, width, quality }: { src: stri
         return src
     }
 
-    const host = process.env.NODE_ENV === "development" ? "http://localhost:54321" : process.env.NEXT_PUBLIC_SUPABASE_URL
+    // Extract the host (with http or https) from the src path
+    const hostFromSrc = src.match(/^https?:\/\/[^/]+/)
+    const host = hostFromSrc ? hostFromSrc[0] : ""
+
     const url = `${host}/storage/v1/render/image/public/${path}?width=${width}&resize=contain&quality=${quality || 75}`
 
     return url
