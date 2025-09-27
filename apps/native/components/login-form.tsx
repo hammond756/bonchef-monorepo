@@ -43,17 +43,6 @@ export default function LoginForm() {
     setLoading(false)
   }
 
-  const handleTimelinePress = () => {
-    // Navigate to timeline or show public recipes
-    Alert.alert('Timeline', 'Navigate to public recipes timeline')
-  }
-
-  const handleTestAccountPress = () => {
-    // Set test account credentials
-    setEmail('test@example.com')
-    setPassword('testpassword')
-  }
-
   const handleSignupPress = () => {
     router.push('/signup')
   }

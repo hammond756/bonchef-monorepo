@@ -3,11 +3,16 @@ import { formatIngredientLine } from "@repo/lib/utils/ingredient-formatting";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, Animated, Dimensions } from "react-native";
+import { Image } from "expo-image";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, Animated, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { RecipeActionButtons } from "@/components/recipe/recipe-action-buttons";
 import { supabase } from "@/lib/utils/supabase/client";
 import { useTabAnimation } from "@/hooks/use-tab-animation";
+import supabaseImageLoader from "@repo/lib/utils/supabase-image-loader";
+import { cssInterop } from "nativewind";
+
+cssInterop(Image, { className: "style" });
 
 
 type TabType = "ingredients" | "preparation" | "nutrition";
@@ -186,11 +191,12 @@ export default function RecipeDetail() {
     <View className="flex-1 flex-col bg-white w-full">
       {/* Header Image */}
       <View className="relative h-2/5">
-        <Image
-          source={{ uri: recipe.thumbnail }}
-          className="w-full h-full"
-          resizeMode="cover"
-        />
+      <Image
+        source={{ 
+          uri: supabaseImageLoader({src: recipe.thumbnail, width: 750}) || "https://placekitten.com/900/1200" 
+        }}
+        className="w-full h-full"
+      />
         
         {/* Gradient Overlay */}
         <LinearGradient

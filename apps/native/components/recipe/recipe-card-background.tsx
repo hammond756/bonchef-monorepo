@@ -1,7 +1,13 @@
 import React from "react"
-import { View, Image } from "react-native"
+import { Image } from "expo-image"
+import { View } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
 import { RecipeRead } from "@repo/lib/services/recipes"
+import { cssInterop } from "nativewind";
+import supabaseImageLoader from "@repo/lib/utils/supabase-image-loader"
+
+// https://github.com/expo/expo/issues/27783#issuecomment-2622469639
+cssInterop(Image, { className: "style" });
 
 interface RecipeCardBackgroundProps {
   recipe: RecipeRead
@@ -23,10 +29,9 @@ export function RecipeCardBackground({
       {/* Recipe Image */}
       <Image
         source={{ 
-          uri: recipe.thumbnail || "https://placekitten.com/900/1200" 
+          uri: supabaseImageLoader({src: recipe.thumbnail, width: 500}) || "https://placekitten.com/900/1200" 
         }}
         className="w-full h-full"
-        resizeMode="cover"
       />
       
       {/* Gradient Overlay */}
