@@ -47,6 +47,7 @@ const triggerJob = async (type: RecipeImportSourceType, data: string): Promise<{
   });
 
   if (!response.ok) {
+    console.error("Failed to trigger job", await response.json());
     throw new Error("Failed to trigger job");
   }
   

@@ -36,3 +36,12 @@ export const loginWithGoogle = async (supabase: SupabaseClient) => {
 
     return data
 }
+
+
+export const logout = async (supabase: SupabaseClient) => {
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+        throw error
+    }
+}

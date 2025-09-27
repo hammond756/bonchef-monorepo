@@ -1,11 +1,31 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { Text, View, TouchableOpacity } from 'react-native';
 import { Ionicons, Octicons } from "@expo/vector-icons";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ImportTray } from '@/components/import/import-tray';
+import { supabase } from "@/lib/utils/supabase/client";
+import { pendingImportsStorage } from '@/lib/utils/pending-imports';
+import { usePendingImports } from '@/components/pending-imports-handler';
 
 export default function TabsLayout() {
   const [isImportTrayOpen, setIsImportTrayOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const router = useRouter();
+  const { isProcessing } = usePendingImports();
+
+  useEffect(() => {
+    const imports = pendingImportsStorage.getAll();
+    const count = imports.length;
+    setPendingCount(count);
+  }, []);
+
+  useEffect(() => {
+    if (!isProcessing) {
+      const imports = pendingImportsStorage.getAll();
+      const count = imports.length;
+      setPendingCount(count);
+    }
+  }, [isProcessing]);
 
   return (
     <View className="flex-1">
@@ -30,6 +50,14 @@ export default function TabsLayout() {
           headerTitleStyle: {
             fontFamily: "Lora",
           },
+          headerRight: () => (
+            <TouchableOpacity onPress={async () => {
+              await supabase.auth.signOut();
+              router.replace("/login");
+            }}>
+              <Ionicons name="log-out-outline" size={24} color="#000" className="mr-2" />
+            </TouchableOpacity>
+          ),
         }}
       >
         <Tabs.Screen
@@ -46,7 +74,16 @@ export default function TabsLayout() {
           options={{
             title: "Collectie",
             tabBarIcon: ({ color, size, focused }) => (
-              focused ? <Ionicons name="bookmark" size={size} color={color} /> : <Ionicons name="bookmark-outline" size={size} color={color} />
+              <View className="relative">
+                {focused ? <Ionicons name="bookmark" size={size} color={color} /> : <Ionicons name="bookmark-outline" size={size} color={color} />}
+                {pendingCount > 0 && (
+                  <View className="absolute -top-1 -right-1 bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center">
+                    <Text className="text-white text-xs font-bold">
+                      {pendingCount > 9 ? '9+' : pendingCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
             ),
           }}
         />

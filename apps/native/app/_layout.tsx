@@ -1,5 +1,5 @@
 import "../global.css";
-import { Slot, Stack, useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { ShareIntentProvider } from "expo-share-intent";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";

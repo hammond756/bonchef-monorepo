@@ -1,6 +1,9 @@
-import { MMKV } from "react-native-mmkv";
+import { MMKV, Mode } from "react-native-mmkv";
 
-export const storage = new MMKV();
+export const storage = new MMKV({
+    id: 'bonchef_shared_storage',
+    mode: Mode.MULTI_PROCESS,
+});
 
 
 // Adapter to use MMKV with Supabase, which AsyncStorage from react-native-async-storage
