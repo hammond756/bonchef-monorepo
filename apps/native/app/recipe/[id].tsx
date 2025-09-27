@@ -193,7 +193,9 @@ export default function RecipeDetail() {
       <View className="relative h-2/5">
       <Image
         source={{ 
-          uri: supabaseImageLoader({src: recipe.thumbnail, width: 750}) || "https://placekitten.com/900/1200" 
+          // Width matches the recipe card background width, so we share
+          // the same cache.
+          uri: supabaseImageLoader({src: recipe.thumbnail, width: 500}) || "https://placekitten.com/900/1200" 
         }}
         className="w-full h-full"
       />

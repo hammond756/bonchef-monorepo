@@ -37,7 +37,7 @@ const Feed = () => {
       renderItem={renderRecipe}
       keyExtractor={(item) => item.id}
       onEndReached={handleLoadMore}
-      onEndReachedThreshold={0.5}
+      onEndReachedThreshold={1.5}
       refreshControl={
         <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
       }
