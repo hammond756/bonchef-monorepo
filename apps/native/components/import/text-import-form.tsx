@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
-import { useSession } from '@/hooks/use-session';
 import { supabase } from '@/lib/utils/supabase/client';
 import { useSuccessOverlay } from '@/components/ui/success-overlay';
+import { triggerJob } from '@repo/lib/services/recipe-import-jobs';
+import { API_URL } from '@/config/environment';
+import { pendingImportsStorage } from '@/lib/utils/mmkv/pending-imports';
+import { normalizeError } from '@repo/lib/utils/error-handling';
 
 interface TextImportFormProps {
   onBack: () => void;
@@ -15,30 +17,43 @@ interface TextImportFormProps {
 export function TextImportForm({ onBack, onClose, initialText }: TextImportFormProps) {
   const [text, setText] = useState(initialText || '');
   const [error, setError] = useState<string | null>(null);
-  const { session } = useSession();
-  
-  const { isLoading, error: triggerError, handleSubmit } = useRecipeImport({
-    supabaseClient: supabase,
-    userId: session?.user?.id || '',
-  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const { triggerSuccess, SuccessOverlayComponent } = useSuccessOverlay();
 
   const handleTextSubmit = async () => {
     setError(null);
-
+    setIsLoading(true);
+    
     const textToSubmit = text.trim();
     if (!textToSubmit) {
       setError('Voer wat tekst in.');
       return;
     }
 
-    await handleSubmit('text', textToSubmit, () => {
+    try {
+      await triggerJob(supabase, API_URL || '', 'text', textToSubmit);
       triggerSuccess(() => {
         setText('');
         onClose();
       });
-    });
+    } catch (originalError) {
+      const err = normalizeError(originalError);
+      if (err.kind === 'auth' || (err.kind === 'server' && err.status === 401)) {
+        pendingImportsStorage.add({
+          type: 'text',
+          data: textToSubmit,
+        });
+        triggerSuccess(() => {
+          setText('');
+          onClose();
+        });
+      } else {
+        setError('Er ging iets mis bij het importeren van het recept. Het is helaas niet duidelijk wat de oorzaak is.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -82,9 +97,6 @@ export function TextImportForm({ onBack, onClose, initialText }: TextImportFormP
           />
           {error && (
             <Text className="text-red-500 text-sm mt-2">{error}</Text>
-          )}
-          {triggerError && (
-            <Text className="text-red-500 text-sm mt-2">{triggerError}</Text>
           )}
         </View>
 

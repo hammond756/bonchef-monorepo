@@ -4,28 +4,19 @@ import { Ionicons, Octicons } from "@expo/vector-icons";
 import { useState, useEffect } from 'react';
 import { ImportTray } from '@/components/import/import-tray';
 import { supabase } from "@/lib/utils/supabase/client";
-import { pendingImportsStorage } from '@/lib/utils/pending-imports';
 import { usePendingImports } from '@/components/pending-imports-handler';
 
 export default function TabsLayout() {
   const [isImportTrayOpen, setIsImportTrayOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const router = useRouter();
-  const { isProcessing } = usePendingImports();
+  const { getPendingImportsCount } = usePendingImports();
 
   useEffect(() => {
-    const imports = pendingImportsStorage.getAll();
-    const count = imports.length;
+    const count = getPendingImportsCount();
     setPendingCount(count);
-  }, []);
+  }, [getPendingImportsCount]);
 
-  useEffect(() => {
-    if (!isProcessing) {
-      const imports = pendingImportsStorage.getAll();
-      const count = imports.length;
-      setPendingCount(count);
-    }
-  }, [isProcessing]);
 
   return (
     <View className="flex-1">

@@ -19,7 +19,8 @@
         "./hooks/use-own-recipes": "./src/hooks/use-own-recipes.ts",
         "./hooks/use-bookmarked-recipes": "./src/hooks/use-bookmarked-recipes.ts",
         "./utils/ingredient-formatting": "./src/utils/ingredient-formatting.ts",
-        "./utils/supabase-image-loader": "./src/utils/supabase-image-loader.ts"
+        "./utils/supabase-image-loader": "./src/utils/supabase-image-loader.ts",
+        "./utils/error-handling": "./src/utils/error-handling.ts"
     },
     "peerDependencies": {
         "@supabase/supabase-js": "^2.57.4",

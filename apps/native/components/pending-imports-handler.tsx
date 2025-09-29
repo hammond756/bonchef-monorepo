@@ -1,17 +1,14 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useSession } from '@/hooks/use-session';
-import { pendingImportsStorage } from '@/lib/utils/pending-imports';
+import { pendingImportsStorage } from '@/lib/utils/mmkv/pending-imports';
 import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
 import { supabase } from '@/lib/utils/supabase/client';
+import { API_URL } from '@/config/environment';
+import { triggerJob } from '@repo/lib/services/recipe-import-jobs';
 
 export function usePendingImports() {
   const { session, isLoading } = useSession();
   const [isProcessing, setIsProcessing] = useState(false);
-  
-  const { handleSubmit } = useRecipeImport({
-    supabaseClient: supabase,
-    userId: session?.user?.id || '',
-  });
 
   const processPendingImports = async () => {
     if (isProcessing) return;
@@ -23,7 +20,7 @@ export function usePendingImports() {
       try {
         for (const pendingImport of pendingImports) {
           try {
-            await handleSubmit(pendingImport.type, pendingImport.data);
+            await triggerJob(supabase, API_URL || '', pendingImport.type, pendingImport.data);
             pendingImportsStorage.remove(pendingImport.id);
           } catch (error) {
             console.error('Failed to process pending import:', error);
@@ -35,9 +32,9 @@ export function usePendingImports() {
     }
   };
 
-  const getPendingImportsCount = () => {
+  const getPendingImportsCount = useCallback(function getPendingImportsCount() {
     return pendingImportsStorage.getAll().length;
-  };
+  }, []);
 
   return {
     processPendingImports,

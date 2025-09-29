@@ -5,7 +5,7 @@ export interface PendingImport {
   timestamp: number;
 }
 
-import { storage } from './mmkv/storage';
+import { storage } from './storage';
 
 const PENDING_IMPORTS_KEY = 'bonchef_pending_imports_v1';
 
