@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Text, View } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import { Text, View } from "react-native";
 
 
 export function WelcomeSection() {
@@ -18,7 +18,7 @@ export function WelcomeSection() {
       {/* Description */}
       <Text className="text-gray-600 text-center mb-8 leading-6">
         Importeer je eerste recept om te beginnen. Je kunt recepten importeren van websites, 
-        foto's maken, of tekst plakken.
+        foto&apos;s maken, of tekst plakken.
       </Text>
 
       {/* Tips */}
@@ -30,7 +30,7 @@ export function WelcomeSection() {
           <View className="flex-row items-center">
             <Ionicons name="checkmark-circle" size={16} color="#10B981" />
             <Text className="text-gray-600 text-sm ml-2">
-              Instagram Reels en TikTok's werken het beste
+              Instagram Reels en TikTok&apos;s werken het beste
             </Text>
           </View>
           <View className="flex-row items-center">

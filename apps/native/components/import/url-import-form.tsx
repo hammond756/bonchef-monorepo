@@ -1,14 +1,10 @@
-import { useSuccessOverlay } from '@/components/ui/success-overlay';
-import { useSession } from '@/hooks/use-session';
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { triggerJob } from '@repo/lib/services/recipe-import-jobs';
+import { useSuccessOverlay } from '@/components/ui/success-overlay';
 import { API_URL } from '@/config/environment';
-import { supabase } from '@/lib/utils/supabase/client';
-import { offlineImportsStorage } from '@/lib/utils/mmkv/offline-imports';
-import { normalizeError } from '@repo/lib/utils/error-handling';
 import { useTriggerJob } from '@/hooks/use-trigger-job';
+import { supabase } from '@/lib/utils/supabase/client';
 
 interface UrlImportFormProps {
   onBack: () => void;
@@ -28,7 +24,6 @@ function isVerticalVideoUrl(url: string) {
 export function UrlImportForm({ onBack, onClose, initialUrl }: UrlImportFormProps) {
   const [url, setUrl] = useState(initialUrl || '');
   const [error, setError] = useState<string | null>(null);
-  const { session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
 
   const { triggerSuccess, SuccessOverlayComponent } = useSuccessOverlay();

@@ -3,8 +3,8 @@ import { View, FlatList } from 'react-native';
 import { RecipeCollectionCard } from '../recipe/recipe-collection-card';
 import { PendingJobCard } from '../recipe/pending-job-card';
 import { FailedJobCard } from '../recipe/failed-job-card';
-import { NonCompletedRecipeImportJob } from '@repo/lib/services/recipe-import-jobs';
-import { RecipeRead } from '@repo/lib/services/recipes';
+import type { NonCompletedRecipeImportJob } from "@repo/lib/services/recipe-import-jobs";
+import type { RecipeRead } from "@repo/lib/services/recipes";
 
 // A union type for items that can be displayed in the collection grid
 export type CollectionItem =
@@ -12,7 +12,7 @@ export type CollectionItem =
   | (NonCompletedRecipeImportJob & { viewType: "JOB" });
 
 interface RecipeGridProps {
-  items: Readonly<CollectionItem[]>;
+  items: readonly CollectionItem[];
 }
 
 export function RecipeGrid({ 

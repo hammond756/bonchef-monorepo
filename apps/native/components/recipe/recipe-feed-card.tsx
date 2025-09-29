@@ -1,7 +1,7 @@
 import type { RecipeRead } from "@repo/lib/services/recipes"
 import { useRouter } from "expo-router"
 import { useState } from "react"
-import { Alert, Pressable, Text, TouchableOpacity, View } from "react-native"
+import { Pressable, Text, TouchableOpacity, View } from "react-native"
 import { RecipeActionButtons } from "./recipe-action-buttons"
 import { RecipeCardBackground } from "./recipe-card-background"
 import { RecipeSourceDisplay } from "./recipe-source-display"
@@ -31,10 +31,6 @@ export function RecipeFeedCard({ recipe }: Readonly<RecipeFeedCardProps>) {
         if (isLongCaption) {
             setIsExpanded(!isExpanded)
         }
-    }
-
-    const handleCommentClick = () => {
-        Alert.alert("Comments", `Open comments for: ${recipe.title}`)
     }
 
     return (
