@@ -1,0 +1,13 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+The tech stack for this project is:
+
+* pnpm for package managment
+* expo for native development
+* nextjs (app router) for web development
+* all packages are typescript
+* vitest for unittesting
