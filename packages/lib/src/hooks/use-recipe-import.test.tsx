@@ -2,7 +2,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook } from "@testing-library/react";
-import React, { type ReactNode } from "react";
 import { useRecipeImport } from "./use-recipe-import";
 
 // Mock the pending imports storage
@@ -42,7 +41,7 @@ const createMockSupabaseClient = (
 	const chainable = new Proxy(
 		{},
 		{
-			get(_target, prop) {
+			get(target, prop) {
 				if (prop === "then") {
 					return (resolve: (value: unknown) => void) => resolve(result);
 				}
@@ -90,7 +89,7 @@ const createTestWrapper = () => {
 		},
 	});
 
-	return ({ children }: { children: ReactNode }) => (
+	return ({ children }: { children: React.ReactNode }) => (
 		<QueryClientProvider client={queryClient}>
 			{children}
 		</QueryClientProvider>
@@ -104,19 +103,14 @@ describe("useRecipeImport", () => {
 				{ data: [], error: null },
 				{ session: null, error: null }, // No session = auth error
 			);
-			
-			const wrapper = createTestWrapper();
-			const { result } = renderHook(
-				() => useRecipeImport({
-					supabaseClient: mockSupabaseClient,
-					userId: "mock-user-id",
-				}),
-				{ wrapper }
-			);
+			const { handleSubmit } = useRecipeImport({
+				supabaseClient: mockSupabaseClient,
+				userId: "mock-user-id",
+			});
 
 			// This should not throw because the hook handles auth errors by storing in pending imports
 			await expect(
-				result.current.handleSubmit("url", "https://example.com"),
+				handleSubmit("url", "https://example.com"),
 			).resolves.not.toThrow();
 		});
 
@@ -132,17 +126,13 @@ describe("useRecipeImport", () => {
 				status: 401,
 			});
 
-			const wrapper = createTestWrapper();
-			const { result } = renderHook(
-				() => useRecipeImport({
-					supabaseClient: mockSupabaseClient,
-					userId: "mock-user-id",
-				}),
-				{ wrapper }
-			);
+			const { handleSubmit } = useRecipeImport({
+				supabaseClient: mockSupabaseClient,
+				userId: "mock-user-id",
+			});
 
 			await expect(
-				result.current.handleSubmit("url", "https://example.com"),
+				handleSubmit("url", "https://example.com"),
 			).resolves.not.toThrow();
 		});
 
@@ -158,17 +148,13 @@ describe("useRecipeImport", () => {
 				json: () => Promise.resolve({ jobId: "test-job-id" }),
 			});
 
-			const wrapper = createTestWrapper();
-			const { result } = renderHook(
-				() => useRecipeImport({
-					supabaseClient: mockSupabaseClient,
-					userId: "mock-user-id",
-				}),
-				{ wrapper }
-			);
+			const { handleSubmit } = useRecipeImport({
+				supabaseClient: mockSupabaseClient,
+				userId: "mock-user-id",
+			});
 
 			await expect(
-				result.current.handleSubmit("url", "https://example.com"),
+				handleSubmit("url", "https://example.com"),
 			).resolves.not.toThrow();
 		});
 	});

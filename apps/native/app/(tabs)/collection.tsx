@@ -1,34 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { CollectionHeader } from '@/components/collection/collection-header';
 import { MyRecipes } from '@/components/collection/my-recipes';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { usePendingImports } from '@/components/pending-imports-handler';
+import { useOfflineImports } from '@/components/offline-imports-handler';
 
 type SortOrder = 'newest' | 'oldest';
 
 export default function Collection() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const tabBarHeight = useBottomTabBarHeight();
-  const { processPendingImports, getPendingImportsCount, isProcessing } = usePendingImports();
-  const [pendingCount, setPendingCount] = useState(0);
+  const { processOfflineImports, offlineCount, isProcessing } = useOfflineImports();
 
-  useEffect(() => {
-    const count = getPendingImportsCount();
-    setPendingCount(count);
-  }, [getPendingImportsCount]);
-
-  useEffect(() => {
-    if (!isProcessing) {
-      const count = getPendingImportsCount();
-      setPendingCount(count);
-    }
-  }, [isProcessing, getPendingImportsCount]);
-
-  const handleProcessPendingImports = async () => {
-    await processPendingImports();
-    const newCount = getPendingImportsCount();
-    setPendingCount(newCount);
+  const handleProcessOfflineImports = async () => {
+    await processOfflineImports();
   };
 
   return (
@@ -37,8 +22,8 @@ export default function Collection() {
       <CollectionHeader
         sortOrder={sortOrder}
         onSortChange={setSortOrder}
-        pendingCount={pendingCount}
-        onProcessPendingImports={handleProcessPendingImports}
+        offlineCount={offlineCount}
+        onProcessOfflineImports={handleProcessOfflineImports}
         isProcessing={isProcessing}
       />
 

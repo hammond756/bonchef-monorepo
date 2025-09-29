@@ -6,16 +6,16 @@ type SortOrder = 'newest' | 'oldest';
 interface CollectionHeaderProps {
   sortOrder: SortOrder;
   onSortChange: (sort: SortOrder) => void;
-  pendingCount: number;
-  onProcessPendingImports: () => void;
+  offlineCount: number;
+  onProcessOfflineImports: () => void;
   isProcessing: boolean;
 }
 
 export function CollectionHeader({ 
   sortOrder, 
   onSortChange,
-  pendingCount,
-  onProcessPendingImports,
+  offlineCount,
+  onProcessOfflineImports,
   isProcessing
 }: CollectionHeaderProps) {
 
@@ -35,12 +35,12 @@ export function CollectionHeader({
           </TouchableOpacity>
         </View>
         
-        {/* Pending Imports Button */}
-        {pendingCount > 0 && <TouchableOpacity
-          onPress={onProcessPendingImports}
-          disabled={isProcessing || pendingCount === 0}
+        {/* Offline Imports Button */}
+        {offlineCount > 0 && <TouchableOpacity
+          onPress={onProcessOfflineImports}
+          disabled={isProcessing || offlineCount === 0}
           className={`px-3 py-1 rounded-full flex-row items-center ${
-            isProcessing || pendingCount === 0 
+            isProcessing || offlineCount === 0 
               ? 'bg-gray-400' 
               : 'bg-[#1E4D37]'
           }`}
@@ -51,7 +51,7 @@ export function CollectionHeader({
             <Ionicons name="download-outline" size={14} color="white" />
           )}
           <Text className="text-white text-sm font-medium ml-1">
-            {isProcessing ? 'Verwerken...' : `${pendingCount} wachten`}
+            {isProcessing ? 'Verwerken...' : `${offlineCount} not te verwerken`}
           </Text>
         </TouchableOpacity>}
       </View>

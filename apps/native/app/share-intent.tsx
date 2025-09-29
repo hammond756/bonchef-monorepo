@@ -2,19 +2,15 @@ import { useRouter } from "expo-router";
 import {
   useShareIntentContext,
 } from "expo-share-intent";
-import { BackHandler, Button, Text, View, TouchableOpacity } from "react-native";
+import { BackHandler, Button, Text, View } from "react-native";
 import { TextImportForm } from "@/components/import/text-import-form";
 import { UrlImportForm } from "@/components/import/url-import-form";
-import { useSession } from "@/hooks/use-session";
-import { pendingImportsStorage } from "@/lib/utils/mmkv/pending-imports";
-import { useEffect, useState, useCallback } from "react";
+import { useCallback } from "react";
 
 
 export default function ShareIntent() {
   const router = useRouter();
   const { shareIntent, error } = useShareIntentContext();
-  const { session, isLoading } = useSession();
-  const [hasStoredImport, setHasStoredImport] = useState(false);
 
   const handleClose = useCallback(() => {
     // Exit the app on Android (goes back to previous activity). Is a no-op on iOS

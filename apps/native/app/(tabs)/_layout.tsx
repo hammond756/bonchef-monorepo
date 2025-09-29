@@ -1,21 +1,15 @@
 import { Tabs, useRouter } from "expo-router";
 import { Text, View, TouchableOpacity } from 'react-native';
 import { Ionicons, Octicons } from "@expo/vector-icons";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ImportTray } from '@/components/import/import-tray';
 import { supabase } from "@/lib/utils/supabase/client";
-import { usePendingImports } from '@/components/pending-imports-handler';
+import { useOfflineImports } from '@/components/offline-imports-handler';
 
 export default function TabsLayout() {
   const [isImportTrayOpen, setIsImportTrayOpen] = useState(false);
-  const [pendingCount, setPendingCount] = useState(0);
   const router = useRouter();
-  const { getPendingImportsCount } = usePendingImports();
-
-  useEffect(() => {
-    const count = getPendingImportsCount();
-    setPendingCount(count);
-  }, [getPendingImportsCount]);
+  const { offlineCount } = useOfflineImports();
 
 
   return (
@@ -67,10 +61,10 @@ export default function TabsLayout() {
             tabBarIcon: ({ color, size, focused }) => (
               <View className="relative">
                 {focused ? <Ionicons name="bookmark" size={size} color={color} /> : <Ionicons name="bookmark-outline" size={size} color={color} />}
-                {pendingCount > 0 && (
+                {offlineCount > 0 && (
                   <View className="absolute -top-1 -right-1 bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center">
                     <Text className="text-white text-xs font-bold">
-                      {pendingCount > 9 ? '9+' : pendingCount}
+                      {offlineCount > 9 ? '9+' : offlineCount}
                     </Text>
                   </View>
                 )}

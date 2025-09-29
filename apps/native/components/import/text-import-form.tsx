@@ -5,7 +5,7 @@ import { supabase } from '@/lib/utils/supabase/client';
 import { useSuccessOverlay } from '@/components/ui/success-overlay';
 import { triggerJob } from '@repo/lib/services/recipe-import-jobs';
 import { API_URL } from '@/config/environment';
-import { pendingImportsStorage } from '@/lib/utils/mmkv/pending-imports';
+import { offlineImportsStorage } from '@/lib/utils/mmkv/offline-imports';
 import { normalizeError } from '@repo/lib/utils/error-handling';
 
 interface TextImportFormProps {
@@ -40,7 +40,7 @@ export function TextImportForm({ onBack, onClose, initialText }: TextImportFormP
     } catch (originalError) {
       const err = normalizeError(originalError);
       if (err.kind === 'auth' || (err.kind === 'server' && err.status === 401)) {
-        pendingImportsStorage.add({
+        offlineImportsStorage.add({
           type: 'text',
           data: textToSubmit,
         });
