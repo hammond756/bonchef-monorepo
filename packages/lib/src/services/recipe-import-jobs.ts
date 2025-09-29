@@ -63,3 +63,24 @@ export async function deleteRecipeImportJobWithClient(
     throw new Error(`Failed to delete recipe import job: ${error.message}`);
   }
 }
+
+
+export async function triggerJob(supabaseClient: SupabaseClient, apiUrl: string, type: RecipeImportSourceType, data: string): Promise<{jobId: string}> {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session?.access_token) {
+    throw { kind: 'auth' };
+  }
+  const response = await fetch(`${apiUrl}/api/trigger-import-job`, {
+    method: "POST",
+    body: JSON.stringify({ sourceType: type, sourceData: data }),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session?.access_token}`,
+    },
+  });
+  if (!response.ok) {
+    console.error("Failed to trigger job", await response.json());
+    throw { kind: 'server', status: response.status };
+  }
+  return response.json();
+}

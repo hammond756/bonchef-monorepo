@@ -1,16 +1,21 @@
 {
-    "build": {
-      "development": {
-        "ios": {
-            "simulator": true
-        }
-      },
-      "preview": {
-        "ios": {
-            "simulator": false,
-            "distribution": "internal"
-        }
-      }
+  "cli": {
+    "version": ">= 16.18.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true
     }
+  },
+  "submit": {
+    "production": {}
   }
-  
+}

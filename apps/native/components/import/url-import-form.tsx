@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
-import { useSession } from '@/hooks/use-session';
-import { supabase } from '@/lib/utils/supabase/client';
+import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSuccessOverlay } from '@/components/ui/success-overlay';
+import { API_URL } from '@/config/environment';
+import { useTriggerJob } from '@/hooks/use-trigger-job';
+import { supabase } from '@/lib/utils/supabase/client';
 
 interface UrlImportFormProps {
   onBack: () => void;
@@ -24,17 +24,14 @@ function isVerticalVideoUrl(url: string) {
 export function UrlImportForm({ onBack, onClose, initialUrl }: UrlImportFormProps) {
   const [url, setUrl] = useState(initialUrl || '');
   const [error, setError] = useState<string | null>(null);
-  const { session } = useSession();
-  
-  const { isLoading, error: triggerError, handleSubmit } = useRecipeImport({
-    supabaseClient: supabase,
-    userId: session?.user?.id || '',
-  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const { triggerSuccess, SuccessOverlayComponent } = useSuccessOverlay();
+  const { triggerJobWithOfflineFallback } = useTriggerJob({ supabaseClient: supabase, apiUrl: API_URL || '' });
 
   const handleUrlSubmit = async () => {
     setError(null);
+    setIsLoading(true);
 
     let urlToSubmit = url.trim();
     if (!urlToSubmit) {
@@ -53,12 +50,17 @@ export function UrlImportForm({ onBack, onClose, initialUrl }: UrlImportFormProp
 
     const sourceType = isVerticalVideoUrl(urlToSubmit) ? "vertical_video" : "url";
     
-    await handleSubmit(sourceType, urlToSubmit, () => {
+    try {
+      await triggerJobWithOfflineFallback(sourceType, urlToSubmit);
       triggerSuccess(() => {
-        setUrl('');
-        onClose();
-      });
-    });
+          setUrl('');
+          onClose();
+        });
+    } catch {
+      setError('Er ging iets mis bij het importeren van het recept. Het is helaas niet duidelijk wat de oorzaak is.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -117,9 +119,6 @@ export function UrlImportForm({ onBack, onClose, initialUrl }: UrlImportFormProp
           />
           {error && (
             <Text className="text-red-500 text-sm mt-2">{error}</Text>
-          )}
-          {triggerError && (
-            <Text className="text-red-500 text-sm mt-2">{triggerError}</Text>
           )}
         </View>
 

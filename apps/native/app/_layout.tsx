@@ -1,5 +1,5 @@
 import "../global.css";
-import { Slot, Stack, useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { ShareIntentProvider } from "expo-share-intent";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
@@ -32,18 +32,19 @@ export default function Layout() {
         <Stack
           screenOptions={{
             headerStyle: {
-              backgroundColor: '#1E4D37',
+              backgroundColor: '#fff',
             },
-            headerTintColor: '#fff',
+            headerTintColor: '#000',
             headerTitleStyle: {
               fontWeight: 'bold',
             },
             title: "",
+            headerBackButtonDisplayMode: "minimal",
           }}
         >
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="recipe/[id]" options={{ headerTransparent: true, headerStyle: { backgroundColor: "transparent" }, headerTintColor: '#fff' }} />
+          <Stack.Screen name="recipe/[id]" options={{ headerShown: true, headerTransparent: true, headerStyle: { backgroundColor: "transparent" }, headerTintColor: '#000' }} />
           <Stack.Screen name="signup" />
           <Stack.Screen name="share-intent" />
         </Stack>

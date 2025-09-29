@@ -5,17 +5,19 @@ import {
 import { BackHandler, Button, Text, View } from "react-native";
 import { TextImportForm } from "@/components/import/text-import-form";
 import { UrlImportForm } from "@/components/import/url-import-form";
+import { useCallback } from "react";
 
 
 export default function ShareIntent() {
   const router = useRouter();
-  const { shareIntent, error } =
-    useShareIntentContext();
+  const { shareIntent, error } = useShareIntentContext();
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     // Exit the app on Android (goes back to previous activity). Is a no-op on iOS
     BackHandler.exitApp();
-  }
+  }, []);
+
+
 
   return (
     <View className="flex-1 bg-white items-center justify-center p-10">

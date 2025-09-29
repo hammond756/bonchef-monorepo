@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, TouchableOpacity, Modal, Animated, Dimensions } from 'react-native';
+import { TouchableOpacity, Modal, Animated, Dimensions } from 'react-native';
 
 interface SlideInOverlayProps {
   isOpen: boolean;

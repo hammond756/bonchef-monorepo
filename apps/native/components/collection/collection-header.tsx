@@ -1,5 +1,4 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 type SortOrder = 'newest' | 'oldest';
@@ -7,11 +6,17 @@ type SortOrder = 'newest' | 'oldest';
 interface CollectionHeaderProps {
   sortOrder: SortOrder;
   onSortChange: (sort: SortOrder) => void;
+  offlineCount: number;
+  onProcessOfflineImports: () => void;
+  isProcessing: boolean;
 }
 
 export function CollectionHeader({ 
   sortOrder, 
-  onSortChange 
+  onSortChange,
+  offlineCount,
+  onProcessOfflineImports,
+  isProcessing
 }: CollectionHeaderProps) {
 
   return (
@@ -29,6 +34,26 @@ export function CollectionHeader({
             <Ionicons name="chevron-down" size={14} color="#15803d" />
           </TouchableOpacity>
         </View>
+        
+        {/* Offline Imports Button */}
+        {offlineCount > 0 && <TouchableOpacity
+          onPress={onProcessOfflineImports}
+          disabled={isProcessing || offlineCount === 0}
+          className={`px-3 py-1 rounded-full flex-row items-center ${
+            isProcessing || offlineCount === 0 
+              ? 'bg-gray-400' 
+              : 'bg-[#1E4D37]'
+          }`}
+        >
+          {isProcessing ? (
+            <ActivityIndicator size={14} color="white" />
+          ) : (
+            <Ionicons name="download-outline" size={14} color="white" />
+          )}
+          <Text className="text-white text-sm font-medium ml-1">
+            {isProcessing ? 'Verwerken...' : `${offlineCount} not te verwerken`}
+          </Text>
+        </TouchableOpacity>}
       </View>
     </View>
   );

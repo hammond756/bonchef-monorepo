@@ -47,3 +47,5 @@ next-env.d.ts
 .env.local
 
 bonchef-434908-6bb0d57373ea.json
+
+.turbo

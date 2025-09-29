@@ -1,11 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { close, type InitialProps } from "expo-share-extension";
 import { useState } from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 import { UrlImportForm } from './import/url-import-form';
 
 export default function IOSShareExtension({ url }: InitialProps) {
-
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
@@ -15,6 +14,14 @@ export default function IOSShareExtension({ url }: InitialProps) {
       },
     },
   }));
+
+  if (!url) {
+    return (
+      <View className="w-full h-full items-center justify-center bg-white rounded-2xl">
+        <Text>Geen URL gevonden</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="w-full h-full items-center justify-center bg-white rounded-2xl">

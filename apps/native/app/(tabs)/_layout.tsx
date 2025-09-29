@@ -1,11 +1,16 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { Text, View, TouchableOpacity } from 'react-native';
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, Octicons } from "@expo/vector-icons";
 import { useState } from 'react';
 import { ImportTray } from '@/components/import/import-tray';
+import { supabase } from "@/lib/utils/supabase/client";
+import { useOfflineImports } from '@/hooks/use-offline-imports';
 
 export default function TabsLayout() {
   const [isImportTrayOpen, setIsImportTrayOpen] = useState(false);
+  const router = useRouter();
+  const { offlineCount } = useOfflineImports();
+
 
   return (
     <View className="flex-1">
@@ -22,20 +27,30 @@ export default function TabsLayout() {
             height: 80,
           },
           headerStyle: {
-            backgroundColor: "#1E4D37",
+            backgroundColor: "#fff",
+            borderBottomColor: "#000000",
+            borderBottomWidth: 0
           },
-          headerTintColor: "#ffffff",
+          headerTintColor: "#000",
           headerTitleStyle: {
-            fontWeight: "bold",
+            fontFamily: "Lora",
           },
+          headerRight: () => (
+            <TouchableOpacity onPress={async () => {
+              await supabase.auth.signOut();
+              router.replace("/login");
+            }}>
+              <Ionicons name="log-out-outline" size={24} color="#000" className="mr-2" />
+            </TouchableOpacity>
+          ),
         }}
       >
         <Tabs.Screen
           name="discover"
           options={{
             title: "Ontdek",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="compass-outline" size={size} color={color} />
+            tabBarIcon: ({ color, size, focused }) => (
+              focused ? <Octicons name="home-fill" size={size} color={color} /> : <Octicons name="home" size={size} color={color} />
             ),
           }}
         />
@@ -43,18 +58,27 @@ export default function TabsLayout() {
           name="collection"
           options={{
             title: "Collectie",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="bookmark-outline" size={size} color={color} />
+            tabBarIcon: ({ color, size, focused }) => (
+              <View className="relative">
+                {focused ? <Ionicons name="bookmark" size={size} color={color} /> : <Ionicons name="bookmark-outline" size={size} color={color} />}
+                {offlineCount > 0 && (
+                  <View className="absolute -top-1 -right-1 bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center">
+                    <Text className="text-white text-xs font-bold">
+                      {offlineCount > 9 ? '9+' : offlineCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
             ),
           }}
         />
       </Tabs>
       
       {/* Floating + Button Overlay */}
-      <View className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50">
+      <View className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50">
         <TouchableOpacity
           onPress={() => setIsImportTrayOpen(true)}
-          className="w-16 h-16 bg-green-700 rounded-full items-center justify-center shadow-lg"
+          className="w-16 h-16 bg-[#1E4D37] rounded-full items-center justify-center"
           style={{
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },

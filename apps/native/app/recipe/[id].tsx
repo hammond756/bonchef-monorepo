@@ -3,9 +3,16 @@ import { formatIngredientLine } from "@repo/lib/utils/ingredient-formatting";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, Animated, Dimensions } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { RecipeActionButtons } from "@/components/recipe/recipe-action-buttons";
 import { supabase } from "@/lib/utils/supabase/client";
+import { useTabAnimation } from "@/hooks/use-tab-animation";
+import supabaseImageLoader from "@repo/lib/utils/supabase-image-loader";
+import { cssInterop } from "nativewind";
+
+cssInterop(Image, { className: "style" });
 
 
 type TabType = "ingredients" | "preparation" | "nutrition";
@@ -13,7 +20,26 @@ type TabType = "ingredients" | "preparation" | "nutrition";
 export default function RecipeDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabType>("ingredients");
+  const [activeTab, setActiveTab] = useState<number>(0);
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
+  
+  // Define tabs configuration
+  const tabs = [
+    { key: "ingredients" as TabType, label: "Ingrediënten" },
+    { key: "preparation" as TabType, label: "Bereiding" },
+  ];
+  
+  const screenWidth = Dimensions.get('window').width;
+  
+  // Use custom hook for tab animation
+  const { 
+    animatedValues, 
+    tabWidth
+  } = useTabAnimation({ 
+    width: screenWidth, 
+    nTabs: tabs.length, 
+    activeTab
+  });
   
   // Fetch recipe data using the hook
   const { data: recipe, isLoading, error } = useRecipe(supabase, id);
@@ -22,8 +48,20 @@ export default function RecipeDetail() {
     router.back();
   };
 
-  const handleTabPress = (tab: TabType) => {
-    setActiveTab(tab);
+  const handleTabPress = (tabIndex: number) => {
+    setActiveTab(tabIndex);
+  };
+
+  const toggleIngredient = (ingredientKey: string) => {
+    setCheckedIngredients(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(ingredientKey)) {
+        newSet.delete(ingredientKey);
+      } else {
+        newSet.add(ingredientKey);
+      }
+      return newSet;
+    });
   };
 
   // Show loading state
@@ -67,18 +105,40 @@ export default function RecipeDetail() {
       {/* Ingredients List */}
       {recipe.ingredients.map((category) => (
         <View key={category.name} className="mb-6">
-          {category.name !== "no_group" && <Text className="text-lg font-medium text-gray-900 mb-3 font-serif">
+          {category.name !== "no_group" && (
+            <Text
+              className="text-xl tracking-wider font-medium text-gray-900 mb-3 font-serif"
+            >
             {category.name}
-          </Text>}
+          </Text>)}
           {category.ingredients.map((ingredient, ingredientIndex) => {
             const formatted = formatIngredientLine(ingredient, 1);
             if (!formatted) return null;
             
+            const ingredientKey = `${category.name}-${ingredient.description}-${ingredient.quantity.low}-${ingredientIndex}`;
+            const isChecked = checkedIngredients.has(ingredientKey);
+            
             return (
-              <View key={ingredient.description + ingredient.quantity.low + ingredientIndex} className="flex-row items-start mb-3">
-                <View className="w-5 h-5 border border-gray-300 rounded mr-3 mt-0.5" />
+              <TouchableOpacity 
+                key={ingredientKey} 
+                className="flex-row items-start mb-3"
+                onPress={() => toggleIngredient(ingredientKey)}
+                activeOpacity={0.7}
+              >
+                <View 
+                  className={`w-5 h-5 border rounded mr-3 items-center justify-center ${isChecked ? 'border-green-700 bg-green-50' : 'border-gray-300'}`} 
+                  style={{ marginTop: 2 }}
+                >
+                  {isChecked && (
+                    <Ionicons 
+                      name="checkmark" 
+                      size={16} 
+                      color="#1E4D37" 
+                    />
+                  )}
+                </View>
                 <View className="flex-1">
-                  <Text className="text-base text-gray-900 font-montserrat">
+                  <Text className={`text-lg text-gray-900 font-montserrat leading-6 ${isChecked ? 'line-through text-gray-500' : ''}`}>
                     {formatted.quantity && (
                       <Text className="font-semibold">
                         {formatted.quantity}
@@ -88,7 +148,7 @@ export default function RecipeDetail() {
                     {formatted.description}
                   </Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>
@@ -99,13 +159,13 @@ export default function RecipeDetail() {
   const renderPreparation = () => (
     <View className="px-4 py-6">
       {recipe.instructions.map((step, index) => (
-        <View key={step} className="mb-6">
+        <View key={`step-${index}-${step.slice(0, 20)}`} className="mb-6">
           <View className="flex-row items-start">
             <View className="w-8 h-8 bg-green-700 rounded-full items-center justify-center mr-4 mt-1">
               <Text className="text-white font-bold text-sm">{index + 1}</Text>
             </View>
             <View className="flex-1">
-              <Text className="text-base text-gray-900 leading-6">
+              <Text className="text-lg text-gray-900 leading-6">
                 {step}
               </Text>
             </View>
@@ -118,9 +178,9 @@ export default function RecipeDetail() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "ingredients":
+      case 0:
         return renderIngredients();
-      case "preparation":
+      case 1:
         return renderPreparation();
       default:
         return renderIngredients();
@@ -131,16 +191,19 @@ export default function RecipeDetail() {
     <View className="flex-1 flex-col bg-white w-full">
       {/* Header Image */}
       <View className="relative h-2/5">
-        <Image
-          source={{ uri: recipe.thumbnail }}
-          className="w-full h-full"
-          resizeMode="cover"
-        />
+      <Image
+        source={{ 
+          // Width matches the recipe card background width, so we share
+          // the same cache.
+          uri: supabaseImageLoader({src: recipe.thumbnail, width: 500}) || "https://placekitten.com/900/1200" 
+        }}
+        className="w-full h-full"
+      />
         
         {/* Gradient Overlay */}
         <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.7)']}
-          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: "60%" }}
+          colors={['rgba(0,0,0,0.0)', 'rgba(0,0,0,0.0)', 'rgba(0,0,0,0.5)']}
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: "100%" }}
         />
 
         {/* Action Buttons */}
@@ -163,24 +226,34 @@ export default function RecipeDetail() {
 
       {/* Tab Navigation */}
       <View className="flex-row border-b border-gray-200">
-        {[
-          { key: "ingredients", label: "Ingrediënten" },
-          { key: "preparation", label: "Bereiding" },
-        ].map((tab) => (
+        {tabs.map((tab, index) => (
           <TouchableOpacity
             key={tab.key}
-            onPress={() => handleTabPress(tab.key as TabType)}
-            className={`flex-1 py-4 items-center ${
-              activeTab === tab.key ? "border-b-2 border-green-700" : ""
-            }`}
+            onPress={() => handleTabPress(index)}
+            className="flex-1 py-4 items-center relative"
           >
             <Text
-              className={`text-base font-medium ${
-                activeTab === tab.key ? "text-green-700" : "text-gray-500"
+              className={`text-xl font-medium ${
+                activeTab === index ? "text-green-700" : "text-gray-500"
               }`}
             >
               {tab.label}
             </Text>
+            
+            {/* Animated underline for each tab */}
+            <Animated.View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                height: 2,
+                backgroundColor: '#1E4D37',
+                width: animatedValues[index],
+                left: Animated.add(
+                  Animated.divide(Animated.subtract(tabWidth, animatedValues[index]), 2),
+                  0
+                ),
+              }}
+            />
           </TouchableOpacity>
         ))}
       </View>
