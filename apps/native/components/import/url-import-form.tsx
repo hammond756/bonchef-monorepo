@@ -8,6 +8,7 @@ import { API_URL } from '@/config/environment';
 import { supabase } from '@/lib/utils/supabase/client';
 import { offlineImportsStorage } from '@/lib/utils/mmkv/offline-imports';
 import { normalizeError } from '@repo/lib/utils/error-handling';
+import { useTriggerJob } from '@/hooks/use-trigger-job';
 
 interface UrlImportFormProps {
   onBack: () => void;
@@ -31,6 +32,7 @@ export function UrlImportForm({ onBack, onClose, initialUrl }: UrlImportFormProp
   const [isLoading, setIsLoading] = useState(false);
 
   const { triggerSuccess, SuccessOverlayComponent } = useSuccessOverlay();
+  const { triggerJobWithOfflineFallback } = useTriggerJob({ supabaseClient: supabase, apiUrl: API_URL || '' });
 
   const handleUrlSubmit = async () => {
     setError(null);
@@ -54,25 +56,13 @@ export function UrlImportForm({ onBack, onClose, initialUrl }: UrlImportFormProp
     const sourceType = isVerticalVideoUrl(urlToSubmit) ? "vertical_video" : "url";
     
     try {
-      await triggerJob(supabase, API_URL || '', sourceType, urlToSubmit);
+      await triggerJobWithOfflineFallback(sourceType, urlToSubmit);
       triggerSuccess(() => {
           setUrl('');
           onClose();
         });
-    } catch (originalError) {
-      const err = normalizeError(originalError);
-      if (err.kind === 'auth' || (err.kind === 'server' && err.status === 401)) {
-        offlineImportsStorage.add({
-          type: 'url',
-          data: urlToSubmit,
-        });
-        triggerSuccess(() => {
-          setUrl('');
-          onClose();
-        });
-      } else {
-        setError('Er ging iets mis bij het importeren van het recept. Het is helaas niet duidelijk wat de oorzaak is.');
-      }
+    } catch {
+      setError('Er ging iets mis bij het importeren van het recept. Het is helaas niet duidelijk wat de oorzaak is.');
     } finally {
       setIsLoading(false);
     }

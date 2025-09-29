@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { CollectionHeader } from '@/components/collection/collection-header';
 import { MyRecipes } from '@/components/collection/my-recipes';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { useOfflineImports } from '@/components/offline-imports-handler';
+import { useOfflineImports } from '@/hooks/use-offline-imports';
 
 type SortOrder = 'newest' | 'oldest';
 

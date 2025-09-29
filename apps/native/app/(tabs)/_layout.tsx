@@ -4,7 +4,7 @@ import { Ionicons, Octicons } from "@expo/vector-icons";
 import { useState } from 'react';
 import { ImportTray } from '@/components/import/import-tray';
 import { supabase } from "@/lib/utils/supabase/client";
-import { useOfflineImports } from '@/components/offline-imports-handler';
+import { useOfflineImports } from '@/hooks/use-offline-imports';
 
 export default function TabsLayout() {
   const [isImportTrayOpen, setIsImportTrayOpen] = useState(false);

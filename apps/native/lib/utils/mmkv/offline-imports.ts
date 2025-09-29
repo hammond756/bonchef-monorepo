@@ -1,11 +1,12 @@
+import { RecipeImportSourceType } from '@repo/lib/services/recipe-import-jobs';
+import { storage } from './storage';
+
 export interface OfflineImport {
   id: string;
-  type: 'url' | 'text';
+  type: RecipeImportSourceType;
   data: string;
   timestamp: number;
 }
-
-import { storage } from './storage';
 
 const OFFLINE_IMPORTS_KEY = 'bonchef_offline_imports_v1';
 
