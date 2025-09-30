@@ -19,7 +19,7 @@ import {
  */
 export function useRecipeDetail(supabase: SupabaseClient, recipeId: string | undefined) {
   return useQuery({
-    queryKey: ["recipe", recipeId],
+    queryKey: ["recipe", recipeId, "detail"],
     queryFn: () => getRecipeDetailWithClient(supabase, recipeId as string),
     enabled: !!recipeId,
     staleTime: 5 * 60 * 1000, // 5 minutes
