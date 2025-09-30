@@ -1,60 +1,77 @@
 import { View, Text, TextInput } from 'react-native'
-import type { RecipeDetail as Recipe } from '@repo/lib/services/recipes'
+import { useFormContext } from 'react-hook-form'
+import type { RecipeUpdate } from '@repo/lib/services/recipes'
+
+type Ingredient = {
+  quantity: {
+    type: "range"
+    low: number
+    high: number
+  }
+  unit: string
+  description: string
+}
+
+type IngredientGroup = {
+  name: string
+  ingredients: Ingredient[]
+}
 
 interface IngredientsListProps {
-  ingredients: Recipe['ingredients']
-  onIngredientsChange: (ingredients: Recipe['ingredients']) => void
-  errors?: Record<string, string | undefined>
+  ingredients: IngredientGroup[]
+  errors?: Record<string, { message?: string }>
 }
 
 export function IngredientsList({
   ingredients,
-  onIngredientsChange,
   errors,
 }: IngredientsListProps) {
+  const { setValue, watch } = useFormContext<RecipeUpdate>()
+  const watchedIngredients = watch('ingredients')
+
   const handleGroupNameChange = (groupIndex: number, name: string) => {
-    const updatedIngredients = [...ingredients]
+    const updatedIngredients = [...watchedIngredients]
     updatedIngredients[groupIndex] = { ...updatedIngredients[groupIndex], name }
-    onIngredientsChange(updatedIngredients)
+    setValue('ingredients', updatedIngredients, { shouldDirty: true })
   }
 
   const handleIngredientQuantityChange = (groupIndex: number, ingredientIndex: number, quantity: number) => {
-    const updatedIngredients = [...ingredients]
+    const updatedIngredients = [...watchedIngredients]
     updatedIngredients[groupIndex] = {
       ...updatedIngredients[groupIndex],
-      ingredients: updatedIngredients[groupIndex].ingredients.map((ingredient, idx) =>
+      ingredients: updatedIngredients[groupIndex].ingredients.map((ingredient: Ingredient, idx: number) =>
         idx === ingredientIndex
           ? { ...ingredient, quantity: { ...ingredient.quantity, low: quantity, high: quantity } }
           : ingredient
       )
     }
-    onIngredientsChange(updatedIngredients)
+    setValue('ingredients', updatedIngredients, { shouldDirty: true })
   }
 
   const handleIngredientUnitChange = (groupIndex: number, ingredientIndex: number, unit: string) => {
-    const updatedIngredients = [...ingredients]
+    const updatedIngredients = [...watchedIngredients]
     updatedIngredients[groupIndex] = {
       ...updatedIngredients[groupIndex],
-      ingredients: updatedIngredients[groupIndex].ingredients.map((ingredient, idx) =>
+      ingredients: updatedIngredients[groupIndex].ingredients.map((ingredient: Ingredient, idx: number) =>
         idx === ingredientIndex
           ? { ...ingredient, unit }
           : ingredient
       )
     }
-    onIngredientsChange(updatedIngredients)
+    setValue('ingredients', updatedIngredients, { shouldDirty: true })
   }
 
   const handleIngredientDescriptionChange = (groupIndex: number, ingredientIndex: number, description: string) => {
-    const updatedIngredients = [...ingredients]
+    const updatedIngredients = [...watchedIngredients]
     updatedIngredients[groupIndex] = {
       ...updatedIngredients[groupIndex],
-      ingredients: updatedIngredients[groupIndex].ingredients.map((ingredient, idx) =>
+      ingredients: updatedIngredients[groupIndex].ingredients.map((ingredient: Ingredient, idx: number) =>
         idx === ingredientIndex
           ? { ...ingredient, description }
           : ingredient
       )
     }
-    onIngredientsChange(updatedIngredients)
+    setValue('ingredients', updatedIngredients, { shouldDirty: true })
   }
 
   if (ingredients.length === 0) {
@@ -65,7 +82,7 @@ export function IngredientsList({
         </Text>
         {errors?.ingredients && (
           <Text className="text-red-500 text-sm mt-2 text-center">
-            {errors.ingredients}
+            {errors.ingredients.message}
           </Text>
         )}
       </View>
@@ -74,7 +91,7 @@ export function IngredientsList({
 
   return (
     <View className="space-y-6">
-      {ingredients.map((group, groupIndex) => (
+      {ingredients.map((group: IngredientGroup, groupIndex: number) => (
         <View key={`group-${groupIndex}-${group.name || 'unnamed'}`} className="bg-gray-50 rounded-lg p-6">
           {/* Group Name */}
           <TextInput
@@ -87,7 +104,7 @@ export function IngredientsList({
           
           {/* Ingredients */}
           <View className="space-y-4">
-            {group.ingredients.map((ingredient, ingredientIndex) => (
+            {group.ingredients.map((ingredient: Ingredient, ingredientIndex: number) => (
               <View key={`ingredient-${groupIndex}-${ingredientIndex}-${ingredient.description || 'unnamed'}`} className="bg-white rounded-lg p-4 border border-gray-200">
                 <View className="flex-row space-x-3">
                   {/* Quantity Input */}
@@ -138,7 +155,7 @@ export function IngredientsList({
       
       {errors?.ingredients && (
         <Text className="text-red-500 text-sm">
-          {errors.ingredients}
+          {errors.ingredients.message}
         </Text>
       )}
     </View>

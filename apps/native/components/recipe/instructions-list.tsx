@@ -1,20 +1,23 @@
 import { View, Text, TextInput } from 'react-native'
+import { useFormContext } from 'react-hook-form'
+import type { RecipeUpdate } from '@repo/lib/services/recipes'
 
 interface InstructionsListProps {
   instructions: string[]
-  onInstructionsChange: (instructions: string[]) => void
-  errors?: Record<string, string | undefined>
+  errors?: Record<string, { message?: string }>
 }
 
 export function InstructionsList({
   instructions,
-  onInstructionsChange,
   errors,
 }: InstructionsListProps) {
+  const { setValue, watch } = useFormContext<RecipeUpdate>()
+  const watchedInstructions = watch('instructions')
+
   const handleInstructionChange = (index: number, instruction: string) => {
-    const updatedInstructions = [...instructions]
+    const updatedInstructions = [...watchedInstructions]
     updatedInstructions[index] = instruction
-    onInstructionsChange(updatedInstructions)
+    setValue('instructions', updatedInstructions, { shouldDirty: true })
   }
 
   if (instructions.length === 0) {
@@ -25,7 +28,7 @@ export function InstructionsList({
         </Text>
         {errors?.instructions && (
           <Text className="text-red-500 text-sm mt-2 text-center">
-            {errors.instructions}
+            {errors.instructions.message}
           </Text>
         )}
       </View>
@@ -62,7 +65,7 @@ export function InstructionsList({
       
       {errors?.instructions && (
         <Text className="text-red-500 text-sm">
-          {errors.instructions}
+          {errors.instructions.message}
         </Text>
       )}
     </View>

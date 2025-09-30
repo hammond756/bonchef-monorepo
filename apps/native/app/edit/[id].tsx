@@ -3,43 +3,47 @@ import { useEffect, useCallback } from "react";
 import { ActivityIndicator, Text, View, TouchableOpacity, Alert } from "react-native";
 import { usePreventRemove } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { useUpdateRecipe, useDeleteRecipe, useRecipe } from "@repo/lib/hooks/recipes";
+import { useForm, FormProvider, useFormContext } from "react-hook-form";
+import { useRecipe, useUpdateRecipe, useDeleteRecipe } from "@repo/lib/hooks/recipes";
 import { supabase } from "@/lib/utils/supabase/client";
 import { EditRecipeForm } from "@/components/recipe/edit-recipe-form";
-import { RecipeEditProvider, useRecipeEditContext } from "@/components/recipe/recipe-edit-context";
+import type { RecipeUpdate } from "@repo/lib/services/recipes";
 
 // Component that handles preventing navigation when there are unsaved changes
 function UnsavedChangesHandler() {
   const navigation = useNavigation();
-  const { hasUnsavedChanges } = useRecipeEditContext();
+  const { formState } = useFormContext<RecipeUpdate>();
+  const { isDirty } = formState;
 
-  usePreventRemove(hasUnsavedChanges, ({ data }) => {
+  usePreventRemove(isDirty, ({ data }) => {
     Alert.alert(
-        'Wijzigingen verwerpen?',
-        'Je hebt niet-opgeslagen wijzigingen. Weet je zeker dat je wilt weggaan?',
-        [
-          { text: "Blijven bewerken", style: 'cancel', onPress: () => {} },
-          {
-            text: 'Weggaan',
-            style: 'destructive',
-            onPress: () => navigation.dispatch(data.action),
-          },
-        ]
-      );
+      'Wijzigingen verwerpen?',
+      'Je hebt niet-opgeslagen wijzigingen. Weet je zeker dat je wilt weggaan?',
+      [
+        { text: "Blijven bewerken", style: 'cancel', onPress: () => {} },
+        {
+          text: 'Weggaan',
+          style: 'destructive',
+          onPress: () => navigation.dispatch(data.action),
+        },
+      ]
+    );
   });
 
   return null;
 }
 
-// Header component that uses the context
+// Header component that uses the form context
 function EditRecipeHeader() {
   const navigation = useNavigation();
   const router = useRouter();
-  const { canSave, recipe } = useRecipeEditContext();
+  const { formState, getValues, reset } = useFormContext<RecipeUpdate>();
+  const { isDirty, isValid, isSubmitting } = formState;
   const updateRecipeMutation = useUpdateRecipe(supabase);
   const deleteRecipeMutation = useDeleteRecipe(supabase);
   
   const isSaving = updateRecipeMutation.isPending || deleteRecipeMutation.isPending;
+  const canSave = isDirty && isValid && !isSubmitting && !isSaving;
 
   const handleSave = useCallback(async () => {
     if (!canSave) {
@@ -52,22 +56,27 @@ function EditRecipeHeader() {
     }
 
     try {
-      await updateRecipeMutation.mutateAsync({
-        recipeId: recipe.id,
-        updates: recipe
+      const formData = getValues();
+      const savedRecipe = await updateRecipeMutation.mutateAsync({
+        recipeId: formData.id,
+        updates: formData
       });
+      
+      // Reset form state to mark as clean after successful save
+      reset(savedRecipe, { keepDirtyValues: false });
+      
       router.back();
-    } catch (error) {
-      console.error(error);
+    } catch {
       Alert.alert(
         'Fout',
         'Er is een fout opgetreden bij het opslaan van je recept.',
         [{ text: 'OK' }]
       );
     }
-  }, [canSave, updateRecipeMutation, recipe, router]);
+  }, [canSave, updateRecipeMutation, getValues, router, reset]);
 
   const handleDelete = useCallback(() => {
+    const formData = getValues();
     Alert.alert(
       'Recept verwijderen',
       'Weet je zeker dat je dit recept wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.',
@@ -78,7 +87,7 @@ function EditRecipeHeader() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteRecipeMutation.mutateAsync(recipe.id);
+              await deleteRecipeMutation.mutateAsync(formData.id);
               router.back();
             } catch {
               Alert.alert(
@@ -91,7 +100,7 @@ function EditRecipeHeader() {
         },
       ]
     );
-  }, [deleteRecipeMutation, recipe.id, router]);
+  }, [deleteRecipeMutation, getValues, router]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -131,6 +140,32 @@ export default function EditRecipePage() {
   // Fetch recipe data using the hook
   const { data: recipe, isLoading, error } = useRecipe(supabase, id);
 
+  // Initialize form with default values
+  const methods = useForm<RecipeUpdate>({
+    defaultValues: {
+      id: '',
+      title: '',
+      description: '',
+      thumbnail: '',
+      source_url: '',
+      source_name: '',
+      n_portions: 1,
+      total_cook_time_minutes: 30,
+      ingredients: [],
+      instructions: [],
+      is_public: false,
+      status: 'DRAFT'
+    },
+    mode: 'onChange'
+  });
+
+  // Update form when recipe data loads
+  useEffect(() => {
+    if (recipe) {
+      methods.reset(recipe, { keepDirtyValues: false });
+    }
+  }, [recipe, methods]);
+
   // Show loading state
   if (isLoading) {
     return (
@@ -156,10 +191,11 @@ export default function EditRecipePage() {
   }
 
   return (
-    <RecipeEditProvider recipe={recipe}>
+    <FormProvider {...methods}>
+      <Stack.Screen />
       <UnsavedChangesHandler />
       <EditRecipeHeader />
       <EditRecipeForm />
-    </RecipeEditProvider>
+    </FormProvider>
   );
 }
