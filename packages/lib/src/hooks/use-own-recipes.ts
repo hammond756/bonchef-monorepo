@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { SupabaseClient } from "@supabase/supabase-js";
-import { getUserRecipesWithClient, RecipeRead } from "../services/recipes";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { getUserRecipesWithClient, type RecipeDetail } from "../services/recipes";
 
 export interface UseOwnRecipesOptions {
   supabaseClient: SupabaseClient;
@@ -8,7 +8,7 @@ export interface UseOwnRecipesOptions {
 }
 
 export interface UseOwnRecipesReturn {
-  recipes: RecipeRead[];
+  recipes: RecipeDetail[];
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -30,7 +30,7 @@ export function useOwnRecipes({
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["own-recipes", userId],
+    queryKey: ["own-recipes"],
     queryFn: () => getUserRecipesWithClient(supabaseClient, userId),
     enabled: !!userId,
   });

@@ -1,4 +1,3 @@
-import { API_URL } from "@/config/environment";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { type QueryObserverResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
@@ -43,7 +42,7 @@ export function useRecipeImport({
     refetch: refreshJobs,
     isLoading,
   } = useQuery({
-    queryKey: ["recipe-import-jobs", userId],
+    queryKey: ["recipe-import-jobs"],
     queryFn: () => listJobsWithClient(supabaseClient, userId),
     enabled: !!userId,
     refetchInterval: 2000,
@@ -56,17 +55,16 @@ export function useRecipeImport({
     },
     onMutate: async (jobId: string) => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["recipe-import-jobs", userId] });
+      await queryClient.cancelQueries({ queryKey: ["recipe-import-jobs"] });
 
       // Snapshot the previous value
       const previousJobs = queryClient.getQueryData<NonCompletedRecipeImportJob[]>([
         "recipe-import-jobs",
-        userId,
       ]);
 
       // Optimistically update to the new value
       queryClient.setQueryData<NonCompletedRecipeImportJob[]>(
-        ["recipe-import-jobs", userId],
+        ["recipe-import-jobs"],
         (old) => old?.filter((job) => job.id !== jobId) ?? []
       );
 
@@ -76,12 +74,12 @@ export function useRecipeImport({
     onError: (_err, _jobId, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousJobs) {
-        queryClient.setQueryData(["recipe-import-jobs", userId], context.previousJobs);
+        queryClient.setQueryData(["recipe-import-jobs"], context.previousJobs);
       }
     },
     onSettled: () => {
       // Always refetch after error or success
-      queryClient.invalidateQueries({ queryKey: ["recipe-import-jobs", userId] });
+      queryClient.invalidateQueries({ queryKey: ["recipe-import-jobs"] });
     },
   });
 

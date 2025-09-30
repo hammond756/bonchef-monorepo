@@ -2,7 +2,7 @@ import React from "react"
 import { Image } from "expo-image"
 import { View } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
-import { RecipeRead } from "@repo/lib/services/recipes"
+import { RecipeDetail } from "@repo/lib/services/recipes"
 import { cssInterop } from "nativewind";
 import supabaseImageLoader from "@repo/lib/utils/supabase-image-loader"
 
@@ -10,7 +10,7 @@ import supabaseImageLoader from "@repo/lib/utils/supabase-image-loader"
 cssInterop(Image, { className: "style" });
 
 interface RecipeCardBackgroundProps {
-  recipe: RecipeRead
+  recipe: RecipeDetail
   children: React.ReactNode
   className?: string
 }

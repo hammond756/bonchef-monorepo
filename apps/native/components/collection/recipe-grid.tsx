@@ -4,11 +4,11 @@ import { RecipeCollectionCard } from '../recipe/recipe-collection-card';
 import { PendingJobCard } from '../recipe/pending-job-card';
 import { FailedJobCard } from '../recipe/failed-job-card';
 import type { NonCompletedRecipeImportJob } from "@repo/lib/services/recipe-import-jobs";
-import type { RecipeRead } from "@repo/lib/services/recipes";
+import type { RecipeDetail } from "@repo/lib/services/recipes";
 
 // A union type for items that can be displayed in the collection grid
 export type CollectionItem =
-  | (RecipeRead & { viewType: "RECIPE" })
+  | (RecipeDetail & { viewType: "RECIPE" })
   | (NonCompletedRecipeImportJob & { viewType: "JOB" });
 
 interface RecipeGridProps {

@@ -1,5 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { RecipeRead } from "./recipes";
+import { RecipeDetail } from "./recipes";
 
 /**
  * Fetches bookmarked recipes for a user
@@ -11,7 +11,7 @@ import { RecipeRead } from "./recipes";
 export async function getBookmarkedRecipesWithClient(
     client: SupabaseClient,
     userId: string
-  ): Promise<RecipeRead[]> {
+  ): Promise<RecipeDetail[]> {
     const { data, error } = await client
       .from("recipe_bookmarks")
       .select(`
@@ -32,7 +32,7 @@ export async function getBookmarkedRecipesWithClient(
     }
   
     // Transform the data to match RecipeRead format
-    const recipesWithCounts: RecipeRead[] = (data || []).map((bookmark: any) => ({
+    const recipesWithCounts: RecipeDetail[] = (data || []).map((bookmark: any) => ({
       ...bookmark.recipes,
       bookmark_count: bookmark.recipes.recipe_bookmarks?.[0]?.count || 0,
       like_count: bookmark.recipes.recipe_likes?.[0]?.count || 0,

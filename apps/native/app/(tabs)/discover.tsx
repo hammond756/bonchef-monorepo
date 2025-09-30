@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/utils/supabase/client";
-import type { RecipeRead } from "@repo/lib/services/recipes";
+import type { RecipeDetail } from "@repo/lib/services/recipes";
 import { usePublicRecipes } from "@repo/lib/hooks/use-public-recipes";
 import { FlatList, RefreshControl, Text, View } from "react-native";
 import { RecipeFeedCard } from "../../components/recipe/recipe-feed-card";
@@ -7,7 +7,7 @@ import { RecipeFeedCard } from "../../components/recipe/recipe-feed-card";
 const Feed = () => {
   const { recipes, isLoading, hasMore, loadMore, error, mutate } = usePublicRecipes(supabase);
 
-  const renderRecipe = ({ item }: { item: RecipeRead }) => (
+  const renderRecipe = ({ item }: { item: RecipeDetail }) => (
     <RecipeFeedCard recipe={item} />
   );
 
