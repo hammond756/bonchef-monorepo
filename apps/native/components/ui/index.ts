@@ -1,4 +1,7 @@
 export { default as Button } from './button'
 export { default as Input } from './input'
+export { default as TextArea } from './textarea'
+export { default as NumberInput } from './number-input'
+export { default as URLInput } from './url-input'
 export { default as Divider } from './divider'
 export { default as GoogleButton } from './google-button'

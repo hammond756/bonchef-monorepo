@@ -12,6 +12,7 @@ interface InputProps {
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad'
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters'
   className?: string
+  error?: string
 }
 
 export default function Input({
@@ -23,7 +24,8 @@ export default function Input({
   helperText,
   keyboardType = 'default',
   autoCapitalize = 'none',
-  className = ''
+  className = '',
+  error = '',
 }: InputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
@@ -55,8 +57,11 @@ export default function Input({
           </TouchableOpacity>
         )}
       </View>
-      {helperText && (
+      {helperText && !error && (
         <Text className="text-sm text-gray-500 mt-1">{helperText}</Text>
+      )}
+      {error && (
+        <Text className="text-red-500 text-sm mt-1">{error}</Text>
       )}
     </View>
   )

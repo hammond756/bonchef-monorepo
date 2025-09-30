@@ -45,6 +45,7 @@ export default function Layout() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="recipe/[id]" options={{ headerShown: true, headerTransparent: true, headerStyle: { backgroundColor: "transparent" }, headerTintColor: '#000' }} />
+          <Stack.Screen name="edit/[id]" options={{ headerShown: true, title: "Recept bewerken" }} />
           <Stack.Screen name="signup" />
           <Stack.Screen name="share-intent" />
         </Stack>

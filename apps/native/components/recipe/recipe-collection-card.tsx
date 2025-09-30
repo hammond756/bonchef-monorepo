@@ -12,6 +12,10 @@ export function RecipeCollectionCard({
 }: RecipeCollectionCardProps) {
   const router = useRouter()
   const handleRecipePress = () => {
+    if (recipe.status === "DRAFT") {
+      router.push(`/edit/${recipe.id}`)
+      return
+    }
     router.push(`/recipe/${recipe.id}`)
   }
   return (
