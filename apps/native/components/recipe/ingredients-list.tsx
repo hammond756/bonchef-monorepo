@@ -1,5 +1,5 @@
 import { View, Text, TextInput } from 'react-native'
-import { useFormContext } from 'react-hook-form'
+import { useFormContext, useFieldArray, Controller } from 'react-hook-form'
 import type { RecipeUpdate } from '@repo/lib/services/recipes'
 
 type Ingredient = {
@@ -26,53 +26,13 @@ export function IngredientsList({
   ingredients,
   errors,
 }: IngredientsListProps) {
-  const { setValue, watch } = useFormContext<RecipeUpdate>()
-  const watchedIngredients = watch('ingredients')
+  const { control } = useFormContext<RecipeUpdate>()
+  const { fields: ingredientGroups } = useFieldArray({
+    control,
+    name: 'ingredients'
+  })
 
-  const handleGroupNameChange = (groupIndex: number, name: string) => {
-    const updatedIngredients = [...watchedIngredients]
-    updatedIngredients[groupIndex] = { ...updatedIngredients[groupIndex], name }
-    setValue('ingredients', updatedIngredients, { shouldDirty: true })
-  }
-
-  const handleIngredientQuantityChange = (groupIndex: number, ingredientIndex: number, quantity: number) => {
-    const updatedIngredients = [...watchedIngredients]
-    updatedIngredients[groupIndex] = {
-      ...updatedIngredients[groupIndex],
-      ingredients: updatedIngredients[groupIndex].ingredients.map((ingredient: Ingredient, idx: number) =>
-        idx === ingredientIndex
-          ? { ...ingredient, quantity: { ...ingredient.quantity, low: quantity, high: quantity } }
-          : ingredient
-      )
-    }
-    setValue('ingredients', updatedIngredients, { shouldDirty: true })
-  }
-
-  const handleIngredientUnitChange = (groupIndex: number, ingredientIndex: number, unit: string) => {
-    const updatedIngredients = [...watchedIngredients]
-    updatedIngredients[groupIndex] = {
-      ...updatedIngredients[groupIndex],
-      ingredients: updatedIngredients[groupIndex].ingredients.map((ingredient: Ingredient, idx: number) =>
-        idx === ingredientIndex
-          ? { ...ingredient, unit }
-          : ingredient
-      )
-    }
-    setValue('ingredients', updatedIngredients, { shouldDirty: true })
-  }
-
-  const handleIngredientDescriptionChange = (groupIndex: number, ingredientIndex: number, description: string) => {
-    const updatedIngredients = [...watchedIngredients]
-    updatedIngredients[groupIndex] = {
-      ...updatedIngredients[groupIndex],
-      ingredients: updatedIngredients[groupIndex].ingredients.map((ingredient: Ingredient, idx: number) =>
-        idx === ingredientIndex
-          ? { ...ingredient, description }
-          : ingredient
-      )
-    }
-    setValue('ingredients', updatedIngredients, { shouldDirty: true })
-  }
+  // No need for manual handlers - useFieldArray handles updates automatically
 
   if (ingredients.length === 0) {
     return (
@@ -91,47 +51,65 @@ export function IngredientsList({
 
   return (
     <View className="space-y-6">
-      {ingredients.map((group: IngredientGroup, groupIndex: number) => (
-        <View key={`group-${groupIndex}-${group.name || 'unnamed'}`} className="bg-gray-50 rounded-lg p-6">
+      {ingredientGroups.map((field, groupIndex) => (
+        <View key={field.id} className="bg-gray-50 rounded-lg p-6">
           {/* Group Name */}
-          <TextInput
-            value={group.name}
-            onChangeText={(name) => handleGroupNameChange(groupIndex, name)}
-            placeholder="Groep naam (optioneel)"
-            placeholderTextColor="#9CA3AF"
-            className="text-lg font-semibold text-gray-800 mb-4 bg-white rounded-lg px-4 py-3 border border-gray-200"
+          <Controller
+            name={`ingredients.${groupIndex}.name`}
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <TextInput
+                value={value || ''}
+                onChangeText={onChange}
+                placeholder="Groep naam (optioneel)"
+                placeholderTextColor="#9CA3AF"
+                className="text-lg font-semibold text-gray-800 mb-4 bg-white rounded-lg px-4 py-3 border border-gray-200"
+              />
+            )}
           />
           
           {/* Ingredients */}
           <View className="space-y-4">
-            {group.ingredients.map((ingredient: Ingredient, ingredientIndex: number) => (
-              <View key={`ingredient-${groupIndex}-${ingredientIndex}-${ingredient.description || 'unnamed'}`} className="bg-white rounded-lg p-4 border border-gray-200">
+            {field.ingredients?.map((_: Ingredient, ingredientIndex: number) => (
+              <View key={`ingredient-${field.id}-${ingredientIndex}`} className="bg-white rounded-lg p-4 border border-gray-200">
                 <View className="flex-row space-x-3">
                   {/* Quantity Input */}
                   <View className="flex-1">
                     <Text className="text-sm text-gray-600 mb-2">Hoeveelheid</Text>
-                    <TextInput
-                      value={ingredient.quantity.low.toString()}
-                      onChangeText={(text) => {
-                        const quantity = parseFloat(text) || 0
-                        handleIngredientQuantityChange(groupIndex, ingredientIndex, quantity)
-                      }}
-                      placeholder="0"
-                      placeholderTextColor="#9CA3AF"
-                      keyboardType="numeric"
-                      className="bg-gray-50 rounded-lg px-3 py-3 text-base text-gray-800 border border-gray-200"
+                    <Controller
+                      name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.quantity.low`}
+                      control={control}
+                      render={({ field: { value, onChange } }) => (
+                        <TextInput
+                          value={value?.toString() || '0'}
+                          onChangeText={(text) => {
+                            const quantity = parseFloat(text) || 0
+                            onChange(quantity)
+                          }}
+                          placeholder="0"
+                          placeholderTextColor="#9CA3AF"
+                          keyboardType="numeric"
+                          className="bg-gray-50 rounded-lg px-3 py-3 text-base text-gray-800 border border-gray-200"
+                        />
+                      )}
                     />
                   </View>
                   
                   {/* Unit Input */}
                   <View className="flex-1">
                     <Text className="text-sm text-gray-600 mb-2">Eenheid</Text>
-                    <TextInput
-                      value={ingredient.unit}
-                      onChangeText={(unit) => handleIngredientUnitChange(groupIndex, ingredientIndex, unit)}
-                      placeholder="gram, ml, stuks..."
-                      placeholderTextColor="#9CA3AF"
-                      className="bg-gray-50 rounded-lg px-3 py-3 text-base text-gray-800 border border-gray-200"
+                    <Controller
+                      name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.unit`}
+                      control={control}
+                      render={({ field: { value, onChange } }) => (
+                        <TextInput
+                          value={value || ''}
+                          onChangeText={onChange}
+                          placeholder="gram, ml, stuks..."
+                          placeholderTextColor="#9CA3AF"
+                          className="bg-gray-50 rounded-lg px-3 py-3 text-base text-gray-800 border border-gray-200"
+                        />
+                      )}
                     />
                   </View>
                 </View>
@@ -139,12 +117,18 @@ export function IngredientsList({
                 {/* Description Input */}
                 <View className="mt-3">
                   <Text className="text-sm text-gray-600 mb-2">Ingrediënt</Text>
-                  <TextInput
-                    value={ingredient.description}
-                    onChangeText={(description) => handleIngredientDescriptionChange(groupIndex, ingredientIndex, description)}
-                    placeholder="Naam van het ingrediënt"
-                    placeholderTextColor="#9CA3AF"
-                    className="bg-gray-50 rounded-lg px-3 py-3 text-base text-gray-800 border border-gray-200"
+                  <Controller
+                    name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.description`}
+                    control={control}
+                    render={({ field: { value, onChange } }) => (
+                      <TextInput
+                        value={value || ''}
+                        onChangeText={onChange}
+                        placeholder="Naam van het ingrediënt"
+                        placeholderTextColor="#9CA3AF"
+                        className="bg-gray-50 rounded-lg px-3 py-3 text-base text-gray-800 border border-gray-200"
+                      />
+                    )}
                   />
                 </View>
               </View>

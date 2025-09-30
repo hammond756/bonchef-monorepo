@@ -1,5 +1,5 @@
 import { View, Text, TextInput } from 'react-native'
-import { useFormContext } from 'react-hook-form'
+import { useFormContext, Controller } from 'react-hook-form'
 import type { RecipeUpdate } from '@repo/lib/services/recipes'
 
 interface InstructionsListProps {
@@ -11,14 +11,7 @@ export function InstructionsList({
   instructions,
   errors,
 }: InstructionsListProps) {
-  const { setValue, watch } = useFormContext<RecipeUpdate>()
-  const watchedInstructions = watch('instructions')
-
-  const handleInstructionChange = (index: number, instruction: string) => {
-    const updatedInstructions = [...watchedInstructions]
-    updatedInstructions[index] = instruction
-    setValue('instructions', updatedInstructions, { shouldDirty: true })
-  }
+  const { control } = useFormContext<RecipeUpdate>()
 
   if (instructions.length === 0) {
     return (
@@ -37,8 +30,8 @@ export function InstructionsList({
 
   return (
     <View className="space-y-4">
-      {instructions.map((instruction, index) => (
-        <View key={`instruction-${index}-${instruction.slice(0, 20)}`} className="bg-gray-50 rounded-lg p-6">
+      {instructions.map((_, index) => (
+        <View key={`instruction-${index}-${instructions[index]?.slice(0, 10) || 'empty'}`} className="bg-gray-50 rounded-lg p-6">
           <View className="flex-row">
             <View className="bg-green-600 rounded-full w-8 h-8 items-center justify-center mr-4 mt-1">
               <Text className="text-white text-sm font-semibold">
@@ -46,17 +39,23 @@ export function InstructionsList({
               </Text>
             </View>
             <View className="flex-1">
-              <TextInput
-                value={instruction}
-                onChangeText={(text) => handleInstructionChange(index, text)}
-                placeholder={`Stap ${index + 1} beschrijving...`}
-                placeholderTextColor="#9CA3AF"
-                multiline
-                textAlignVertical="top"
-                className="bg-white rounded-lg px-4 py-3 text-base text-gray-800 border border-gray-200 min-h-[80px]"
-                style={{
-                  minHeight: 80,
-                }}
+              <Controller
+                name={`instructions.${index}`}
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextInput
+                    value={value || ''}
+                    onChangeText={onChange}
+                    placeholder={`Stap ${index + 1} beschrijving...`}
+                    placeholderTextColor="#9CA3AF"
+                    multiline
+                    textAlignVertical="top"
+                    className="bg-white rounded-lg px-4 py-3 text-base text-gray-800 border border-gray-200 min-h-[80px]"
+                    style={{
+                      minHeight: 80,
+                    }}
+                  />
+                )}
               />
             </View>
           </View>
