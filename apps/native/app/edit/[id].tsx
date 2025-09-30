@@ -59,7 +59,10 @@ function EditRecipeHeader() {
       const formData = getValues();
       const savedRecipe = await updateRecipeMutation.mutateAsync({
         recipeId: formData.id,
-        updates: formData
+        updates: {
+          ...formData,
+          status: 'PUBLISHED'
+        }
       });
       
       // Reset form state to mark as clean after successful save
