@@ -1,11 +1,14 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { View, Text, TouchableOpacity, Image, Alert } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
+import { useRecipeImageUpload } from '@repo/lib/hooks/use-image-upload'
+import { createArrayBufferFromImagePicker } from '@/lib/utils/file-conversion'
+import { supabase } from '@/lib/utils/supabase/client'
 
 interface ImagePickerProps {
   imageUrl?: string | null
-  onImageChange: (uri: string) => void
+  onImageChange: (url: string) => void
   className?: string
 }
 
@@ -15,6 +18,9 @@ export function RecipeImagePicker({
   className = ''
 }: ImagePickerProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const uploadMutation = useRecipeImageUpload(supabase)
+  
+  const isUploading = isLoading || uploadMutation.isPending
 
   const requestPermissions = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -49,12 +55,23 @@ export function RecipeImagePicker({
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
+        aspect: [3, 4],
+        quality: 1.0,
+        base64: true,
       })
 
       if (!result.canceled && result.assets[0]) {
-        onImageChange(result.assets[0].uri)
+        const asset = result.assets[0]
+        // Convert the image to ArrayBuffer for React Native compatibility
+        const { arrayBuffer, contentType } = await createArrayBufferFromImagePicker(
+          asset.uri, 
+          asset.base64 || undefined, 
+          asset.type
+        )
+        
+        // Upload to Supabase
+        const uploadResult = await uploadMutation.mutateAsync({ arrayBuffer, contentType })
+        onImageChange(uploadResult.url)
       }
     } catch (error) {
       console.error('Error picking image:', error)
@@ -74,10 +91,21 @@ export function RecipeImagePicker({
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
+        base64: true,
       })
 
       if (!result.canceled && result.assets[0]) {
-        onImageChange(result.assets[0].uri)
+        const asset = result.assets[0]
+        // Convert the image to ArrayBuffer for React Native compatibility
+        const { arrayBuffer, contentType } = await createArrayBufferFromImagePicker(
+          asset.uri, 
+          asset.base64 || undefined, 
+          asset.type
+        )
+        
+        // Upload to Supabase
+        const uploadResult = await uploadMutation.mutateAsync({ arrayBuffer, contentType })
+        onImageChange(uploadResult.url)
       }
     } catch (error) {
       console.error('Error taking photo:', error)
@@ -112,7 +140,7 @@ export function RecipeImagePicker({
           />
           <TouchableOpacity
             onPress={showImageOptions}
-            disabled={isLoading}
+            disabled={isUploading}
             className="absolute top-2 right-2 bg-black bg-opacity-50 rounded-full p-2"
           >
             <Ionicons name="camera" size={20} color="white" />
@@ -121,12 +149,12 @@ export function RecipeImagePicker({
       ) : (
         <TouchableOpacity
           onPress={showImageOptions}
-          disabled={isLoading}
+          disabled={isUploading}
           className="border-2 border-dashed border-gray-300 rounded-lg h-48 items-center justify-center bg-gray-50"
         >
           <Ionicons name="camera" size={32} color="#9CA3AF" />
           <Text className="text-gray-500 mt-2 text-center">
-            {isLoading ? 'Laden...' : 'Tap om afbeelding toe te voegen'}
+            {isUploading ? 'Uploaden...' : 'Tap om afbeelding toe te voegen'}
           </Text>
         </TouchableOpacity>
       )}
