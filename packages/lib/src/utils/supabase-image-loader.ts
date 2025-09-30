@@ -1,8 +1,8 @@
 export default function supabaseImageLoader({ src, width, quality }: { src: string, width: number, quality?: number }) {
     
-    // If the image is not a supabase image, return the original image
-    if (!src.includes("/storage/v1/object/")) {
-        return src
+    // If src is empty or not a supabase image, return null to trigger fallback
+    if (!src || !src.includes("/storage/v1/object/")) {
+        return null
     }
 
     // Get the path of the image

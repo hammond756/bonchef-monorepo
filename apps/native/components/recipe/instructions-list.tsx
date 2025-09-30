@@ -1,5 +1,4 @@
-import React from 'react'
-import { View, Text } from 'react-native'
+import { View, Text, TextInput } from 'react-native'
 
 interface InstructionsListProps {
   instructions: string[]
@@ -12,6 +11,12 @@ export function InstructionsList({
   onInstructionsChange,
   errors,
 }: InstructionsListProps) {
+  const handleInstructionChange = (index: number, instruction: string) => {
+    const updatedInstructions = [...instructions]
+    updatedInstructions[index] = instruction
+    onInstructionsChange(updatedInstructions)
+  }
+
   if (instructions.length === 0) {
     return (
       <View className="bg-gray-50 rounded-lg p-4">
@@ -30,16 +35,27 @@ export function InstructionsList({
   return (
     <View className="space-y-4">
       {instructions.map((instruction, index) => (
-        <View key={index} className="bg-gray-50 rounded-lg p-4">
+        <View key={`instruction-${index}-${instruction.slice(0, 20)}`} className="bg-gray-50 rounded-lg p-6">
           <View className="flex-row">
-            <View className="bg-green-600 rounded-full w-6 h-6 items-center justify-center mr-3 mt-1">
+            <View className="bg-green-600 rounded-full w-8 h-8 items-center justify-center mr-4 mt-1">
               <Text className="text-white text-sm font-semibold">
                 {index + 1}
               </Text>
             </View>
-            <Text className="text-gray-800 text-base flex-1 leading-6">
-              {instruction}
-            </Text>
+            <View className="flex-1">
+              <TextInput
+                value={instruction}
+                onChangeText={(text) => handleInstructionChange(index, text)}
+                placeholder={`Stap ${index + 1} beschrijving...`}
+                placeholderTextColor="#9CA3AF"
+                multiline
+                textAlignVertical="top"
+                className="bg-white rounded-lg px-4 py-3 text-base text-gray-800 border border-gray-200 min-h-[80px]"
+                style={{
+                  minHeight: 80,
+                }}
+              />
+            </View>
           </View>
         </View>
       ))}

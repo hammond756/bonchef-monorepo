@@ -1,17 +1,45 @@
-import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
-import { useEffect, useState, useCallback } from "react";
+import { useLocalSearchParams, useRouter, useNavigation, Stack } from "expo-router";
+import { useEffect, useCallback } from "react";
 import { ActivityIndicator, Text, View, TouchableOpacity, Alert } from "react-native";
+import { usePreventRemove } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRecipe } from "@repo/lib/hooks/use-recipe";
+import { useUpdateRecipe, useDeleteRecipe, useRecipe } from "@repo/lib/hooks/recipes";
 import { supabase } from "@/lib/utils/supabase/client";
 import { EditRecipeForm } from "@/components/recipe/edit-recipe-form";
 import { RecipeEditProvider, useRecipeEditContext } from "@/components/recipe/recipe-edit-context";
+
+// Component that handles preventing navigation when there are unsaved changes
+function UnsavedChangesHandler() {
+  const navigation = useNavigation();
+  const { hasUnsavedChanges } = useRecipeEditContext();
+
+  usePreventRemove(hasUnsavedChanges, ({ data }) => {
+    Alert.alert(
+        'Wijzigingen verwerpen?',
+        'Je hebt niet-opgeslagen wijzigingen. Weet je zeker dat je wilt weggaan?',
+        [
+          { text: "Blijven bewerken", style: 'cancel', onPress: () => {} },
+          {
+            text: 'Weggaan',
+            style: 'destructive',
+            onPress: () => navigation.dispatch(data.action),
+          },
+        ]
+      );
+  });
+
+  return null;
+}
 
 // Header component that uses the context
 function EditRecipeHeader() {
   const navigation = useNavigation();
   const router = useRouter();
-  const { canSave, isSaving, saveRecipe, recipe } = useRecipeEditContext();
+  const { canSave, recipe } = useRecipeEditContext();
+  const updateRecipeMutation = useUpdateRecipe(supabase);
+  const deleteRecipeMutation = useDeleteRecipe(supabase);
+  
+  const isSaving = updateRecipeMutation.isPending || deleteRecipeMutation.isPending;
 
   const handleSave = useCallback(async () => {
     if (!canSave) {
@@ -24,25 +52,20 @@ function EditRecipeHeader() {
     }
 
     try {
-      await saveRecipe(recipe.is_public || false);
-      Alert.alert(
-        'Opgeslagen',
-        'Je recept is succesvol opgeslagen!',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.back(),
-          },
-        ]
-      );
-    } catch {
+      await updateRecipeMutation.mutateAsync({
+        recipeId: recipe.id,
+        updates: recipe
+      });
+      router.back();
+    } catch (error) {
+      console.error(error);
       Alert.alert(
         'Fout',
         'Er is een fout opgetreden bij het opslaan van je recept.',
         [{ text: 'OK' }]
       );
     }
-  }, [canSave, saveRecipe, recipe.is_public, router]);
+  }, [canSave, updateRecipeMutation, recipe, router]);
 
   const handleDelete = useCallback(() => {
     Alert.alert(
@@ -53,15 +76,22 @@ function EditRecipeHeader() {
         {
           text: 'Verwijderen',
           style: 'destructive',
-          onPress: () => {
-            // TODO: Implement delete functionality
-            console.log('Delete recipe:', recipe.id);
-            router.back();
+          onPress: async () => {
+            try {
+              await deleteRecipeMutation.mutateAsync(recipe.id);
+              router.back();
+            } catch {
+              Alert.alert(
+                'Fout',
+                'Er is een fout opgetreden bij het verwijderen van je recept.',
+                [{ text: 'OK' }]
+              );
+            }
           },
         },
       ]
     );
-  }, [recipe.id, router]);
+  }, [deleteRecipeMutation, recipe.id, router]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -80,7 +110,7 @@ function EditRecipeHeader() {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleSave}
-            className="bg-green-600 rounded-lg px-4 py-2"
+            className="bg-green-600 rounded-lg px-4 py-2 disabled:bg-gray-400"
             disabled={!canSave || isSaving}
           >
             <Text className="text-white font-medium">
@@ -97,21 +127,9 @@ function EditRecipeHeader() {
 
 export default function EditRecipePage() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
-  const [isOnboardingFlow, setIsOnboardingFlow] = useState(false);
 
   // Fetch recipe data using the hook
   const { data: recipe, isLoading, error } = useRecipe(supabase, id);
-
-  useEffect(() => {
-    // Check if this is from onboarding flow (could be passed via params in the future)
-    // For now, we'll default to false
-    setIsOnboardingFlow(false);
-  }, []);
-
-  const handleBack = () => {
-    router.back();
-  };
 
   // Show loading state
   if (isLoading) {
@@ -139,11 +157,9 @@ export default function EditRecipePage() {
 
   return (
     <RecipeEditProvider recipe={recipe}>
+      <UnsavedChangesHandler />
       <EditRecipeHeader />
-      <EditRecipeForm
-        isOnboardingFlow={isOnboardingFlow}
-        onBack={handleBack}
-      />
+      <EditRecipeForm />
     </RecipeEditProvider>
   );
 }

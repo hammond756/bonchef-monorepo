@@ -1,4 +1,4 @@
-import { useRecipe } from "@repo/lib/hooks/use-recipe";
+import { useRecipeDetail } from "@repo/lib/hooks/recipes";
 import { formatIngredientLine } from "@repo/lib/utils/ingredient-formatting";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -42,7 +42,7 @@ export default function RecipeDetail() {
   });
   
   // Fetch recipe data using the hook
-  const { data: recipe, isLoading, error } = useRecipe(supabase, id);
+  const { data: recipe, isLoading, error } = useRecipeDetail(supabase, id);
 
   const handleBack = () => {
     router.back();

@@ -15,6 +15,7 @@
         "./services/recipes": "./src/services/recipes.ts",
         "./hooks/use-public-recipes": "./src/hooks/use-public-recipes.ts",
         "./hooks/use-recipe": "./src/hooks/use-recipe.ts",
+        "./hooks/recipes": "./src/hooks/recipes.ts",
         "./hooks/use-recipe-import": "./src/hooks/use-recipe-import.ts",
         "./hooks/use-own-recipes": "./src/hooks/use-own-recipes.ts",
         "./hooks/use-bookmarked-recipes": "./src/hooks/use-bookmarked-recipes.ts",

@@ -1,10 +1,10 @@
-import type { RecipeRead } from '@repo/lib/services/recipes';
+import type { RecipeDetail } from '@repo/lib/services/recipes';
 import { useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { RecipeCardBackground } from './recipe-card-background';
 
 interface RecipeCollectionCardProps {
-  recipe: RecipeRead;
+  recipe: RecipeDetail;
 }
 
 export function RecipeCollectionCard({ 

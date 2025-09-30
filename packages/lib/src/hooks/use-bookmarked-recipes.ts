@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { SupabaseClient } from "@supabase/supabase-js";
-import { RecipeRead } from "../services/recipes";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { RecipeDetail } from "../services/recipes";
 import { getBookmarkedRecipesWithClient } from "../services/bookmarks";
 
 export interface UseBookmarkedRecipesOptions {
@@ -9,7 +9,7 @@ export interface UseBookmarkedRecipesOptions {
 }
 
 export interface UseBookmarkedRecipesReturn {
-  recipes: RecipeRead[];
+  recipes: RecipeDetail[];
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -30,7 +30,7 @@ export function useBookmarkedRecipes({
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["bookmarked-recipes", userId],
+    queryKey: ["bookmarked-recipes"],
     queryFn: () => getBookmarkedRecipesWithClient(supabaseClient, userId),
     enabled: !!userId,
   });

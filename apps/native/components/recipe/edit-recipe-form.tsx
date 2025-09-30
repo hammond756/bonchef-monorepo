@@ -4,15 +4,8 @@ import { RecipeInformationSection } from './recipe-information-section'
 import { IngredientsList } from './ingredients-list'
 import { InstructionsList } from './instructions-list'
 
-interface EditRecipeFormProps {
-  isOnboardingFlow?: boolean
-  onBack: () => void
-}
 
-export function EditRecipeForm({
-  isOnboardingFlow: _isOnboardingFlow = false,
-  onBack: _onBack,
-}: EditRecipeFormProps) {
+export function EditRecipeForm() {
   const {
     recipe: currentRecipe,
     errors,

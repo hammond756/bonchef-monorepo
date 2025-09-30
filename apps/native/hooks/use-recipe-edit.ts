@@ -1,20 +1,21 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import type { RecipeRead } from '@repo/lib/services/recipes'
+import type { RecipeUpdate } from '@repo/lib/services/recipes'
 
 type EditState = 'idle' | 'editing' | 'saving' | 'error'
 
 interface RecipeEditState {
-  recipe: RecipeRead
+  recipe: RecipeUpdate
   state: EditState
   errors: Record<string, string | undefined>
   errorMessage?: string
 }
 
 interface UseRecipeEditProps {
-  initialRecipe: RecipeRead
+  initialRecipe: RecipeUpdate
 }
 
 export function useRecipeEdit({ initialRecipe }: UseRecipeEditProps) {
+  console.log("initialRecipe in hook", initialRecipe.n_portions)
   const [editState, setEditState] = useState<RecipeEditState>({
     recipe: initialRecipe,
     state: 'idle',
@@ -22,7 +23,7 @@ export function useRecipeEdit({ initialRecipe }: UseRecipeEditProps) {
   })
 
   // Basic validation
-  const validateRecipe = useCallback((recipe: RecipeRead): Record<string, string | undefined> => {
+  const validateRecipe = useCallback((recipe: RecipeUpdate): Record<string, string | undefined> => {
     const errors: Record<string, string | undefined> = {}
 
     if (!recipe.title.trim()) {
@@ -67,7 +68,9 @@ export function useRecipeEdit({ initialRecipe }: UseRecipeEditProps) {
   }, [editState.recipe, validateRecipe])
 
   // Computed values
-  const isDirty = useMemo(() => {
+  const hasUnsavedChanges = useMemo(() => {
+    console.log("hasUnsavedChanges in hook edit", editState.recipe.n_portions)
+    console.log("hasUnsavedChanges in hook initial", initialRecipe.n_portions)
     return JSON.stringify(editState.recipe) !== JSON.stringify(initialRecipe)
   }, [editState.recipe, initialRecipe])
 
@@ -75,15 +78,14 @@ export function useRecipeEdit({ initialRecipe }: UseRecipeEditProps) {
     return (
       Object.keys(editState.errors).length === 0 &&
       editState.state !== 'saving' &&
-      isDirty
+      hasUnsavedChanges
     )
-  }, [editState.errors, editState.state, isDirty])
+  }, [editState.errors, editState.state, hasUnsavedChanges])
 
   const isSaving = editState.state === 'saving'
-  const hasUnsavedChanges = isDirty
 
   // Actions
-  const updateRecipe = useCallback((updates: Partial<RecipeRead>) => {
+  const updateRecipe = useCallback((updates: Partial<RecipeUpdate>) => {
     setEditState((prev) => ({
       ...prev,
       recipe: { ...prev.recipe, ...updates },
@@ -92,14 +94,14 @@ export function useRecipeEdit({ initialRecipe }: UseRecipeEditProps) {
   }, [])
 
   const updateField = useCallback(
-    (field: keyof RecipeRead, value: RecipeRead[keyof RecipeRead]) => {
+    (field: keyof RecipeUpdate, value: RecipeUpdate[keyof RecipeUpdate]) => {
       updateRecipe({ [field]: value })
     },
     [updateRecipe]
   )
 
   const updateIngredients = useCallback(
-    (ingredients: RecipeRead['ingredients']) => {
+    (ingredients: RecipeUpdate['ingredients']) => {
       updateField('ingredients', ingredients)
     },
     [updateField]
@@ -119,45 +121,6 @@ export function useRecipeEdit({ initialRecipe }: UseRecipeEditProps) {
     [updateField]
   )
 
-  const saveRecipe = useCallback(
-    async (isPublic: boolean = false) => {
-      if (!canSave) {
-        setEditState((prev) => ({
-          ...prev,
-          state: 'error',
-          errorMessage: 'Kan niet opslaan: controleer de fouten in het formulier',
-        }))
-        return
-      }
-
-      setEditState((prev) => ({
-        ...prev,
-        state: 'saving',
-        errorMessage: undefined,
-      }))
-
-      try {
-        // TODO: Implement actual save logic
-        console.log('Saving recipe:', { ...editState.recipe, is_public: isPublic })
-        
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        setEditState((prev) => ({
-          ...prev,
-          state: 'idle',
-        }))
-      } catch (error) {
-        setEditState((prev) => ({
-          ...prev,
-          state: 'error',
-          errorMessage: error instanceof Error ? error.message : 'Er is een fout opgetreden bij het opslaan',
-        }))
-      }
-    },
-    [canSave, editState.recipe]
-  )
-
   const discardChanges = useCallback(() => {
     setEditState((prev) => ({
       ...prev,
@@ -175,7 +138,6 @@ export function useRecipeEdit({ initialRecipe }: UseRecipeEditProps) {
     errorMessage: editState.errorMessage,
     isSaving,
     hasUnsavedChanges,
-    isDirty,
     canSave,
 
     // Actions
@@ -184,7 +146,6 @@ export function useRecipeEdit({ initialRecipe }: UseRecipeEditProps) {
     updateIngredients,
     updateInstructions,
     setImageUrl,
-    saveRecipe,
     discardChanges,
   }
 }

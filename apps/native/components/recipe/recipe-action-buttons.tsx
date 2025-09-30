@@ -1,7 +1,7 @@
-import type { RecipeRead } from "@repo/lib/services/recipes"
+import type { RecipeDetail } from "@repo/lib/services/recipes"
 import { Image, Text, TouchableOpacity, View } from "react-native"
 interface RecipeActionButtonsProps {
-    recipe: RecipeRead
+    recipe: RecipeDetail
     theme?: "light" | "dark"
     size?: "md" | "lg"
 }

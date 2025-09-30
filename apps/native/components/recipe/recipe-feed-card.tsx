@@ -1,4 +1,4 @@
-import type { RecipeRead } from "@repo/lib/services/recipes"
+import type { RecipeDetail } from "@repo/lib/services/recipes"
 import { useRouter } from "expo-router"
 import { useState } from "react"
 import { Pressable, Text, TouchableOpacity, View } from "react-native"
@@ -8,7 +8,7 @@ import { RecipeSourceDisplay } from "./recipe-source-display"
 
 
 interface RecipeFeedCardProps {
-    recipe: RecipeRead
+    recipe: RecipeDetail
 }
 
 

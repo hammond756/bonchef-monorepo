@@ -1,6 +1,6 @@
-import { SupabaseClient } from "@supabase/supabase-js"
+import type { SupabaseClient } from "@supabase/supabase-js"
 
-export interface RecipeRead {
+export interface RecipeDetail {
   id: string
   title: string
   description?: string
@@ -38,6 +38,8 @@ export interface RecipeRead {
   }
 }
 
+export type RecipeUpdate = Omit<RecipeDetail, 'user_id' | 'created_at' | 'profiles' | 'bookmark_count' | 'like_count' | 'comment_count' | 'is_bookmarked_by_current_user' | 'is_liked_by_current_user'>
+
 /**
  * Fetches a single recipe by ID with all related data
  * @param client - Supabase client instance
@@ -45,10 +47,10 @@ export interface RecipeRead {
  * @returns Promise<RecipeRead> - The recipe data
  * @throws Error if recipe not found or database error
  */
-export async function getRecipeWithClient(
+export async function getRecipeDetailWithClient(
   client: SupabaseClient,
   recipeId: string
-): Promise<RecipeRead> {
+): Promise<RecipeDetail> {
   const { data: recipe, error: recipeError } = await client
     .from("recipes")
     .select(
@@ -72,7 +74,7 @@ export async function getRecipeWithClient(
   }
 
   // Add bookmark and like counts to recipe object
-  const recipeWithCounts: RecipeRead = {
+  const recipeWithCounts: RecipeDetail = {
     ...recipe,
     bookmark_count: recipe.recipe_bookmarks?.[0]?.count || 0,
     like_count: recipe.recipe_likes?.[0]?.count || 0,
@@ -80,6 +82,42 @@ export async function getRecipeWithClient(
 
   return recipeWithCounts
 }
+
+
+export async function getRecipeWithClient(
+  client: SupabaseClient,
+  recipeId: string
+): Promise<RecipeDetail> {
+  const { data, error } = await client
+    .from("recipes")
+    .select(`
+      id,
+      created_at,
+      title,
+      description,
+      thumbnail,
+      source_url,
+      source_name,
+      n_portions,
+      total_cook_time_minutes,
+      ingredients,
+      instructions,
+      is_public,
+      user_id,
+      status
+      `)
+    .eq("id", recipeId)
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to fetch recipe: ${error.message}`)
+  }
+
+  console.log("data", data)
+
+  return data
+}
+
 
 /**
  * Fetches public recipes with pagination and search
@@ -95,7 +133,7 @@ export async function getPublicRecipesWithClient(
     pageSize?: number
     query?: string
   } = {}
-): Promise<{ data: RecipeRead[]; count: number }> {
+): Promise<{ data: RecipeDetail[]; count: number }> {
   const { page = 1, pageSize = 12, query: searchQuery } = options
 
   const from = (page - 1) * pageSize
@@ -129,7 +167,7 @@ export async function getPublicRecipesWithClient(
   }
 
   // Transform the counts
-  const recipesWithCounts: RecipeRead[] = (data || []).map((recipe) => ({
+  const recipesWithCounts: RecipeDetail[] = (data || []).map((recipe) => ({
     ...recipe,
     bookmark_count: recipe.recipe_bookmarks?.[0]?.count || 0,
     like_count: recipe.recipe_likes?.[0]?.count || 0,
@@ -148,7 +186,7 @@ export async function getPublicRecipesWithClient(
 export async function getUserRecipesWithClient(
   client: SupabaseClient,
   userId: string
-): Promise<RecipeRead[]> {
+): Promise<RecipeDetail[]> {
   const { data, error } = await client
     .from("recipes")
     .select(
@@ -169,11 +207,84 @@ export async function getUserRecipesWithClient(
   }
 
   // Transform the counts
-  const recipesWithCounts: RecipeRead[] = (data || []).map((recipe) => ({
+  const recipesWithCounts: RecipeDetail[] = (data || []).map((recipe) => ({
     ...recipe,
     bookmark_count: recipe.recipe_bookmarks?.[0]?.count || 0,
     like_count: recipe.recipe_likes?.[0]?.count || 0,
   }))
 
   return recipesWithCounts
+}
+
+/**
+ * Updates a recipe by ID
+ * @param client - Supabase client instance
+ * @param recipeId - The recipe ID to update
+ * @param updates - The recipe updates
+ * @returns Promise<RecipeRead> - The updated recipe data
+ * @throws Error if recipe not found or database error
+ */
+export async function updateRecipeWithClient(
+  client: SupabaseClient,
+  recipeId: string,
+  updates: Partial<RecipeUpdate>
+): Promise<RecipeDetail> {
+
+  console.log("updates", updates)
+  console.log("recipeId", recipeId)
+
+  const { data: recipe, error: recipeError } = await client
+    .from("recipes")
+    .update(updates)
+    .eq("id", recipeId)
+    .select(`
+      id,
+      created_at,
+      title,
+      description,
+      thumbnail,
+      source_url,
+      source_name,
+      n_portions,
+      total_cook_time_minutes,
+      ingredients,
+      instructions,
+      is_public,
+      user_id,
+      status
+      `)
+    .single()
+
+  if (recipeError) {
+    if (recipeError.code === "PGRST116") {
+      throw new Error("Recipe not found")
+    }
+    throw new Error(`Failed to update recipe: ${recipeError.message}`)
+  }
+
+  return recipe
+}
+
+/**
+ * Deletes a recipe by ID
+ * @param client - Supabase client instance
+ * @param recipeId - The recipe ID to delete
+ * @returns Promise<void>
+ * @throws Error if recipe not found or database error
+ */
+export async function deleteRecipeWithClient(
+  client: SupabaseClient,
+  recipeId: string
+): Promise<void> {
+  const { error } = await client
+    .from("recipes")
+    .delete()
+    .eq("id", recipeId)
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      throw new Error("Recipe not found")
+    }
+    throw new Error(`Failed to delete recipe: ${error.message}`)
+  }
 }
