@@ -91,6 +91,12 @@
           "cameraPermission": "De app heeft toegang tot je camera nodig op een nieuwe afbeelding te maken voor je recept.",
           "microphonePermission": "De app heeft toegang tot je microfoon nodig om stemopnames te maken als recept beschrijving."
         }
+      ],
+      [
+        "expo-web-browser",
+        {
+          "experimentalLauncherActivity": false
+        }
       ]
     ],
     "experiments": {
