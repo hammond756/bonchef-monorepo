@@ -2,7 +2,7 @@ import { useOwnRecipes } from '@repo/lib/hooks/use-own-recipes';
 import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
 import { useMemo } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { useSession } from '@/hooks/use-session';
+import { useAuthContext } from '@/hooks/use-auth-context';
 import { supabase } from '@/lib/utils/supabase/client';
 import { RecipeGrid } from './recipe-grid';
 import { WelcomeSection } from './welcome-section';
@@ -14,7 +14,7 @@ interface MyRecipesProps {
 export function MyRecipes({ 
   sortOrder,
 }: MyRecipesProps) {
-  const { session } = useSession();
+  const { session } = useAuthContext();
   const userId = session?.user?.id || '';
 
   const { recipes: userRecipes, isLoading: userRecipesLoading } = useOwnRecipes({

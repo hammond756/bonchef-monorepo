@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { NonCompletedRecipeImportJob } from '@repo/lib/services/recipe-import-jobs';
 import { Pressable, Text, View } from 'react-native';
 import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
-import { useSession } from '@/hooks/use-session';
+import { useAuthContext } from '@/hooks/use-auth-context';
 import { supabase } from '@/lib/utils/supabase/client';
 
 interface FailedJobCardProps {
@@ -10,7 +10,7 @@ interface FailedJobCardProps {
 }
 
 export function FailedJobCard({ job }: FailedJobCardProps) {
-  const { session } = useSession();
+  const { session } = useAuthContext();
   const userId = session?.user?.id || '';
   
   const { deleteJob, isDeleting } = useRecipeImport({

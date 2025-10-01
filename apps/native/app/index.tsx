@@ -2,11 +2,12 @@ import { useRouter } from "expo-router";
 import { useShareIntentContext } from "expo-share-intent";
 import { useEffect } from "react";
 import LoginForm from "@/components/login-form";
-import { useSession } from "@/hooks/use-session";
+import { AuthLoading } from "@/components/auth-loading";
+import { useAuthContext } from "@/hooks/use-auth-context";
 
 export default function Home() {
   const router = useRouter();
-  const { session, isLoading } = useSession();
+  const { session, isLoading } = useAuthContext();
   const { hasShareIntent } = useShareIntentContext();
 
   useEffect(() => {
@@ -28,6 +29,11 @@ export default function Home() {
       });
     }
   }, [session, isLoading, router]);
+
+  // Show loading while auth state is being determined
+  if (isLoading) {
+    return <AuthLoading />;
+  }
 
   // Show login form if no session
   if (!session) {
