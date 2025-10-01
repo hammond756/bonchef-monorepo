@@ -1,5 +1,6 @@
 import React from 'react'
-import { TouchableOpacity, Text, View } from 'react-native'
+import { TouchableOpacity, Text } from 'react-native'
+import { Image } from 'expo-image'
 
 interface GoogleButtonProps {
   onPress: () => void
@@ -15,15 +16,22 @@ export default function GoogleButton({
   text = 'Aanmelden met Google'
 }: GoogleButtonProps) {
   return (
-    <TouchableOpacity 
-      className={`bg-white border border-gray-300 rounded-lg py-4 px-5 flex-row items-center justify-center shadow-sm ${className}`}
-      disabled={disabled} 
+
+    <TouchableOpacity
       onPress={onPress}
+      className={`flex-row items-center bg-white border border-[#dbdbdb] rounded px-[15px] py-[10px] justify-center shadow-sm ${className}`}
+      activeOpacity={0.8}
+      disabled={disabled}
     >
-      <View className="w-5 h-5 bg-blue-500 rounded-full items-center justify-center mr-3">
-        <Text className="text-white text-sm font-bold">G</Text>
-      </View>
-      <Text className="text-base text-gray-800 font-medium">{text}</Text>
+      <Image
+        source={{ uri: 'https://developers.google.com/identity/images/g-logo.png' }}
+        style={{ width: 24, height: 24, marginRight: 10 }}
+      />
+      <Text
+        className="text-base text-gray-700 font-medium font-sansserif"
+      >
+        {text}
+      </Text>
     </TouchableOpacity>
   )
 }

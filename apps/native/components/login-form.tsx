@@ -1,9 +1,10 @@
-import { supabase } from '@/lib/utils/supabase/client'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Alert, Text, TouchableOpacity, View } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Button, Input, Divider, GoogleButton } from '@/components/ui'
+import { Button, Input, Divider } from '@/components/ui'
+import GoogleSignInButton from '@/components/google-sign-in-button'
 import * as authService from '@repo/lib/services/auth'
+import { supabase } from '@/lib/utils/supabase/client'
 
 export default function LoginForm() {
   const router = useRouter()
@@ -22,25 +23,12 @@ export default function LoginForm() {
     setLoading(false)
   }
 
-  async function signInWithGoogle() {
-    setLoading(true)
-    try {
-      const data = await authService.loginWithGoogle(supabase)
-      if (data.url) {
-        // For native apps, you might need to handle the OAuth flow differently
-        // This is a placeholder - you may need to use a different approach for native OAuth
-        Alert.alert('Info', 'Google login initiated. Check your browser for the OAuth flow.')
-        // Note: In a real implementation, you'd handle the OAuth callback and then navigate
-        // router.push('/discover')
-      } else {
-        // If login was successful without URL (direct success)
-        Alert.alert('Success', 'Successfully signed in with Google!')
-        router.push('/discover')
-      }
-    } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to sign in with Google')
-    }
-    setLoading(false)
+  const handleGoogleSignInSuccess = () => {
+    router.push('/discover')
+  }
+
+  const handleGoogleSignInError = (error: Error) => {
+    Alert.alert('Error', error.message || 'Failed to sign in with Google')
   }
 
   const handleSignupPress = () => {
@@ -55,9 +43,10 @@ export default function LoginForm() {
       </View>
 
       {/* Google Login Button */}
-      <GoogleButton 
+      <GoogleSignInButton 
         disabled={loading} 
-        onPress={signInWithGoogle}
+        onSuccess={handleGoogleSignInSuccess}
+        onError={handleGoogleSignInError}
         className="mb-6"
         text="Log in met Google"
       />

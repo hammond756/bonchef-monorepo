@@ -11,3 +11,4 @@ console.log("deviceName", Constants.deviceName);
 export const SUPABASE_URL = isAndroidSimulator ? process.env.EXPO_PUBLIC_ANDROID_SIMULATOR_SUPABASE_URL : process.env.EXPO_PUBLIC_SUPABASE_URL
 export const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
 export const API_URL = isAndroidSimulator ? process.env.EXPO_PUBLIC_ANDROID_SIMULATOR_API_URL : process.env.EXPO_PUBLIC_API_URL
+export const GOOGLE_AUTH_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_AUTH_WEB_CLIENT_ID

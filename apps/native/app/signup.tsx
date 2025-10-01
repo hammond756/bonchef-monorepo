@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { View, Text, TouchableOpacity, Alert } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Button, Input, Divider, GoogleButton } from '@/components/ui'
-import { supabase } from '@/lib/utils/supabase/client'
+import { Button, Input, Divider } from '@/components/ui'
+import GoogleSignInButton from '@/components/google-sign-in-button'
 import * as authService from '@repo/lib/services/auth'
+import { supabase } from '@/lib/utils/supabase/client'
 
 export default function Signup() {
   const router = useRouter()
@@ -35,17 +36,12 @@ export default function Signup() {
     setLoading(false)
   }
 
-  async function signUpWithGoogle() {
-    setLoading(true)
-    try {
-      const data = await authService.loginWithGoogle(supabase)
-      if (data.url) {
-        Alert.alert('Info', 'Google login initiated. Check your browser for the OAuth flow.')
-      }
-    } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to sign up with Google')
-    }
-    setLoading(false)
+  const handleGoogleSignUpSuccess = () => {
+    router.push('/discover')
+  }
+
+  const handleGoogleSignUpError = (error: Error) => {
+    Alert.alert('Error', error.message || 'Failed to sign up with Google')
   }
 
   const handleLoginPress = () => {
@@ -63,10 +59,12 @@ export default function Signup() {
       </View>
 
       {/* Google Signup Button */}
-      <GoogleButton 
+      <GoogleSignInButton 
         disabled={loading} 
-        onPress={signUpWithGoogle}
+        onSuccess={handleGoogleSignUpSuccess}
+        onError={handleGoogleSignUpError}
         className="mb-6"
+        text="Aanmelden met Google"
       />
 
       {/* Separator */}

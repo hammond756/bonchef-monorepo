@@ -21,13 +21,11 @@ export default function Button({
     
     switch (variant) {
       case 'primary':
-        return `${baseStyles} bg-green-700 ${className}`
+        return `${baseStyles} bg-[#1E4D37] ${className}`
       case 'secondary':
         return `${baseStyles} bg-white border border-gray-300 ${className}`
-      case 'google':
-        return `${baseStyles} bg-white border border-gray-300 shadow-sm ${className}`
       default:
-        return `${baseStyles} bg-green-700 ${className}`
+        return `${baseStyles} bg-[#1E4D37] ${className}`
     }
   }
 
@@ -36,8 +34,6 @@ export default function Button({
       case 'primary':
         return "text-white text-base font-medium"
       case 'secondary':
-        return "text-gray-800 text-base font-medium"
-      case 'google':
         return "text-gray-800 text-base font-medium"
       default:
         return "text-white text-base font-medium"
