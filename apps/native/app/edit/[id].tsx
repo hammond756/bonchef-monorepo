@@ -165,6 +165,8 @@ export default function EditRecipePage() {
   // Update form when recipe data loads
   useEffect(() => {
     if (recipe) {
+      // We need to trigger first to mark fields that are invalid in the db with their errors
+      methods.trigger();
       methods.reset(recipe, { keepDirtyValues: false });
     }
   }, [recipe, methods]);
