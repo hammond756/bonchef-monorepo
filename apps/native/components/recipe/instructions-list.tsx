@@ -29,16 +29,13 @@ export function InstructionsList({
   }
 
   return (
-    <View className="space-y-4">
+    <View className="space-y-8">
       {instructions.map((_, index) => (
-        <View key={`instruction-${index}-${instructions[index]?.slice(0, 10) || 'empty'}`} className="bg-gray-50 rounded-lg p-6">
-          <View className="flex-row">
-            <View className="bg-green-600 rounded-full w-8 h-8 items-center justify-center mr-4 mt-1">
-              <Text className="text-white text-sm font-semibold">
-                {index + 1}
-              </Text>
-            </View>
-            <View className="flex-1">
+        <View key={`instruction-${index}-${instructions[index]?.slice(0, 10) || 'empty'}`} className="space-y-4">
+          <View className="flex-1 mb-4">
+            <Text className="text-sm text-gray-700 mb-3 font-medium">
+              Stap {index + 1}
+            </Text>
               <Controller
                 name={`instructions.${index}`}
                 control={control}
@@ -50,15 +47,16 @@ export function InstructionsList({
                     placeholderTextColor="#9CA3AF"
                     multiline
                     textAlignVertical="top"
-                    className="bg-white rounded-lg px-4 py-3 text-base text-gray-800 border border-gray-200 min-h-[80px]"
+                    className="bg-white rounded-lg px-4 py-4 text-gray-900 border border-gray-300 shadow-sm min-h-[100px]"
                     style={{
-                      minHeight: 80,
+                      minHeight: 100,
+                      fontSize: 16,
+                      lineHeight: 20,
                     }}
                   />
                 )}
               />
             </View>
-          </View>
         </View>
       ))}
       

@@ -50,9 +50,9 @@ export function IngredientsList({
   }
 
   return (
-    <View className="space-y-6">
+    <View>
       {ingredientGroups.map((field, groupIndex) => (
-        <View key={field.id} className="bg-gray-50 rounded-lg p-6">
+        <View key={field.id} className="mb-6">
           {/* Group Name */}
           <Controller
             name={`ingredients.${groupIndex}.name`}
@@ -63,73 +63,79 @@ export function IngredientsList({
                 onChangeText={onChange}
                 placeholder="Groep naam (optioneel)"
                 placeholderTextColor="#9CA3AF"
-                className="text-lg font-semibold text-gray-800 mb-4 bg-white rounded-lg px-4 py-3 border border-gray-200"
+                className="font-semibold text-gray-900 bg-white rounded-lg px-4 py-4 border border-gray-300 shadow-sm mb-4"
+                style={{ lineHeight: 20, fontSize: 16 }}
               />
             )}
           />
           
           {/* Ingredients */}
-          <View className="space-y-4">
+          <View>
             {field.ingredients?.map((_: Ingredient, ingredientIndex: number) => (
-              <View key={`ingredient-${field.id}-${ingredientIndex}`} className="bg-white rounded-lg p-4 border border-gray-200">
-                <View className="flex-row space-x-3">
-                  {/* Quantity Input */}
-                  <View className="flex-1">
-                    <Text className="text-sm text-gray-600 mb-2">Hoeveelheid</Text>
-                    <Controller
-                      name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.quantity.low`}
-                      control={control}
-                      render={({ field: { value, onChange } }) => (
-                        <TextInput
-                          value={value?.toString() || '0'}
-                          onChangeText={(text) => {
-                            const quantity = parseFloat(text) || 0
-                            onChange(quantity)
-                          }}
-                          placeholder="0"
-                          placeholderTextColor="#9CA3AF"
-                          keyboardType="numeric"
-                          className="bg-gray-50 rounded-lg px-3 py-3 text-base text-gray-800 border border-gray-200"
-                        />
-                      )}
-                    />
+              <View key={`ingredient-${field.id}-${ingredientIndex}`} className="bg-white rounded-xl p-4 mb-4 border border-gray-200">
+                <View>
+                  <View className="flex-row">
+                    {/* Quantity Input */}
+                    <View className="flex-1 mr-2">
+                      <Text className="text-sm text-gray-700 mb-3 font-medium">Hoeveelheid</Text>
+                      <Controller
+                        name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.quantity.low`}
+                        control={control}
+                        render={({ field: { value, onChange } }) => (
+                          <TextInput
+                            value={value?.toString() || '0'}
+                            onChangeText={(text) => {
+                              const quantity = parseFloat(text) || 0
+                              onChange(quantity)
+                            }}
+                            placeholder="0"
+                            placeholderTextColor="#9CA3AF"
+                            keyboardType="numeric"
+                            className="bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm font-montserrat"
+                            style={{ lineHeight: 20, fontSize: 16 }}
+                          />
+                        )}
+                      />
+                    </View>
+                    
+                    {/* Unit Input */}
+                    <View className="flex-1 ml-2">
+                      <Text className="text-sm text-gray-700 mb-3 font-medium">Eenheid</Text>
+                      <Controller
+                        name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.unit`}
+                        control={control}
+                        render={({ field: { value, onChange } }) => (
+                          <TextInput
+                            value={value || ''}
+                            onChangeText={onChange}
+                            placeholder="gram, ml, stuks..."
+                            placeholderTextColor="#9CA3AF"
+                            className="bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm font-montserrat"
+                            style={{ lineHeight: 20, fontSize: 16 }}
+                          />
+                        )}
+                      />
+                    </View>
                   </View>
                   
-                  {/* Unit Input */}
-                  <View className="flex-1">
-                    <Text className="text-sm text-gray-600 mb-2">Eenheid</Text>
+                  {/* Description Input */}
+                  <View className="mt-4">
+                    <Text className="text-sm text-gray-700 mb-3 font-medium">Ingrediënt</Text>
                     <Controller
-                      name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.unit`}
+                      name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.description`}
                       control={control}
                       render={({ field: { value, onChange } }) => (
                         <TextInput
                           value={value || ''}
                           onChangeText={onChange}
-                          placeholder="gram, ml, stuks..."
+                          placeholder="Naam van het ingrediënt"
                           placeholderTextColor="#9CA3AF"
-                          className="bg-gray-50 rounded-lg px-3 py-3 text-base text-gray-800 border border-gray-200"
+                          className="bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm font-montserrat"
+                          style={{ lineHeight: 20, fontSize: 16 }}
                         />
                       )}
                     />
                   </View>
-                </View>
-                
-                {/* Description Input */}
-                <View className="mt-3">
-                  <Text className="text-sm text-gray-600 mb-2">Ingrediënt</Text>
-                  <Controller
-                    name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.description`}
-                    control={control}
-                    render={({ field: { value, onChange } }) => (
-                      <TextInput
-                        value={value || ''}
-                        onChangeText={onChange}
-                        placeholder="Naam van het ingrediënt"
-                        placeholderTextColor="#9CA3AF"
-                        className="bg-gray-50 rounded-lg px-3 py-3 text-base text-gray-800 border border-gray-200"
-                      />
-                    )}
-                  />
                 </View>
               </View>
             ))}
