@@ -1,7 +1,10 @@
-import { View, Text, TextInput } from 'react-native'
+import { View } from 'react-native'
 import { useFormContext, Controller } from 'react-hook-form'
-import { Ionicons } from '@expo/vector-icons'
 import { RecipeImagePicker } from './image-picker'
+import Input from '@/components/ui/input'
+import TextArea from '@/components/ui/textarea'
+import NumberInput from '@/components/ui/number-input'
+import URLInput from '@/components/ui/url-input'
 import type { RecipeUpdate } from '@repo/lib/services/recipes'
 
 interface RecipeInformationSectionProps {
@@ -29,191 +32,126 @@ export function RecipeInformationSection({
       />
 
       {/* Recipe Title */}
-      <View className="mb-6">
+      <Controller
+        name="title"
+        control={control}
+        rules={{ required: 'Titel is verplicht' }}
+        render={({ field: { value, onChange } }) => (
+          <Input
+            label="Recept titel"
+            placeholder="Voer de titel van je recept in"
+            value={value}
+            onChangeText={onChange}
+            error={errors.title?.message}
+          />
+        )}
+      />
+
+      {/* Cooking Time and Servings */}
+      <View className="flex-row mb-4">
         <Controller
-          name="title"
+          name="total_cook_time_minutes"
           control={control}
-          rules={{ required: 'Titel is verplicht' }}
+          rules={{ 
+            required: 'Bereidingstijd is verplicht',
+            min: { value: 1, message: 'Bereidingstijd moet groter zijn dan 0' }
+          }}
           render={({ field: { value, onChange } }) => (
-            <View>
-              <Text className="text-sm text-gray-700 mb-3 font-medium">Recept titel</Text>
-              <TextInput
-                value={value}
-                onChangeText={onChange}
-                placeholder="Voer de titel van je recept in"
-                placeholderTextColor="#9CA3AF"
-                className="bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm"
-                style={{ lineHeight: 20, fontSize: 16 }}
-              />
-              {errors.title && (
-                <Text className="text-red-500 text-xs mt-2">
-                  {errors.title.message}
-                </Text>
-              )}
-            </View>
+            <NumberInput
+              placeholder="45"
+              value={value}
+              onChangeText={onChange}
+              min={1}
+              max={999}
+              error={errors.total_cook_time_minutes?.message}
+              icon="time-outline"
+              suffix="min"
+              compact
+              className="mr-2"
+            />
           )}
         />
-      </View>
-
-      {/* Cooking Time and Servings - Compact with Icons */}
-      <View className="flex-row mb-6">
-        {/* Cooking Time */}
-        <View className="flex-1">
-          <Controller
-            name="total_cook_time_minutes"
-            control={control}
-            rules={{ 
-              required: 'Bereidingstijd is verplicht',
-              min: { value: 1, message: 'Bereidingstijd moet groter zijn dan 0' }
-            }}
-            render={({ field: { value, onChange } }) => (
-              <View className="flex-row items-center bg-white rounded-lg px-4 py-4 border border-gray-300 shadow-sm mr-2">
-                <Ionicons name="time-outline" size={20} color="#4B5563" />
-                <TextInput
-                  value={value?.toString() || ''}
-                  onChangeText={(text) => {
-                    const numValue = parseInt(text) || 0
-                    onChange(numValue)
-                  }}
-                  placeholder="45"
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="numeric"
-                  className="flex-1 ml-3 text-gray-900"
-                  style={{ lineHeight: 20, fontSize: 16 }}
-                />
-                <Text className="text-gray-500 text-sm ml-2">min</Text>
-              </View>
-            )}
-          />
-          {errors.total_cook_time_minutes && (
-            <Text className="text-red-500 text-xs mt-1">
-              {errors.total_cook_time_minutes.message}
-            </Text>
-          )}
-        </View>
         
-        {/* Portions */}
-        <View className="flex-1">
-          <Controller
-            name="n_portions"
-            control={control}
-            rules={{ 
-              required: 'Aantal porties is verplicht',
-              min: { value: 1, message: 'Aantal porties moet groter zijn dan 0' }
-            }}
-            render={({ field: { value, onChange } }) => (
-              <View className="flex-row items-center bg-white rounded-lg px-4 py-4 border border-gray-300 shadow-sm ml-2">
-                <Ionicons name="people-outline" size={20} color="#4B5563" />
-                <TextInput
-                  value={value?.toString() || ''}
-                  onChangeText={(text) => {
-                    const numValue = parseInt(text, 10) || 0
-                    onChange(numValue)
-                  }}
-                  placeholder="4"
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="numeric"
-                  className="flex-1 ml-3 text-gray-900"
-                  style={{ lineHeight: 20, fontSize: 16 }}
-                />
-                <Text className="text-gray-500 text-sm ml-2">personen</Text>
-              </View>
-            )}
-          />
-          {errors.n_portions && (
-            <Text className="text-red-500 text-xs mt-1">
-              {errors.n_portions.message}
-            </Text>
+        <Controller
+          name="n_portions"
+          control={control}
+          rules={{ 
+            required: 'Aantal porties is verplicht',
+            min: { value: 1, message: 'Aantal porties moet groter zijn dan 0' }
+          }}
+          render={({ field: { value, onChange } }) => (
+            <NumberInput
+              placeholder="4"
+              value={value}
+              onChangeText={onChange}
+              min={1}
+              max={20}
+              error={errors.n_portions?.message}
+              icon="people-outline"
+              suffix="personen"
+              compact
+              className="ml-2"
+            />
           )}
-        </View>
+        />
       </View>
 
       {/* Description */}
-      <View className="mb-6">
-        <Controller
-          name="description"
-          control={control}
-          render={({ field: { value, onChange } }) => (
-            <View>
-              <Text className="text-sm text-gray-700 mb-3 font-medium">Beschrijving</Text>
-              <TextInput
-                value={value || ''}
-                onChangeText={onChange}
-                placeholder="Beschrijf hier wat dit recept bijzonder maakt... (optioneel)"
-                placeholderTextColor="#9CA3AF"
-                multiline
-                textAlignVertical="top"
-                className="bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm"
-                style={{ minHeight: 100, lineHeight: 20, fontSize: 16 }}
-              />
-              {errors.description && (
-                <Text className="text-red-500 text-xs mt-2">
-                  {errors.description.message}
-                </Text>
-              )}
-            </View>
-          )}
-        />
-      </View>
+      <Controller
+        name="description"
+        control={control}
+        render={({ field: { value, onChange } }) => (
+          <TextArea
+            label="Beschrijving"
+            placeholder="Beschrijf hier wat dit recept bijzonder maakt... (optioneel)"
+            value={value || ''}
+            onChangeText={onChange}
+            maxLength={500}
+            minHeight={100}
+            maxHeight={120}
+            error={errors.description?.message}
+            helperText="Optioneel - maximaal 500 karakters"
+          />
+        )}
+      />
 
       {/* Source Name */}
-      <View className="mb-6">
-        <Controller
-          name="source_name"
-          control={control}
-          render={({ field: { value, onChange } }) => (
-            <View>
-              <Text className="text-sm text-gray-700 mb-3 font-medium">Bron van het recept</Text>
-              <TextInput
-                value={value || ''}
-                onChangeText={onChange}
-                placeholder="Bijv. Oma's kookboek, AllRecipes.com, z"
-                placeholderTextColor="#9CA3AF"
-                className="bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm"
-                style={{ lineHeight: 20, fontSize: 16 }}
-              />
-              {errors.source_name && (
-                <Text className="text-red-500 text-xs mt-2">
-                  {errors.source_name.message}
-                </Text>
-              )}
-            </View>
-          )}
-        />
-      </View>
+      <Controller
+        name="source_name"
+        control={control}
+        render={({ field: { value, onChange } }) => (
+          <Input
+            label="Bron van het recept"
+            placeholder="Bijv. Oma's kookboek, AllRecipes.com"
+            value={value || ''}
+            onChangeText={onChange}
+            error={errors.source_name?.message}
+            helperText="Optioneel - waar komt dit recept vandaan?"
+          />
+        )}
+      />
 
       {/* Source URL */}
-      <View className="mb-6">
-        <Controller
-          name="source_url"
-          control={control}
-          rules={{
-            pattern: {
-              value: /^https?:\/\/.+/,
-              message: 'Ongeldige URL'
-            }
-          }}
-          render={({ field: { value, onChange } }) => (
-            <View>
-              <Text className="text-sm text-gray-700 mb-3 font-medium">Link naar de bron</Text>
-              <TextInput
-                value={value || ''}
-                onChangeText={onChange}
-                placeholder="https://website.com/recept"
-                placeholderTextColor="#9CA3AF"
-                keyboardType="url"
-                className="bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm"
-                style={{ lineHeight: 20, fontSize: 16 }}
-              />
-              {errors.source_url && (
-                <Text className="text-red-500 text-xs mt-2">
-                  {errors.source_url.message}
-                </Text>
-              )}
-            </View>
-          )}
-        />
-      </View>
+      <Controller
+        name="source_url"
+        control={control}
+        rules={{
+          pattern: {
+            value: /^https?:\/\/.+/,
+            message: 'Ongeldige URL'
+          }
+        }}
+        render={({ field: { value, onChange } }) => (
+          <URLInput
+            label="Link naar de bron"
+            placeholder="https://website.com/recept"
+            value={value || ''}
+            onChangeText={onChange}
+            error={errors.source_url?.message}
+            helperText="Optioneel - link naar het originele recept"
+          />
+        )}
+      />
     </View>
   )
 }

@@ -17,13 +17,13 @@ export function EditRecipeForm() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="p-6">
           {/* Recipe Information Section */}
-          <View className="mb-6">
+          <View>
             <RecipeInformationSection />
           </View>
 
           {/* Ingredients Section */}
-          <View className="mb-6">
-            <Text className="text-lg font-bold text-gray-900 mb-4 font-serif">Ingrediënten</Text>
+          <View>
+            <Text className="text-2xl font-bold text-gray-900 mb-4 font-serif">Ingrediënten</Text>
             <IngredientsList
               ingredients={recipe.ingredients}
               errors={errors}
@@ -31,8 +31,8 @@ export function EditRecipeForm() {
           </View>
 
           {/* Instructions Section */}
-          <View className="mb-6">
-            <Text className="text-lg font-bold text-gray-900 mb-4 font-serif">Bereidingswijze</Text>
+          <View>
+            <Text className="text-2xl font-bold text-gray-900 mb-4 font-serif">Bereidingswijze</Text>
             <InstructionsList
               instructions={recipe.instructions}
               errors={errors}

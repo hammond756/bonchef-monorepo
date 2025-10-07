@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { TextInput, Text, View, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 
@@ -34,34 +34,37 @@ export default function Input({
   }
 
   return (
-    <View className={`mb-5 ${className}`}>
-      <Text className="text-base text-gray-800 mb-2 font-medium">{label}</Text>
-      <View className="flex-row items-center bg-white border border-gray-300 rounded-lg px-4 py-3">
+    <View className={`mb-6 ${className}`}>
+      <Text className="text-sm text-gray-700 mb-3 font-medium">{label}</Text>
+      <View className={`flex-row items-center bg-white rounded-lg px-4 py-5 border border-gray-300 shadow-sm ${
+        error ? 'border-red-500' : 'border-gray-300'
+      }`}>
         <TextInput
-          className="flex-1 text-base text-gray-800 py-0"
+          className="flex-1 text-gray-900 py-0"
           onChangeText={onChangeText}
           value={value}
           placeholder={placeholder}
-          placeholderTextColor="#AAA"
+          placeholderTextColor="#9CA3AF"
           secureTextEntry={secureTextEntry && !isPasswordVisible}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
+          style={{ lineHeight: 20, fontSize: 16 }}
         />
         {secureTextEntry && (
           <TouchableOpacity onPress={togglePasswordVisibility} className="ml-2">
             <Ionicons 
               name={isPasswordVisible ? "eye" : "eye-off"} 
               size={20} 
-              color="#AAA" 
+              color="#9CA3AF" 
             />
           </TouchableOpacity>
         )}
       </View>
       {helperText && !error && (
-        <Text className="text-sm text-gray-500 mt-1">{helperText}</Text>
+        <Text className="text-sm text-gray-500 mt-2">{helperText}</Text>
       )}
       {error && (
-        <Text className="text-red-500 text-sm mt-1">{error}</Text>
+        <Text className="text-red-500 text-xs mt-2">{error}</Text>
       )}
     </View>
   )

@@ -1,8 +1,8 @@
-import React from 'react'
 import { TextInput, Text, View } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 
 interface NumberInputProps {
-  label: string
+  label?: string
   placeholder: string
   value: number
   onChangeText: (value: number) => void
@@ -11,6 +11,9 @@ interface NumberInputProps {
   min?: number
   max?: number
   className?: string
+  icon?: keyof typeof Ionicons.glyphMap
+  suffix?: string
+  compact?: boolean
 }
 
 export default function NumberInput({
@@ -22,11 +25,14 @@ export default function NumberInput({
   error,
   min,
   max,
-  className = ''
+  className = '',
+  icon,
+  suffix,
+  compact = false
 }: NumberInputProps) {
   const handleTextChange = (text: string) => {
     const numericValue = parseInt(text, 10);
-    if (!isNaN(numericValue)) {
+    if (!Number.isNaN(numericValue)) {
       let finalValue = numericValue;
       if (min !== undefined && finalValue < min) {
         finalValue = min;
@@ -35,29 +41,56 @@ export default function NumberInput({
         finalValue = max;
       }
       onChangeText(finalValue);
-    } else if (text === '') {
-      onChangeText(0);
     }
+    // Don't call onChangeText for empty string - preserve last valid value
   };
 
+  if (compact && icon) {
+    return (
+      <View className={`flex-1 ${className}`}>
+        <View className="flex-row items-center bg-white rounded-lg px-4 py-4 border border-gray-300 shadow-sm">
+          <Ionicons name={icon} size={20} color="#4B5563" />
+          <TextInput
+            value={value.toString()}
+            onChangeText={handleTextChange}
+            placeholder={placeholder}
+            placeholderTextColor="#9CA3AF"
+            keyboardType="numeric"
+            className="flex-1 ml-3 text-gray-900"
+            style={{ lineHeight: 20, fontSize: 16 }}
+          />
+          {suffix && (
+            <Text className="text-gray-500 text-sm ml-2">{suffix}</Text>
+          )}
+        </View>
+        {error && (
+          <Text className="text-red-500 text-xs mt-1">{error}</Text>
+        )}
+      </View>
+    )
+  }
+
   return (
-    <View className={`mb-5 ${className}`}>
-      <Text className="text-base text-gray-800 mb-2 font-medium">{label}</Text>
+    <View className={`mb-6 ${className}`}>
+      {label && (
+        <Text className="text-sm text-gray-700 mb-3 font-medium">{label}</Text>
+      )}
       <TextInput
-        className={`bg-white border rounded-lg px-4 py-3 text-base text-gray-800 ${
+        className={`bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm ${
           error ? 'border-red-500' : 'border-gray-300'
         }`}
         onChangeText={handleTextChange}
         value={value.toString()}
         placeholder={placeholder}
-        placeholderTextColor="#AAA"
+        placeholderTextColor="#9CA3AF"
         keyboardType="numeric"
+        style={{ lineHeight: 20, fontSize: 16 }}
       />
       {error && (
-        <Text className="text-red-500 text-sm mt-1">{error}</Text>
+        <Text className="text-red-500 text-xs mt-2">{error}</Text>
       )}
       {helperText && !error && (
-        <Text className="text-sm text-gray-500 mt-1">{helperText}</Text>
+        <Text className="text-sm text-gray-500 mt-2">{helperText}</Text>
       )}
     </View>
   )
