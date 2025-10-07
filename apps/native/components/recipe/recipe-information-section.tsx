@@ -54,15 +54,17 @@ export function RecipeInformationSection({
           control={control}
           rules={{ 
             required: 'Bereidingstijd is verplicht',
-            min: { value: 1, message: 'Bereidingstijd moet groter zijn dan 0' }
+            min: { value: 1, message: 'Bereidingstijd moet groter zijn dan 0' },
+            pattern: {
+              value: /^\d+$/,
+              message: 'Bereidingstijd moet een getal zijn'
+            }
           }}
           render={({ field: { value, onChange } }) => (
             <NumberInput
               placeholder="45"
-              value={value}
+              value={value === undefined || value === null ? '' : value.toString()}
               onChangeText={onChange}
-              min={1}
-              max={999}
               error={errors.total_cook_time_minutes?.message}
               icon="time-outline"
               suffix="min"
@@ -77,15 +79,17 @@ export function RecipeInformationSection({
           control={control}
           rules={{ 
             required: 'Aantal porties is verplicht',
-            min: { value: 1, message: 'Aantal porties moet groter zijn dan 0' }
+            min: { value: 1, message: 'Aantal porties moet groter zijn dan 0' },
+            pattern: {
+              value: /^\d+$/,
+              message: 'Aantal porties moet een getal zijn'
+            }
           }}
           render={({ field: { value, onChange } }) => (
             <NumberInput
               placeholder="4"
-              value={value}
+              value={value === undefined || value === null ? '' : value.toString()}
               onChangeText={onChange}
-              min={1}
-              max={20}
               error={errors.n_portions?.message}
               icon="people-outline"
               suffix="personen"

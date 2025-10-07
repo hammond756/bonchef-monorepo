@@ -4,12 +4,10 @@ import { Ionicons } from '@expo/vector-icons'
 interface NumberInputProps {
   label?: string
   placeholder: string
-  value: number
-  onChangeText: (value: number) => void
+  value: string
+  onChangeText: (value: string) => void
   helperText?: string
   error?: string
-  min?: number
-  max?: number
   className?: string
   icon?: keyof typeof Ionicons.glyphMap
   suffix?: string
@@ -23,27 +21,11 @@ export default function NumberInput({
   onChangeText,
   helperText,
   error,
-  min,
-  max,
   className = '',
   icon,
   suffix,
   compact = false
 }: NumberInputProps) {
-  const handleTextChange = (text: string) => {
-    const numericValue = parseInt(text, 10);
-    if (!Number.isNaN(numericValue)) {
-      let finalValue = numericValue;
-      if (min !== undefined && finalValue < min) {
-        finalValue = min;
-      }
-      if (max !== undefined && finalValue > max) {
-        finalValue = max;
-      }
-      onChangeText(finalValue);
-    }
-    // Don't call onChangeText for empty string - preserve last valid value
-  };
 
   if (compact && icon) {
     return (
@@ -51,8 +33,8 @@ export default function NumberInput({
         <View className="flex-row items-center bg-white rounded-lg px-4 py-4 border border-gray-300 shadow-sm">
           <Ionicons name={icon} size={20} color="#4B5563" />
           <TextInput
-            value={value.toString()}
-            onChangeText={handleTextChange}
+            value={value}
+            onChangeText={onChangeText}
             placeholder={placeholder}
             placeholderTextColor="#9CA3AF"
             keyboardType="numeric"
@@ -79,8 +61,8 @@ export default function NumberInput({
         className={`bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm ${
           error ? 'border-red-500' : 'border-gray-300'
         }`}
-        onChangeText={handleTextChange}
-        value={value.toString()}
+        onChangeText={onChangeText}
+        value={value}
         placeholder={placeholder}
         placeholderTextColor="#9CA3AF"
         keyboardType="numeric"
