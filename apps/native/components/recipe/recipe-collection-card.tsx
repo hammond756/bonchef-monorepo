@@ -24,7 +24,16 @@ export function RecipeCollectionCard({
       className="rounded-2xl overflow-hidden"
       style={{ aspectRatio: 0.75 }}
     >
-      <RecipeCardBackground recipe={recipe} className="flex-1">
+      <RecipeCardBackground recipe={recipe} className="flex-1" blur={recipe.status === "DRAFT"}>
+        {/* Concept Badge for Draft Recipes */}
+        {recipe.status === "DRAFT" && (
+          <View className="absolute top-3 right-3 bg-[#fff9d9] border-[#ffeeaa] text-[#8a5a00] px-2 py-1 rounded-full">
+            <Text className="text-sm font-semibold text-black">
+              Concept
+            </Text>
+          </View>
+        )}
+        
         {/* Content Overlay */}
         <View className="absolute right-0 bottom-0 left-0 p-4">
           {/* Recipe Title */}

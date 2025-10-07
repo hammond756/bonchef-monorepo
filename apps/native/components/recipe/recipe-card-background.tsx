@@ -13,6 +13,7 @@ interface RecipeCardBackgroundProps {
   recipe: RecipeDetail
   children: React.ReactNode
   className?: string
+  blur?: boolean
 }
 
 /**
@@ -22,7 +23,8 @@ interface RecipeCardBackgroundProps {
 export function RecipeCardBackground({ 
   recipe, 
   children, 
-  className = "" 
+  className = "",
+  blur = false
 }: Readonly<RecipeCardBackgroundProps>) {
   return (
     <View className={`relative overflow-hidden ${className}`}>
@@ -31,7 +33,10 @@ export function RecipeCardBackground({
         source={{ 
           uri: supabaseImageLoader({src: recipe.thumbnail, width: 500}) || "https://placekitten.com/900/1200" 
         }}
-        className="w-full h-full"
+        className="w-full h-full blur-sm"
+        contentFit="cover"
+        placeholderContentFit="cover"
+        blurRadius={blur ? 50 : 0}
       />
       
       {/* Gradient Overlay */}
