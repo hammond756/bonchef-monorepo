@@ -1,7 +1,7 @@
 import { TextInput, Text, View } from 'react-native'
 
 interface TextAreaProps {
-  label: string
+  label?: string
   placeholder: string
   value: string
   onChangeText: (text: string) => void
@@ -27,7 +27,9 @@ export default function TextArea({
 }: TextAreaProps) {
   return (
     <View className={`mb-6 ${className}`}>
-      <Text className="text-sm text-gray-700 mb-3 font-medium">{label}</Text>
+      {label && (
+        <Text className="text-sm text-gray-700 mb-3 font-medium">{label}</Text>
+      )}
       <TextInput
         className={`bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm ${
           error ? 'border-red-500' : 'border-gray-300'

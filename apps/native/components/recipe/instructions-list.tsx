@@ -1,6 +1,7 @@
-import { View, Text, TextInput } from 'react-native'
+import { View, Text } from 'react-native'
 import { useFormContext, Controller } from 'react-hook-form'
 import type { RecipeUpdate } from '@repo/lib/services/recipes'
+import TextArea from '../ui/textarea'
 
 interface InstructionsListProps {
   instructions: string[]
@@ -29,9 +30,9 @@ export function InstructionsList({
   }
 
   return (
-    <View className="space-y-8">
+    <View>
       {instructions.map((_, index) => (
-        <View key={`instruction-${index}-${instructions[index]?.slice(0, 10) || 'empty'}`} className="space-y-4">
+        <View key={`instruction-${index}`} className="space-y-4">
           <View className="flex-1 mb-4">
             <Text className="text-sm text-gray-700 mb-3 font-medium">
               Stap {index + 1}
@@ -39,32 +40,23 @@ export function InstructionsList({
               <Controller
                 name={`instructions.${index}`}
                 control={control}
-                render={({ field: { value, onChange } }) => (
-                  <TextInput
-                    value={value || ''}
+                rules={{
+                  required: 'Lege bereidingstappen zijn niet toegestaan',
+                }}
+                render={({ field: { value, onChange }, fieldState: { error } }) => (
+                  <TextArea
+                    value={value}
                     onChangeText={onChange}
-                    placeholder={`Stap ${index + 1} beschrijving...`}
-                    placeholderTextColor="#9CA3AF"
-                    multiline
-                    textAlignVertical="top"
-                    className="bg-white rounded-lg px-4 py-4 text-gray-900 border border-gray-300 shadow-sm min-h-[100px]"
-                    style={{
-                      minHeight: 100,
-                      fontSize: 16,
-                      lineHeight: 20,
-                    }}
+                    placeholder={`Beschrijving voor stap ${index + 1}`}
+                    minHeight={100}
+                    maxHeight={120}
+                    error={error?.message || undefined}
                   />
                 )}
               />
             </View>
         </View>
       ))}
-      
-      {errors?.instructions && (
-        <Text className="text-red-500 text-sm">
-          {errors.instructions.message}
-        </Text>
-      )}
     </View>
   )
 }

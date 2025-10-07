@@ -3,7 +3,6 @@ import {
 	View,
 	Text,
 	TouchableOpacity,
-	TextInput,
 	ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,6 +10,7 @@ import { supabase } from "@/lib/utils/supabase/client";
 import { useSuccessOverlay } from "@/components/ui/success-overlay";
 import { triggerJob } from "@repo/lib/services/recipe-import-jobs";
 import { API_URL } from "@/config/environment";
+import TextArea from "../ui/textarea";
 
 interface TextImportFormProps {
 	onBack: () => void;
@@ -76,27 +76,17 @@ export function TextImportForm({
 				</Text>
 
 				{/* Text Input */}
-				<View className="mb-6 flex-1">
-					<TextInput
-						value={text}
-						onChangeText={(text) => {
-							setText(text);
-							setError(null);
-						}}
-						placeholder="Begin hier met het plakken van je recept..."
-						className="border border-gray-300 rounded-xl px-4 py-4 text-base flex-1"
-						multiline
-						textAlignVertical="top"
-						editable={!isLoading}
-						returnKeyType="default"
-						blurOnSubmit={false}
-						style={{
-							minHeight: 120,
-							maxHeight: 200,
-						}}
-					/>
-					{error && <Text className="text-red-500 text-sm mt-2">{error}</Text>}
-				</View>
+				<TextArea
+					placeholder="Plak of schrijf hier je recept..."
+					value={text}
+					minHeight={120}
+					maxHeight={200}
+					onChangeText={(text) => {
+						setText(text);
+						setError(null);
+					}}
+					error={error || undefined}
+				/>
 
 				{/* Submit Button */}
 				<TouchableOpacity
