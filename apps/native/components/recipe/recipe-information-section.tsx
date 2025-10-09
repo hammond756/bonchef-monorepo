@@ -14,7 +14,7 @@ interface RecipeInformationSectionProps {
 export function RecipeInformationSection({
   className,
 }: RecipeInformationSectionProps) {
-  const { control, formState: { errors } } = useFormContext<RecipeUpdate>()
+  const { control } = useFormContext<RecipeUpdate>()
 
   return (
     <View className={className}>
@@ -36,13 +36,13 @@ export function RecipeInformationSection({
         name="title"
         control={control}
         rules={{ required: 'Titel is verplicht' }}
-        render={({ field: { value, onChange } }) => (
+        render={({ field: { value, onChange }, fieldState: { error } }) => (
           <Input
             label="Recept titel"
             placeholder="Voer de titel van je recept in"
             value={value}
             onChangeText={onChange}
-            error={errors.title?.message}
+            error={error?.message}
           />
         )}
       />
@@ -60,12 +60,12 @@ export function RecipeInformationSection({
               message: 'Bereidingstijd moet een getal zijn'
             }
           }}
-          render={({ field: { value, onChange } }) => (
+          render={({ field: { value, onChange }, fieldState: { error } }) => (
             <NumberInput
               placeholder="45"
               value={value === undefined || value === null ? '' : value.toString()}
               onChangeText={onChange}
-              error={errors.total_cook_time_minutes?.message}
+              error={error?.message}
               icon="time-outline"
               suffix="min"
               compact
@@ -85,12 +85,12 @@ export function RecipeInformationSection({
               message: 'Aantal porties moet een getal zijn'
             }
           }}
-          render={({ field: { value, onChange } }) => (
+          render={({ field: { value, onChange }, fieldState: { error } }) => (
             <NumberInput
               placeholder="4"
               value={value === undefined || value === null ? '' : value.toString()}
               onChangeText={onChange}
-              error={errors.n_portions?.message}
+              error={error?.message}
               icon="people-outline"
               suffix="personen"
               compact
@@ -104,16 +104,19 @@ export function RecipeInformationSection({
       <Controller
         name="description"
         control={control}
-        render={({ field: { value, onChange } }) => (
+        rules={{
+          maxLength: { value: 500, message: 'Beschrijving mag maximaal 500 karakters bevatten' }
+        }}
+        render={({ field: { value, onChange }, fieldState: { error } }) => (
           <TextArea
-            label="Beschrijving"
-            placeholder="Beschrijf hier wat dit recept bijzonder maakt... (optioneel)"
+            label="Beschrijving (optioneel)"
+            placeholder="Beschrijf hier wat dit recept bijzonder maakt..."
             value={value || ''}
             onChangeText={onChange}
             maxLength={500}
             minHeight={100}
             maxHeight={120}
-            error={errors.description?.message}
+            error={error?.message}
             helperText="Optioneel - maximaal 500 karakters"
           />
         )}
@@ -123,14 +126,13 @@ export function RecipeInformationSection({
       <Controller
         name="source_name"
         control={control}
-        render={({ field: { value, onChange } }) => (
+        render={({ field: { value, onChange }, fieldState: { error } }) => (
           <Input
-            label="Bron van het recept"
+            label="Bron van het recept (optioneel)"
             placeholder="Bijv. Oma's kookboek, AllRecipes.com"
             value={value || ''}
             onChangeText={onChange}
-            error={errors.source_name?.message}
-            helperText="Optioneel - waar komt dit recept vandaan?"
+            error={error?.message}
           />
         )}
       />
@@ -145,14 +147,13 @@ export function RecipeInformationSection({
             message: 'Ongeldige URL'
           }
         }}
-        render={({ field: { value, onChange } }) => (
+        render={({ field: { value, onChange }, fieldState: { error } }) => (
           <URLInput
-            label="Link naar de bron"
+            label="Link naar de bron (optioneel)"
             placeholder="https://website.com/recept"
             value={value || ''}
             onChangeText={onChange}
-            error={errors.source_url?.message}
-            helperText="Optioneel - link naar het originele recept"
+            error={error?.message}
           />
         )}
       />

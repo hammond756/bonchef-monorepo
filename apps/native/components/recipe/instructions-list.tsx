@@ -34,9 +34,6 @@ export function InstructionsList({
       {instructions.map((_, index) => (
         <View key={`instruction-${index}`} className="space-y-4">
           <View className="flex-1 mb-4">
-            <Text className="text-sm text-gray-700 mb-3 font-medium">
-              Stap {index + 1}
-            </Text>
               <Controller
                 name={`instructions.${index}`}
                 control={control}
@@ -45,6 +42,7 @@ export function InstructionsList({
                 }}
                 render={({ field: { value, onChange }, fieldState: { error } }) => (
                   <TextArea
+                    label={`Stap ${index + 1}`}
                     value={value}
                     onChangeText={onChange}
                     placeholder={`Beschrijving voor stap ${index + 1}`}

@@ -92,7 +92,6 @@ export function IngredientsList({
                 value={getIngredientGroupName(value) || ''}
                 onChangeText={(text) => onChange(setIngredientGroupName(text))}
                 placeholder="Bijv: Voor de saus"
-                className="font-semibold text-gray-900 rounded-lg shadow-sm mb-4"
                 error={error?.message || undefined}
               />
             )}
@@ -112,7 +111,7 @@ export function IngredientsList({
                         rules={{
                           pattern: {
                             value: /^\d*\.?\d+$/,
-                            message: "Hoeveelheid moet een getal zijn"
+                            message: "Hoeveelheid moet een (decimaal) getal zijn"
                           }
                         }}
                         render={({ field: { value, onChange }, fieldState: { error } }) => (
