@@ -13,15 +13,17 @@ export function EditRecipeForm() {
   const recipe = watch()
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-gray-50">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="p-4 space-y-6">
+        <View className="p-6">
           {/* Recipe Information Section */}
-          <RecipeInformationSection />
+          <View>
+            <RecipeInformationSection />
+          </View>
 
           {/* Ingredients Section */}
-          <View className="space-y-4">
-            <Text className="text-lg font-semibold">Ingrediënten</Text>
+          <View>
+            <Text className="text-2xl font-bold text-gray-900 mb-4 font-serif">Ingrediënten</Text>
             <IngredientsList
               ingredients={recipe.ingredients}
               errors={errors}
@@ -29,15 +31,15 @@ export function EditRecipeForm() {
           </View>
 
           {/* Instructions Section */}
-          <View className="space-y-4">
-            <Text className="text-lg font-semibold">Bereidingswijze</Text>
+          <View>
+            <Text className="text-2xl font-bold text-gray-900 mb-4 font-serif">Bereidingswijze</Text>
             <InstructionsList
               instructions={recipe.instructions}
               errors={errors}
             />
           </View>
 
-          <View className="h-20" />
+          <View className="h-24" />
         </View>
       </ScrollView>
     </View>

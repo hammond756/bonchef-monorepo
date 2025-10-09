@@ -1,6 +1,8 @@
 import type { RecipeUpdate } from '@repo/lib/services/recipes'
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
 import { Text, TextInput, View } from 'react-native'
+import NumberInput from '../ui/number-input'
+import { Input } from '../ui'
 
 type Ingredient = {
   quantity: {
@@ -32,7 +34,33 @@ export function IngredientsList({
     name: 'ingredients'
   })
 
-  // No need for manual handlers - useFieldArray handles updates automatically
+  const getIngredientGroupName = (value: string) => {
+    if (value === "no_group") {
+      return ""
+    }
+    return value
+  }
+
+  const setIngredientGroupName = (value: string) => {
+    if (value === "") {
+      return "no_group"
+    }
+    return value
+  }
+
+  const getUnitValue = (value: string) => {
+    if (value === "none") {
+      return ""
+    }
+    return value
+  }
+
+  const setUnitValue = (value: string) => {
+    if (value === "") {
+      return "none"
+    }
+    return value
+  }
 
   if (ingredients.length === 0) {
     return (
@@ -49,99 +77,98 @@ export function IngredientsList({
     )
   }
 
+
   return (
-    <View className="space-y-6">
+    <View>
       {ingredientGroups.map((field, groupIndex) => (
-        <View key={field.id} className="bg-gray-50 rounded-lg p-6">
+        <View key={field.id} className="mb-6">
           {/* Group Name */}
           <Controller
             name={`ingredients.${groupIndex}.name`}
             control={control}
-            render={({ field: { value, onChange } }) => (
-              <TextInput
-                value={value || ''}
-                onChangeText={onChange}
-                placeholder="Groep naam (optioneel)"
-                placeholderTextColor="#9CA3AF"
-                className="text-lg font-semibold text-gray-800 mb-4 bg-white rounded-lg px-4 py-3 border border-gray-200"
+            render={({ field: { value, onChange }, fieldState: { error } }) => (
+              <Input
+                label="Groep titel (optioneel)"
+                value={getIngredientGroupName(value) || ''}
+                onChangeText={(text) => onChange(setIngredientGroupName(text))}
+                placeholder="Bijv: Voor de saus"
+                error={error?.message || undefined}
               />
             )}
           />
           
           {/* Ingredients */}
-          <View className="space-y-4">
+          <View>
             {field.ingredients?.map((_: Ingredient, ingredientIndex: number) => (
-              <View key={`ingredient-${field.id}-${ingredientIndex}`} className="bg-white rounded-lg p-4 border border-gray-200">
-                <View className="flex-row space-x-3">
-                  {/* Quantity Input */}
-                  <View className="flex-1">
-                    <Text className="text-sm text-gray-600 mb-2">Hoeveelheid</Text>
-                    <Controller
-                      name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.quantity.low`}
-                      control={control}
-                      render={({ field: { value, onChange } }) => (
-                        <TextInput
-                          value={value?.toString() || '0'}
-                          onChangeText={(text) => {
-                            const quantity = parseFloat(text) || 0
-                            onChange(quantity)
-                          }}
-                          placeholder="0"
-                          placeholderTextColor="#9CA3AF"
-                          keyboardType="numeric"
-                          className="bg-gray-50 rounded-lg px-3 py-3 text-base text-gray-800 border border-gray-200"
-                        />
-                      )}
-                    />
+              <View key={`ingredient-${field.id}-${ingredientIndex}`} className="bg-white rounded-xl p-4 mb-4 border border-gray-200">
+                <View>
+                  <View className="flex-row">
+                    {/* Quantity Input */}
+                    <View className="flex-1 mr-2">
+                      <Controller
+                        name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.quantity.low`}
+                        control={control}
+                        rules={{
+                          pattern: {
+                            value: /^\d*\.?\d+$/,
+                            message: "Hoeveelheid moet een (decimaal) getal zijn"
+                          }
+                        }}
+                        render={({ field: { value, onChange }, fieldState: { error } }) => (
+                          <NumberInput
+                            label="Hoeveelheid"
+                            value={value?.toString() || ''}
+                            onChangeText={onChange}
+                            placeholder="leeg"
+                            error={error?.message || undefined}
+                          />
+                        )}
+                      />
+                    </View>
+                    
+                    {/* Unit Input */}
+                    <View className="flex-1 ml-2">
+                      <Controller
+                        name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.unit`}
+                        control={control}
+                        render={({ field: { value, onChange }, fieldState: { error } }) => (
+                          <Input
+                            label="Eenheid"
+                            value={getUnitValue(value) || ''}
+                            onChangeText={(text) => onChange(setUnitValue(text))}
+                            placeholder="gram, ml, stuks..."
+                            error={error?.message || undefined}
+                          />
+                        )}
+                      />
+                    </View>
                   </View>
                   
-                  {/* Unit Input */}
-                  <View className="flex-1">
-                    <Text className="text-sm text-gray-600 mb-2">Eenheid</Text>
+                  {/* Description Input */}
+                  <View className="mt-4">
                     <Controller
-                      name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.unit`}
+                      name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.description`}
                       control={control}
-                      render={({ field: { value, onChange } }) => (
-                        <TextInput
-                          value={value || ''}
+                      rules={{
+                        required: 'Lege naam is niet toegestaan',
+                      }}
+                      render={({ field: { value, onChange }, fieldState: { error } }) => (
+                        <Input
+                          label="Ingrediënt"
+                          value={value}
                           onChangeText={onChange}
-                          placeholder="gram, ml, stuks..."
-                          placeholderTextColor="#9CA3AF"
-                          className="bg-gray-50 rounded-lg px-3 py-3 text-base text-gray-800 border border-gray-200"
+                          placeholder="Naam van het ingrediënt"
+                          error={error?.message || undefined}
                         />
                       )}
                     />
                   </View>
-                </View>
-                
-                {/* Description Input */}
-                <View className="mt-3">
-                  <Text className="text-sm text-gray-600 mb-2">Ingrediënt</Text>
-                  <Controller
-                    name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.description`}
-                    control={control}
-                    render={({ field: { value, onChange } }) => (
-                      <TextInput
-                        value={value || ''}
-                        onChangeText={onChange}
-                        placeholder="Naam van het ingrediënt"
-                        placeholderTextColor="#9CA3AF"
-                        className="bg-gray-50 rounded-lg px-3 py-3 text-base text-gray-800 border border-gray-200"
-                      />
-                    )}
-                  />
                 </View>
               </View>
             ))}
           </View>
         </View>
       ))}
-      
-      {errors?.ingredients && (
-        <Text className="text-red-500 text-sm">
-          {errors.ingredients.message}
-        </Text>
-      )}
     </View>
   )
 }

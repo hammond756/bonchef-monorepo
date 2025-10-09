@@ -129,15 +129,14 @@ export function RecipeImagePicker({
 
   return (
     <View className={`mb-6 ${className}`}>
-      <Text className="text-base text-gray-800 mb-3 font-medium">Recept afbeelding</Text>
-      
       {imageUrl ? (
         <View className="relative">
           <Image
             source={{ uri: imageUrl }}
-            className="w-full h-48 rounded-lg"
+            className="w-full aspect-[3/4] rounded-lg"
             resizeMode="cover"
           />
+          {/* Camera button */}
           <TouchableOpacity
             onPress={showImageOptions}
             disabled={isUploading}
@@ -150,7 +149,7 @@ export function RecipeImagePicker({
         <TouchableOpacity
           onPress={showImageOptions}
           disabled={isUploading}
-          className="border-2 border-dashed border-gray-300 rounded-lg h-48 items-center justify-center bg-gray-50"
+          className="border-2 border-dashed border-gray-300 rounded-lg aspect-[3/4] items-center justify-center bg-gray-50"
         >
           <Ionicons name="camera" size={32} color="#9CA3AF" />
           <Text className="text-gray-500 mt-2 text-center">

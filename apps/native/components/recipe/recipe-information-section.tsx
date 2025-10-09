@@ -14,10 +14,10 @@ interface RecipeInformationSectionProps {
 export function RecipeInformationSection({
   className,
 }: RecipeInformationSectionProps) {
-  const { control, formState: { errors } } = useFormContext<RecipeUpdate>()
+  const { control } = useFormContext<RecipeUpdate>()
 
   return (
-    <View className={`space-y-6 ${className}`}>
+    <View className={className}>
       {/* Recipe Image */}
       <Controller
         name="thumbnail"
@@ -36,78 +36,87 @@ export function RecipeInformationSection({
         name="title"
         control={control}
         rules={{ required: 'Titel is verplicht' }}
-        render={({ field: { value, onChange } }) => (
+        render={({ field: { value, onChange }, fieldState: { error } }) => (
           <Input
             label="Recept titel"
             placeholder="Voer de titel van je recept in"
             value={value}
             onChangeText={onChange}
-            error={errors.title?.message}
+            error={error?.message}
           />
         )}
       />
 
       {/* Cooking Time and Servings */}
-      <View className="flex-row space-x-4">
-        <View className="flex-1">
-          <Controller
-            name="total_cook_time_minutes"
-            control={control}
-            rules={{ 
-              required: 'Bereidingstijd is verplicht',
-              min: { value: 1, message: 'Bereidingstijd moet groter zijn dan 0' }
-            }}
-            render={({ field: { value, onChange } }) => (
-              <NumberInput
-                label="Bereidingstijd (min)"
-                placeholder="30"
-                value={value}
-                onChangeText={onChange}
-                min={1}
-                max={999}
-                error={errors.total_cook_time_minutes?.message}
-              />
-            )}
-          />
-        </View>
-        <View className="flex-1">
-          <Controller
-            name="n_portions"
-            control={control}
-            rules={{ 
-              required: 'Aantal porties is verplicht',
-              min: { value: 1, message: 'Aantal porties moet groter zijn dan 0' }
-            }}
-            render={({ field: { value, onChange } }) => (
-              <NumberInput
-                label="Porties"
-                placeholder="4"
-                value={value}
-                onChangeText={onChange}
-                min={1}
-                max={20}
-                error={errors.n_portions?.message}
-              />
-            )}
-          />
-        </View>
+      <View className="flex-row mb-4">
+        <Controller
+          name="total_cook_time_minutes"
+          control={control}
+          rules={{ 
+            required: 'Bereidingstijd is verplicht',
+            min: { value: 1, message: 'Bereidingstijd moet groter zijn dan 0' },
+            pattern: {
+              value: /^\d+$/,
+              message: 'Bereidingstijd moet een getal zijn'
+            }
+          }}
+          render={({ field: { value, onChange }, fieldState: { error } }) => (
+            <NumberInput
+              placeholder="45"
+              value={value === undefined || value === null ? '' : value.toString()}
+              onChangeText={onChange}
+              error={error?.message}
+              icon="time-outline"
+              suffix="min"
+              compact
+              className="mr-2"
+            />
+          )}
+        />
+        
+        <Controller
+          name="n_portions"
+          control={control}
+          rules={{ 
+            required: 'Aantal porties is verplicht',
+            min: { value: 1, message: 'Aantal porties moet groter zijn dan 0' },
+            pattern: {
+              value: /^\d+$/,
+              message: 'Aantal porties moet een getal zijn'
+            }
+          }}
+          render={({ field: { value, onChange }, fieldState: { error } }) => (
+            <NumberInput
+              placeholder="4"
+              value={value === undefined || value === null ? '' : value.toString()}
+              onChangeText={onChange}
+              error={error?.message}
+              icon="people-outline"
+              suffix="personen"
+              compact
+              className="ml-2"
+            />
+          )}
+        />
       </View>
 
       {/* Description */}
       <Controller
         name="description"
         control={control}
-        render={({ field: { value, onChange } }) => (
+        rules={{
+          maxLength: { value: 500, message: 'Beschrijving mag maximaal 500 karakters bevatten' }
+        }}
+        render={({ field: { value, onChange }, fieldState: { error } }) => (
           <TextArea
-            label="Beschrijving"
-            placeholder="Schrijf hier op wat jouw recept zo goed maakt!"
+            label="Beschrijving (optioneel)"
+            placeholder="Beschrijf hier wat dit recept bijzonder maakt..."
             value={value || ''}
             onChangeText={onChange}
             maxLength={500}
-            minHeight={80}
+            minHeight={100}
             maxHeight={120}
-            error={errors.description?.message}
-            helperText="Optioneel - maximaal 500 karakters"
+            error={error?.message}
           />
         )}
       />
@@ -116,14 +125,13 @@ export function RecipeInformationSection({
       <Controller
         name="source_name"
         control={control}
-        render={({ field: { value, onChange } }) => (
+        render={({ field: { value, onChange }, fieldState: { error } }) => (
           <Input
-            label="Bron naam"
-            placeholder="Bijv. Allerhande, Jamie Oliver"
+            label="Bron van het recept (optioneel)"
+            placeholder="Bijv. Oma's kookboek, AllRecipes.com"
             value={value || ''}
             onChangeText={onChange}
-            error={errors.source_name?.message}
-            helperText="Optioneel - waar komt dit recept vandaan?"
+            error={error?.message}
           />
         )}
       />
@@ -138,14 +146,13 @@ export function RecipeInformationSection({
             message: 'Ongeldige URL'
           }
         }}
-        render={({ field: { value, onChange } }) => (
+        render={({ field: { value, onChange }, fieldState: { error } }) => (
           <URLInput
-            label="Link naar de bron"
+            label="Link naar de bron (optioneel)"
             placeholder="https://website.com/recept"
             value={value || ''}
             onChangeText={onChange}
-            error={errors.source_url?.message}
-            helperText="Optioneel - link naar het originele recept"
+            error={error?.message}
           />
         )}
       />
