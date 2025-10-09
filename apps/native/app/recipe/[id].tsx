@@ -1,16 +1,18 @@
 import { useRecipeDetail } from "@repo/lib/hooks/recipes";
 import { formatIngredientLine } from "@repo/lib/utils/ingredient-formatting";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Image } from "expo-image";
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, Animated, Dimensions } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, Animated, Dimensions, Pressable } from "react-native";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { RecipeActionButtons } from "@/components/recipe/recipe-action-buttons";
 import { supabase } from "@/lib/utils/supabase/client";
 import { useTabAnimation } from "@/hooks/use-tab-animation";
 import supabaseImageLoader from "@repo/lib/utils/supabase-image-loader";
 import { cssInterop } from "nativewind";
+import { useAuthContext } from "@/hooks/use-auth-context";
+import { Button } from "@/components/ui";
 
 cssInterop(Image, { className: "style" });
 
@@ -22,7 +24,8 @@ export default function RecipeDetail() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<number>(0);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
-  
+  const { profile: user } = useAuthContext();
+
   // Define tabs configuration
   const tabs = [
     { key: "ingredients" as TabType, label: "Ingrediënten" },
@@ -188,6 +191,14 @@ export default function RecipeDetail() {
   };
 
   return (
+    <>
+    <Stack.Screen options={{
+      headerRight: () => (
+        <Pressable onPress={() => router.push(`/edit/${recipe.id}`)} className="p-2 rounded-full bg-white">
+          <Feather name="edit" size={24} color="black" />
+        </Pressable>
+      ),
+    }} />
     <View className="flex-1 flex-col bg-white w-full">
       {/* Header Image */}
       <View className="relative h-2/5">
@@ -263,5 +274,6 @@ export default function RecipeDetail() {
         {renderTabContent()}
       </ScrollView>
     </View>
+    </>
   );
 }

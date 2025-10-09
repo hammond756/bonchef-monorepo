@@ -34,6 +34,34 @@ export function IngredientsList({
     name: 'ingredients'
   })
 
+  const getIngredientGroupName = (value: string) => {
+    if (value === "no_group") {
+      return ""
+    }
+    return value
+  }
+
+  const setIngredientGroupName = (value: string) => {
+    if (value === "") {
+      return "no_group"
+    }
+    return value
+  }
+
+  const getUnitValue = (value: string) => {
+    if (value === "none") {
+      return ""
+    }
+    return value
+  }
+
+  const setUnitValue = (value: string) => {
+    if (value === "") {
+      return "none"
+    }
+    return value
+  }
+
   if (ingredients.length === 0) {
     return (
       <View className="bg-gray-50 rounded-lg p-4">
@@ -58,14 +86,14 @@ export function IngredientsList({
           <Controller
             name={`ingredients.${groupIndex}.name`}
             control={control}
-            render={({ field: { value, onChange } }) => (
-              <TextInput
-                value={value || ''}
-                onChangeText={onChange}
-                placeholder="Groep naam (optioneel)"
-                placeholderTextColor="#9CA3AF"
-                className="font-semibold text-gray-900 bg-white rounded-lg px-4 py-4 border border-gray-300 shadow-sm mb-4"
-                style={{ lineHeight: 20, fontSize: 16 }}
+            render={({ field: { value, onChange }, fieldState: { error } }) => (
+              <Input
+                label="Groep titel (optioneel)"
+                value={getIngredientGroupName(value) || ''}
+                onChangeText={(text) => onChange(setIngredientGroupName(text))}
+                placeholder="Bijv: Voor de saus"
+                className="font-semibold text-gray-900 rounded-lg shadow-sm mb-4"
+                error={error?.message || undefined}
               />
             )}
           />
@@ -92,7 +120,7 @@ export function IngredientsList({
                             label="Hoeveelheid"
                             value={value?.toString() || ''}
                             onChangeText={onChange}
-                            placeholder="0"
+                            placeholder="leeg"
                             error={error?.message || undefined}
                           />
                         )}
@@ -107,8 +135,8 @@ export function IngredientsList({
                         render={({ field: { value, onChange }, fieldState: { error } }) => (
                           <Input
                             label="Eenheid"
-                            value={value}
-                            onChangeText={onChange}
+                            value={getUnitValue(value) || ''}
+                            onChangeText={(text) => onChange(setUnitValue(text))}
                             placeholder="gram, ml, stuks..."
                             error={error?.message || undefined}
                           />

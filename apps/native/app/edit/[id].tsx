@@ -38,12 +38,12 @@ function EditRecipeHeader() {
   const navigation = useNavigation();
   const router = useRouter();
   const { formState, getValues, reset } = useFormContext<RecipeUpdate>();
-  const { isDirty, isValid, isSubmitting } = formState;
+  const { isValid, isSubmitting } = formState;
   const updateRecipeMutation = useUpdateRecipe(supabase);
   const deleteRecipeMutation = useDeleteRecipe(supabase);
   
   const isSaving = updateRecipeMutation.isPending || deleteRecipeMutation.isPending;
-  const canSave = isDirty && isValid && !isSubmitting && !isSaving;
+  const canSave = isValid && !isSubmitting && !isSaving;
 
   const handleSave = useCallback(async () => {
     if (!canSave) {
@@ -197,7 +197,6 @@ export default function EditRecipePage() {
 
   return (
     <FormProvider {...methods}>
-      <Stack.Screen />
       <UnsavedChangesHandler />
       <EditRecipeHeader />
       <EditRecipeForm />

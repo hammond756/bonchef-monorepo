@@ -62,7 +62,7 @@ export function useUpdateRecipe(supabase: SupabaseClient) {
     }) => updateRecipeWithClient(supabase, recipeId, updates),
     onSuccess: (updatedRecipe) => {
       // Update the specific recipe in cache
-      queryClient.setQueryData(["recipe", updatedRecipe.id], updatedRecipe)
+      queryClient.invalidateQueries({ queryKey: ["recipe", updatedRecipe.id] })
       
       // Invalidate related queries to refetch fresh data
       queryClient.invalidateQueries({ queryKey: ["recipes"] })
