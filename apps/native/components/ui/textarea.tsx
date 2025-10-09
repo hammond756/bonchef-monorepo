@@ -53,9 +53,11 @@ export default function TextArea({
       )}
       {(helperText || maxLength) && (
         <View className="flex-row justify-between items-center mt-2">
-          {helperText && (
-            <Text className="text-sm text-gray-500">{helperText}</Text>
-          )}
+          <View className="">
+            {helperText && (
+              <Text className="text-sm text-gray-500">{helperText}</Text>
+            )}
+          </View>
           {maxLength && (
             <Text className="text-xs text-gray-400">
               {value.length}/{maxLength}

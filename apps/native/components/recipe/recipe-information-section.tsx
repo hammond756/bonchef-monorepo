@@ -117,7 +117,6 @@ export function RecipeInformationSection({
             minHeight={100}
             maxHeight={120}
             error={error?.message}
-            helperText="Optioneel - maximaal 500 karakters"
           />
         )}
       />
