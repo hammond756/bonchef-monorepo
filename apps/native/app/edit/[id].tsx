@@ -1,5 +1,5 @@
-import { useLocalSearchParams, useRouter, useNavigation, Stack } from "expo-router";
-import { useEffect, useCallback } from "react";
+import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
+import { useEffect, useCallback, useState } from "react";
 import { ActivityIndicator, Text, View, TouchableOpacity, Alert } from "react-native";
 import { usePreventRemove } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,6 +7,7 @@ import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import { useRecipe, useUpdateRecipe, useDeleteRecipe } from "@repo/lib/hooks/recipes";
 import { supabase } from "@/lib/utils/supabase/client";
 import { EditRecipeForm } from "@/components/recipe/edit-recipe-form";
+import { RecipeVisibilityModal } from "@/components/recipe/recipe-visibility-modal";
 import type { RecipeUpdate } from "@repo/lib/services/recipes";
 
 // Component that handles preventing navigation when there are unsaved changes
@@ -34,83 +35,26 @@ function UnsavedChangesHandler() {
 }
 
 // Header component that uses the form context
-function EditRecipeHeader() {
+function EditRecipeHeader({ 
+  onSave, 
+  onDelete, 
+  canSave, 
+  isSaving 
+}: {
+  onSave: () => void;
+  onDelete: () => void;
+  canSave: boolean;
+  isSaving: boolean;
+}) {
   const navigation = useNavigation();
-  const router = useRouter();
-  const { formState, getValues, reset } = useFormContext<RecipeUpdate>();
-  const { isValid, isSubmitting } = formState;
-  const updateRecipeMutation = useUpdateRecipe(supabase);
-  const deleteRecipeMutation = useDeleteRecipe(supabase);
-  
-  const isSaving = updateRecipeMutation.isPending || deleteRecipeMutation.isPending;
-  const canSave = isValid && !isSubmitting && !isSaving;
 
-  const handleSave = useCallback(async () => {
-    if (!canSave) {
-      Alert.alert(
-        'Kan niet opslaan',
-        'Controleer de fouten in het formulier.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
-
-    try {
-      const formData = getValues();
-      const savedRecipe = await updateRecipeMutation.mutateAsync({
-        recipeId: formData.id,
-        updates: {
-          ...formData,
-          status: 'PUBLISHED'
-        }
-      });
-      
-      // Reset form state to mark as clean after successful save
-      reset(savedRecipe, { keepDirtyValues: false });
-      
-      router.back();
-    } catch {
-      Alert.alert(
-        'Fout',
-        'Er is een fout opgetreden bij het opslaan van je recept.',
-        [{ text: 'OK' }]
-      );
-    }
-  }, [canSave, updateRecipeMutation, getValues, router, reset]);
-
-  const handleDelete = useCallback(() => {
-    const formData = getValues();
-    Alert.alert(
-      'Recept verwijderen',
-      'Weet je zeker dat je dit recept wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.',
-      [
-        { text: 'Annuleren', style: 'cancel' },
-        {
-          text: 'Verwijderen',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteRecipeMutation.mutateAsync(formData.id);
-              router.back();
-            } catch {
-              Alert.alert(
-                'Fout',
-                'Er is een fout opgetreden bij het verwijderen van je recept.',
-                [{ text: 'OK' }]
-              );
-            }
-          },
-        },
-      ]
-    );
-  }, [deleteRecipeMutation, getValues, router]);
 
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <View className="flex-row items-center space-x-2">
           <TouchableOpacity
-            onPress={handleDelete}
+            onPress={onDelete}
             className="p-2"
             disabled={isSaving}
           >
@@ -121,7 +65,7 @@ function EditRecipeHeader() {
             />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={handleSave}
+            onPress={onSave}
             className="bg-green-600 rounded-lg px-4 py-2 disabled:bg-gray-400"
             disabled={!canSave || isSaving}
           >
@@ -132,16 +76,24 @@ function EditRecipeHeader() {
         </View>
       ),
     });
-  }, [canSave, isSaving, navigation, handleDelete, handleSave]);
+  }, [canSave, isSaving, navigation, onDelete, onSave]);
 
   return null;
 }
 
 export default function EditRecipePage() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
 
   // Fetch recipe data using the hook
   const { data: recipe, isLoading, error } = useRecipe(supabase, id);
+  
+  // Modal state
+  const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false);
+  
+  // Mutations
+  const updateRecipeMutation = useUpdateRecipe(supabase);
+  const deleteRecipeMutation = useDeleteRecipe(supabase);
 
   // Initialize form with default values
   const methods = useForm<RecipeUpdate>({
@@ -171,6 +123,74 @@ export default function EditRecipePage() {
     }
   }, [recipe, methods]);
 
+  // Save handlers
+  const handleSave = useCallback(() => {
+    const { isValid } = methods.formState;
+    if (!isValid) {
+      Alert.alert(
+        'Kan niet opslaan',
+        'Controleer de fouten in het formulier.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    // Open visibility modal instead of saving directly
+    setIsVisibilityModalOpen(true);
+  }, [methods.formState]);
+
+  const handleSaveWithVisibility = useCallback(async (isPublic: boolean) => {
+    try {
+      const formData = methods.getValues();
+      const savedRecipe = await updateRecipeMutation.mutateAsync({
+        recipeId: formData.id,
+        updates: {
+          ...formData,
+          status: 'PUBLISHED',
+          is_public: isPublic
+        }
+      });
+      
+      // Reset form state to mark as clean after successful save
+      methods.reset(savedRecipe, { keepDirtyValues: false });
+      
+      router.back();
+    } catch {
+      Alert.alert(
+        'Fout',
+        'Er is een fout opgetreden bij het opslaan van je recept.',
+        [{ text: 'OK' }]
+      );
+    }
+  }, [updateRecipeMutation, methods, router]);
+
+  const handleDelete = useCallback(() => {
+    const formData = methods.getValues();
+    Alert.alert(
+      'Recept verwijderen',
+      'Weet je zeker dat je dit recept wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.',
+      [
+        { text: 'Annuleren', style: 'cancel' },
+        {
+          text: 'Verwijderen',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteRecipeMutation.mutateAsync(formData.id);
+              router.back();
+            } catch {
+              Alert.alert(
+                'Fout',
+                'Er is een fout opgetreden bij het verwijderen van je recept.',
+                [{ text: 'OK' }]
+              );
+            }
+          },
+        },
+      ]
+    );
+  }, [deleteRecipeMutation, methods, router]);
+
   // Show loading state
   if (isLoading) {
     return (
@@ -195,11 +215,26 @@ export default function EditRecipePage() {
     );
   }
 
+  const { isValid, isSubmitting } = methods.formState;
+  const isSaving = updateRecipeMutation.isPending || deleteRecipeMutation.isPending;
+  const canSave = isValid && !isSubmitting && !isSaving;
+
   return (
     <FormProvider {...methods}>
       <UnsavedChangesHandler />
-      <EditRecipeHeader />
+      <EditRecipeHeader 
+        onSave={handleSave}
+        onDelete={handleDelete}
+        canSave={canSave}
+        isSaving={isSaving}
+      />
       <EditRecipeForm />
+      <RecipeVisibilityModal
+        isOpen={isVisibilityModalOpen}
+        onClose={() => setIsVisibilityModalOpen(false)}
+        onConfirm={handleSaveWithVisibility}
+        defaultVisibility={recipe?.is_public || false}
+      />
     </FormProvider>
   );
 }
