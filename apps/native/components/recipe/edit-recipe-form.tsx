@@ -1,5 +1,6 @@
-import { ScrollView, View, Text } from 'react-native'
+import { View, Text } from 'react-native'
 import { useFormContext } from 'react-hook-form'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { RecipeInformationSection } from './recipe-information-section'
 import { IngredientsList } from './ingredients-list'
 import { InstructionsList } from './instructions-list'
@@ -14,7 +15,12 @@ export function EditRecipeForm() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView 
+        bottomOffset={63}
+        className="flex-1" 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
         <View className="p-6">
           {/* Recipe Information Section */}
           <View>
@@ -41,7 +47,7 @@ export function EditRecipeForm() {
 
           <View className="h-24" />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   )
 }

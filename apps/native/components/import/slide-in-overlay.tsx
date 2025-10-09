@@ -1,5 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TouchableOpacity, Modal, Animated, Dimensions } from 'react-native';
+import { useKeyboardHandler } from 'react-native-keyboard-controller';
+import { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
+import ReanimatedAnimated from 'react-native-reanimated';
 
 interface SlideInOverlayProps {
   isOpen: boolean;
@@ -7,12 +10,32 @@ interface SlideInOverlayProps {
   children: React.ReactNode;
 }
 
+// Custom hook for keyboard animation
+const useKeyboardAnimation = () => {
+  const keyboardHeight = useSharedValue(0);
+
+  useKeyboardHandler(
+    {
+      onMove: (event) => {
+        'worklet';
+        keyboardHeight.value = Math.max(event.height, 0);
+      },
+    },
+    []
+  );
+
+  return { keyboardHeight };
+};
+
 export function SlideInOverlay({ isOpen, onClose, children }: SlideInOverlayProps) {
   const screenHeight = Dimensions.get('window').height;
   const trayHeight = screenHeight * 0.5; // 2/5 of screen height
   const [slideAnimation] = useState(new Animated.Value(trayHeight));
   const [backgroundOpacity] = useState(new Animated.Value(0));
   const [modalVisible, setModalVisible] = useState(false);
+  
+  // Get keyboard height for animation
+  const { keyboardHeight } = useKeyboardAnimation();
 
   useEffect(() => {
     if (isOpen) {
@@ -54,6 +77,17 @@ export function SlideInOverlay({ isOpen, onClose, children }: SlideInOverlayProp
     }
   }, [isOpen, slideAnimation, backgroundOpacity, trayHeight]);
 
+  // Create animated style that combines slide animation with keyboard height
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { 
+          translateY: -keyboardHeight.value 
+        }
+      ],
+    };
+  }, [keyboardHeight]);
+
   const handleBackgroundPress = () => {
     onClose();
   };
@@ -77,15 +111,18 @@ export function SlideInOverlay({ isOpen, onClose, children }: SlideInOverlayProp
           onPress={handleBackgroundPress}
           activeOpacity={1}
         />
-        <Animated.View
-          style={{
-            transform: [{ translateY: slideAnimation }],
-            height: trayHeight,
-          }}
+        <ReanimatedAnimated.View
+          style={[
+            {
+              transform: [{ translateY: slideAnimation }],
+              height: trayHeight,
+            },
+            animatedStyle
+          ]}
           className="bg-white rounded-t-3xl shadow-2xl"
         >
           {children}
-        </Animated.View>
+        </ReanimatedAnimated.View>
       </Animated.View>
     </Modal>
   );

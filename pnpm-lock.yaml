@@ -140,6 +140,9 @@ importers:
       react-native-gesture-handler:
         specifier: ~2.24.0
         version: 2.24.0(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
+      react-native-keyboard-controller:
+        specifier: ^1.19.0
+        version: 1.19.0(react-native-reanimated@3.17.5(@babel/core@7.28.4)(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
       react-native-mmkv:
         specifier: ^3.3.0
         version: 3.3.1(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
@@ -7329,6 +7332,13 @@ packages:
     peerDependencies:
       react: '*'
       react-native: '*'
+
+  react-native-keyboard-controller@1.19.0:
+    resolution: {integrity: sha512-G/SPwip7XWObjHLLpMB83pQoki8wQh0dPL4c+uEqxmaDUznnHvkiGuSTz0FWY0UUCeClw/iJ31DirMp6jBC2Jw==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+      react-native-reanimated: '>=3.0.0'
 
   react-native-mmkv@3.3.1:
     resolution: {integrity: sha512-LYamDWQirPTUJZ9Re+BkCD+zLRGNr+EVJDeIeblvoJXGatWy9PXnChtajDSLqwjX3EXVeUyjgrembs7wlBw9ug==}
@@ -17014,6 +17024,13 @@ snapshots:
     dependencies:
       react: 19.0.0
       react-native: 0.79.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.0.0)
+
+  react-native-keyboard-controller@1.19.0(react-native-reanimated@3.17.5(@babel/core@7.28.4)(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.0.0))(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+      react-native: 0.79.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.0.0)
+      react-native-is-edge-to-edge: 1.2.1(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
+      react-native-reanimated: 3.17.5(@babel/core@7.28.4)(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
 
   react-native-mmkv@3.3.1(react-native@0.79.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.0.0))(react@19.0.0):
     dependencies:
