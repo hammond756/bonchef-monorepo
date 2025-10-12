@@ -1,8 +1,8 @@
 import type { RecipeUpdate } from '@repo/lib/services/recipes'
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
-import { Text, TextInput, View } from 'react-native'
-import NumberInput from '../ui/number-input'
+import { Text, View } from 'react-native'
 import { Input } from '../ui'
+import IngredientBar from './ingredient-bar'
 
 type Ingredient = {
   quantity: {
@@ -48,19 +48,6 @@ export function IngredientsList({
     return value
   }
 
-  const getUnitValue = (value: string) => {
-    if (value === "none") {
-      return ""
-    }
-    return value
-  }
-
-  const setUnitValue = (value: string) => {
-    if (value === "") {
-      return "none"
-    }
-    return value
-  }
 
   if (ingredients.length === 0) {
     return (
@@ -99,72 +86,24 @@ export function IngredientsList({
           
           {/* Ingredients */}
           <View>
-            {field.ingredients?.map((_: Ingredient, ingredientIndex: number) => (
-              <View key={`ingredient-${field.id}-${ingredientIndex}`} className="bg-white rounded-xl p-4 mb-4 border border-gray-200">
-                <View>
-                  <View className="flex-row">
-                    {/* Quantity Input */}
-                    <View className="flex-1 mr-2">
-                      <Controller
-                        name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.quantity.low`}
-                        control={control}
-                        rules={{
-                          pattern: {
-                            value: /^\d*\.?\d+$/,
-                            message: "Hoeveelheid moet een (decimaal) getal zijn"
-                          }
-                        }}
-                        render={({ field: { value, onChange }, fieldState: { error } }) => (
-                          <NumberInput
-                            label="Hoeveelheid"
-                            value={value?.toString() || ''}
-                            onChangeText={onChange}
-                            placeholder="leeg"
-                            error={error?.message || undefined}
-                          />
-                        )}
-                      />
-                    </View>
-                    
-                    {/* Unit Input */}
-                    <View className="flex-1 ml-2">
-                      <Controller
-                        name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.unit`}
-                        control={control}
-                        render={({ field: { value, onChange }, fieldState: { error } }) => (
-                          <Input
-                            label="Eenheid"
-                            value={getUnitValue(value) || ''}
-                            onChangeText={(text) => onChange(setUnitValue(text))}
-                            placeholder="gram, ml, stuks..."
-                            error={error?.message || undefined}
-                          />
-                        )}
-                      />
-                    </View>
-                  </View>
-                  
-                  {/* Description Input */}
-                  <View className="mt-4">
-                    <Controller
-                      name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}.description`}
-                      control={control}
-                      rules={{
-                        required: 'Lege naam is niet toegestaan',
-                      }}
-                      render={({ field: { value, onChange }, fieldState: { error } }) => (
-                        <Input
-                          label="Ingrediënt"
-                          value={value}
-                          onChangeText={onChange}
-                          placeholder="Naam van het ingrediënt"
-                          error={error?.message || undefined}
-                        />
-                      )}
-                    />
-                  </View>
-                </View>
-              </View>
+            {field.ingredients?.map((_, ingredientIndex: number) => (
+              <Controller
+                key={`ingredient-${field.id}-${ingredientIndex}`}
+                name={`ingredients.${groupIndex}.ingredients.${ingredientIndex}`}
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <IngredientBar
+                    ingredient={value}
+                    onUpdate={onChange}
+                    onDelete={() => {
+                      // Remove ingredient from array
+                      const currentIngredients = field.ingredients || []
+                      const updatedIngredients = currentIngredients.filter((_, index) => index !== ingredientIndex)
+                      onChange(updatedIngredients)
+                    }}
+                  />
+                )}
+              />
             ))}
           </View>
         </View>
