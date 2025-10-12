@@ -90,13 +90,13 @@ export default function IngredientBar({
           activeOpacity={0.8}
           className="mb-3"
         >
-          <View className="bg-white rounded-xl p-4 border border-gray-200 shadow-lg">
+          <View className="bg-white rounded-xl p-4 border border-gray-200" style={{ boxShadow: '2px 2px 0 #1E4D37'}}>
             <View className="flex-row items-center justify-between">
               <View className="flex-1 flex-row items-center">
                 {/* Quantity */}
                 {ingredient.quantity.low > 0 && (
                   <View className="bg-gray-100 rounded-lg px-3 py-1 mr-3">
-                    <Text className="text-gray-700 font-medium text-sm">
+                    <Text className="text-black font-medium text-sm">
                       {formatQuantity()}
                     </Text>
                   </View>
@@ -105,7 +105,7 @@ export default function IngredientBar({
                 {/* Unit */}
                 {formatUnit() && (
                   <View className="bg-gray-100 rounded-lg px-3 py-1 mr-3">
-                    <Text className="text-gray-700 font-medium text-sm">
+                    <Text className="text-black font-medium text-sm">
                       {formatUnit()}
                     </Text>
                   </View>
