@@ -194,7 +194,7 @@ export default function RecipeDetail() {
     <>
     <Stack.Screen options={{
       headerRight: () => (
-        <Pressable onPress={() => router.push(`/edit/${recipe.id}`)} className="p-2 rounded-full bg-white">
+        user?.id === recipe.profiles?.id && <Pressable onPress={() => router.push(`/edit/${recipe.id}`)} className="p-2 rounded-full bg-white">
           <Feather name="edit" size={24} color="black" />
         </Pressable>
       ),
