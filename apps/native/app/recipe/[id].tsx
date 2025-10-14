@@ -2,17 +2,22 @@ import { useRecipeDetail } from "@repo/lib/hooks/recipes";
 import { formatIngredientLine } from "@repo/lib/utils/ingredient-formatting";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Image } from "expo-image";
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, Animated, Dimensions, Pressable } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View, Dimensions, Pressable } from "react-native";
+import Animated, { 
+  useSharedValue, 
+  useAnimatedScrollHandler, 
+  useAnimatedStyle, 
+  interpolate, 
+  withTiming
+} from "react-native-reanimated";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { RecipeActionButtons } from "@/components/recipe/recipe-action-buttons";
 import { supabase } from "@/lib/utils/supabase/client";
-import { useTabAnimation } from "@/hooks/use-tab-animation";
 import supabaseImageLoader from "@repo/lib/utils/supabase-image-loader";
 import { cssInterop } from "nativewind";
 import { useAuthContext } from "@/hooks/use-auth-context";
-import { Button } from "@/components/ui";
 
 cssInterop(Image, { className: "style" });
 
@@ -33,16 +38,17 @@ export default function RecipeDetail() {
   ];
   
   const screenWidth = Dimensions.get('window').width;
+  const headerHeight = screenWidth * (4/3); // 3:4 aspect ratio
+  const tabHeight = 60; // Approximate tab height
   
-  // Use custom hook for tab animation
-  const { 
-    animatedValues, 
-    tabWidth
-  } = useTabAnimation({ 
-    width: screenWidth, 
-    nTabs: tabs.length, 
-    activeTab
-  });
+  // Scroll animation values
+  const scrollY = useSharedValue(0);
+  const tabUnderlineWidth = useSharedValue(0);
+  
+  // Initialize tab underline width
+  useEffect(() => {
+    tabUnderlineWidth.value = screenWidth / tabs.length;
+  }, [screenWidth, tabs.length, tabUnderlineWidth]);
   
   // Fetch recipe data using the hook
   const { data: recipe, isLoading, error } = useRecipeDetail(supabase, id);
@@ -54,6 +60,83 @@ export default function RecipeDetail() {
   const handleTabPress = (tabIndex: number) => {
     setActiveTab(tabIndex);
   };
+
+  // Scroll handler
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  // Animated styles
+  const headerImageStyle = useAnimatedStyle(() => {
+    const translateY = scrollY.value * 0.5; // Subtle parallax
+    const scale = Math.max(1.1, 1 + scrollY.value * 0.0001); // Prevent gaps
+    
+    return {
+      transform: [
+        { translateY },
+        { scale }
+      ],
+    };
+  });
+
+  const stickyTabsStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [headerHeight - tabHeight, headerHeight],
+      [0, -(headerHeight - tabHeight)],
+      'clamp'
+    );
+    
+    return {
+      transform: [{ translateY }],
+      zIndex: 10,
+    };
+  });
+
+
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    const backgroundColorOpacity = interpolate(
+      scrollY.value,
+      [headerHeight - 100, headerHeight],
+      [0, 1],
+      'clamp'
+    );
+    
+    const shadowOpacity = interpolate(
+      scrollY.value,
+      [headerHeight - 100, headerHeight],
+      [0, 0.1],
+      'clamp'
+    );
+    
+    return {
+      backgroundColor: `rgba(255, 255, 255, ${backgroundColorOpacity})`,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity,
+      shadowRadius: 3.84,
+      elevation: 5,
+    };
+  });
+
+  const tabUnderlineStyle = useAnimatedStyle(() => {
+    const translateX = (screenWidth / tabs.length) * activeTab;
+    
+    return {
+      transform: [{ translateX }],
+      width: tabUnderlineWidth.value,
+    };
+  });
+
+  // Animate tab underline when activeTab changes
+  useEffect(() => {
+    tabUnderlineWidth.value = withTiming(screenWidth / tabs.length, { duration: 300 });
+  }, [screenWidth, tabs.length, tabUnderlineWidth]);
 
   const toggleIngredient = (ingredientKey: string) => {
     setCheckedIngredients(prev => {
@@ -175,6 +258,51 @@ export default function RecipeDetail() {
           </View>
         </View>
       ))}
+
+{recipe.instructions.map((step, index) => (
+        <View key={`step-${index}-${step.slice(0, 20)}`} className="mb-6">
+          <View className="flex-row items-start">
+            <View className="w-8 h-8 bg-green-700 rounded-full items-center justify-center mr-4 mt-1">
+              <Text className="text-white font-bold text-sm">{index + 1}</Text>
+            </View>
+            <View className="flex-1">
+              <Text className="text-lg text-gray-900 leading-6">
+                {step}
+              </Text>
+            </View>
+          </View>
+        </View>
+      ))}
+
+{recipe.instructions.map((step, index) => (
+        <View key={`step-${index}-${step.slice(0, 20)}`} className="mb-6">
+          <View className="flex-row items-start">
+            <View className="w-8 h-8 bg-green-700 rounded-full items-center justify-center mr-4 mt-1">
+              <Text className="text-white font-bold text-sm">{index + 1}</Text>
+            </View>
+            <View className="flex-1">
+              <Text className="text-lg text-gray-900 leading-6">
+                {step}
+              </Text>
+            </View>
+          </View>
+        </View>
+      ))}
+
+{recipe.instructions.map((step, index) => (
+        <View key={`step-${index}-${step.slice(0, 20)}`} className="mb-6">
+          <View className="flex-row items-start">
+            <View className="w-8 h-8 bg-green-700 rounded-full items-center justify-center mr-4 mt-1">
+              <Text className="text-white font-bold text-sm">{index + 1}</Text>
+            </View>
+            <View className="flex-1">
+              <Text className="text-lg text-gray-900 leading-6">
+                {step}
+              </Text>
+            </View>
+          </View>
+        </View>
+      ))}
     </View>
   );
 
@@ -192,87 +320,120 @@ export default function RecipeDetail() {
 
   return (
     <>
-    <Stack.Screen options={{
-      headerRight: () => (
-        user?.id === recipe.profiles?.id && <Pressable onPress={() => router.push(`/edit/${recipe.id}`)} className="p-2 rounded-full bg-white">
-          <Feather name="edit" size={24} color="black" />
-        </Pressable>
-      ),
-    }} />
-    <View className="flex-1 flex-col bg-white w-full">
-      {/* Header Image */}
-      <View className="relative h-2/5">
-      <Image
-        source={{ 
-          // Width matches the recipe card background width, so we share
-          // the same cache.
-          uri: supabaseImageLoader({src: recipe.thumbnail, width: 500}) || "https://placekitten.com/900/1200" 
-        }}
-        className="w-full h-full"
-      />
-        
-        {/* Gradient Overlay */}
-        <LinearGradient
-          colors={['rgba(0,0,0,0.0)', 'rgba(0,0,0,0.0)', 'rgba(0,0,0,0.5)']}
-          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: "100%" }}
-        />
+    <Stack.Screen
+      options={{
+        headerTransparent: true,
+        headerLeft: () => (
+          <TouchableOpacity onPress={handleBack} className="p-2 bg-white rounded-full">
+            <Feather name="arrow-left" size={24} color="black" />
+          </TouchableOpacity>
+        ),
+        headerRight: () => (
+          user?.id === recipe.profiles?.id && (
+            <Pressable onPress={() => router.push(`/edit/${recipe.id}`)} className="p-2 bg-white rounded-full">
+              <Feather name="edit" size={24} color="black" />
+            </Pressable>
+          )
+        ),
+        headerTintColor: 'white',
+        headerBackground: () => <Animated.View style={[{ flex: 1 }, headerAnimatedStyle]} />,
+      }}
+    />
 
-        {/* Action Buttons */}
-        <View className="absolute bottom-0 right-0 h-full w-full flex-col justify-end p-4">
-          <View className="flex-row justify-between items-end">
-            <View className="flex-col justify-start flex-1 pr-4">
-              <Text className="text-white text-2xl mb-2 font-serif font-bold">{recipe.title}</Text>
-              <Text className="text-white text-base mb-2 font-montserrat">van {recipe.profiles?.display_name}</Text>
-            </View>
-            <View className="w-12">
-              <RecipeActionButtons
-                recipe={recipe}
-                theme="dark"
-                size="lg"
-              />
+    <View className="flex-1 bg-white">
+      <Animated.ScrollView 
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        className="flex-1"
+      >
+        {/* Header Image with Parallax */}
+        <View style={{ height: headerHeight, overflow: 'hidden' }}>
+          <Animated.View style={headerImageStyle}>
+            <Image
+              source={{ 
+                uri: supabaseImageLoader({src: recipe.thumbnail, width: 500}) || "https://placekitten.com/900/1200" 
+              }}
+              style={{
+                width: screenWidth * 1.1, // Slightly wider to prevent gaps
+                height: headerHeight * 1.1,
+                marginLeft: -(screenWidth * 0.05), // Center the oversized image
+              }}
+            />
+          </Animated.View>
+          
+          {/* Gradient Overlay */}
+          <LinearGradient
+            colors={['rgba(0,0,0,0.0)', 'rgba(0,0,0,0.0)', 'rgba(0,0,0,0.5)']}
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: "100%" }}
+          />
+
+          {/* Action Buttons */}
+          <View className="absolute bottom-0 right-0 h-full w-full flex-col justify-end p-4">
+            <View className="flex-row justify-between items-end">
+              <View className="flex-col justify-start flex-1 pr-4">
+                <Text className="text-white text-2xl mb-2 font-serif font-bold">{recipe.title}</Text>
+                <Text className="text-white text-base mb-2 font-montserrat">van {recipe.profiles?.display_name}</Text>
+              </View>
+              <View className="w-12">
+                <RecipeActionButtons
+                  recipe={recipe}
+                  theme="dark"
+                  size="lg"
+                />
+              </View>
             </View>
           </View>
         </View>
-      </View>
 
-      {/* Tab Navigation */}
-      <View className="flex-row border-b border-gray-200">
-        {tabs.map((tab, index) => (
-          <TouchableOpacity
-            key={tab.key}
-            onPress={() => handleTabPress(index)}
-            className="flex-1 py-4 items-center relative"
-          >
-            <Text
-              className={`text-xl font-medium ${
-                activeTab === index ? "text-green-700" : "text-gray-500"
-              }`}
-            >
-              {tab.label}
-            </Text>
-            
-            {/* Animated underline for each tab */}
-            <Animated.View
-              style={{
+        {/* Tab Navigation - becomes sticky */}
+        <Animated.View 
+          style={[
+            {
+              backgroundColor: 'white',
+              borderBottomWidth: 1,
+              borderBottomColor: '#e5e7eb',
+            },
+            stickyTabsStyle
+          ]}
+        >
+          <View className="flex-row">
+            {tabs.map((tab, index) => (
+              <TouchableOpacity
+                key={tab.key}
+                onPress={() => handleTabPress(index)}
+                className="flex-1 py-4 items-center relative"
+              >
+                <Text
+                  className={`text-xl font-medium ${
+                    activeTab === index ? "text-green-700" : "text-gray-500"
+                  }`}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          
+          {/* Animated underline */}
+          <Animated.View
+            style={[
+              {
                 position: 'absolute',
                 bottom: 0,
                 height: 2,
                 backgroundColor: '#1E4D37',
-                width: animatedValues[index],
-                left: Animated.add(
-                  Animated.divide(Animated.subtract(tabWidth, animatedValues[index]), 2),
-                  0
-                ),
-              }}
-            />
-          </TouchableOpacity>
-        ))}
-      </View>
+              },
+              tabUnderlineStyle
+            ]}
+          />
+        </Animated.View>
 
-      {/* Tab Content */}
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {renderTabContent()}
-      </ScrollView>
+        {/* Tab Content */}
+        <View style={{ paddingTop: tabHeight }}>
+          {renderTabContent()}
+        </View>
+      </Animated.ScrollView>
     </View>
     </>
   );
