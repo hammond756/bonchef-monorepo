@@ -5,11 +5,9 @@ import {
   Modal,
   TouchableOpacity,
   ScrollView,
-  Alert,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+} from 'react-native';
 import { Input, NumberInput } from '../ui'
 
 type Ingredient = {
@@ -27,7 +25,6 @@ interface IngredientEditModalProps {
   ingredient: Ingredient
   onClose: () => void
   onSave: (ingredient: Ingredient) => void
-  onDelete: () => void
 }
 
 export default function IngredientEditModal({
@@ -35,7 +32,6 @@ export default function IngredientEditModal({
   ingredient,
   onClose,
   onSave,
-  onDelete,
 }: IngredientEditModalProps) {
   const [formData, setFormData] = useState({
     quantityLow: ingredient.quantity.low.toString(),
@@ -88,27 +84,6 @@ export default function IngredientEditModal({
     }
 
     onSave(updatedIngredient)
-  }
-
-  const handleDelete = () => {
-    Alert.alert(
-      'Ingrediënt verwijderen',
-      'Weet je zeker dat je dit ingrediënt wilt verwijderen?',
-      [
-        {
-          text: 'Annuleren',
-          style: 'cancel',
-        },
-        {
-          text: 'Verwijderen',
-          style: 'destructive',
-          onPress: () => {
-            onDelete()
-            onClose()
-          },
-        },
-      ]
-    )
   }
 
   const updateFormData = (field: string, value: string) => {
@@ -188,17 +163,6 @@ export default function IngredientEditModal({
             />
           </View>
         </ScrollView>
-
-        {/* Delete Button */}
-        <View className="bg-white border-t border-gray-200 p-4">
-          <TouchableOpacity
-            onPress={handleDelete}
-            className="flex-row items-center justify-center py-3 px-4 bg-red-50 rounded-lg border border-red-200"
-          >
-            <Ionicons name="trash-outline" size={20} color="#DC2626" />
-            <Text className="text-red-600 font-medium ml-2">Ingrediënt verwijderen</Text>
-          </TouchableOpacity>
-        </View>
       </KeyboardAvoidingView>
     </Modal>
   )

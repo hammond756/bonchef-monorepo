@@ -16,13 +16,11 @@ type Ingredient = {
 interface IngredientBarProps {
   ingredient: Ingredient
   onUpdate: (updatedIngredient: Ingredient) => void
-  onDelete: () => void
 }
 
 export default function IngredientBar({
   ingredient,
   onUpdate,
-  onDelete,
 }: IngredientBarProps) {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [pressAnim] = useState(new Animated.Value(0))
@@ -90,7 +88,7 @@ export default function IngredientBar({
           activeOpacity={0.8}
           className="mb-3"
         >
-          <View className="bg-white rounded-xl p-4 border border-gray-200" style={{ boxShadow: '2px 2px 0 #1E4D37'}}>
+          <View className="bg-white rounded-xl p-4 border border-gray-200" style={{ boxShadow: '1px 1px 0 #CCCCCC'}}>
             <View className="flex-row items-center justify-between">
               <View className="flex-1 flex-row items-center">
                 {/* Quantity */}
@@ -131,7 +129,6 @@ export default function IngredientBar({
         ingredient={ingredient}
         onClose={handleModalClose}
         onSave={handleSave}
-        onDelete={onDelete}
       />
     </>
   )

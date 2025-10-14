@@ -95,12 +95,6 @@ export function IngredientsList({
                   <IngredientBar
                     ingredient={value}
                     onUpdate={onChange}
-                    onDelete={() => {
-                      // Remove ingredient from array
-                      const currentIngredients = field.ingredients || []
-                      const updatedIngredients = currentIngredients.filter((_, index) => index !== ingredientIndex)
-                      onChange(updatedIngredients)
-                    }}
                   />
                 )}
               />
