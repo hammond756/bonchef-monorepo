@@ -258,51 +258,6 @@ export default function RecipeDetail() {
           </View>
         </View>
       ))}
-
-{recipe.instructions.map((step, index) => (
-        <View key={`step-${index}-${step.slice(0, 20)}`} className="mb-6">
-          <View className="flex-row items-start">
-            <View className="w-8 h-8 bg-green-700 rounded-full items-center justify-center mr-4 mt-1">
-              <Text className="text-white font-bold text-sm">{index + 1}</Text>
-            </View>
-            <View className="flex-1">
-              <Text className="text-lg text-gray-900 leading-6">
-                {step}
-              </Text>
-            </View>
-          </View>
-        </View>
-      ))}
-
-{recipe.instructions.map((step, index) => (
-        <View key={`step-${index}-${step.slice(0, 20)}`} className="mb-6">
-          <View className="flex-row items-start">
-            <View className="w-8 h-8 bg-green-700 rounded-full items-center justify-center mr-4 mt-1">
-              <Text className="text-white font-bold text-sm">{index + 1}</Text>
-            </View>
-            <View className="flex-1">
-              <Text className="text-lg text-gray-900 leading-6">
-                {step}
-              </Text>
-            </View>
-          </View>
-        </View>
-      ))}
-
-{recipe.instructions.map((step, index) => (
-        <View key={`step-${index}-${step.slice(0, 20)}`} className="mb-6">
-          <View className="flex-row items-start">
-            <View className="w-8 h-8 bg-green-700 rounded-full items-center justify-center mr-4 mt-1">
-              <Text className="text-white font-bold text-sm">{index + 1}</Text>
-            </View>
-            <View className="flex-1">
-              <Text className="text-lg text-gray-900 leading-6">
-                {step}
-              </Text>
-            </View>
-          </View>
-        </View>
-      ))}
     </View>
   );
 
