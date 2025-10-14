@@ -1,8 +1,8 @@
-import React from "react"
+import type React from "react"
 import { Image } from "expo-image"
 import { View } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
-import { RecipeDetail } from "@repo/lib/services/recipes"
+import type { RecipeDetail } from "@repo/lib/services/recipes"
 import { cssInterop } from "nativewind";
 import supabaseImageLoader from "@repo/lib/utils/supabase-image-loader"
 
@@ -27,13 +27,13 @@ export function RecipeCardBackground({
   blur = false
 }: Readonly<RecipeCardBackgroundProps>) {
   return (
-    <View className={`relative overflow-hidden ${className}`}>
+    <View className={`flex-1 overflow-hidden ${className}`}>
       {/* Recipe Image */}
       <Image
         source={{ 
           uri: supabaseImageLoader({src: recipe.thumbnail, width: 500}) || "https://placekitten.com/900/1200" 
         }}
-        className="w-full h-full blur-sm"
+        className="absolute w-full h-full blur-sm"
         contentFit="cover"
         placeholderContentFit="cover"
         blurRadius={blur ? 50 : 0}
@@ -52,7 +52,9 @@ export function RecipeCardBackground({
       />
       
       {/* Content Overlay */}
-      {children}
+      <View className="flex-1 relative z-10">
+        {children}
+      </View>
     </View>
   )
 }

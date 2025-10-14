@@ -34,29 +34,27 @@ export function InstructionsList({
 		<View>
 			{instructions.map((_, index) => (
 				<View key={`instruction-${index}`} className="space-y-4">
-					<View className="flex-1 mb-4">
-						<Controller
-							name={`instructions.${index}`}
-							control={control}
-							rules={{
-								required: "Lege bereidingstappen zijn niet toegestaan",
-							}}
-							render={({
-								field: { value, onChange },
-								fieldState: { error },
-							}) => (
-								<TextArea
-									label={`Stap ${index + 1}`}
-									value={value}
-									onChangeText={onChange}
-									placeholder={`Beschrijving voor stap ${index + 1}`}
-									minHeight={100}
-									maxHeight={120}
-									error={error?.message || undefined}
-								/>
-							)}
-						/>
-					</View>
+					<Controller
+						name={`instructions.${index}`}
+						control={control}
+						rules={{
+							required: "Lege bereidingstappen zijn niet toegestaan",
+						}}
+						render={({
+							field: { value, onChange },
+							fieldState: { error },
+						}) => (
+							<TextArea
+								label={`Stap ${index + 1}`}
+								value={value}
+								onChangeText={onChange}
+								placeholder={`Beschrijving voor stap ${index + 1}`}
+								minHeight={100}
+								maxHeight={120}
+								error={error?.message || undefined}
+							/>
+						)}
+					/>
 				</View>
 			))}
 		</View>

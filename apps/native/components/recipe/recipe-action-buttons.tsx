@@ -1,5 +1,5 @@
 import type { RecipeDetail } from "@repo/lib/services/recipes"
-import { Image, Text, TouchableOpacity, View } from "react-native"
+import { Image, Pressable, Text, View } from "react-native"
 interface RecipeActionButtonsProps {
     recipe: RecipeDetail
     theme?: "light" | "dark"
@@ -13,17 +13,16 @@ interface RecipeActionButtonsProps {
 export function RecipeActionButtons({ 
     recipe, 
     theme = "dark", 
-    size = "lg",
 }: Readonly<RecipeActionButtonsProps>) {
-    const iconSize = size === "lg" ? 24 : 20
-    const buttonSize = size === "lg" ? 48 : 40
+    const iconSize = 45
+    const buttonSize = iconSize * 1.5
     const textColor = theme === "dark" ? "text-white" : "text-gray-900"
 
     return (
         <View className="flex items-center justify-start gap-2">
             {/* Profile Button */}
             {recipe.profiles && (
-                <TouchableOpacity
+                <Pressable
                     onPress={() => {}}
                     className="flex items-center justify-center rounded-full"
                     style={{ width: buttonSize, height: buttonSize }}
@@ -31,16 +30,17 @@ export function RecipeActionButtons({
                     {recipe.profiles.avatar ? (
                         <Image 
                             source={{ uri: recipe.profiles.avatar }}
-                            style={{ width: iconSize, height: iconSize, borderRadius: iconSize / 2 }}
+                            className="rounded-full object-cover"
+                            style={{ width: iconSize, height: iconSize}}
                         />
                     ) : (
-                        <View className="flex items-center justify-center rounded-full bg-black/50" style={{ width: iconSize * 2, height: iconSize * 2 }}>
+                        <View className="flex items-center justify-center rounded-full bg-black/50" style={{ width: iconSize, height: iconSize }}>
                             <Text className={`text-lg font-bold ${textColor} text-center`}>
                                 {recipe.profiles.display_name?.charAt(0) || "?"}
                             </Text>
                         </View>
                     )}
-                </TouchableOpacity>
+                </Pressable>
             )}
         </View>
     )
