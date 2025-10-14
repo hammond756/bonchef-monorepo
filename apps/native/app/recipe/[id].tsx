@@ -429,10 +429,7 @@ export default function RecipeDetail() {
           />
         </Animated.View>
 
-        {/* Tab Content */}
-        <View style={{ paddingTop: tabHeight }}>
-          {renderTabContent()}
-        </View>
+        {renderTabContent()}
       </Animated.ScrollView>
     </View>
     </>
