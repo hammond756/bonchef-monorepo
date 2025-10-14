@@ -28,10 +28,10 @@ export default function TextArea({
   return (
     <View className={`mb-6 ${className}`}>
       {label && (
-        <Text className="text-sm text-gray-700 mb-3 font-medium">{label}</Text>
+        <Text className="text-sm text-gray-700 mb-3 font-medium font-montserrat">{label}</Text>
       )}
       <TextInput
-        className={`bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm ${
+        className={`bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm font-montserrat ${
           error ? 'border-red-500' : 'border-gray-300'
         }`}
         onChangeText={onChangeText}
@@ -49,17 +49,17 @@ export default function TextArea({
         }}
       />
       {error && (
-        <Text className="text-red-500 text-xs mt-2">{error}</Text>
+        <Text className="text-red-500 text-xs mt-2 font-montserrat">{error}</Text>
       )}
       {(helperText || maxLength) && (
         <View className="flex-row justify-between items-center mt-2">
           <View className="">
             {helperText && (
-              <Text className="text-sm text-gray-500">{helperText}</Text>
+              <Text className="text-sm text-gray-500 font-montserrat">{helperText}</Text>
             )}
           </View>
           {maxLength && (
-            <Text className="text-xs text-gray-400">
+            <Text className="text-xs text-gray-400 font-montserrat">
               {value.length}/{maxLength}
             </Text>
           )}

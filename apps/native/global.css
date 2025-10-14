@@ -3,23 +3,12 @@
 @tailwind utilities;
 
 @layer base {
-  /* Set default font family for body text */
-  body {
-    font-family: "Montserrat-Medium", sans-serif;
-  }
-
-  /* Set serif font for headings */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: "Lora-Regular", serif;
-    font-weight: 700;
-  }
-
   /* Utility classes for font families */
-  .font-serif {
+  .font-lora {
     font-family: "Lora-Regular", serif;
-  }
+  } 
 
-  .font-sans {
+  .font-montserrat {
     font-family: "Montserrat-Regular", sans-serif;
   }
 }

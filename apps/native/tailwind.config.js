@@ -7,7 +7,7 @@ module.exports = {
     fontFamily: {
       'montserrat': ['Montserrat-Regular'],
       'lora': ['Lora-Regular'],
-      'sans': ['Montserrat-Medium'],
+      'sans': ['Montserrat-Regular'],
       'serif': ['Lora-Regular'],
     },
   },

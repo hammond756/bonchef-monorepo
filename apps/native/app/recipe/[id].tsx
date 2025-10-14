@@ -18,6 +18,7 @@ import { supabase } from "@/lib/utils/supabase/client";
 import supabaseImageLoader from "@repo/lib/utils/supabase-image-loader";
 import { cssInterop } from "nativewind";
 import { useAuthContext } from "@/hooks/use-auth-context";
+import { RecipeSourceDisplay } from "@/components/recipe/recipe-source-display";
 
 cssInterop(Image, { className: "style" });
 
@@ -193,7 +194,7 @@ export default function RecipeDetail() {
         <View key={category.name} className="mb-6">
           {category.name !== "no_group" && (
             <Text
-              className="text-xl tracking-wider font-medium text-gray-900 mb-3 font-serif"
+              className="mb-3 text-xl font-semibold font-lora"
             >
             {category.name}
           </Text>)}
@@ -207,7 +208,7 @@ export default function RecipeDetail() {
             return (
               <TouchableOpacity 
                 key={ingredientKey} 
-                className="flex-row items-start mb-3"
+                className="flex-row items-start mb-5"
                 onPress={() => toggleIngredient(ingredientKey)}
                 activeOpacity={0.7}
               >
@@ -224,9 +225,9 @@ export default function RecipeDetail() {
                   )}
                 </View>
                 <View className="flex-1">
-                  <Text className={`text-lg text-gray-900 font-montserrat leading-6 ${isChecked ? 'line-through text-gray-500' : ''}`}>
+                  <Text className={`text-xl text-gray-900 leading-6 font-montserrat ${isChecked ? 'line-through text-gray-500' : ''}`}>
                     {formatted.quantity && (
-                      <Text className="font-semibold">
+                      <Text className="font-semibold font-montserrat">
                         {formatted.quantity}
                       </Text>
                     )}
@@ -327,8 +328,8 @@ export default function RecipeDetail() {
           <View className="absolute bottom-0 right-0 h-full w-full flex-col justify-end p-4">
             <View className="flex-row justify-between items-end">
               <View className="flex-col justify-start flex-1 pr-4">
-                <Text className="text-white text-2xl mb-2 font-serif font-bold">{recipe.title}</Text>
-                <Text className="text-white text-base mb-2 font-montserrat">van {recipe.profiles?.display_name}</Text>
+                <Text className="text-white text-2xl mb-2 font-lora font-bold">{recipe.title}</Text>
+                <RecipeSourceDisplay recipe={recipe} />
               </View>
               <View className="w-12">
                 <RecipeActionButtons
@@ -360,7 +361,7 @@ export default function RecipeDetail() {
                 className="flex-1 py-4 items-center relative"
               >
                 <Text
-                  className={`text-xl font-medium ${
+                  className={`text-xl font-medium font-montserrat ${
                     activeTab === index ? "text-green-700" : "text-gray-500"
                   }`}
                 >

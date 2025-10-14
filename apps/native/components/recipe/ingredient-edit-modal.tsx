@@ -109,15 +109,15 @@ export default function IngredientEditModal({
         <View className="bg-white border-b border-gray-200 px-4 py-4">
           <View className="flex-row items-center justify-between">
             <TouchableOpacity onPress={onClose}>
-              <Text className="text-blue-600 text-base font-medium">Annuleren</Text>
+              <Text className="text-blue-600 text-base font-medium font-montserrat">Annuleren</Text>
             </TouchableOpacity>
             
-            <Text className="text-lg font-semibold text-gray-900">
+            <Text className="text-lg font-semibold text-gray-900 font-montserrat">
               Ingrediënt bewerken
             </Text>
             
             <TouchableOpacity onPress={handleSave}>
-              <Text className="text-blue-600 text-base font-semibold">Opslaan</Text>
+              <Text className="text-blue-600 text-base font-semibold font-montserrat">Opslaan</Text>
             </TouchableOpacity>
           </View>
         </View>

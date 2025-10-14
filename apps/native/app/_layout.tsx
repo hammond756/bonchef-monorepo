@@ -41,6 +41,7 @@ export default function Layout() {
                 headerTintColor: '#000',
                 headerTitleStyle: {
                   fontWeight: 'bold',
+                  fontFamily: 'Montserrat-Regular',
                 },
                 title: "",
                 headerBackButtonDisplayMode: "minimal",

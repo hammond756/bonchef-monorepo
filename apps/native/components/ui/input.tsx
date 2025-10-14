@@ -35,12 +35,12 @@ export default function Input({
 
   return (
     <View className={`mb-6 ${className}`}>
-      <Text className="text-sm text-gray-700 mb-3 font-medium">{label}</Text>
+      <Text className="text-sm text-gray-700 mb-3 font-medium font-montserrat">{label}</Text>
       <View className={`flex-row items-center bg-white rounded-lg px-4 py-5 border border-gray-300 shadow-sm ${
         error ? 'border-red-500' : 'border-gray-300'
       }`}>
         <TextInput
-          className="flex-1 text-gray-900 py-0"
+          className="flex-1 text-gray-900 py-0 font-montserrat"
           onChangeText={onChangeText}
           value={value}
           placeholder={placeholder}
@@ -61,10 +61,10 @@ export default function Input({
         )}
       </View>
       {helperText && !error && (
-        <Text className="text-sm text-gray-500 mt-2">{helperText}</Text>
+        <Text className="text-sm text-gray-500 mt-2 font-montserrat">{helperText}</Text>
       )}
       {error && (
-        <Text className="text-red-500 text-xs mt-2">{error}</Text>
+        <Text className="text-red-500 text-xs mt-2 font-montserrat">{error}</Text>
       )}
     </View>
   )
