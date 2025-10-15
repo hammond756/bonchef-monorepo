@@ -248,11 +248,11 @@ export default function RecipeDetail() {
       {recipe.instructions.map((step, index) => (
         <View key={`step-${index}-${step.slice(0, 20)}`} className="mb-6">
           <View className="flex-row items-start">
-            <View className="w-8 h-8 bg-green-700 rounded-full items-center justify-center mr-4 mt-1">
-              <Text className="text-white font-bold text-sm">{index + 1}</Text>
+            <View className="w-8 h-8 bg-[#1E4D37] rounded-full items-center justify-center mr-4 mt-1">
+              <Text className="text-white font-bold text-sm font-montserrat">{index + 1}</Text>
             </View>
             <View className="flex-1">
-              <Text className="text-lg text-gray-900 leading-6">
+              <Text className="text-lg text-gray-900 leading-6 font-montserrat">
                 {step}
               </Text>
             </View>
@@ -362,7 +362,7 @@ export default function RecipeDetail() {
               >
                 <Text
                   className={`text-xl font-medium font-montserrat ${
-                    activeTab === index ? "text-green-700" : "text-gray-500"
+                    activeTab === index ? "text-[#1E4D37]" : "text-gray-500"
                   }`}
                 >
                   {tab.label}
