@@ -84,9 +84,10 @@ export function SlideInOverlay({ isOpen, onClose, children }: SlideInOverlayProp
     </Animated.View>}
     <Modal
       visible={isOpen}
+      // backdropColor="rgba(0, 0, 0, 0.3)"
       transparent
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="overFullScreen"
       onRequestClose={onClose}
     >
       <View className="flex-1 justify-end">

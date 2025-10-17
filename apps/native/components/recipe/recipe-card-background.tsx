@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient"
 import type { RecipeDetail } from "@repo/lib/services/recipes"
 import { cssInterop } from "nativewind";
 import supabaseImageLoader from "@repo/lib/utils/supabase-image-loader"
+import { useEffect, useState, useCallback } from "react"
 
 // https://github.com/expo/expo/issues/27783#issuecomment-2622469639
 cssInterop(Image, { className: "style" });
@@ -26,17 +27,31 @@ export function RecipeCardBackground({
   className = "",
   blur = false
 }: Readonly<RecipeCardBackgroundProps>) {
+  const [imageUrl, setImageUrl] = useState<string>(supabaseImageLoader({src: recipe.thumbnail, width: 500}))
+
+  const generateImageUrl = useCallback(() => {
+    return supabaseImageLoader({src: recipe.thumbnail, width: 500})
+  }, [recipe.thumbnail])
+
+  useEffect(() => {
+    const newImageUrl = generateImageUrl()
+    setImageUrl(newImageUrl)
+  }, [generateImageUrl])
+
   return (
     <View className={`flex-1 overflow-hidden ${className}`}>
       {/* Recipe Image */}
       <Image
+        key={recipe.id}
         source={{ 
-          uri: supabaseImageLoader({src: recipe.thumbnail, width: 500}) || recipe.thumbnail
+          uri: imageUrl
         }}
         className="absolute w-full h-full blur-sm"
         contentFit="cover"
         placeholderContentFit="cover"
         blurRadius={blur ? 50 : 0}
+        cachePolicy="memory-disk" // Ensure proper caching
+        recyclingKey={recipe.id} // Help with memory management
       />
       
       {/* Gradient Overlay */}
