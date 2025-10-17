@@ -38,7 +38,7 @@ export function RecipeCollectionCard({
         <View className="absolute right-0 bottom-0 left-0 p-4">
           {/* Recipe Title */}
           <Text 
-            className="text font-bold text-white leading-tight font-serif"
+            className="text-lg font-bold leading-relaxed text-white font-lora"
             numberOfLines={2}
           >
             {recipe.title}

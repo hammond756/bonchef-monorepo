@@ -110,7 +110,7 @@ export default function IngredientBar({
                 )}
                 
                 {/* Description */}
-                <Text className="text-gray-900 font-medium text-base flex-1" numberOfLines={1}>
+                <Text className="text-gray-900 font-medium font-montserrat text-base flex-1" numberOfLines={1}>
                   {ingredient.description}
                 </Text>
               </View>

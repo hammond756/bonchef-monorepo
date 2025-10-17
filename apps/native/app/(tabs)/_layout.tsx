@@ -33,7 +33,7 @@ export default function TabsLayout() {
           },
           headerTintColor: "#000",
           headerTitleStyle: {
-            fontFamily: "Lora",
+            fontFamily: "Montserrat-Regular",
           },
           headerRight: () => (
             <TouchableOpacity onPress={async () => {
