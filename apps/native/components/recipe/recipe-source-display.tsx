@@ -1,8 +1,8 @@
 import { Text } from "react-native"
-import { Recipe } from "../../lib/types"
+import type { RecipeDetail } from "@repo/lib/services/recipes"
 
 interface RecipeSourceDisplayProps {
-    recipe: Recipe
+    recipe: RecipeDetail
 }
 
 /**
