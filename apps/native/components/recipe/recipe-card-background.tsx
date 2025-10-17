@@ -31,7 +31,7 @@ export function RecipeCardBackground({
       {/* Recipe Image */}
       <Image
         source={{ 
-          uri: supabaseImageLoader({src: recipe.thumbnail, width: 500}) || "https://placekitten.com/900/1200" 
+          uri: supabaseImageLoader({src: recipe.thumbnail, width: 500}) || recipe.thumbnail
         }}
         className="absolute w-full h-full blur-sm"
         contentFit="cover"

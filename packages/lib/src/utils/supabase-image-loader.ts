@@ -1,8 +1,14 @@
 export default function supabaseImageLoader({ src, width, quality }: { src: string, width: number, quality?: number }) {
     
-    // If src is empty or not a supabase image, return null to trigger fallback
-    if (!src || !src.includes("/storage/v1/object/")) {
+    // If src is empty, return null to trigger fallback
+    if (!src) {
         return null
+    }
+
+    // If it's not a supabase image, return the original image, this could
+    // also be a render api url (v1/render/image/public/)
+    if (!src.includes("/storage/v1/object/")) {
+        return src
     }
 
     // Get the path of the image
