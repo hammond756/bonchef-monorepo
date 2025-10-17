@@ -30,6 +30,7 @@ export default function RecipeDetail() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<number>(0);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
+  const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
   const { profile: user } = useAuthContext();
 
   // Define tabs configuration
@@ -150,6 +151,18 @@ export default function RecipeDetail() {
     });
   };
 
+  const toggleStep = (stepIndex: number) => {
+    setCheckedSteps(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(stepIndex)) {
+        newSet.delete(stepIndex);
+      } else {
+        newSet.add(stepIndex);
+      }
+      return newSet;
+    });
+  };
+
   // Show loading state
   if (isLoading) {
     return (
@@ -247,20 +260,43 @@ export default function RecipeDetail() {
 
   const renderPreparation = () => (
     <View className="px-4 py-6">
-      {recipe.instructions.map((step, index) => (
-        <View key={`step-${index}-${step.slice(0, 20)}`} className="mb-6">
-          <View className="flex-row items-start">
-            <View className="w-8 h-8 bg-[#ebffed] rounded-full items-center justify-center mr-4 mt-1">
-              <Text className="text-gray-950 font-bold text-sm font-montserrat">{index + 1}</Text>
+      {recipe.instructions.map((step, index) => {
+        const isChecked = checkedSteps.has(index);
+        
+        return (
+          <TouchableOpacity 
+            key={`step-${index}-${step.slice(0, 20)}`} 
+            className="mb-6"
+            onPress={() => toggleStep(index)}
+            activeOpacity={0.7}
+          >
+            <View className="flex-row items-start">
+              <View className={`w-8 h-8 rounded-full items-center justify-center mr-4 mt-1 ${
+                isChecked ? 'bg-green-600' : 'bg-[#ebffed]'
+              }`}>
+                {isChecked ? (
+                  <Ionicons 
+                    name="checkmark" 
+                    size={16} 
+                    color="white" 
+                  />
+                ) : (
+                  <Text className="text-gray-950 font-bold text-sm font-montserrat">{index + 1}</Text>
+                )}
+              </View>
+              <View className="flex-1">
+                <Text className={`text-lg leading-normal font-montserrat ${
+                  isChecked 
+                    ? 'line-through text-gray-500' 
+                    : 'text-gray-900'
+                }`}>
+                  {step}
+                </Text>
+              </View>
             </View>
-            <View className="flex-1">
-              <Text className="text-lg text-gray-900 leading-normal font-montserrat">
-                {step}
-              </Text>
-            </View>
-          </View>
-        </View>
-      ))}
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 

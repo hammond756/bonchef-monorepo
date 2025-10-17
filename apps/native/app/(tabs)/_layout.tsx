@@ -33,12 +33,12 @@ export default function TabsLayout() {
           },
           headerStyle: {
             backgroundColor: "#fff",
-            borderBottomColor: "#000000",
-            borderBottomWidth: 0
+            shadowOpacity: 0,
           },
           headerTintColor: "#000",
           headerTitleStyle: {
-            fontFamily: "Montserrat-Regular",
+            fontFamily: "Lora-Regular",
+            fontSize: 20,
           },
           headerRight: () => (
             <TouchableOpacity onPress={async () => {

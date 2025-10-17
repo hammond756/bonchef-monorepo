@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TouchableOpacity, Modal, Dimensions, View, Platform, Animated } from 'react-native';
+import { TouchableOpacity, Modal, Dimensions, View, Animated } from 'react-native';
 import { useKeyboardHandler } from 'react-native-keyboard-controller';
 import { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import ReanimatedAnimated from 'react-native-reanimated';

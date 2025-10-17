@@ -12,7 +12,7 @@ export function ImportOptions({ onSelectMode, onClose }: ImportOptionsProps) {
     <View className="p-6 flex-1">
       {/* Header */}
       <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-xl font-semibold text-gray-900">Recept importeren</Text>
+        <Text className="text-xl font-semibold font-lora text-gray-900">Recept importeren</Text>
         <TouchableOpacity onPress={() => onSelectMode('url')} className="p-2">
           <Ionicons name="close" size={24} color="#6B7280" onPress={onClose} />
         </TouchableOpacity>

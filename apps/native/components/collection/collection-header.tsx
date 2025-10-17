@@ -1,19 +1,13 @@
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-type SortOrder = 'newest' | 'oldest';
-
 interface CollectionHeaderProps {
-  sortOrder: SortOrder;
-  onSortChange: (sort: SortOrder) => void;
   offlineCount: number;
   onProcessOfflineImports: () => void;
   isProcessing: boolean;
 }
 
 export function CollectionHeader({ 
-  sortOrder, 
-  onSortChange,
   offlineCount,
   onProcessOfflineImports,
   isProcessing
@@ -21,40 +15,29 @@ export function CollectionHeader({
 
   return (
     <View className="bg-white px-4 pt-4 pb-2">      
-      {/* Sort Order and View Options */}
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center">
+      {/* Offline Imports Button - Only show when there are offline imports to process */}
+      {offlineCount > 0 && (
+        <View className="flex-row items-center justify-end">
           <TouchableOpacity
-            onPress={() => onSortChange(sortOrder === 'newest' ? 'oldest' : 'newest')}
-            className="bg-green-100 px-3 py-1 rounded-full flex-row items-center"
+            onPress={onProcessOfflineImports}
+            disabled={isProcessing}
+            className={`px-3 py-1 rounded-full flex-row items-center ${
+              isProcessing 
+                ? 'bg-gray-400' 
+                : 'bg-green-600'
+            }`}
           >
-            <Text className="text-green-700 text-sm font-medium mr-1">
-              {sortOrder === 'newest' ? 'Nieuwste' : 'Oudste'}
+            {isProcessing ? (
+              <ActivityIndicator size={14} color="white" />
+            ) : (
+              <Ionicons name="download-outline" size={14} color="white" />
+            )}
+            <Text className="text-white text-sm font-medium ml-1">
+              {isProcessing ? 'Verwerken...' : `${offlineCount} nog te verwerken`}
             </Text>
-            <Ionicons name="chevron-down" size={14} color="#15803d" />
           </TouchableOpacity>
         </View>
-        
-        {/* Offline Imports Button */}
-        {offlineCount > 0 && <TouchableOpacity
-          onPress={onProcessOfflineImports}
-          disabled={isProcessing || offlineCount === 0}
-          className={`px-3 py-1 rounded-full flex-row items-center ${
-            isProcessing || offlineCount === 0 
-              ? 'bg-gray-400' 
-              : 'bg-[#1E4D37]'
-          }`}
-        >
-          {isProcessing ? (
-            <ActivityIndicator size={14} color="white" />
-          ) : (
-            <Ionicons name="download-outline" size={14} color="white" />
-          )}
-          <Text className="text-white text-sm font-medium ml-1">
-            {isProcessing ? 'Verwerken...' : `${offlineCount} not te verwerken`}
-          </Text>
-        </TouchableOpacity>}
-      </View>
+      )}
     </View>
   );
 }
