@@ -19,7 +19,7 @@ export default function GoogleButton({
 
     <TouchableOpacity
       onPress={onPress}
-      className={`flex-row items-center bg-white border border-[#dbdbdb] rounded px-[15px] py-[10px] justify-center shadow-sm ${className}`}
+      className={`flex-row items-center bg-white border border-[#dbdbdb] rounded-lg py-4 px-5 justify-center shadow-sm ${className}`}
       activeOpacity={0.8}
       disabled={disabled}
     >
