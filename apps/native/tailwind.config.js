@@ -5,7 +5,7 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     fontFamily: {
-      'montserrat': ['Montserrat-Regular'],
+      'montserrat': ['Montserrat-Regular', 'Montserrat-Light'],
       'lora': ['Lora-Regular'],
       'sans': ['Montserrat-Regular'],
       'serif': ['Lora-Regular'],

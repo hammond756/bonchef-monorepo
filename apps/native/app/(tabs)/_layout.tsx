@@ -16,14 +16,19 @@ export default function TabsLayout() {
     <View className="flex-1">
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: "#1E4D37",
+          tabBarActiveTintColor: "#16a34a",
           tabBarInactiveTintColor: "#6B7280",
+          tabBarLabelStyle: {
+            fontFamily: "Montserrat-Regular",
+            fontSize: 12,
+            fontWeight: "light",
+          },
           tabBarStyle: {
             backgroundColor: "#ffffff",
             borderTopColor: "#E5E7EB",
             borderTopWidth: 1,
             paddingBottom: 8,
-            paddingTop: 8,
+            paddingTop: 2,
             height: 80,
           },
           headerStyle: {
@@ -57,7 +62,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="collection"
           options={{
-            title: "Collectie",
+            title: "Verzameling",
             tabBarIcon: ({ color, size, focused }) => (
               <View className="relative">
                 {focused ? <Ionicons name="bookmark" size={size} color={color} /> : <Ionicons name="bookmark-outline" size={size} color={color} />}
@@ -78,7 +83,7 @@ export default function TabsLayout() {
       <View className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50">
         <TouchableOpacity
           onPress={() => setIsImportTrayOpen(true)}
-          className="w-16 h-16 bg-[#1E4D37] rounded-full items-center justify-center"
+          className="w-16 h-16 bg-green-600 rounded-full items-center justify-center"
           style={{
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },
