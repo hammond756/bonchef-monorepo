@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import LoginForm from "@/components/login-form";
 import { AuthLoading } from "@/components/auth-loading";
 import { useAuthContext } from "@/hooks/use-auth-context";
+import { onboardingStorage } from "@/lib/utils/mmkv/onboarding";
 
 export default function Home() {
   const router = useRouter();
@@ -21,14 +22,25 @@ export default function Home() {
   }, [hasShareIntent, router]);
 
   useEffect(() => {
-    if (!isLoading && session) {
-      // User is authenticated, redirect to tabs
-      console.debug("[expo-router-index] user authenticated, redirecting to tabs");
-      router.replace({
-        pathname: "/(tabs)/discover",
-      });
+    if (!isLoading && !hasShareIntent) {
+      // Check onboarding status first
+      if (!onboardingStorage.hasCompletedOnboarding()) {
+        console.debug("[expo-router-index] onboarding not completed, redirecting to onboarding");
+        router.replace({
+          pathname: "/onboarding",
+        });
+        return;
+      }
+
+      if (session) {
+        // User is authenticated, redirect to tabs
+        console.debug("[expo-router-index] user authenticated, redirecting to tabs");
+        router.replace({
+          pathname: "/(tabs)/discover",
+        });
+      }
     }
-  }, [session, isLoading, router]);
+  }, [session, isLoading, hasShareIntent, router]);
 
   // Show loading while auth state is being determined
   if (isLoading) {
