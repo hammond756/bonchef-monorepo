@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { AuthProvider } from "@/providers/auth-provider";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function Layout() {
   const router = useRouter();
@@ -33,26 +34,28 @@ export default function Layout() {
                 }),
             }}
           >
-            <Stack
-              screenOptions={{
-                headerStyle: {
-                  backgroundColor: '#fff',
-                },
-                headerTintColor: '#000',
-                headerTitleStyle: {
-                  fontWeight: 'bold',
-                },
-                title: "",
-                headerBackButtonDisplayMode: "minimal",
-              }}
-            >
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="recipe/[id]" options={{ headerShown: true, headerTransparent: true, headerStyle: { backgroundColor: "transparent" }, headerTintColor: '#000' }} />
-              <Stack.Screen name="edit/[id]" options={{ headerShown: true, title: "Recept bewerken" }} />
-              <Stack.Screen name="signup" />
-              <Stack.Screen name="share-intent" />
-            </Stack>
+            <GestureHandlerRootView>
+              <Stack
+                screenOptions={{
+                  headerStyle: {
+                    backgroundColor: '#fff',
+                  },
+                  headerTintColor: '#000',
+                  headerTitleStyle: {
+                    fontWeight: 'bold',
+                  },
+                  title: "",
+                  headerBackButtonDisplayMode: "minimal",
+                }}
+              >
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="recipe/[id]" options={{ headerShown: true, headerTransparent: true, headerStyle: { backgroundColor: "transparent" }, headerTintColor: '#000' }} />
+                <Stack.Screen name="edit/[id]" options={{ headerShown: true, title: "Recept bewerken" }} />
+                <Stack.Screen name="signup" />
+                <Stack.Screen name="share-intent" />
+              </Stack>
+            </GestureHandlerRootView>
           </ShareIntentProvider>
         </KeyboardProvider>
       </AuthProvider>
