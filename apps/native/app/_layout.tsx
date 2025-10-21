@@ -6,8 +6,23 @@ import { useState } from "react";
 import { AuthProvider } from "@/providers/auth-provider";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import * as Sentry from '@sentry/react-native';
 
-export default function Layout() {
+Sentry.init({
+  dsn: 'https://0bb1c16acdd10603201177166cb085fa@o4509067321016320.ingest.de.sentry.io/4510212204920912',
+
+  // Adds more context data to events (IP address, cookies, user, etc.)
+  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+  sendDefaultPii: true,
+
+  // Enable Logs
+  enableLogs: true,
+
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+});
+
+export default Sentry.wrap(function Layout() {
   const router = useRouter();
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
@@ -61,4 +76,4 @@ export default function Layout() {
       </AuthProvider>
     </QueryClientProvider>
   );
-}
+});

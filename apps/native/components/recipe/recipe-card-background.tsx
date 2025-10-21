@@ -50,8 +50,8 @@ export function RecipeCardBackground({
         contentFit="cover"
         placeholderContentFit="cover"
         blurRadius={blur ? 50 : 0}
-        cachePolicy="memory-disk" // Ensure proper caching
-        recyclingKey={recipe.id} // Help with memory management
+        // cachePolicy="memory-disk" // Ensure proper caching
+        // recyclingKey={recipe.id} // Help with memory management
       />
       
       {/* Gradient Overlay */}
