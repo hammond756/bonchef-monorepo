@@ -68,6 +68,7 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/plugin-transform-react-jsx": "^7.27.1",
+    "@sentry/cli": "^2.57.0",
     "@types/node": "^20.19.13",
     "@types/react": "^19.1.13",
     "eslint": "^9.25.0",
