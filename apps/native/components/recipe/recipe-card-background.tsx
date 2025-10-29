@@ -42,7 +42,7 @@ export function RecipeCardBackground({
     <View className={`flex-1 overflow-hidden ${className}`}>
       {/* Recipe Image */}
       <Image
-        key={recipe.id}
+        // key={recipe.id}
         source={{ 
           uri: imageUrl
         }}
@@ -51,7 +51,7 @@ export function RecipeCardBackground({
         placeholderContentFit="cover"
         blurRadius={blur ? 50 : 0}
         // cachePolicy="memory-disk" // Ensure proper caching
-        // recyclingKey={recipe.id} // Help with memory management
+        recyclingKey={recipe.id} // Help with memory management
       />
       
       {/* Gradient Overlay */}
