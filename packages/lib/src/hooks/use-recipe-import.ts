@@ -64,11 +64,10 @@ export function useRecipeImport({
     enabled: !!userId,
     refetchInterval: (query) => {
       const jobs = query.state.data as NonCompletedRecipeImportJob[] | undefined;
-      console.log("jobs in refetch", jobs)
       // Check if there are any pending jobs (not failed)
       const hasPendingJobs = jobs?.some((job) => job.status === "pending") ?? false;
       // Poll every 2 seconds if there are pending jobs, stop otherwise
-      return hasPendingJobs ? 2000 : false;
+      return hasPendingJobs ? 1000 : false;
     },
   });
 
