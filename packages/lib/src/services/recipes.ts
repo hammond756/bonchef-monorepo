@@ -113,8 +113,6 @@ export async function getRecipeWithClient(
     throw new Error(`Failed to fetch recipe: ${error.message}`)
   }
 
-  console.log("data", data)
-
   return data
 }
 
@@ -250,10 +248,6 @@ export async function updateRecipeWithClient(
   recipeId: string,
   updates: Partial<RecipeUpdate>
 ): Promise<RecipeDetail> {
-
-  console.log("updates", updates)
-  console.log("recipeId", recipeId)
-
   const { data: recipe, error: recipeError } = await client
     .from("recipes")
     .update(updates)

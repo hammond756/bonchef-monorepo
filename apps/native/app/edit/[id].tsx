@@ -7,7 +7,7 @@ import {
 	TouchableOpacity,
 	Alert,
 } from "react-native";
-import { usePreventRemove } from "@react-navigation/native";
+import { usePreventRemove, StackActions } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import {
@@ -93,6 +93,7 @@ function EditRecipeHeader({
 export default function EditRecipePage() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const router = useRouter();
+	const navigation = useNavigation();
 
 	// Fetch recipe data using the hook
 	const { data: recipe, isLoading, error } = useRecipe(supabase, id);
@@ -176,6 +177,12 @@ export default function EditRecipePage() {
 		[updateRecipeMutation, methods, router],
 	);
 
+	const isPreviousScreenRecipeDetail = useCallback(() => {
+		const state = navigation.getState();
+		const routes = state?.routes || [];
+		return routes[routes.length - 2].name === "recipe/[id]";
+	}, [navigation]);
+
 	const handleDelete = useCallback(() => {
 		const formData = methods.getValues();
 		Alert.alert(
@@ -189,7 +196,12 @@ export default function EditRecipePage() {
 					onPress: async () => {
 						try {
 							await deleteRecipeMutation.mutateAsync(formData.id);
-							router.back();
+							
+							if (isPreviousScreenRecipeDetail()) {
+								navigation.dispatch(StackActions.pop(2));
+							} else {
+								router.back();
+							}
 						} catch {
 							Alert.alert(
 								"Fout",
@@ -201,7 +213,7 @@ export default function EditRecipePage() {
 				},
 			],
 		);
-	}, [deleteRecipeMutation, methods, router]);
+	}, [deleteRecipeMutation, methods, router, isPreviousScreenRecipeDetail, navigation]);
 
 	// Show loading state
 	if (isLoading) {
