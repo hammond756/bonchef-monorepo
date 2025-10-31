@@ -68,6 +68,7 @@ export function TabBar({ children, className }: TabBarProps) {
 
             <div className={cn("-mt-8 flex w-1/4 items-center justify-center")}>
                 <button
+                    type="button"
                     onClick={handleOpenOverlay}
                     className="bg-primary hover:bg-primary/90 flex h-16 w-16 transform items-center justify-center rounded-full text-white shadow-lg transition-all duration-150 ease-in-out hover:scale-105"
                     aria-label="Importeer recept"
