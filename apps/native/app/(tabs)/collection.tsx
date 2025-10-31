@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { CollectionHeader } from '@/components/collection/collection-header';
 import { MyRecipes } from '@/components/collection/my-recipes';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useOfflineImports } from '@/hooks/use-offline-imports';
 import { Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,7 +10,7 @@ type SortOrder = 'newest' | 'oldest';
 
 export default function Collection() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
-  const tabBarHeight = useBottomTabBarHeight();
+
   const { processOfflineImports, offlineCount, isProcessing } = useOfflineImports();
 
   const handleProcessOfflineImports = async () => {

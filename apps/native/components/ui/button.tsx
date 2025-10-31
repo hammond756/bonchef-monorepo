@@ -21,11 +21,11 @@ export default function Button({
     
     switch (variant) {
       case 'primary':
-        return `${baseStyles} bg-[#1E4D37] ${className}`
+        return `${baseStyles} bg-green-primary ${className}`
       case 'secondary':
         return `${baseStyles} bg-white border border-gray-300 ${className}`
       default:
-        return `${baseStyles} bg-[#1E4D37] ${className}`
+        return `${baseStyles} bg-green-primary ${className}`
     }
   }
 

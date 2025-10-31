@@ -1,13 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { useSuccessOverlay } from "@/components/ui/success-overlay";
 import { API_URL } from "@/config/environment";
 import { useTriggerJob } from "@/hooks/use-trigger-job";
 import { supabase } from "@/lib/utils/supabase/client";
 import URLInput from "../ui/url-input";
+import { KeyboardController } from "react-native-keyboard-controller";
 
 interface UrlImportFormProps {
+	showInput?: boolean;
 	onBack: () => void;
 	onClose: () => void;
 	initialUrl?: string;
@@ -27,6 +29,7 @@ export function UrlImportForm({
 	onBack,
 	onClose,
 	initialUrl,
+	showInput = true,
 }: UrlImportFormProps) {
 	const [url, setUrl] = useState(initialUrl || "");
 	const [error, setError] = useState<string | null>(null);
@@ -78,11 +81,18 @@ export function UrlImportForm({
 		}
 	};
 
+	const handleBack = () => {
+		// We need to explicitly dismiss the keyboard to prevent the keyboard from staying open when the user presses the back button.
+		// TODO: figure out if there is a better way to do this. Working theory is that the keyboard state is managed in the slide-in-overlay component.
+		KeyboardController.dismiss();
+		onBack();
+	};
+
 	return (
 		<View className="p-6 flex-1">
 			{/* Header */}
 			<View className="flex-row items-center justify-between mb-6">
-				<TouchableOpacity onPress={onBack} className="p-2">
+				<TouchableOpacity onPress={handleBack} className="p-2">
 					<Ionicons name="arrow-back" size={24} color="#6B7280" />
 				</TouchableOpacity>
 				<Text className="text-xl font-semibold font-lora text-gray-900">
@@ -93,10 +103,8 @@ export function UrlImportForm({
 				</TouchableOpacity>
 			</View>
 
-			<ScrollView
-				showsVerticalScrollIndicator={false}
+			<View
 				className="flex-1"
-				contentContainerStyle={{ flexGrow: 1 }}
 			>
 				{/* Supported Sources */}
 				<View className="mb-4">
@@ -122,8 +130,11 @@ export function UrlImportForm({
 					</Text>
 				</View>
 
-				{/* URL Input */}
-				<URLInput
+				{/* URL Input
+				TODO: factor out a separate view for use in the share extension
+				and rop the showInput prop
+				*/}
+				{showInput && <URLInput
 					placeholder="https://website.com/recept"
 					value={url}
 					onChangeText={(text) => {
@@ -131,7 +142,7 @@ export function UrlImportForm({
 						setError(null);
 					}}
 					error={error || undefined}
-				/>
+				/>}
 
 				{/* Submit Button */}
 				<TouchableOpacity
@@ -145,7 +156,7 @@ export function UrlImportForm({
 						{isLoading ? "Importeren..." : "Importeren"}
 					</Text>
 				</TouchableOpacity>
-			</ScrollView>
+			</View>
 
 			<SuccessOverlayComponent />
 		</View>

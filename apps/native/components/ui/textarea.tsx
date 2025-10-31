@@ -1,29 +1,25 @@
-import { TextInput, Text, View } from 'react-native'
+import { type StyleProp, Text, TextInput, type TextInputProps, type TextStyle, View } from 'react-native'
 
-interface TextAreaProps {
+interface TextAreaProps extends Omit<TextInputProps, 'style' | 'multiline' | 'textAlignVertical'> {
   label?: string
-  placeholder: string
-  value: string
-  onChangeText: (text: string) => void
   helperText?: string
   error?: string
-  maxLength?: number
   minHeight?: number
   maxHeight?: number
   className?: string
+  inputStyle?: StyleProp<TextStyle>
 }
 
 export default function TextArea({
   label,
-  placeholder,
-  value,
-  onChangeText,
   helperText,
   error,
-  maxLength,
   minHeight = 80,
   maxHeight = 120,
-  className = ''
+  className = '',
+  inputStyle,
+  placeholderTextColor = "#9CA3AF",
+  ...textInputProps
 }: TextAreaProps) {
   return (
     <View className={`mb-6 ${className}`}>
@@ -34,33 +30,33 @@ export default function TextArea({
         className={`bg-white rounded-lg px-4 py-5 text-gray-900 border border-gray-300 shadow-sm font-montserrat ${
           error ? 'border-red-500' : 'border-gray-300'
         }`}
-        onChangeText={onChangeText}
-        value={value}
-        placeholder={placeholder}
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor={placeholderTextColor}
         multiline
         textAlignVertical="top"
-        maxLength={maxLength}
-        style={{
-          minHeight,
-          maxHeight,
-          lineHeight: 20,
-          fontSize: 16,
-        }}
+        style={[
+          {
+            minHeight,
+            maxHeight,
+            lineHeight: 20,
+            fontSize: 16,
+          },
+          inputStyle,
+        ]}
+        {...textInputProps}
       />
       {error && (
         <Text className="text-red-500 text-xs mt-2 font-montserrat">{error}</Text>
       )}
-      {(helperText || maxLength) && (
+      {(helperText || textInputProps.maxLength) && (
         <View className="flex-row justify-between items-center mt-2">
           <View className="">
             {helperText && (
               <Text className="text-sm text-gray-500 font-montserrat">{helperText}</Text>
             )}
           </View>
-          {maxLength && (
+          {textInputProps.maxLength && textInputProps.value && (
             <Text className="text-xs text-gray-400 font-montserrat">
-              {value.length}/{maxLength}
+              {String(textInputProps.value).length}/{textInputProps.maxLength}
             </Text>
           )}
         </View>

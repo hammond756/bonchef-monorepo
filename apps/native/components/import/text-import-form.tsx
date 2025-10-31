@@ -3,14 +3,14 @@ import {
 	View,
 	Text,
 	TouchableOpacity,
-	ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "@/lib/utils/supabase/client";
 import { useSuccessOverlay } from "@/components/ui/success-overlay";
-import { triggerJob } from "@repo/lib/services/recipe-import-jobs";
+import { useTriggerJob } from "@/hooks/use-trigger-job";
 import { API_URL } from "@/config/environment";
 import TextArea from "../ui/textarea";
+import { KeyboardController } from "react-native-keyboard-controller";
 
 interface TextImportFormProps {
 	onBack: () => void;
@@ -28,7 +28,11 @@ export function TextImportForm({
 	const [isLoading, setIsLoading] = useState(false);
 
 	const { triggerSuccess, SuccessOverlayComponent } = useSuccessOverlay();
-
+	const { triggerJobWithOfflineFallback } = useTriggerJob({
+		supabaseClient: supabase,
+		apiUrl: API_URL || "",
+	});
+	
 	const handleTextSubmit = async () => {
 		setError(null);
 		setIsLoading(true);
@@ -40,7 +44,7 @@ export function TextImportForm({
 		}
 
 		try {
-			await triggerJob(supabase, API_URL || "", "text", textToSubmit);
+			await triggerJobWithOfflineFallback("text", textToSubmit);
 			triggerSuccess(() => {
 				setText("");
 				onClose();
@@ -54,11 +58,18 @@ export function TextImportForm({
 		}
 	};
 
+	const handleBack = () => {
+		// We need to explicitly dismiss the keyboard to prevent the keyboard from staying open when the user presses the back button.
+		// TODO: figure out if there is a better way to do this. Working theory is that the keyboard state is managed in the slide-in-overlay component.
+		KeyboardController.dismiss();
+		onBack();
+	};
+
 	return (
 		<View className="p-6 flex-1">
 			{/* Header */}
 			<View className="flex-row items-center justify-between mb-6">
-				<TouchableOpacity onPress={onBack} className="p-2">
+				<TouchableOpacity onPress={handleBack} className="p-2">
 					<Ionicons name="arrow-back" size={24} color="#6B7280" />
 				</TouchableOpacity>
 				<Text className="text-xl font-semibold font-lora text-gray-900">
@@ -69,7 +80,7 @@ export function TextImportForm({
 				</TouchableOpacity>
 			</View>
 
-			<ScrollView showsVerticalScrollIndicator={false}>
+			<View>
 				{/* Description */}
 				<Text className="text-gray-600 mb-6">
 					Plak de tekst van het recept dat je wilt importeren.
@@ -84,6 +95,9 @@ export function TextImportForm({
 					onChangeText={(text) => {
 						setText(text);
 						setError(null);
+					}}
+					onBlur={() => {
+						KeyboardController.dismiss();
 					}}
 					error={error || undefined}
 				/>
@@ -100,7 +114,7 @@ export function TextImportForm({
 						{isLoading ? "Importeren..." : "Importeren"}
 					</Text>
 				</TouchableOpacity>
-			</ScrollView>
+			</View>
 
 			<SuccessOverlayComponent />
 		</View>

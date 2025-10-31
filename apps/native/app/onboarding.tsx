@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { View, Text, Dimensions, Image } from "react-native";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -28,7 +28,7 @@ const onboardingData = [
         image: require("@/assets/images/onboarding/onboarding_3.png"),
     },
     {
-        title: "Laat je inspireren door community recepten",
+        title: "Laat je inspireren door de community",
         image: require("@/assets/images/onboarding/onboarding_4.png"),
     },
 ];
@@ -106,6 +106,7 @@ export default function Onboarding() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
+      <Stack.Screen options={{ headerShown: false }} />
       <GestureDetector gesture={panGesture}>
         <Animated.View className="flex-1">
           <Animated.View 

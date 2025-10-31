@@ -113,8 +113,6 @@ export async function getRecipeWithClient(
     throw new Error(`Failed to fetch recipe: ${error.message}`)
   }
 
-  console.log("data", data)
-
   return data
 }
 
@@ -177,17 +175,31 @@ export async function getPublicRecipesWithClient(
 }
 
 /**
- * Fetches user's own recipes
+ * Fetches user's own recipes with pagination
  * @param client - Supabase client instance
  * @param userId - The user ID to fetch recipes for
- * @returns Promise<RecipeRead[]> - User's recipes
+ * @param options - Pagination options
+ * @returns Promise<{data: RecipeDetail[], count: number}> - User's recipes and total count
  * @throws Error if database error
  */
 export async function getUserRecipesWithClient(
   client: SupabaseClient,
-  userId: string
-): Promise<RecipeDetail[]> {
-  const { data, error } = await client
+  userId: string | null,
+  options: {
+    page?: number
+    pageSize?: number
+  } = {}
+): Promise<{ data: RecipeDetail[]; count: number }> {
+  if (!userId) {
+    throw new Error("User ID is required to fetch user recipes");
+  }
+
+  const { page = 1, pageSize } = options
+
+  const from = pageSize ? (page - 1) * pageSize : undefined
+  const to = pageSize && from !== undefined ? from + pageSize - 1 : undefined
+
+  let query = client
     .from("recipes")
     .select(
       `
@@ -197,10 +209,17 @@ export async function getUserRecipesWithClient(
       is_liked_by_current_user,
       recipe_bookmarks(count),
       recipe_likes(count)
-    `
+    `,
+      { count: pageSize ? "exact" : undefined }
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
+
+  if (pageSize && from !== undefined && to !== undefined) {
+    query = query.range(from, to)
+  }
+
+  const { data, error, count } = await query
 
   if (error) {
     throw new Error(`Failed to fetch user recipes: ${error.message}`)
@@ -213,7 +232,7 @@ export async function getUserRecipesWithClient(
     like_count: recipe.recipe_likes?.[0]?.count || 0,
   }))
 
-  return recipesWithCounts
+  return { data: recipesWithCounts, count: count || 0 }
 }
 
 /**
@@ -229,10 +248,6 @@ export async function updateRecipeWithClient(
   recipeId: string,
   updates: Partial<RecipeUpdate>
 ): Promise<RecipeDetail> {
-
-  console.log("updates", updates)
-  console.log("recipeId", recipeId)
-
   const { data: recipe, error: recipeError } = await client
     .from("recipes")
     .update(updates)

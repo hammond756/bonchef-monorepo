@@ -3,31 +3,51 @@ function with a fallback to storing the job in the offline imports storage.
 */
 
 import { useCallback } from "react";
-import { RecipeImportSourceType, triggerJob } from "@repo/lib/services/recipe-import-jobs";
+import type { RecipeImportSourceType } from "@repo/lib/services/recipe-import-jobs";
 import { offlineImportsStorage } from "@/lib/utils/mmkv/offline-imports";
-import { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { normalizeError } from "@repo/lib/utils/error-handling";
+import type { CreateJobFn } from "@repo/lib/hooks/use-recipe-import";
+import { useAuthContext } from "./use-auth-context";
+import { useRecipeImport } from "@repo/lib/hooks/use-recipe-import";
 
+/**
+ * Creates a job creation function with offline fallback.
+ * This can be passed to useRecipeImport's createJobFn option to enable
+ * offline storage when job creation fails due to auth/network issues.
+ */
 export function useTriggerJob({ supabaseClient, apiUrl }: { supabaseClient: SupabaseClient, apiUrl: string }) {
+
+  const { userId } = useAuthContext();
+  const { createJob } = useRecipeImport({
+    supabaseClient,
+    userId,
+    apiUrl,
+  });
 
   /* 
   Triggers a job and stores it in the offline imports storage if the request fails.
+  Compatible with useRecipeImport's CreateJobFn type.
+  Returns a placeholder jobId when storing offline (job will be processed later).
   */
-  const triggerJobWithOfflineFallback = useCallback(async (sourceType: RecipeImportSourceType, sourceData: string) => {
+  const triggerJobWithOfflineFallback = useCallback<CreateJobFn>(async (sourceType: RecipeImportSourceType, sourceData: string) => {
     try {
-      return await triggerJob(supabaseClient, apiUrl, sourceType, sourceData);
+      return await createJob(sourceType, sourceData);
     } catch (originalError) {
       const error = normalizeError(originalError);
 
       // TODO: Expand to network errors
       if (error.kind === 'auth' || (error.kind === 'server' && error.status === 401)) {
         offlineImportsStorage.add({ type: sourceType, data: sourceData });
+        // Return placeholder jobId for offline storage
+        // The actual job will be created later when processOfflineImports runs
+        return { jobId: `offline-${Date.now()}` };
       } else {
         console.error("Failed to trigger job", error);
         throw error;
       }
     }
-  }, [supabaseClient, apiUrl]);
+  }, [createJob]);
 
   return { triggerJobWithOfflineFallback };
 }

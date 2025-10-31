@@ -1,9 +1,11 @@
-import { useOwnRecipes } from '@repo/lib/hooks/use-own-recipes';
-import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
-import { useMemo } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { API_URL } from '@/config/environment';
 import { useAuthContext } from '@/hooks/use-auth-context';
 import { supabase } from '@/lib/utils/supabase/client';
+import { useFocusEffect } from '@react-navigation/native';
+import { useOwnRecipes } from '@repo/lib/hooks/use-own-recipes';
+import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
+import { useCallback, useEffect, useMemo } from 'react';
+import { ActivityIndicator, AppState, Text, View, type AppStateStatus } from 'react-native';
 import { RecipeGrid } from './recipe-grid';
 import { WelcomeSection } from './welcome-section';
 
@@ -17,15 +19,46 @@ export function MyRecipes({
   const { session } = useAuthContext();
   const userId = session?.user?.id || '';
 
-  const { recipes: userRecipes, isLoading: userRecipesLoading } = useOwnRecipes({
+  const { 
+    recipes: userRecipes, 
+    isLoading: userRecipesLoading,
+    isFetchingNextPage,
+    isFetching,
+    hasMore,
+    loadMore,
+    mutate,
+    error 
+  } = useOwnRecipes({
     supabaseClient: supabase,
     userId,
   });
 
-  const { jobs, isLoading: importJobsLoading } = useRecipeImport({
+  const { jobs, isLoading: importJobsLoading, refreshJobs } = useRecipeImport({
     supabaseClient: supabase,
     userId,
+    apiUrl: API_URL || "",
   });
+
+  // Refetch jobs when the screen comes into focus (navigation between tabs)
+  // This ensures we pick up jobs created elsewhere (web app, share extension, etc.)
+  useFocusEffect(
+    useCallback(() => {
+      refreshJobs();
+    }, [refreshJobs])
+  );
+
+  // Refetch jobs when app becomes active (app opens, returns from background)
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active') {
+        refreshJobs();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [refreshJobs]);
 
   const myRecipesAndJobs = useMemo(() => {
     // Failed jobs first, then pending jobs, then recipes
@@ -48,6 +81,16 @@ export function MyRecipes({
     });
   }, [jobs, userRecipes, sortOrder]);
 
+  if (error) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <Text className="text-red-500 text-center">
+          Error loading recipes: {error.message}
+        </Text>
+      </View>
+    );
+  }
+
   if (userRecipesLoading || importJobsLoading) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -63,6 +106,11 @@ export function MyRecipes({
   return (
     <RecipeGrid 
       items={myRecipesAndJobs}
+      onLoadMore={loadMore}
+      hasMore={hasMore}
+      onRefresh={mutate}
+      isLoading={isFetchingNextPage}
+      isRefreshing={isFetching && !isFetchingNextPage}
     />
   );
 }
