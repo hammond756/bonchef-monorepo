@@ -3,6 +3,7 @@ import { close, type InitialProps } from "expo-share-extension";
 import { useState } from "react";
 import { View, Text } from "react-native";
 import { UrlImportForm } from './import/url-import-form';
+import { AuthProvider } from '@/providers/auth-provider';
 
 export default function IOSShareExtension({ url }: InitialProps) {
   const [queryClient] = useState(() => new QueryClient({
@@ -26,7 +27,9 @@ export default function IOSShareExtension({ url }: InitialProps) {
   return (
     <View className="w-full h-full items-center justify-center bg-white rounded-2xl">
         <QueryClientProvider client={queryClient}>
-          <UrlImportForm onClose={close} onBack={close} initialUrl={url} />
+          <AuthProvider>
+            <UrlImportForm showInput={false} onClose={close} onBack={close} initialUrl={url} />
+          </AuthProvider>
         </QueryClientProvider>
     </View>
   );

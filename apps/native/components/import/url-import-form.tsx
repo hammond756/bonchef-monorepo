@@ -8,6 +8,7 @@ import { supabase } from "@/lib/utils/supabase/client";
 import URLInput from "../ui/url-input";
 
 interface UrlImportFormProps {
+	showInput: boolean;
 	onBack: () => void;
 	onClose: () => void;
 	initialUrl?: string;
@@ -27,6 +28,7 @@ export function UrlImportForm({
 	onBack,
 	onClose,
 	initialUrl,
+	showInput = true,
 }: UrlImportFormProps) {
 	const [url, setUrl] = useState(initialUrl || "");
 	const [error, setError] = useState<string | null>(null);
@@ -122,8 +124,11 @@ export function UrlImportForm({
 					</Text>
 				</View>
 
-				{/* URL Input */}
-				<URLInput
+				{/* URL Input
+				TODO: factor out a separate view for use in the share extension
+				and rop the showInput prop
+				*/}
+				{showInput && <URLInput
 					placeholder="https://website.com/recept"
 					value={url}
 					onChangeText={(text) => {
@@ -131,7 +136,7 @@ export function UrlImportForm({
 						setError(null);
 					}}
 					error={error || undefined}
-				/>
+				/>}
 
 				{/* Submit Button */}
 				<TouchableOpacity
