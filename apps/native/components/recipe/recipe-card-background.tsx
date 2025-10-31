@@ -41,8 +41,12 @@ export function RecipeCardBackground({
   return (
     <View className={`flex-1 overflow-hidden ${className}`}>
       {/* Recipe Image */}
+      {/* TODO: understand the role of key, cachePoicy and recyclingKey in
+      rendering the image quickly and consistenty. Without these three attributes
+      the image stops loading on the feed when navigating back and forth
+      between the feed and detail page  */}
       <Image
-        // key={recipe.id}
+        key={recipe.id}
         source={{ 
           uri: imageUrl
         }}
@@ -51,7 +55,7 @@ export function RecipeCardBackground({
         placeholderContentFit="cover"
         blurRadius={blur ? 50 : 0}
         cachePolicy="memory-disk" // Ensure proper caching 
-        // recyclingKey={recipe.id} // Help with memory management
+        recyclingKey={recipe.id} // Help with memory management
       />
       
       {/* Gradient Overlay */}
