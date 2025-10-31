@@ -25,8 +25,12 @@ const MAX_VERTICAL_VIDEO_JOBS = 5;
  */
 export async function listJobsWithClient(
   client: SupabaseClient,
-  userId: string
+  userId: string | null
 ): Promise<NonCompletedRecipeImportJob[]> {
+  if (!userId) {
+    throw new Error("User ID is required to list recipe import jobs");
+  }
+
   const { data, error } = await client
     .from("recipe_import_jobs")
     .select("*")

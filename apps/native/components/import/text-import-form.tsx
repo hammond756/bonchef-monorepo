@@ -8,7 +8,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "@/lib/utils/supabase/client";
 import { useSuccessOverlay } from "@/components/ui/success-overlay";
-import { triggerJob } from "@repo/lib/services/recipe-import-jobs";
+import { useTriggerJob } from "@/hooks/use-trigger-job";
+import { useRecipeImport } from "@repo/lib/hooks/use-recipe-import";
+import { useAuthContext } from "@/hooks/use-auth-context";
 import { API_URL } from "@/config/environment";
 import TextArea from "../ui/textarea";
 
@@ -27,7 +29,20 @@ export function TextImportForm({
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
+	const { session } = useAuthContext();
+	const userId = session?.user?.id || "";
+
 	const { triggerSuccess, SuccessOverlayComponent } = useSuccessOverlay();
+	const { triggerJobWithOfflineFallback } = useTriggerJob({
+		supabaseClient: supabase,
+		apiUrl: API_URL || "",
+	});
+	
+	const { createJob, isCreating } = useRecipeImport({
+		supabaseClient: supabase,
+		userId,
+		createJobFn: triggerJobWithOfflineFallback,
+	});
 
 	const handleTextSubmit = async () => {
 		setError(null);
@@ -40,7 +55,7 @@ export function TextImportForm({
 		}
 
 		try {
-			await triggerJob(supabase, API_URL || "", "text", textToSubmit);
+			await createJob("text", textToSubmit);
 			triggerSuccess(() => {
 				setText("");
 				onClose();
@@ -91,13 +106,13 @@ export function TextImportForm({
 				{/* Submit Button */}
 				<TouchableOpacity
 					onPress={handleTextSubmit}
-					disabled={isLoading}
+					disabled={isLoading || isCreating}
 					className={`rounded-xl py-4 px-6 ${
-						isLoading ? "bg-gray-300" : "bg-green-600"
+						isLoading || isCreating ? "bg-gray-300" : "bg-green-600"
 					}`}
 				>
 					<Text className="text-white text-center font-medium text-base">
-						{isLoading ? "Importeren..." : "Importeren"}
+						{isLoading || isCreating ? "Importeren..." : "Importeren"}
 					</Text>
 				</TouchableOpacity>
 			</ScrollView>

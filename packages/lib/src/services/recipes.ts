@@ -186,12 +186,16 @@ export async function getPublicRecipesWithClient(
  */
 export async function getUserRecipesWithClient(
   client: SupabaseClient,
-  userId: string,
+  userId: string | null,
   options: {
     page?: number
     pageSize?: number
   } = {}
 ): Promise<{ data: RecipeDetail[]; count: number }> {
+  if (!userId) {
+    throw new Error("User ID is required to fetch user recipes");
+  }
+
   const { page = 1, pageSize } = options
 
   const from = pageSize ? (page - 1) * pageSize : undefined

@@ -4,6 +4,8 @@ import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSuccessOverlay } from "@/components/ui/success-overlay";
 import { API_URL } from "@/config/environment";
 import { useTriggerJob } from "@/hooks/use-trigger-job";
+import { useRecipeImport } from "@repo/lib/hooks/use-recipe-import";
+import { useAuthContext } from "@/hooks/use-auth-context";
 import { supabase } from "@/lib/utils/supabase/client";
 import URLInput from "../ui/url-input";
 
@@ -28,6 +30,7 @@ export function UrlImportForm({
 	onClose,
 	initialUrl,
 }: UrlImportFormProps) {
+	const { userId } = useAuthContext();
 	const [url, setUrl] = useState(initialUrl || "");
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +39,12 @@ export function UrlImportForm({
 	const { triggerJobWithOfflineFallback } = useTriggerJob({
 		supabaseClient: supabase,
 		apiUrl: API_URL || "",
+	});
+	
+	const { createJob, isCreating } = useRecipeImport({
+		supabaseClient: supabase,
+		userId,
+		createJobFn: triggerJobWithOfflineFallback,
 	});
 
 	const handleUrlSubmit = async () => {
@@ -64,7 +73,7 @@ export function UrlImportForm({
 			: "url";
 
 		try {
-			await triggerJobWithOfflineFallback(sourceType, urlToSubmit);
+			await createJob(sourceType, urlToSubmit);
 			triggerSuccess(() => {
 				setUrl("");
 				onClose();
@@ -136,13 +145,13 @@ export function UrlImportForm({
 				{/* Submit Button */}
 				<TouchableOpacity
 					onPress={handleUrlSubmit}
-					disabled={isLoading}
+					disabled={isLoading || isCreating}
 					className={`rounded-xl py-4 px-6 ${
-						isLoading ? "bg-gray-300" : "bg-green-600"
+						isLoading || isCreating ? "bg-gray-300" : "bg-green-600"
 					}`}
 				>
 					<Text className="text-white text-center font-medium text-base">
-						{isLoading ? "Importeren..." : "Importeren"}
+						{isLoading || isCreating ? "Importeren..." : "Importeren"}
 					</Text>
 				</TouchableOpacity>
 			</ScrollView>

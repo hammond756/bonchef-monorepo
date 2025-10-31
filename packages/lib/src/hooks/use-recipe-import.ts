@@ -4,13 +4,31 @@ import { useEffect, useRef } from "react";
 import {
   deleteRecipeImportJobWithClient,
   listJobsWithClient,
+  triggerJob,
   type NonCompletedRecipeImportJob,
+  type RecipeImportSourceType,
 } from "../services/recipe-import-jobs";
 import { useOwnRecipes } from "./use-own-recipes";
 
+export type CreateJobFn = (
+  sourceType: RecipeImportSourceType,
+  sourceData: string
+) => Promise<{ jobId: string }>;
+
 export interface UseRecipeImportOptions {
   supabaseClient: SupabaseClient;
-  userId: string;
+  userId: string | null;
+  /**
+   * Optional custom function for creating jobs.
+   * If provided, this will be used instead of the default triggerJob implementation.
+   * Useful for platform-specific logic like offline fallback.
+   */
+  createJobFn?: CreateJobFn;
+  /**
+   * API URL for creating jobs. Only used if createJobFn is not provided.
+   * @deprecated Use createJobFn instead for better flexibility
+   */
+  apiUrl?: string;
 }
 
 export interface UseRecipeImportReturn {
@@ -20,32 +38,88 @@ export interface UseRecipeImportReturn {
   refreshJobs: () => Promise<QueryObserverResult<NonCompletedRecipeImportJob[], Error>>;
   deleteJob: (jobId: string) => Promise<void>;
   isDeleting: boolean;
+  createJob: (sourceType: RecipeImportSourceType, sourceData: string) => Promise<{ jobId: string }>;
+  isCreating: boolean;
 }
 
 /**
  * Hook for managing recipe imports using TanStack Query
- * @param options - Configuration options including Supabase client and user ID
+ * Implements conditional polling: polls only when there are pending jobs,
+ * stops automatically when no pending jobs remain, and starts polling
+ * when a new job is created.
+ * 
+ * For native apps with offline support, pass `createJobFn` from `useTriggerJob`:
+ * ```tsx
+ * const { triggerJobWithOfflineFallback } = useTriggerJob({ ... });
+ * const { createJob } = useRecipeImport({
+ *   ...,
+ *   createJobFn: triggerJobWithOfflineFallback,
+ * });
+ * ```
+ * 
+ * For web apps, use the default implementation with `apiUrl`:
+ * ```tsx
+ * const { createJob } = useRecipeImport({
+ *   ...,
+ *   apiUrl: 'https://api.example.com',
+ * });
+ * ```
+ * 
+ * @param options - Configuration options including Supabase client, user ID, and optional createJobFn or apiUrl
  * @returns Recipe import state and functions
  */
 export function useRecipeImport({ 
   supabaseClient, 
-  userId 
+  userId,
+  createJobFn,
+  apiUrl,
 }: UseRecipeImportOptions): UseRecipeImportReturn {
   const queryClient = useQueryClient();
   const previousJobsRef = useRef<NonCompletedRecipeImportJob[]>([]);
   const { refetch: refetchOwnRecipes } = useOwnRecipes({ supabaseClient, userId });
 
-  // Query for fetching jobs
+  // Query for fetching jobs with conditional polling
+  // Polls every 2 seconds only when there are pending jobs
   const {
     data: jobs = [],
     error: queryError,
     refetch: refreshJobs,
     isLoading,
   } = useQuery({
-    queryKey: ["recipe-import-jobs"],
+    queryKey: ["recipe-import-jobs", userId],
     queryFn: () => listJobsWithClient(supabaseClient, userId),
     enabled: !!userId,
-    refetchInterval: 2000,
+    refetchInterval: (query) => {
+      const jobs = query.state.data as NonCompletedRecipeImportJob[] | undefined;
+      console.log("jobs in refetch", jobs)
+      // Check if there are any pending jobs (not failed)
+      const hasPendingJobs = jobs?.some((job) => job.status === "pending") ?? false;
+      // Poll every 2 seconds if there are pending jobs, stop otherwise
+      return hasPendingJobs ? 2000 : false;
+    },
+  });
+
+  // Mutation for creating jobs
+  // When a job is created, invalidate the query to trigger an immediate refetch
+  // This ensures polling starts if there weren't any pending jobs before
+  const createJobMutation = useMutation({
+    mutationFn: async ({ sourceType, sourceData }: { sourceType: RecipeImportSourceType; sourceData: string }) => {
+      // Use custom function if provided (e.g., for offline fallback in native)
+      if (createJobFn) {
+        return await createJobFn(sourceType, sourceData);
+      }
+      
+      // Fallback to default implementation
+      if (!apiUrl) {
+        throw new Error("Either createJobFn or apiUrl must be provided to create import jobs");
+      }
+      return await triggerJob(supabaseClient, apiUrl, sourceType, sourceData);
+    },
+    onSuccess: () => {
+      // Invalidate the query to trigger an immediate refetch
+      // This ensures polling starts if the new job is the first pending job
+      queryClient.invalidateQueries({ queryKey: ["recipe-import-jobs", userId] });
+    },
   });
 
   // Mutation for deleting jobs
@@ -55,16 +129,17 @@ export function useRecipeImport({
     },
     onMutate: async (jobId: string) => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["recipe-import-jobs"] });
+      await queryClient.cancelQueries({ queryKey: ["recipe-import-jobs", userId] });
 
       // Snapshot the previous value
       const previousJobs = queryClient.getQueryData<NonCompletedRecipeImportJob[]>([
         "recipe-import-jobs",
+        userId,
       ]);
 
       // Optimistically update to the new value
       queryClient.setQueryData<NonCompletedRecipeImportJob[]>(
-        ["recipe-import-jobs"],
+        ["recipe-import-jobs", userId],
         (old) => old?.filter((job) => job.id !== jobId) ?? []
       );
 
@@ -74,14 +149,23 @@ export function useRecipeImport({
     onError: (_err, _jobId, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousJobs) {
-        queryClient.setQueryData(["recipe-import-jobs"], context.previousJobs);
+        queryClient.setQueryData(["recipe-import-jobs", userId], context.previousJobs);
       }
     },
     onSettled: () => {
       // Always refetch after error or success
-      queryClient.invalidateQueries({ queryKey: ["recipe-import-jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["recipe-import-jobs", userId] });
     },
   });
+
+  const createJob = async (sourceType: RecipeImportSourceType, sourceData: string) => {
+    try {
+      return await createJobMutation.mutateAsync({ sourceType, sourceData });
+    } catch (err) {
+      console.error(`Failed to create recipe import job`, err);
+      throw err; // Re-throw so the UI can handle the error
+    }
+  };
 
   const deleteJob = async (jobId: string) => {
     try {
@@ -110,5 +194,7 @@ export function useRecipeImport({
     refreshJobs,
     deleteJob,
     isDeleting: deleteJobMutation.isPending,
+    createJob,
+    isCreating: createJobMutation.isPending,
   };
 }

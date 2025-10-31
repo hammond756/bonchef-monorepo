@@ -65,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     session,
     profile: session?.user || null,
+    userId: session?.user?.id || null,
     isLoading,
     isLoggedIn: !!session,
   }

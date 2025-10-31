@@ -7,7 +7,7 @@ const PAGE_SIZE = 12;
 
 export interface UseOwnRecipesOptions {
   supabaseClient: SupabaseClient;
-  userId: string;
+  userId: string | null;
 }
 
 export interface UseOwnRecipesReturn {
