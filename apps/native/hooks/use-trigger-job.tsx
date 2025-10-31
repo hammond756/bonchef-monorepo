@@ -3,11 +3,13 @@ function with a fallback to storing the job in the offline imports storage.
 */
 
 import { useCallback } from "react";
-import { triggerJob, type RecipeImportSourceType } from "@repo/lib/services/recipe-import-jobs";
+import type { RecipeImportSourceType } from "@repo/lib/services/recipe-import-jobs";
 import { offlineImportsStorage } from "@/lib/utils/mmkv/offline-imports";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { normalizeError } from "@repo/lib/utils/error-handling";
 import type { CreateJobFn } from "@repo/lib/hooks/use-recipe-import";
+import { useAuthContext } from "./use-auth-context";
+import { useRecipeImport } from "@repo/lib/hooks/use-recipe-import";
 
 /**
  * Creates a job creation function with offline fallback.
@@ -16,6 +18,13 @@ import type { CreateJobFn } from "@repo/lib/hooks/use-recipe-import";
  */
 export function useTriggerJob({ supabaseClient, apiUrl }: { supabaseClient: SupabaseClient, apiUrl: string }) {
 
+  const { userId } = useAuthContext();
+  const { createJob } = useRecipeImport({
+    supabaseClient,
+    userId,
+    apiUrl,
+  });
+
   /* 
   Triggers a job and stores it in the offline imports storage if the request fails.
   Compatible with useRecipeImport's CreateJobFn type.
@@ -23,7 +32,7 @@ export function useTriggerJob({ supabaseClient, apiUrl }: { supabaseClient: Supa
   */
   const triggerJobWithOfflineFallback = useCallback<CreateJobFn>(async (sourceType: RecipeImportSourceType, sourceData: string) => {
     try {
-      return await triggerJob(supabaseClient, apiUrl, sourceType, sourceData);
+      return await createJob(sourceType, sourceData);
     } catch (originalError) {
       const error = normalizeError(originalError);
 
@@ -38,7 +47,7 @@ export function useTriggerJob({ supabaseClient, apiUrl }: { supabaseClient: Supa
         throw error;
       }
     }
-  }, [supabaseClient, apiUrl]);
+  }, [createJob]);
 
   return { triggerJobWithOfflineFallback };
 }

@@ -4,6 +4,7 @@ import { Pressable, Text, View } from 'react-native';
 import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
 import { useAuthContext } from '@/hooks/use-auth-context';
 import { supabase } from '@/lib/utils/supabase/client';
+import { API_URL } from '@/config/environment';
 
 interface FailedJobCardProps {
   job: NonCompletedRecipeImportJob;
@@ -16,6 +17,7 @@ export function FailedJobCard({ job }: FailedJobCardProps) {
   const { deleteJob, isDeleting } = useRecipeImport({
     supabaseClient: supabase,
     userId,
+    apiUrl: API_URL || "",
   });
   const getSourceIcon = (sourceType: string) => {
     switch (sourceType) {

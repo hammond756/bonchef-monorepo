@@ -1,10 +1,11 @@
-import { useOwnRecipes } from '@repo/lib/hooks/use-own-recipes';
-import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useEffect, useMemo } from 'react';
-import { AppState, type AppStateStatus, ActivityIndicator, Text, View } from 'react-native';
+import { API_URL } from '@/config/environment';
 import { useAuthContext } from '@/hooks/use-auth-context';
 import { supabase } from '@/lib/utils/supabase/client';
+import { useFocusEffect } from '@react-navigation/native';
+import { useOwnRecipes } from '@repo/lib/hooks/use-own-recipes';
+import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
+import { useCallback, useEffect, useMemo } from 'react';
+import { ActivityIndicator, AppState, Text, View, type AppStateStatus } from 'react-native';
 import { RecipeGrid } from './recipe-grid';
 import { WelcomeSection } from './welcome-section';
 
@@ -35,6 +36,7 @@ export function MyRecipes({
   const { jobs, isLoading: importJobsLoading, refreshJobs } = useRecipeImport({
     supabaseClient: supabase,
     userId,
+    apiUrl: API_URL || "",
   });
 
   // Refetch jobs when the screen comes into focus (navigation between tabs)

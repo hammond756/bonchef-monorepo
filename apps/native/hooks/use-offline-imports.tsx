@@ -3,10 +3,6 @@ import { useAuthContext } from "@/hooks/use-auth-context";
 import { offlineImportsStorage } from "@/lib/utils/mmkv/offline-imports";
 import { supabase } from "@/lib/utils/supabase/client";
 import { useRecipeImport } from "@repo/lib/hooks/use-recipe-import";
-import {
-  triggerJob,
-  type RecipeImportSourceType,
-} from "@repo/lib/services/recipe-import-jobs";
 import { useCallback, useEffect, useState } from "react";
 
 export function useOfflineImports() {
@@ -17,9 +13,7 @@ export function useOfflineImports() {
 	const { createJob } = useRecipeImport({
 		supabaseClient: supabase,
 		userId,
-		createJobFn: (sourceType: RecipeImportSourceType, sourceData: string) =>
-      // We don't use the offline fallback because we'll end up in a loop.
-			triggerJob(supabase, API_URL || "", sourceType, sourceData),
+		apiUrl: API_URL || "",
 	});
 
 	// Update offline count when component mounts or when processing state changes

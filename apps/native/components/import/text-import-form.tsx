@@ -29,21 +29,12 @@ export function TextImportForm({
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
-	const { session } = useAuthContext();
-	const userId = session?.user?.id || "";
-
 	const { triggerSuccess, SuccessOverlayComponent } = useSuccessOverlay();
 	const { triggerJobWithOfflineFallback } = useTriggerJob({
 		supabaseClient: supabase,
 		apiUrl: API_URL || "",
 	});
 	
-	const { createJob, isCreating } = useRecipeImport({
-		supabaseClient: supabase,
-		userId,
-		createJobFn: triggerJobWithOfflineFallback,
-	});
-
 	const handleTextSubmit = async () => {
 		setError(null);
 		setIsLoading(true);
@@ -55,7 +46,7 @@ export function TextImportForm({
 		}
 
 		try {
-			await createJob("text", textToSubmit);
+			await triggerJobWithOfflineFallback("text", textToSubmit);
 			triggerSuccess(() => {
 				setText("");
 				onClose();
@@ -106,13 +97,13 @@ export function TextImportForm({
 				{/* Submit Button */}
 				<TouchableOpacity
 					onPress={handleTextSubmit}
-					disabled={isLoading || isCreating}
+					disabled={isLoading}
 					className={`rounded-xl py-4 px-6 ${
-						isLoading || isCreating ? "bg-gray-300" : "bg-green-600"
+						isLoading ? "bg-gray-300" : "bg-green-600"
 					}`}
 				>
 					<Text className="text-white text-center font-medium text-base">
-						{isLoading || isCreating ? "Importeren..." : "Importeren"}
+						{isLoading ? "Importeren..." : "Importeren"}
 					</Text>
 				</TouchableOpacity>
 			</ScrollView>

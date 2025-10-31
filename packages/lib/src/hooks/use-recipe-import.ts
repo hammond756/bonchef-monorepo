@@ -18,17 +18,7 @@ export type CreateJobFn = (
 export interface UseRecipeImportOptions {
   supabaseClient: SupabaseClient;
   userId: string | null;
-  /**
-   * Optional custom function for creating jobs.
-   * If provided, this will be used instead of the default triggerJob implementation.
-   * Useful for platform-specific logic like offline fallback.
-   */
-  createJobFn?: CreateJobFn;
-  /**
-   * API URL for creating jobs. Only used if createJobFn is not provided.
-   * @deprecated Use createJobFn instead for better flexibility
-   */
-  apiUrl?: string;
+  apiUrl: string;
 }
 
 export interface UseRecipeImportReturn {
@@ -47,22 +37,6 @@ export interface UseRecipeImportReturn {
  * Implements conditional polling: polls only when there are pending jobs,
  * stops automatically when no pending jobs remain, and starts polling
  * when a new job is created.
- * 
- * For native apps with offline support, pass `createJobFn` from `useTriggerJob`:
- * ```tsx
- * const { triggerJobWithOfflineFallback } = useTriggerJob({ ... });
- * const { createJob } = useRecipeImport({
- *   ...,
- *   createJobFn: triggerJobWithOfflineFallback,
- * });
- * ```
- * 
- * For web apps, use the default implementation with `apiUrl`:
- * ```tsx
- * const { createJob } = useRecipeImport({
- *   ...,
- *   apiUrl: 'https://api.example.com',
- * });
  * ```
  * 
  * @param options - Configuration options including Supabase client, user ID, and optional createJobFn or apiUrl
@@ -71,7 +45,6 @@ export interface UseRecipeImportReturn {
 export function useRecipeImport({ 
   supabaseClient, 
   userId,
-  createJobFn,
   apiUrl,
 }: UseRecipeImportOptions): UseRecipeImportReturn {
   const queryClient = useQueryClient();
@@ -104,14 +77,8 @@ export function useRecipeImport({
   // This ensures polling starts if there weren't any pending jobs before
   const createJobMutation = useMutation({
     mutationFn: async ({ sourceType, sourceData }: { sourceType: RecipeImportSourceType; sourceData: string }) => {
-      // Use custom function if provided (e.g., for offline fallback in native)
-      if (createJobFn) {
-        return await createJobFn(sourceType, sourceData);
-      }
-      
-      // Fallback to default implementation
       if (!apiUrl) {
-        throw new Error("Either createJobFn or apiUrl must be provided to create import jobs");
+        throw new Error("apiUrl is required");
       }
       return await triggerJob(supabaseClient, apiUrl, sourceType, sourceData);
     },
