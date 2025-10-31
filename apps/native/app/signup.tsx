@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Alert } from "react-native";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Button, Divider } from "@/components/ui";
 import GoogleSignInButton from "@/components/google-sign-in-button";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -30,6 +30,7 @@ export default function Signup() {
 			showsVerticalScrollIndicator={false}
 			contentContainerStyle={{ flexGrow: 1 }}
 		>
+			<Stack.Screen options={{ headerShown: false }} />
 			<View className="flex-1 flex-col bg-white px-6 py-10 justify-center">
 				{/* Header Section */}
 				<View className="mb-8">

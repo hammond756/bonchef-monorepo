@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "owner": "bonchef",
     "orientation": "portrait",
-    "icon": "./assets/icons/iphone-light.png",
+    "icon": "./assets/icons/App-icon.png",
     "scheme": "bonchefnative",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icons/iphone-light.png",
+        "foregroundImage": "./assets/icons/App-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -34,7 +34,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/icons/iphone-light.png",
+          "image": "./assets/icons/App-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"

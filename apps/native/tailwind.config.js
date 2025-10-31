@@ -12,7 +12,8 @@ module.exports = {
     },
     extend: {
       colors: {
-        'green-secondary': '#ebffed'
+        'green-secondary': '#ebffed',
+        'green-primary': '#16a34a'
       }
     }
   },
