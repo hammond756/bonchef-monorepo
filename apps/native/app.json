@@ -37,7 +37,7 @@
           "image": "./assets/icons/iphone-light.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#385940"
+          "backgroundColor": "#ffffff"
         }
       ],
       [
@@ -60,7 +60,7 @@
             "red": 255,
             "green": 255,
             "blue": 255,
-            "alpha": 0.0
+            "alpha": 0
           },
           "excludedPackages": [
             "expo-dev-client",
@@ -77,6 +77,7 @@
             "./assets/fonts/Montserrat-Medium.ttf",
             "./assets/fonts/Montserrat-SemiBold.ttf",
             "./assets/fonts/Montserrat-Bold.ttf",
+            "./assets/fonts/Montserrat-Light.ttf",
             "./assets/fonts/Lora-Regular.ttf",
             "./assets/fonts/Lora-Medium.ttf",
             "./assets/fonts/Lora-SemiBold.ttf",
@@ -96,6 +97,14 @@
         "expo-web-browser",
         {
           "experimentalLauncherActivity": false
+        }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "bonchef-native",
+          "organization": "bonchef-digital-kitchen"
         }
       ]
     ],

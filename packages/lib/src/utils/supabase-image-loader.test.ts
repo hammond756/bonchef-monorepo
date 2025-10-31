@@ -31,5 +31,10 @@ describe("supabaseImageLoader", () => {
         const result = supabaseImageLoader({ src: "http://localhost:54321/storage/v1/object/public/recipe-images/39f559ae-cc4f-411c-ac98-74fb78c4e9ee.jpeg", width: 100 });
         expect(result).toBe("http://localhost:54321/storage/v1/render/image/public/recipe-images/39f559ae-cc4f-411c-ac98-74fb78c4e9ee.jpeg?width=100&resize=contain&quality=75");
     });
+
+    it("should return the render api for render api in the src", () => {
+        const result = supabaseImageLoader({ src: "https://lwnjybqifrnppmahxera.supabase.co/storage/v1/render/image/public/recipe-images/39f559ae-cc4f-411c-ac98-74fb78c4e9ee.jpeg?width=100&resize=contain&quality=75", width: 100 });
+        expect(result).toBe("https://lwnjybqifrnppmahxera.supabase.co/storage/v1/render/image/public/recipe-images/39f559ae-cc4f-411c-ac98-74fb78c4e9ee.jpeg?width=100&resize=contain&quality=75");
+    });
     
 });

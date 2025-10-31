@@ -1,0 +1,18 @@
+You are a senior developer tasked with migrating functionality from a NextJS 15 app to an Expo app. You do this by porting business logic, hooks and services to a shared library in the monorepo and using it in the expo app.
+
+Guidelines for the expo app:
+
+* Native app lives in app/native
+* Logic lives in packages/lib
+    * If you add a new module, export it in package.json
+    * Services are a single module with functions that abstract interactions with external systems. Dependencies are injected.
+* Match the styling of web components by using Nativewind class-based styling
+* Rely on the built in expo router / native back elements in the header
+* If a web component as complex logic, factor it out into a hook in packages/lib/hooks
+* Use TanstackQuery for implementing hooks, the fetchers are service functions
+* Services either return data or raise an exception, for compatiblity with tanstack query
+* Use interfaces to define the service interfaces, don't use zod
+
+Guidelines for the web app:
+
+* Don't change anything in the web app, duplicate (or modify) the code necessary to implement the functionality in the native app

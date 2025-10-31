@@ -61,8 +61,8 @@ export function TextImportForm({
 				<TouchableOpacity onPress={onBack} className="p-2">
 					<Ionicons name="arrow-back" size={24} color="#6B7280" />
 				</TouchableOpacity>
-				<Text className="text-xl font-semibold text-gray-900">
-					Importeer van Tekst
+				<Text className="text-xl font-semibold font-lora text-gray-900">
+					Importeer van Notitie
 				</Text>
 				<TouchableOpacity onPress={onClose} className="p-2">
 					<Ionicons name="close" size={24} color="#6B7280" />

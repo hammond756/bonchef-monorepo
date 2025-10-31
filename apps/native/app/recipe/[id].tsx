@@ -30,6 +30,7 @@ export default function RecipeDetail() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<number>(0);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
+  const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
   const { profile: user } = useAuthContext();
 
   // Define tabs configuration
@@ -44,12 +45,12 @@ export default function RecipeDetail() {
   
   // Scroll animation values
   const scrollY = useSharedValue(0);
-  const tabUnderlineWidth = useSharedValue(0);
+  const tabUnderlineTranslateX = useSharedValue(0);
   
-  // Initialize tab underline width
+  // Initialize tab underline position
   useEffect(() => {
-    tabUnderlineWidth.value = screenWidth / tabs.length;
-  }, [screenWidth, tabs.length, tabUnderlineWidth]);
+    tabUnderlineTranslateX.value = 0; // Start at first tab
+  }, [tabUnderlineTranslateX]);
   
   // Fetch recipe data using the hook
   const { data: recipe, isLoading, error } = useRecipeDetail(supabase, id);
@@ -60,6 +61,11 @@ export default function RecipeDetail() {
 
   const handleTabPress = (tabIndex: number) => {
     setActiveTab(tabIndex);
+    // Animate the underline to the new position
+    tabUnderlineTranslateX.value = withTiming(
+      (screenWidth / tabs.length) * tabIndex,
+      { duration: 300 }
+    );
   };
 
   // Scroll handler
@@ -126,18 +132,12 @@ export default function RecipeDetail() {
   });
 
   const tabUnderlineStyle = useAnimatedStyle(() => {
-    const translateX = (screenWidth / tabs.length) * activeTab;
-    
     return {
-      transform: [{ translateX }],
-      width: tabUnderlineWidth.value,
+      transform: [{ translateX: tabUnderlineTranslateX.value }],
+      width: screenWidth / tabs.length,
+      backgroundColor: '#16a34a',
     };
   });
-
-  // Animate tab underline when activeTab changes
-  useEffect(() => {
-    tabUnderlineWidth.value = withTiming(screenWidth / tabs.length, { duration: 300 });
-  }, [screenWidth, tabs.length, tabUnderlineWidth]);
 
   const toggleIngredient = (ingredientKey: string) => {
     setCheckedIngredients(prev => {
@@ -146,6 +146,18 @@ export default function RecipeDetail() {
         newSet.delete(ingredientKey);
       } else {
         newSet.add(ingredientKey);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleStep = (stepIndex: number) => {
+    setCheckedSteps(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(stepIndex)) {
+        newSet.delete(stepIndex);
+      } else {
+        newSet.add(stepIndex);
       }
       return newSet;
     });
@@ -188,13 +200,16 @@ export default function RecipeDetail() {
   }
 
   const renderIngredients = () => (
-    <View className="px-4 py-6">
+    <View className="px-4 py-10">
       {/* Ingredients List */}
-      {recipe.ingredients.map((category) => (
+      {recipe.ingredients.map((category, idx) => (
         <View key={category.name} className="mb-6">
+          {idx > 0 && (
+            <View className="h-px bg-gray-200 mb-12" />
+          )}
           {category.name !== "no_group" && (
             <Text
-              className="mb-3 text-xl font-semibold font-lora"
+              className="mb-5 text-xl font-semibold font-lora"
             >
             {category.name}
           </Text>)}
@@ -208,24 +223,24 @@ export default function RecipeDetail() {
             return (
               <TouchableOpacity 
                 key={ingredientKey} 
-                className="flex-row items-start mb-5"
+                className="flex-row items-start mb-5 ml-3"
                 onPress={() => toggleIngredient(ingredientKey)}
                 activeOpacity={0.7}
               >
                 <View 
-                  className={`w-5 h-5 border rounded mr-3 items-center justify-center ${isChecked ? 'border-green-700 bg-green-50' : 'border-gray-300'}`} 
-                  style={{ marginTop: 2 }}
+                  className={`w-5 h-5 border rounded mr-3 items-center justify-center ${isChecked ? 'border-green-600 bg-green-50' : 'border-gray-300'}`} 
+                  style={{ marginTop: 7 }}
                 >
                   {isChecked && (
                     <Ionicons 
                       name="checkmark" 
                       size={16} 
-                      color="#1E4D37" 
+                      color="#16a34a" 
                     />
                   )}
                 </View>
                 <View className="flex-1">
-                  <Text className={`text-xl text-gray-900 leading-6 font-montserrat ${isChecked ? 'line-through text-gray-500' : ''}`}>
+                  <Text className={`text-xl text-gray-900 leading-relaxed font-montserrat font-light ${isChecked ? 'line-through text-gray-500' : ''}`}>
                     {formatted.quantity && (
                       <Text className="font-semibold font-montserrat">
                         {formatted.quantity}
@@ -245,20 +260,43 @@ export default function RecipeDetail() {
 
   const renderPreparation = () => (
     <View className="px-4 py-6">
-      {recipe.instructions.map((step, index) => (
-        <View key={`step-${index}-${step.slice(0, 20)}`} className="mb-6">
-          <View className="flex-row items-start">
-            <View className="w-8 h-8 bg-[#1E4D37] rounded-full items-center justify-center mr-4 mt-1">
-              <Text className="text-white font-bold text-sm font-montserrat">{index + 1}</Text>
+      {recipe.instructions.map((step, index) => {
+        const isChecked = checkedSteps.has(index);
+        
+        return (
+          <TouchableOpacity 
+            key={`step-${index}-${step.slice(0, 20)}`} 
+            className="mb-6"
+            onPress={() => toggleStep(index)}
+            activeOpacity={0.7}
+          >
+            <View className="flex-row items-start">
+              <View className={`w-8 h-8 rounded-full items-center justify-center mr-4 mt-1 ${
+                isChecked ? 'bg-green-600' : 'bg-[#ebffed]'
+              }`}>
+                {isChecked ? (
+                  <Ionicons 
+                    name="checkmark" 
+                    size={16} 
+                    color="white" 
+                  />
+                ) : (
+                  <Text className="text-gray-950 font-bold text-sm font-montserrat">{index + 1}</Text>
+                )}
+              </View>
+              <View className="flex-1">
+                <Text className={`text-lg leading-normal font-montserrat ${
+                  isChecked 
+                    ? 'line-through text-gray-500' 
+                    : 'text-gray-900'
+                }`}>
+                  {step}
+                </Text>
+              </View>
             </View>
-            <View className="flex-1">
-              <Text className="text-lg text-gray-900 leading-6 font-montserrat">
-                {step}
-              </Text>
-            </View>
-          </View>
-        </View>
-      ))}
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 
@@ -362,7 +400,7 @@ export default function RecipeDetail() {
               >
                 <Text
                   className={`text-xl font-medium font-montserrat ${
-                    activeTab === index ? "text-[#1E4D37]" : "text-gray-500"
+                    activeTab === index ? "text-green-600" : "text-gray-500"
                   }`}
                 >
                   {tab.label}
@@ -378,7 +416,7 @@ export default function RecipeDetail() {
                 position: 'absolute',
                 bottom: 0,
                 height: 2,
-                backgroundColor: '#1E4D37',
+                backgroundColor: '#16a34a',
               },
               tabUnderlineStyle
             ]}
