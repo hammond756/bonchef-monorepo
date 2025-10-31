@@ -10,6 +10,11 @@ module.exports = {
       'sans': ['Montserrat-Regular'],
       'serif': ['Lora-Regular'],
     },
+    extend: {
+      colors: {
+        'green-secondary': '#ebffed'
+      }
+    }
   },
   plugins: [],
 };

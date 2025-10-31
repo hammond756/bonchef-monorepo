@@ -2,7 +2,7 @@ import { useRecipeDetail } from "@repo/lib/hooks/recipes";
 import { formatIngredientLine } from "@repo/lib/utils/ingredient-formatting";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Image } from "expo-image";
 import { ActivityIndicator, Text, TouchableOpacity, View, Dimensions, Pressable } from "react-native";
 import Animated, { 
@@ -32,6 +32,30 @@ export default function RecipeDetail() {
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
   const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
   const { profile: user } = useAuthContext();
+  const [portions, setPortions] = useState<number>(1);
+  
+  const { data: recipe, isLoading, error } = useRecipeDetail(supabase, id);
+  
+  useEffect(() => {
+    if (recipe?.n_portions) {
+      setPortions(recipe.n_portions);
+    }
+  }, [recipe?.n_portions]);
+  
+  // Calculate servings multiplier
+  const servingsMultiplier = useMemo(() => {
+    const initialPortions = recipe?.n_portions || 1;
+    if (initialPortions === 0) return 1; // Prevent division by zero
+    return portions / initialPortions;
+  }, [portions, recipe?.n_portions]);
+  
+  const incrementPortions = () => {
+    setPortions(prev => prev + 1);
+  };
+  
+  const decrementPortions = () => {
+    setPortions(prev => Math.max(1, prev - 1));
+  };
 
   // Define tabs configuration
   const tabs = [
@@ -51,9 +75,6 @@ export default function RecipeDetail() {
   useEffect(() => {
     tabUnderlineTranslateX.value = 0; // Start at first tab
   }, [tabUnderlineTranslateX]);
-  
-  // Fetch recipe data using the hook
-  const { data: recipe, isLoading, error } = useRecipeDetail(supabase, id);
 
   const handleBack = () => {
     router.back();
@@ -201,6 +222,36 @@ export default function RecipeDetail() {
 
   const renderIngredients = () => (
     <View className="px-4 py-10">
+      {/* Servings Counter */}
+      <View className="bg-green-secondary rounded-lg p-4 mb-6">
+        <View className="flex-row items-center justify-between">
+          <Text className="text-sm font-medium text-gray-900">Aantal porties</Text>
+          <View className="flex-row items-center">
+            <TouchableOpacity
+              onPress={decrementPortions}
+              disabled={portions <= 1}
+              className="w-8 h-8 items-center justify-center rounded border border-gray-300 bg-white mr-3"
+              activeOpacity={0.7}
+              style={{ opacity: portions <= 1 ? 0.5 : 1 }}
+            >
+              <Feather name="minus" size={16} color="#374151" />
+            </TouchableOpacity>
+            <View className="flex-row items-center">
+              <Text className="min-w-[2rem] text-center text-lg font-semibold text-gray-900">
+                {portions}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={incrementPortions}
+              className="w-8 h-8 items-center justify-center rounded border border-gray-300 bg-white ml-3"
+              activeOpacity={0.7}
+            >
+              <Feather name="plus" size={16} color="#374151" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      
       {/* Ingredients List */}
       {recipe.ingredients.map((category, idx) => (
         <View key={category.name} className="mb-6">
@@ -214,7 +265,7 @@ export default function RecipeDetail() {
             {category.name}
           </Text>)}
           {category.ingredients.map((ingredient, ingredientIndex) => {
-            const formatted = formatIngredientLine(ingredient, 1);
+            const formatted = formatIngredientLine(ingredient, servingsMultiplier);
             if (!formatted) return null;
             
             const ingredientKey = `${category.name}-${ingredient.description}-${ingredient.quantity.low}-${ingredientIndex}`;
@@ -272,7 +323,7 @@ export default function RecipeDetail() {
           >
             <View className="flex-row items-start">
               <View className={`w-8 h-8 rounded-full items-center justify-center mr-4 mt-1 ${
-                isChecked ? 'bg-green-600' : 'bg-[#ebffed]'
+                isChecked ? 'bg-green-600' : 'bg-green-secondary'
               }`}>
                 {isChecked ? (
                   <Ionicons 

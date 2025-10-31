@@ -22,7 +22,7 @@ export function ImportOptions({ onSelectMode, onClose }: ImportOptionsProps) {
 
         <TouchableOpacity
           onPress={() => onSelectMode('url')}
-          className="flex-1 items-center justify-center bg-[#ebffed] rounded-xl p-3 mx-1"
+          className="flex-1 items-center justify-center bg-green-secondary rounded-xl p-3 mx-1"
         >
           <Ionicons name="link" size={28} color="#030712" />
           <Text className="text-sm font-light text-gray-950 mt-2">Website</Text>
@@ -30,7 +30,7 @@ export function ImportOptions({ onSelectMode, onClose }: ImportOptionsProps) {
 
         <TouchableOpacity
           onPress={() => onSelectMode('text')}
-          className="flex-1 items-center justify-center bg-[#ebffed] rounded-xl p-3 mx-1"
+          className="flex-1 items-center justify-center bg-green-secondary rounded-xl p-3 mx-1"
         >
           <Ionicons name="document-text" size={28} color="#030712" />
           <Text className="text-sm font-light text-gray-950 mt-2">Notitie</Text>
