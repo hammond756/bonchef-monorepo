@@ -30,7 +30,7 @@ export default function Collection() {
           headerLeft: () => (
             <TouchableOpacity
               onPress={handleSortToggle}
-              className="bg-[#ebffed] px-3 py-1 rounded-full flex-row items-center ml-2"
+              className="bg-green-secondary px-3 py-1 rounded-full flex-row items-center ml-2"
             >
               <Text className="text-gray-950 text-sm font-medium font-montserrat mr-1">
                 {sortOrder === 'newest' ? 'Nieuwste' : 'Oudste'}
