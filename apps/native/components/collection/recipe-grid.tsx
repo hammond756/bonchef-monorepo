@@ -1,5 +1,4 @@
-import React from 'react';
-import { View, FlatList } from 'react-native';
+import { View, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
 import { RecipeCollectionCard } from '../recipe/recipe-collection-card';
 import { PendingJobCard } from '../recipe/pending-job-card';
 import { FailedJobCard } from '../recipe/failed-job-card';
@@ -13,10 +12,20 @@ export type CollectionItem =
 
 interface RecipeGridProps {
   items: readonly CollectionItem[];
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  onRefresh?: () => void;
+  isLoading?: boolean;
+  isRefreshing?: boolean;
 }
 
 export function RecipeGrid({ 
-  items, 
+  items,
+  onLoadMore,
+  hasMore,
+  onRefresh,
+  isLoading,
+  isRefreshing,
 }: RecipeGridProps) {
   if (!items || items.length === 0) {
     return null;
@@ -50,6 +59,18 @@ export function RecipeGrid({
     }
   };
 
+  const handleLoadMore = () => {
+    if (hasMore && !isLoading && onLoadMore) {
+      onLoadMore();
+    }
+  };
+
+  const handleRefresh = () => {
+    if (onRefresh) {
+      onRefresh();
+    }
+  };
+
   return (
     <FlatList
       data={items}
@@ -58,6 +79,20 @@ export function RecipeGrid({
       keyExtractor={(item) => item.id}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 20 }}
+      onEndReached={handleLoadMore}
+      onEndReachedThreshold={1.5}
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl refreshing={isRefreshing || false} onRefresh={handleRefresh} />
+        ) : undefined
+      }
+      ListFooterComponent={
+        hasMore && isLoading ? (
+          <View className="py-4">
+            <ActivityIndicator size="small" color="#1E4D37" />
+          </View>
+        ) : null
+      }
     />
   );
 }

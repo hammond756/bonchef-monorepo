@@ -1,7 +1,7 @@
 import { useOwnRecipes } from '@repo/lib/hooks/use-own-recipes';
 import { useRecipeImport } from '@repo/lib/hooks/use-recipe-import';
 import { useMemo } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { useAuthContext } from '@/hooks/use-auth-context';
 import { supabase } from '@/lib/utils/supabase/client';
 import { RecipeGrid } from './recipe-grid';
@@ -17,7 +17,16 @@ export function MyRecipes({
   const { session } = useAuthContext();
   const userId = session?.user?.id || '';
 
-  const { recipes: userRecipes, isLoading: userRecipesLoading } = useOwnRecipes({
+  const { 
+    recipes: userRecipes, 
+    isLoading: userRecipesLoading,
+    isFetchingNextPage,
+    isFetching,
+    hasMore,
+    loadMore,
+    mutate,
+    error 
+  } = useOwnRecipes({
     supabaseClient: supabase,
     userId,
   });
@@ -48,6 +57,16 @@ export function MyRecipes({
     });
   }, [jobs, userRecipes, sortOrder]);
 
+  if (error) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <Text className="text-red-500 text-center">
+          Error loading recipes: {error.message}
+        </Text>
+      </View>
+    );
+  }
+
   if (userRecipesLoading || importJobsLoading) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -63,6 +82,11 @@ export function MyRecipes({
   return (
     <RecipeGrid 
       items={myRecipesAndJobs}
+      onLoadMore={loadMore}
+      hasMore={hasMore}
+      onRefresh={mutate}
+      isLoading={isFetchingNextPage}
+      isRefreshing={isFetching && !isFetchingNextPage}
     />
   );
 }
